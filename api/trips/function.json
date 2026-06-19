@@ -7,7 +7,7 @@
       "name": "req",
       "methods": ["get", "post", "put"],
       "route": "trips"
-    },   
+    },
     {
       "type": "http",
       "direction": "out",
@@ -15,4 +15,3 @@
     }
   ]
 }
-

@@ -105,6 +105,10 @@
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Show status on card</span>
             <button onClick="{{ toggleStatusCard }}" style="{{ cfgStatusStyle }}">{{ cfgStatusLabel }}</button>
           </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Spin the globe</span>
+            <button onClick="{{ toggleSpin }}" style="{{ cfgSpinStyle }}">{{ cfgSpinLabel }}</button>
+          </div>
         </div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">DATA &amp; STORAGE</div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#566a82; margin-bottom:4px;">CURRENTLY SAVING TO</div>
@@ -596,6 +600,7 @@ class Component extends DCLogic {
     const cfgDetailsFormDefault = cfg.detailsFormDefault !== false;
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
+    const cfgSpin = cfg.spin !== false;
 
     const now = new Date();
     this.state = {
@@ -604,6 +609,7 @@ class Component extends DCLogic {
       cfgDetailsFormDefault,
       cfgDetailsCard,
       cfgStatusCard,
+      cfgSpin,
       selectedId: null,
       formOpen: false,
       editingId: null,
@@ -831,7 +837,7 @@ class Component extends DCLogic {
           ns.locations = locs;
           if (settings) {
             const cfg = this.applySettings(settings);
-            ns.cfgDetailsFormDefault = cfg.detailsFormDefault; ns.cfgDetailsCard = cfg.detailsCard; ns.cfgStatusCard = cfg.statusCard; ns.detailsOpen = cfg.detailsFormDefault;
+            ns.cfgDetailsFormDefault = cfg.detailsFormDefault; ns.cfgDetailsCard = cfg.detailsCard; ns.cfgStatusCard = cfg.statusCard; ns.cfgSpin = cfg.spin; ns.detailsOpen = cfg.detailsFormDefault;
           }
         }
       }
@@ -880,6 +886,7 @@ class Component extends DCLogic {
         ns.cfgDetailsFormDefault = cfg.detailsFormDefault;
         ns.cfgDetailsCard = cfg.detailsCard;
         ns.cfgStatusCard = cfg.statusCard;
+        ns.cfgSpin = cfg.spin;
         ns.detailsOpen = cfg.detailsFormDefault;
       }
       this.setState(ns);
@@ -1128,7 +1135,7 @@ class Component extends DCLogic {
       this.rotation[0] = this.tween.from[0] + this.tween.dLon * e;
       this.rotation[1] = this.tween.from[1] + (this.tween.to[1] - this.tween.from[1]) * e;
       if (p >= 1) this.rotation = [this.tween.to[0], this.tween.to[1]], this.tween = null;
-    } else if (!this.dragging && !this.state.formOpen && this.state.selectedId == null && !this.expandedKey) {
+    } else if (!this.dragging && !this.state.formOpen && this.state.selectedId == null && !this.expandedKey && this.state.cfgSpin) {
       this.rotation[0] += 0.055;
     }
     if (this.rotation[0] > 180) this.rotation[0] -= 360;
@@ -1425,7 +1432,7 @@ class Component extends DCLogic {
   }
 
   appSettings() {
-    return { detailsFormDefault: this.state.cfgDetailsFormDefault, detailsCard: this.state.cfgDetailsCard, statusCard: this.state.cfgStatusCard };
+    return { detailsFormDefault: this.state.cfgDetailsFormDefault, detailsCard: this.state.cfgDetailsCard, statusCard: this.state.cfgStatusCard, spin: this.state.cfgSpin };
   }
 
   downloadJson(obj, name) {
@@ -1449,7 +1456,7 @@ class Component extends DCLogic {
   }
 
   applySettings(settings) {
-    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false };
+    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false, spin: settings.spin !== false };
     try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (er) {}
     return cfg;
   }
@@ -1476,6 +1483,7 @@ class Component extends DCLogic {
           next.cfgDetailsFormDefault = cfg.detailsFormDefault;
           next.cfgDetailsCard = cfg.detailsCard;
           next.cfgStatusCard = cfg.statusCard;
+          next.cfgSpin = cfg.spin;
           next.detailsOpen = cfg.detailsFormDefault;
           done.push('settings');
         }
@@ -1657,7 +1665,7 @@ class Component extends DCLogic {
   toggleCfgKey(stateKey, cfgKey) {
     this.setState(s => {
       const v = !s[stateKey];
-      const cfg = { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard };
+      const cfg = { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin };
       cfg[cfgKey] = v;
       try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
       const out = { [stateKey]: v };
@@ -1949,6 +1957,9 @@ class Component extends DCLogic {
       toggleDetails: () => this.toggleDetails(),
       showDetailsCard: this.state.cfgDetailsCard,
       showStatusCard: this.state.cfgStatusCard,
+      cfgSpinStyle: cfgPill(this.state.cfgSpin),
+      cfgSpinLabel: this.state.cfgSpin ? 'ON' : 'OFF',
+      toggleSpin: () => this.toggleCfgKey('cfgSpin', 'spin'),
       cfgDetailsFormDefault: this.state.cfgDetailsFormDefault,
       cfgDetailsCard: this.state.cfgDetailsCard,
       cfgStatusCard: this.state.cfgStatusCard,

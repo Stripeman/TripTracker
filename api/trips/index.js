@@ -65,7 +65,7 @@ module.exports = async function (context, req) {
     let payload = req.body;
     if (typeof payload === "string") { try { payload = JSON.parse(payload); } catch (e) { json(400, { error: "Invalid JSON" }); return; } }
     if (!payload || !Array.isArray(payload.locations)) { json(400, { error: "Expected { locations: [...] }" }); return; }
-   
+
     const text = JSON.stringify(payload, null, 2);
     await blob.upload(text, Buffer.byteLength(text), {
       blobHTTPHeaders: { blobContentType: "application/json" },
@@ -76,4 +76,3 @@ module.exports = async function (context, req) {
     json(500, { error: String(err && err.message || err) });
   }
 };
-
