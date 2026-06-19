@@ -15,16 +15,15 @@
       "country": "France",
       "lon": "2.3522",
       "lat": "48.8566",
-      "date": "2022-05-10",
-      "dateEnd": "2022-05-17",
+      "date": "2026-06-19",
+      "dateEnd": "2026-06-28",
       "status": "visited",
-      "notes": "First trip — Eiffel Tower at night",
-      "visitTypes": [
-        "city"
-      ],
-      "tripTypes": [
-        "vacation"
-      ]
+      "notes": "Spring on the Canal Saint-Martin",
+      "visitTypes": ["city", "family"],
+      "tripTypes": ["vacation"],
+      "travelers": ["terry"],
+      "createdAt": "2026-06-19T13:48:07.884Z",
+      "modifiedAt": "2026-06-19T13:48:07.884Z"
     }
   ]
 }

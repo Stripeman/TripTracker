@@ -138,6 +138,14 @@
               </sc-for>
             </div>
           </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">TRAVELER</div>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defTravelerSeg }}" as="seg" hint-placeholder-count="3">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
         </div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">DATA &amp; STORAGE</div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">DATA SOURCE</div>
@@ -279,6 +287,12 @@
                 <button onClick="{{ chip.onToggle }}" style="{{ chip.style }}"><span style="{{ chip.dotStyle }}"></span>{{ chip.label }}</button>
               </sc-for>
             </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin:13px 0 7px;">TRAVELER</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <sc-for list="{{ travelerFilterChips }}" as="chip" hint-placeholder-count="4">
+                <button onClick="{{ chip.onToggle }}" style="{{ chip.style }}"><span style="{{ chip.dotStyle }}"></span>{{ chip.label }}</button>
+              </sc-for>
+            </div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin:13px 0 7px;">TRIP TYPE</div>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">
               <sc-for list="{{ tripFilterChips }}" as="chip" hint-placeholder-count="2">
@@ -342,6 +356,16 @@
               </sc-for>
             </div>
           </sc-if>
+        </sc-if>
+        <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:13px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.16em; color:#586a82; margin-bottom:6px;">TRAVELERS</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <sc-for list="{{ selected.cardTravelers }}" as="chip" hint-placeholder-count="2">
+                <span style="{{ chip.style }}">{{ chip.label }}</span>
+              </sc-for>
+            </div>
+          </div>
         </sc-if>
         <sc-if value="{{ selected.notes }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08); font-family:'Space Grotesk',sans-serif; font-size:13px; line-height:1.55; color:#c2cfde; white-space:pre-wrap;">{{ selected.notes }}</div>
@@ -538,6 +562,12 @@
                 <button onClick="{{ chip.onToggle }}" style="{{ chip.style }}">{{ chip.label }}</button>
               </sc-for>
             </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin:15px 0 8px;">TRAVELER</div>
+            <div style="display:flex; flex-wrap:wrap; gap:7px;">
+              <sc-for list="{{ travelerChips }}" as="chip" hint-placeholder-count="4">
+                <button onClick="{{ chip.onToggle }}" style="{{ chip.style }}">{{ chip.label }}</button>
+              </sc-for>
+            </div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin:15px 0 8px;">TRIP TYPE</div>
             <div style="display:flex; flex-wrap:wrap; gap:7px;">
               <sc-for list="{{ tripTypeChips }}" as="chip" hint-placeholder-count="2">
@@ -598,10 +628,18 @@ class Component extends DCLogic {
       { key:'vacation', label:'Personal', color:'#2dd4bf' },
       { key:'work', label:'Work', color:'#f59e0b' },
     ];
+    this.TRAVELERS = [
+      { key:'terry', label:'Terry', color:'#fb7185' },
+      { key:'karen', label:'Karen', color:'#c084fc' },
+      { key:'nikki', label:'Nikki', color:'#22d3ee' },
+      { key:'amanda', label:'Amanda', color:'#fb923c' },
+    ];
     this.VTC = {}; this.VISIT_TYPES.forEach(o => this.VTC[o.key] = o.color);
     this.TTC = {}; this.TRIP_TYPES.forEach(o => this.TTC[o.key] = o.color);
     this.VTL = {}; this.VISIT_TYPES.forEach(o => this.VTL[o.key] = o.label);
     this.TTL = {}; this.TRIP_TYPES.forEach(o => this.TTL[o.key] = o.label);
+    this.TRC = {}; this.TRAVELERS.forEach(o => this.TRC[o.key] = o.color);
+    this.TRL = {}; this.TRAVELERS.forEach(o => this.TRL[o.key] = o.label);
     this.META = {
       planned: { label: 'Planned', short: 'Planned', color: '#38bdf8' },
       visited: { label: 'Visited', short: 'Visited', color: '#34d399' },
@@ -651,6 +689,7 @@ class Component extends DCLogic {
     const cfgDefaultYear = cfg.defaultYear === 'all' ? 'all' : 'current';
     const cfgDefaultTrip = (cfg.defaultTrip === 'all' || cfg.defaultTrip === 'work') ? cfg.defaultTrip : 'vacation';
     const cfgDefaultStatus = cfg.defaultStatus === 'all' ? 'all' : 'visited';
+    const cfgDefaultTraveler = (cfg.defaultTraveler === 'terry' || cfg.defaultTraveler === 'karen') ? cfg.defaultTraveler : 'all';
 
     const now = new Date();
     this.state = {
@@ -674,9 +713,11 @@ class Component extends DCLogic {
       filterStatuses: cfgDefaultStatus === 'visited' ? ['visited'] : [],
       filterVisit: [],
       filterTrip: cfgDefaultTrip === 'all' ? [] : [cfgDefaultTrip],
+      filterTravelers: cfgDefaultTraveler === 'all' ? [] : [cfgDefaultTraveler],
       cfgDefaultYear,
       cfgDefaultTrip,
       cfgDefaultStatus,
+      cfgDefaultTraveler,
       filterText: '',
       filterCountries: [],
       filterCities: [],
@@ -728,7 +769,7 @@ class Component extends DCLogic {
     this.setImportInput = (el) => { this.importInput = el; };
   }
 
-  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], createdAt:'' }; }
+  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'' }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -872,7 +913,7 @@ class Component extends DCLogic {
       id: i + 1, city: r[0], state: r[1], country: r[2],
       lon: String(r[3]), lat: String(r[4]),
       date: r[5] || '', dateEnd: r[6] || '', status: r[7], notes: r[8] || '',
-      visitTypes: r[9] || [], tripTypes: r[10] || ['vacation'],
+      visitTypes: r[9] || [], tripTypes: r[10] || ['vacation'], travelers: r[11] || [],
     }));
   }
 
@@ -1068,7 +1109,8 @@ class Component extends DCLogic {
       const date = `${year}-${pad(month)}-${pad(day)}`;
       const dateEnd = (i % 2 === 0) ? addDays(date, 3 + (i % 7)) : '';
       const tripTypes = (i % 9 === 0) ? ['work'] : ['vacation'];
-      return { id: 100001 + i, city, state: '', country, lon: String(lon), lat: String(lat), date, dateEnd, status, notes: '', visitTypes: [vtype], tripTypes };
+      const travelers = [['terry'], ['karen'], ['terry','karen'], ['nikki'], ['terry','karen','nikki','amanda'], ['amanda'], ['karen','nikki']][i % 7];
+      return { id: 100001 + i, city, state: '', country, lon: String(lon), lat: String(lat), date, dateEnd, status, notes: '', visitTypes: [vtype], tripTypes, travelers };
     });
   }
 
@@ -1535,13 +1577,14 @@ class Component extends DCLogic {
   }
 
   cfgObject(s) {
-    return { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, dataSource: s.cfgDataSource };
+    return { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, dataSource: s.cfgDataSource };
   }
   setDefaultFilter(key, v) {
     this.setState(s => {
       const ns = { [key]: v };
       if (key === 'cfgDefaultYear') ns.filterYear = v === 'all' ? 'all' : new Date().getFullYear();
       if (key === 'cfgDefaultTrip') ns.filterTrip = v === 'all' ? [] : [v];
+      if (key === 'cfgDefaultTraveler') ns.filterTravelers = v === 'all' ? [] : [v];
       if (key === 'cfgDefaultStatus') ns.filterStatuses = v === 'visited' ? ['visited'] : [];
       const cfg = this.cfgObject({ ...s, ...ns });
       try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
@@ -1574,7 +1617,7 @@ class Component extends DCLogic {
   }
 
   applySettings(settings) {
-    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false, spin: settings.spin !== false, defaultYear: settings.defaultYear === 'all' ? 'all' : 'current', defaultTrip: (settings.defaultTrip === 'all' || settings.defaultTrip === 'work') ? settings.defaultTrip : 'vacation', defaultStatus: settings.defaultStatus === 'all' ? 'all' : 'visited' };
+    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false, spin: settings.spin !== false, defaultYear: settings.defaultYear === 'all' ? 'all' : 'current', defaultTrip: (settings.defaultTrip === 'all' || settings.defaultTrip === 'work') ? settings.defaultTrip : 'vacation', defaultStatus: settings.defaultStatus === 'all' ? 'all' : 'visited', defaultTraveler: (settings.defaultTraveler === 'terry' || settings.defaultTraveler === 'karen') ? settings.defaultTraveler : 'all' };
     try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (er) {}
     return cfg;
   }
@@ -1743,7 +1786,7 @@ class Component extends DCLogic {
   editSelected() {
     const loc = this.state.locations.find(l => l.id === this.state.selectedId);
     if (!loc) return;
-    this.setState({ formOpen: true, editingId: loc.id, formError: '', detailsOpen: this.state.cfgDetailsFormDefault, form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'] } });
+    this.setState({ formOpen: true, editingId: loc.id, formError: '', detailsOpen: this.state.cfgDetailsFormDefault, form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [] } });
   }
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
@@ -1766,6 +1809,7 @@ class Component extends DCLogic {
     if (s.filterStatuses.length && !s.filterStatuses.includes(l.status)) return false;
     if (s.filterVisit.length && !(l.visitTypes || []).some(k => s.filterVisit.includes(k))) return false;
     if (s.filterTrip.length && !(l.tripTypes || []).some(k => s.filterTrip.includes(k))) return false;
+    if (s.filterTravelers.length && !(l.travelers || []).some(k => s.filterTravelers.includes(k))) return false;
     const q = (s.filterText || '').trim().toLowerCase();
     if (q) {
       const hay = [l.city, l.state, l.country, l.notes].filter(Boolean).join(' ').toLowerCase();
@@ -1782,14 +1826,14 @@ class Component extends DCLogic {
   toggleFilters() { this.setState(s => ({ filtersOpen: !s.filtersOpen })); }
   toggleHeat() { this.setState(s => ({ heatOpen: !s.heatOpen })); }
   setHeatMode(m) { this.setState({ heatMode: m }); }
-  clearFilters() { this.setState({ filterStatuses: [], filterVisit: [], filterTrip: [], filterText: '', filterCountries: [], filterCities: [] }); }
+  clearFilters() { this.setState({ filterStatuses: [], filterVisit: [], filterTrip: [], filterTravelers: [], filterText: '', filterCountries: [], filterCities: [] }); }
   toggleCountry(c) { this.setState(s => { const cur = s.filterCountries; return { filterCountries: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
   toggleCity(c) { this.setState(s => { const cur = s.filterCities; return { filterCities: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
 
   toggleCfgKey(stateKey, cfgKey) {
     this.setState(s => {
       const v = !s[stateKey];
-      const cfg = { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus };
+      const cfg = this.cfgObject(s);
       cfg[cfgKey] = v;
       try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
       const out = { [stateKey]: v };
@@ -1933,13 +1977,14 @@ class Component extends DCLogic {
     const yearOptions = [{ id: 'all', value: 'all', label: 'All years', selected: fy === 'all' }, ...years.map(y => ({ id: String(y), value: String(y), label: String(y), selected: fy === y }))];
 
     // color-coded filter chips
-    const fStat = this.state.filterStatuses, fVis = this.state.filterVisit, fTrip = this.state.filterTrip;
+    const fStat = this.state.filterStatuses, fVis = this.state.filterVisit, fTrip = this.state.filterTrip, fTrav = this.state.filterTravelers;
     const filterChip = (color, on) => "display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.03em; padding:5px 9px; border-radius:7px; cursor:pointer; transition:all .15s; " + (on ? `color:#04111e; background:${color}; border:1px solid ${color}; font-weight:600;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const filterDot = (color, on) => `width:7px; height:7px; border-radius:50%; flex:none; background:${on ? 'rgba(4,17,30,0.55)' : color};`;
     const statusFilterChips = ['planned', 'visited', 'dream'].map(k => { const m = meta[k]; const on = fStat.includes(k); return { key: k, label: m.short, style: filterChip(m.color, on), dotStyle: filterDot(m.color, on), onToggle: () => this.toggleFilter('filterStatuses', k) }; });
     const visitFilterChips = this.VISIT_TYPES.map(o => { const on = fVis.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterVisit', o.key) }; });
     const tripFilterChips = this.TRIP_TYPES.map(o => { const on = fTrip.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterTrip', o.key) }; });
-    const activeFilterCount = fStat.length + fVis.length + fTrip.length + (this.state.filterText.trim() ? 1 : 0) + this.state.filterCountries.length;
+    const travelerFilterChips = this.TRAVELERS.map(o => { const on = fTrav.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterTravelers', o.key) }; });
+    const activeFilterCount = fStat.length + fVis.length + fTrip.length + fTrav.length + (this.state.filterText.trim() ? 1 : 0) + this.state.filterCountries.length;
 
     // --- heat map (country intensity over the filtered set) ---
     const lerp = (a, b, t) => a + (b - a) * t;
@@ -1990,8 +2035,10 @@ class Component extends DCLogic {
       const addr = [sl.city, sl.state, sl.country].filter(Boolean).join(', ');
       const cardPill = (txt, color) => ({ label: txt, style: `font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase; padding:4px 8px; border-radius:6px; color:${color}; background:${color}1f; border:1px solid ${color}66;` });
       const typeChips = [...(sl.visitTypes || []).map(k => cardPill(this.VTL[k] || k, this.VTC[k] || '#9fd6f0')), ...(sl.tripTypes || []).map(k => cardPill(this.TTL[k] || k, this.TTC[k] || '#c4b5fd'))];
+      const cardTravelers = (sl.travelers || []).map(k => cardPill(this.TRL[k] || k, this.TRC[k] || '#fb7185'));
       selected = {
         typeChips, hasTypes: typeChips.length > 0,
+        cardTravelers, hasTravelers: cardTravelers.length > 0,
         ...sl, color: m.color, statusLabel: m.label,
         sub: [sl.state, sl.country].filter(Boolean).join(', ') || '—',
         coordsLabel: manual ? 'COORDS' : 'LOCATED BY',
@@ -2022,6 +2069,8 @@ class Component extends DCLogic {
     const fvt = form.visitTypes || [], ftt = form.tripTypes || [];
     const visitTypeChips = this.VISIT_TYPES.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, fvt.includes(o.key)), onToggle: () => this.toggleType('visitTypes', o.key) }));
     const tripTypeChips = this.TRIP_TYPES.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftt.includes(o.key)), onToggle: () => this.toggleType('tripTypes', o.key) }));
+    const ftr = form.travelers || [];
+    const travelerChips = this.TRAVELERS.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftr.includes(o.key)), onToggle: () => this.toggleType('travelers', o.key) }));
     const segStyle = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 4px; border-radius:7px; cursor:pointer; " + (on ? `color:#04111e; background:${color}; border:1px solid ${color}; font-weight:600;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const cfgPill = (on) => "font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; padding:5px 11px; border-radius:7px; cursor:pointer; flex:none; " + (on ? "color:#04111e; background:#34d399; border:1px solid #34d399; font-weight:600;" : "color:#8093aa; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);");
 
@@ -2069,6 +2118,7 @@ class Component extends DCLogic {
       statusFilterChips,
       visitFilterChips,
       tripFilterChips,
+      travelerFilterChips,
       activeFilterCount,
       hasActiveFilters: activeFilterCount > 0,
       filtersOpen: this.state.filtersOpen,
@@ -2097,6 +2147,7 @@ class Component extends DCLogic {
       selected,
       visitTypeChips,
       tripTypeChips,
+      travelerChips,
       detailsOpen: this.state.detailsOpen,
       detailsArrow: this.state.detailsOpen ? '▾' : '▸',
       toggleDetails: () => this.toggleDetails(),
@@ -2117,6 +2168,11 @@ class Component extends DCLogic {
       defStatusSeg: [
         { label: 'All', style: segStyle(this.state.cfgDefaultStatus === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultStatus', 'all') },
         { label: 'Visited', style: segStyle(this.state.cfgDefaultStatus === 'visited', this.META.visited.color), onSelect: () => this.setDefaultFilter('cfgDefaultStatus', 'visited') },
+      ],
+      defTravelerSeg: [
+        { label: 'All', style: segStyle(this.state.cfgDefaultTraveler === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'all') },
+        { label: 'Terry', style: segStyle(this.state.cfgDefaultTraveler === 'terry', this.TRC.terry), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'terry') },
+        { label: 'Karen', style: segStyle(this.state.cfgDefaultTraveler === 'karen', this.TRC.karen), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'karen') },
       ],
       cfgDetailsFormDefault: this.state.cfgDetailsFormDefault,
       cfgDetailsCard: this.state.cfgDetailsCard,

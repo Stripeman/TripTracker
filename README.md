@@ -15,9 +15,10 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **Clustering** — destinations that share a location collapse into a single dot with a count badge. Click it to **fan the entries out** on connector lines and pick a specific trip.
 
 ### 📍 Destinations
-- Add a destination with: **city**, optional **state**, **country**, **latitude/longitude**, **date(s)**, **status**, **visit type(s)**, **trip type(s)**, and free‑form **notes**.
+- Add a destination with: **city**, optional **state**, **country**, **latitude/longitude**, **date(s)**, **status**, **visit type(s)**, **trip type(s)**, **traveler(s)**, and free‑form **notes**.
 - **Status**: Planned (blue) · Visited (green) · Dream destination (purple).
 - **Trip type**: Personal · Work.
+- **Travelers**: Terry · Karen · Nikki · Amanda — multi‑select, each colour‑coded; shown on the detail card.
 - Click any saved location (on the globe or in the list) to view its detail card, then **Edit** or **Delete** it.
 - **Required fields:** every destination needs a **city**, a **date**, and a **status**. State is also required for U.S. cities.
 - **Audit stamps:** the Edit form shows a read-only **Added** timestamp (set when the destination is first created) and a **Last modified** timestamp (updated each time you save changes).
@@ -36,7 +37,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 
 ### 🔎 Filtering
 - **Free‑text search** — start typing to match destinations by **city, state, country, or notes**; results update live and respect every other active filter.
-- Filter the destinations list by **year**, **status**, **visit type**, and **trip type** — all colour‑coded to match the globe.
+- Filter the destinations list by **year**, **status**, **visit type**, **trip type**, and **traveler** — all colour‑coded to match the globe.
 - Per‑filter totals show the number of **trips** and **days**.
 - The year list only contains years that actually have destinations. Defaults to the **current year**.
 - Filters also **hide/show markers on the globe**.
@@ -66,6 +67,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
   - **Year** — All years / Current year
   - **Trip type** — All / Personal / Work
   - **Status** — All / Visited
+  - **Traveler** — All / Terry / Karen
 - Ships defaulting to **Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
 
 ### 🖱 Globe controls
