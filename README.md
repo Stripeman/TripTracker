@@ -17,6 +17,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 ### 📍 Destinations
 - Add a destination with: **city**, optional **state**, **country**, **latitude/longitude**, **date(s)**, **status**, **visit type(s)**, **trip type(s)**, and free‑form **notes**.
 - **Status**: Planned (blue) · Visited (green) · Dream destination (purple).
+- **Trip type**: Personal · Work.
 - Click any saved location (on the globe or in the list) to view its detail card, then **Edit** or **Delete** it.
 - **Required fields:** every destination needs a **city**, a **date**, and a **status**. State is also required for U.S. cities.
 - **Audit stamps:** the Edit form shows a read-only **Added** timestamp (set when the destination is first created) and a **Last modified** timestamp (updated each time you save changes).
@@ -56,6 +57,13 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - Toggle whether the **Trip details** section is open by default on the form.
 - Toggle whether **trip details** and the **status** appear on the detail card.
 - **Spin the globe** — turn the idle auto‑rotation on or off (you can always drag to spin manually).
+
+### 🎛 Default filters
+- A **Default Filters** section sets what the filters open to on each visit, via colour‑coded segmented toggles that match the filter colours:
+  - **Year** — All years / Current year
+  - **Trip type** — All / Personal / Work
+  - **Status** — All / Visited
+- Ships defaulting to **Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
 
 ### 🖱 Globe controls
 - **Drag** to rotate, **mouse‑wheel** to zoom from 1× to 6× (drag sensitivity scales with zoom).
