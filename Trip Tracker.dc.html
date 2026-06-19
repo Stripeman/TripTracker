@@ -487,6 +487,11 @@
 
         <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">NOTES <span style="color:#445;">·opt</span></label>
         <textarea name="notes" value="{{ form.notes }}" onChange="{{ onField }}" placeholder="Anything to remember — hotels, highlights, who you went with…" rows="3" style="width:100%; resize:vertical; min-height:74px; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.5; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;"></textarea>
+
+        <sc-if value="{{ showCreated }}" hint-placeholder-val="{{ false }}">
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">ADDED <span style="color:#445;">·read-only</span></label>
+          <div style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8093aa; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 13px;">{{ createdText }}</div>
+        </sc-if>
       </div>
 
       <div style="padding:16px 26px 24px; border-top:1px solid rgba(56,189,248,0.12);">
@@ -668,7 +673,7 @@ class Component extends DCLogic {
     this.setImportInput = (el) => { this.importInput = el; };
   }
 
-  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'] }; }
+  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], createdAt:'' }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -1765,7 +1770,7 @@ class Component extends DCLogic {
       list = this.state.locations.map(l => l.id === savedId ? { ...l, ...f } : l);
     } else {
       savedId = Date.now();
-      list = [...this.state.locations, { ...f, id: savedId }];
+      list = [...this.state.locations, { ...f, id: savedId, createdAt: new Date().toISOString() }];
     }
     this.persist(list);
     this.setState({ locations: list, formOpen: false, editingId: null, formError: '', selectedId: savedId });
@@ -2042,6 +2047,8 @@ class Component extends DCLogic {
       formMode: editingId != null ? 'EDIT DESTINATION' : 'NEW DESTINATION',
       formTitle: editingId != null ? 'Edit location' : 'Add location',
       saveLabel: this.state.geocoding ? 'Locating…' : (editingId != null ? 'Save changes' : 'Add to globe'),
+      showCreated: editingId != null && !!form.createdAt,
+      createdText: form.createdAt ? (() => { try { return new Date(form.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return form.createdAt; } })() : '',
       form,
       onField: this.onField,
       openAdd: this.openAdd,
