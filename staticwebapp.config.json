@@ -4,9 +4,20 @@
     "rewrite": "/index.html",
     "exclude": ["/api/*", "*.{json,js,css,png,jpg,svg,ico}"]
   },
+  "auth": {
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "registration": {
+          "openIdIssuer": "https://login.microsoftonline.com/<TENANT_ID>/v2.0",
+          "clientIdSettingName": "AAD_CLIENT_ID",
+          "clientSecretSettingName": "AAD_CLIENT_SECRET"
+        }
+      }
+    }
+  },
   "routes": [
-    { "route": "/api/trips", "methods": ["GET"] },
-    { "route": "/api/trips", "methods": ["POST", "PUT"], "allowedRoles": ["authenticated"] }
+    { "route": "/api/trips", "methods": ["GET"], "allowedRoles": ["authenticated"] },
+    { "route": "/api/trips", "methods": ["POST", "PUT"], "allowedRoles": ["editor"] }
   ],
   "responseOverrides": {
     "401": { "statusCode": 401 }

@@ -873,6 +873,12 @@ class Component extends DCLogic {
   async cloudLoad() {
     try {
       const res = await fetch('/api/trips', { cache: 'no-store' });
+      if (res.status === 401 || res.status === 403) {
+        // API exists but the viewer isn't signed in (or lacks access) → prompt sign-in.
+        this._cloud = true;
+        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: false, cloudMsg: 'Sign in to load your saved trips.' });
+        return true;
+      }
       if (res.status !== 200 && res.status !== 204) return false; // no API → local
       this._cloud = true;
       let ns = { dataMode: 'cloud', cloudAvailable: true };
@@ -2085,10 +2091,10 @@ class Component extends DCLogic {
       cloudAuth: this.state.cloudAuth,
       cloudMsg: this.state.cloudMsg,
       reloadCloud: () => this.cloudLoad(),
-      cloudAuthLabel: this.state.cloudAuth ? 'Signed in — edits sync' : 'Read-only — sign in to save',
+      cloudAuthLabel: this.state.cloudAuth ? 'Signed in — edits sync' : 'Sign in to view & edit your trips',
       cloudAuthColor: this.state.cloudAuth ? '#7ee0a8' : '#fcd34d',
       cloudAuthAction: this.state.cloudAuth ? 'Sign out' : 'Sign in',
-      cloudAuthHref: this.state.cloudAuth ? '/.auth/logout' : '/.auth/login/github',
+      cloudAuthHref: this.state.cloudAuth ? '/.auth/logout' : '/.auth/login/aad',
       isFileMode: this.state.dataMode === 'file',
       fsSupported: this.state.fsSupported,
       needsReconnect: this.state.needsReconnect,

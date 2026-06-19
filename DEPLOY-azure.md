@@ -17,7 +17,7 @@ index.html               → redirects the site root to the app
 Trip Tracker.dc.html     → the app
 support.js               → runtime
 trip-tracker.json        → bundled demo data (fallback / first-run)
-staticwebapp.config.json → routes + auth (GET public, POST authenticated)
+staticwebapp.config.json → routes + Entra auth (GET & write both require sign-in; writes require the `editor` role)
 api/                      → the Functions API
   host.json
   package.json
@@ -46,13 +46,22 @@ api/                      → the Functions API
    `AZURE_STORAGE_CONNECTION_STRING` = *(the value from step 1)*.
    Optional: `TRIPS_CONTAINER` (default `data`), `TRIPS_BLOB` (default `trip-tracker.json`).
 
-4. **Identity provider for sign-in** — `staticwebapp.config.json` gates writes to the `authenticated` role. The app's **Sign in** link uses GitHub (`/.auth/login/github`); change it to Entra ID (`/.auth/login/aad`) in the app if you prefer. Static Web Apps provides these endpoints automatically.
+4. **Microsoft Entra sign-in (required — the data is private).** Both reading and writing require a signed-in user; writing also requires the **`editor`** role.
+   a. **Register an Entra app:** Azure Portal → *Microsoft Entra ID* → **App registrations** → **New registration**. Redirect URI (Web): `https://<your-swa-host>/.auth/login/aad/callback`. Note the **Application (client) ID** and **Directory (tenant) ID**.
+   b. **Client secret:** in that app registration → *Certificates & secrets* → **New client secret** → copy the value.
+   c. **Add app settings** to the Static Web App (Environment variables): `AAD_CLIENT_ID` = client ID, `AAD_CLIENT_SECRET` = secret value.
+   d. **Set your tenant** in `staticwebapp.config.json`: replace `<TENANT_ID>` in the `openIdIssuer` URL with your Directory (tenant) ID, then commit.
+   The app's **Sign in** link already points to `/.auth/login/aad`.
+
+5. **Grant editing rights (roles).** `authenticated` lets anyone who signs in *read*; the `editor` role is required to *save*.
+   - Azure Portal → your Static Web App → **Role management** → **Invite** → enter the user, assign role **`editor`** → send the invite link and have them accept.
+   - To also restrict *reading* to specific people, change the GET route's `allowedRoles` from `authenticated` to `editor` (or a `viewer` role you invite).
 
 ## How data flows once deployed
 
-- First load: the API has no blob yet → the app shows the bundled `trip-tracker.json`.
-- You **Sign in** (⚙ → Settings → Cloud) and make any change → it `POST`s the full dataset, creating/updating the blob.
-- Everyone else sees the cloud data read-only; only signed-in users can save.
+- First load (signed out): the API returns 401, so the app shows the bundled demo `trip-tracker.json` and prompts **Sign in**.
+- **Sign in** (⚙ → Settings → Cloud) with an Entra account. Reading your saved trips requires being signed in; an **`editor`** makes any change → it `POST`s the full dataset, creating/updating the blob.
+- Non-editors (or signed-out visitors) cannot read or write your private data — they only ever see the bundled demo.
 
 ## Local development
 
