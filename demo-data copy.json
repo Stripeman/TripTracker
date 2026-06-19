@@ -1,0 +1,4818 @@
+{
+  "app": "vacation-location",
+  "version": 1,
+  "exportedAt": "2026-06-19T13:48:07.884Z",
+  "settings": {
+    "detailsFormDefault": true,
+    "detailsCard": true,
+    "statusCard": true
+  },
+  "locations": [
+    {
+      "id": 1,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2022-05-10",
+      "dateEnd": "2022-05-17",
+      "status": "visited",
+      "notes": "First trip — Eiffel Tower at night",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 2,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2023-04-02",
+      "dateEnd": "2023-04-09",
+      "status": "visited",
+      "notes": "Louvre + Musée d’Orsay marathon",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 3,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2023-12-20",
+      "dateEnd": "2023-12-27",
+      "status": "visited",
+      "notes": "Christmas markets along the Seine",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 4,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2024-06-14",
+      "dateEnd": "2024-06-21",
+      "status": "visited",
+      "notes": "Summer evenings in Le Marais",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 5,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2024-09-05",
+      "dateEnd": "2024-09-12",
+      "status": "visited",
+      "notes": "Fashion week buzz",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 6,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2025-02-10",
+      "dateEnd": "2025-02-16",
+      "status": "visited",
+      "notes": "Cozy cafés in Saint-Germain",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 7,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2025-07-08",
+      "dateEnd": "2025-07-15",
+      "status": "visited",
+      "notes": "Bastille Day fireworks",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 8,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2025-11-15",
+      "dateEnd": "2025-11-20",
+      "status": "visited",
+      "notes": "Montmartre & Sacré-Cœur",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 9,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2026-03-18",
+      "dateEnd": "2026-03-25",
+      "status": "visited",
+      "notes": "Spring on the Canal Saint-Martin",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 10,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2026-09-10",
+      "dateEnd": "2026-09-18",
+      "status": "planned",
+      "notes": "Autumn return — Versailles day trip",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 11,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2027-04-05",
+      "dateEnd": "2027-04-12",
+      "status": "planned",
+      "notes": "Cherry blossoms at Parc de Sceaux",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 12,
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2028-12-24",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Live in a Haussmann flat for a month",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 13,
+      "city": "Aix-en-Provence",
+      "state": "",
+      "country": "France",
+      "lon": "5.4474",
+      "lat": "43.5297",
+      "date": "2024-06-23",
+      "dateEnd": "2024-06-28",
+      "status": "visited",
+      "notes": "Lavender season in Provence",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 14,
+      "city": "Cassis",
+      "state": "",
+      "country": "France",
+      "lon": "5.5396",
+      "lat": "43.2148",
+      "date": "2024-06-28",
+      "dateEnd": "2024-07-02",
+      "status": "visited",
+      "notes": "Calanques boat tour from the port",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 15,
+      "city": "Nice",
+      "state": "",
+      "country": "France",
+      "lon": "7.262",
+      "lat": "43.7102",
+      "date": "2023-08-12",
+      "dateEnd": "2023-08-19",
+      "status": "visited",
+      "notes": "Promenade des Anglais",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 16,
+      "city": "Marseille",
+      "state": "",
+      "country": "France",
+      "lon": "5.3698",
+      "lat": "43.2965",
+      "date": "2024-06-21",
+      "dateEnd": "2024-06-23",
+      "status": "visited",
+      "notes": "Vieux-Port & bouillabaisse",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 17,
+      "city": "Lyon",
+      "state": "",
+      "country": "France",
+      "lon": "4.8357",
+      "lat": "45.764",
+      "date": "2025-10-03",
+      "dateEnd": "2025-10-07",
+      "status": "visited",
+      "notes": "Food capital — the bouchons",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 18,
+      "city": "Bordeaux",
+      "state": "",
+      "country": "France",
+      "lon": "-0.5792",
+      "lat": "44.8378",
+      "date": "2025-09-15",
+      "dateEnd": "2025-09-20",
+      "status": "visited",
+      "notes": "Wine country tasting",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 19,
+      "city": "Avignon",
+      "state": "",
+      "country": "France",
+      "lon": "4.8055",
+      "lat": "43.9493",
+      "date": "2024-06-25",
+      "dateEnd": "2024-06-26",
+      "status": "visited",
+      "notes": "Palais des Papes",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 20,
+      "city": "Arles",
+      "state": "",
+      "country": "France",
+      "lon": "4.6277",
+      "lat": "43.6766",
+      "date": "2028-08-26",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Chasing Van Gogh’s light",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 21,
+      "city": "Cannes",
+      "state": "",
+      "country": "France",
+      "lon": "7.0174",
+      "lat": "43.5528",
+      "date": "2027-05-12",
+      "dateEnd": "2027-05-20",
+      "status": "planned",
+      "notes": "Film festival splurge",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 22,
+      "city": "Strasbourg",
+      "state": "",
+      "country": "France",
+      "lon": "7.7521",
+      "lat": "48.5734",
+      "date": "2028-10-13",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Alsatian Christmas market",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 23,
+      "city": "Annecy",
+      "state": "",
+      "country": "France",
+      "lon": "6.1294",
+      "lat": "45.8992",
+      "date": "2026-08-01",
+      "dateEnd": "2026-08-05",
+      "status": "planned",
+      "notes": "Venice of the Alps",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 24,
+      "city": "Mont Saint-Michel",
+      "state": "",
+      "country": "France",
+      "lon": "-1.5115",
+      "lat": "48.6361",
+      "date": "2026-09-19",
+      "dateEnd": "2026-09-21",
+      "status": "planned",
+      "notes": "Day trip from Paris",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 25,
+      "city": "New York",
+      "state": "NY",
+      "country": "USA",
+      "lon": "-74.006",
+      "lat": "40.7128",
+      "date": "2022-11-20",
+      "dateEnd": "2022-11-25",
+      "status": "visited",
+      "notes": "Thanksgiving in the city",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 26,
+      "city": "Los Angeles",
+      "state": "CA",
+      "country": "USA",
+      "lon": "-118.2437",
+      "lat": "34.0522",
+      "date": "2023-03-05",
+      "dateEnd": "2023-03-11",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 27,
+      "city": "San Francisco",
+      "state": "CA",
+      "country": "USA",
+      "lon": "-122.4194",
+      "lat": "37.7749",
+      "date": "2023-06-15",
+      "dateEnd": "2023-06-20",
+      "status": "visited",
+      "notes": "Golden Gate fog",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 28,
+      "city": "Chicago",
+      "state": "IL",
+      "country": "USA",
+      "lon": "-87.6298",
+      "lat": "41.8781",
+      "date": "2024-07-04",
+      "dateEnd": "2024-07-08",
+      "status": "visited",
+      "notes": "Deep dish + lakefront",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 29,
+      "city": "Seattle",
+      "state": "WA",
+      "country": "USA",
+      "lon": "-122.3321",
+      "lat": "47.6062",
+      "date": "2024-09-20",
+      "dateEnd": "2024-09-24",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 30,
+      "city": "Boston",
+      "state": "MA",
+      "country": "USA",
+      "lon": "-71.0589",
+      "lat": "42.3601",
+      "date": "2025-10-10",
+      "dateEnd": "2025-10-14",
+      "status": "visited",
+      "notes": "Fall foliage Freedom Trail",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 31,
+      "city": "Miami",
+      "state": "FL",
+      "country": "USA",
+      "lon": "-80.1918",
+      "lat": "25.7617",
+      "date": "2025-01-15",
+      "dateEnd": "2025-01-20",
+      "status": "visited",
+      "notes": "South Beach winter escape",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 32,
+      "city": "New Orleans",
+      "state": "LA",
+      "country": "USA",
+      "lon": "-90.0715",
+      "lat": "29.9511",
+      "date": "2025-03-01",
+      "dateEnd": "2025-03-05",
+      "status": "visited",
+      "notes": "Jazz on Frenchmen St",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 33,
+      "city": "Austin",
+      "state": "TX",
+      "country": "USA",
+      "lon": "-97.7431",
+      "lat": "30.2672",
+      "date": "2025-03-10",
+      "dateEnd": "2025-03-15",
+      "status": "visited",
+      "notes": "SXSW",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 34,
+      "city": "Denver",
+      "state": "CO",
+      "country": "USA",
+      "lon": "-104.9903",
+      "lat": "39.7392",
+      "date": "2024-12-18",
+      "dateEnd": "2024-12-22",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 35,
+      "city": "Las Vegas",
+      "state": "NV",
+      "country": "USA",
+      "lon": "-115.1398",
+      "lat": "36.1699",
+      "date": "2023-09-08",
+      "dateEnd": "2023-09-11",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 36,
+      "city": "Nashville",
+      "state": "TN",
+      "country": "USA",
+      "lon": "-86.7816",
+      "lat": "36.1627",
+      "date": "2025-05-02",
+      "dateEnd": "2025-05-05",
+      "status": "visited",
+      "notes": "Honky-tonk row",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 37,
+      "city": "Portland",
+      "state": "OR",
+      "country": "USA",
+      "lon": "-122.6765",
+      "lat": "45.5231",
+      "date": "2027-01-10",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Food carts + Powell’s",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 38,
+      "city": "San Diego",
+      "state": "CA",
+      "country": "USA",
+      "lon": "-117.1611",
+      "lat": "32.7157",
+      "date": "2026-02-14",
+      "dateEnd": "2026-02-18",
+      "status": "visited",
+      "notes": "Balboa Park",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 39,
+      "city": "Washington",
+      "state": "DC",
+      "country": "USA",
+      "lon": "-77.0369",
+      "lat": "38.9072",
+      "date": "2024-04-01",
+      "dateEnd": "2024-04-05",
+      "status": "visited",
+      "notes": "Cherry blossoms",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 40,
+      "city": "Savannah",
+      "state": "GA",
+      "country": "USA",
+      "lon": "-81.0998",
+      "lat": "32.0809",
+      "date": "2028-04-04",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Spanish moss & squares",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 41,
+      "city": "Charleston",
+      "state": "SC",
+      "country": "USA",
+      "lon": "-79.9311",
+      "lat": "32.7765",
+      "date": "2025-04-18",
+      "dateEnd": "2025-04-22",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 42,
+      "city": "Sedona",
+      "state": "AZ",
+      "country": "USA",
+      "lon": "-111.761",
+      "lat": "34.8697",
+      "date": "2026-05-01",
+      "dateEnd": "2026-05-04",
+      "status": "visited",
+      "notes": "Red rock hikes",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 43,
+      "city": "Aspen",
+      "state": "CO",
+      "country": "USA",
+      "lon": "-106.8175",
+      "lat": "39.1911",
+      "date": "2027-01-15",
+      "dateEnd": "2027-01-22",
+      "status": "planned",
+      "notes": "Ski week",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 44,
+      "city": "Honolulu",
+      "state": "HI",
+      "country": "USA",
+      "lon": "-157.8583",
+      "lat": "21.3069",
+      "date": "2023-12-01",
+      "dateEnd": "2023-12-09",
+      "status": "visited",
+      "notes": "Waikiki",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 45,
+      "city": "Yellowstone",
+      "state": "WY",
+      "country": "USA",
+      "lon": "-110.5885",
+      "lat": "44.428",
+      "date": "2026-07-10",
+      "dateEnd": "2026-07-16",
+      "status": "planned",
+      "notes": "Geysers & wildlife",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 46,
+      "city": "Grand Canyon",
+      "state": "AZ",
+      "country": "USA",
+      "lon": "-112.1129",
+      "lat": "36.0544",
+      "date": "2028-10-19",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "South Rim sunrise",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 47,
+      "city": "Maui",
+      "state": "HI",
+      "country": "USA",
+      "lon": "-156.3319",
+      "lat": "20.7984",
+      "date": "2027-02-01",
+      "dateEnd": "2027-02-10",
+      "status": "planned",
+      "notes": "Road to Hana",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 48,
+      "city": "Key West",
+      "state": "FL",
+      "country": "USA",
+      "lon": "-81.78",
+      "lat": "24.5551",
+      "date": "2025-01-21",
+      "dateEnd": "2025-01-24",
+      "status": "visited",
+      "notes": "Southernmost point",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 49,
+      "city": "Santa Fe",
+      "state": "NM",
+      "country": "USA",
+      "lon": "-105.9378",
+      "lat": "35.687",
+      "date": "2027-01-13",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Adobe + green chile",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 50,
+      "city": "Dubrovnik",
+      "state": "",
+      "country": "Croatia",
+      "lon": "18.0944",
+      "lat": "42.6507",
+      "date": "2023-07-10",
+      "dateEnd": "2023-07-15",
+      "status": "visited",
+      "notes": "City walls at golden hour",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 51,
+      "city": "Split",
+      "state": "",
+      "country": "Croatia",
+      "lon": "16.4402",
+      "lat": "43.5081",
+      "date": "2023-07-15",
+      "dateEnd": "2023-07-18",
+      "status": "visited",
+      "notes": "Diocletian’s Palace",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 52,
+      "city": "Zagreb",
+      "state": "",
+      "country": "Croatia",
+      "lon": "15.9819",
+      "lat": "45.815",
+      "date": "2025-12-05",
+      "dateEnd": "2025-12-09",
+      "status": "visited",
+      "notes": "Advent in Zagreb",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 53,
+      "city": "Hvar",
+      "state": "",
+      "country": "Croatia",
+      "lon": "16.4419",
+      "lat": "43.1729",
+      "date": "2023-07-18",
+      "dateEnd": "2023-07-22",
+      "status": "visited",
+      "notes": "Island nightlife",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 54,
+      "city": "Rovinj",
+      "state": "",
+      "country": "Croatia",
+      "lon": "13.6387",
+      "lat": "45.0811",
+      "date": "2024-08-10",
+      "dateEnd": "2024-08-14",
+      "status": "visited",
+      "notes": "Istrian sunset",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 55,
+      "city": "Zadar",
+      "state": "",
+      "country": "Croatia",
+      "lon": "15.2314",
+      "lat": "44.1194",
+      "date": "2024-08-14",
+      "dateEnd": "2024-08-16",
+      "status": "visited",
+      "notes": "The sea organ",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 56,
+      "city": "Plitvice Lakes",
+      "state": "",
+      "country": "Croatia",
+      "lon": "15.602",
+      "lat": "44.8654",
+      "date": "2024-08-16",
+      "dateEnd": "2024-08-17",
+      "status": "visited",
+      "notes": "Waterfall boardwalks",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 57,
+      "city": "Pula",
+      "state": "",
+      "country": "Croatia",
+      "lon": "13.8496",
+      "lat": "44.8666",
+      "date": "2027-09-15",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Roman amphitheatre",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 58,
+      "city": "Korčula",
+      "state": "",
+      "country": "Croatia",
+      "lon": "17.1356",
+      "lat": "42.9601",
+      "date": "2028-10-22",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Marco Polo’s island",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 59,
+      "city": "Šibenik",
+      "state": "",
+      "country": "Croatia",
+      "lon": "15.8956",
+      "lat": "43.735",
+      "date": "2026-09-01",
+      "dateEnd": "2026-09-04",
+      "status": "planned",
+      "notes": "St James Cathedral",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 60,
+      "city": "Trogir",
+      "state": "",
+      "country": "Croatia",
+      "lon": "16.2517",
+      "lat": "43.5125",
+      "date": "2026-09-04",
+      "dateEnd": "2026-09-06",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 61,
+      "city": "Makarska",
+      "state": "",
+      "country": "Croatia",
+      "lon": "17.0184",
+      "lat": "43.2969",
+      "date": "2027-06-10",
+      "dateEnd": "2027-06-17",
+      "status": "planned",
+      "notes": "Riviera beaches",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 62,
+      "city": "Dublin",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-6.2603",
+      "lat": "53.3498",
+      "date": "2022-09-15",
+      "dateEnd": "2022-09-20",
+      "status": "visited",
+      "notes": "Trinity College + Guinness",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 63,
+      "city": "Galway",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-9.0568",
+      "lat": "53.2707",
+      "date": "2022-09-20",
+      "dateEnd": "2022-09-23",
+      "status": "visited",
+      "notes": "Trad music in the pubs",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 64,
+      "city": "Cork",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-8.4756",
+      "lat": "51.8985",
+      "date": "2024-10-05",
+      "dateEnd": "2024-10-08",
+      "status": "visited",
+      "notes": "The English Market",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 65,
+      "city": "Killarney",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-9.5044",
+      "lat": "52.0599",
+      "date": "2024-10-08",
+      "dateEnd": "2024-10-11",
+      "status": "visited",
+      "notes": "Jaunting car in the park",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 66,
+      "city": "Dingle",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-10.2667",
+      "lat": "52.1409",
+      "date": "2024-10-11",
+      "dateEnd": "2024-10-13",
+      "status": "visited",
+      "notes": "Slea Head Drive",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 67,
+      "city": "Kilkenny",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-7.2528",
+      "lat": "52.6541",
+      "date": "2025-08-02",
+      "dateEnd": "2025-08-04",
+      "status": "visited",
+      "notes": "The Medieval Mile",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 68,
+      "city": "Cliffs of Moher",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-9.4269",
+      "lat": "52.9715",
+      "date": "2024-10-13",
+      "dateEnd": "2024-10-14",
+      "status": "visited",
+      "notes": "Dramatic Atlantic cliffs",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 69,
+      "city": "Ring of Kerry",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-9.7",
+      "lat": "51.95",
+      "date": "2027-09-18",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "The full loop drive",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 70,
+      "city": "Doolin",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-9.3833",
+      "lat": "53.0167",
+      "date": "2028-10-25",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Cliff walk + live music",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 71,
+      "city": "Kinsale",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-8.5222",
+      "lat": "51.7059",
+      "date": "2026-05-20",
+      "dateEnd": "2026-05-23",
+      "status": "visited",
+      "notes": "Foodie harbour town",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 72,
+      "city": "Westport",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-9.515",
+      "lat": "53.8008",
+      "date": "2026-08-15",
+      "dateEnd": "2026-08-18",
+      "status": "planned",
+      "notes": "Climb Croagh Patrick",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 73,
+      "city": "Howth",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-6.0667",
+      "lat": "53.387",
+      "date": "2026-06-25",
+      "dateEnd": "2026-06-26",
+      "status": "planned",
+      "notes": "Cliff loop day trip",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 74,
+      "city": "Galway",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-9.0568",
+      "lat": "53.2707",
+      "date": "2027-07-20",
+      "dateEnd": "2027-07-26",
+      "status": "planned",
+      "notes": "Back for the Arts Festival",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 75,
+      "city": "Yosemite",
+      "state": "CA",
+      "country": "USA",
+      "lon": "-119.5383",
+      "lat": "37.8651",
+      "date": "2023-05-22",
+      "dateEnd": "2023-05-27",
+      "status": "visited",
+      "notes": "Half Dome & the valley floor",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 76,
+      "city": "Grand Teton",
+      "state": "WY",
+      "country": "USA",
+      "lon": "-110.6818",
+      "lat": "43.7904",
+      "date": "2024-08-05",
+      "dateEnd": "2024-08-09",
+      "status": "visited",
+      "notes": "Jenny Lake sunrise",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 77,
+      "city": "Zion",
+      "state": "UT",
+      "country": "USA",
+      "lon": "-113.0263",
+      "lat": "37.2982",
+      "date": "2023-10-12",
+      "dateEnd": "2023-10-15",
+      "status": "visited",
+      "notes": "Angels Landing",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 78,
+      "city": "Bryce Canyon",
+      "state": "UT",
+      "country": "USA",
+      "lon": "-112.1871",
+      "lat": "37.593",
+      "date": "2023-10-15",
+      "dateEnd": "2023-10-17",
+      "status": "visited",
+      "notes": "Hoodoos at dawn",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 79,
+      "city": "Arches",
+      "state": "UT",
+      "country": "USA",
+      "lon": "-109.5925",
+      "lat": "38.7331",
+      "date": "2027-07-07",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Delicate Arch at sunset",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 80,
+      "city": "Rocky Mountain",
+      "state": "CO",
+      "country": "USA",
+      "lon": "-105.6836",
+      "lat": "40.3428",
+      "date": "2024-12-18",
+      "dateEnd": "2024-12-20",
+      "status": "visited",
+      "notes": "Trail Ridge Road",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 81,
+      "city": "Glacier",
+      "state": "MT",
+      "country": "USA",
+      "lon": "-113.787",
+      "lat": "48.7596",
+      "date": "2026-07-20",
+      "dateEnd": "2026-07-25",
+      "status": "planned",
+      "notes": "Going-to-the-Sun Road",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 82,
+      "city": "Acadia",
+      "state": "ME",
+      "country": "USA",
+      "lon": "-68.2733",
+      "lat": "44.3386",
+      "date": "2025-10-14",
+      "dateEnd": "2025-10-17",
+      "status": "visited",
+      "notes": "Cadillac Mountain",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 83,
+      "city": "Great Smoky Mountains",
+      "state": "TN",
+      "country": "USA",
+      "lon": "-83.507",
+      "lat": "35.6118",
+      "date": "2025-10-18",
+      "dateEnd": "2025-10-20",
+      "status": "visited",
+      "notes": "Misty ridgelines",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 84,
+      "city": "Olympic",
+      "state": "WA",
+      "country": "USA",
+      "lon": "-123.6044",
+      "lat": "47.8021",
+      "date": "2024-09-25",
+      "dateEnd": "2024-09-28",
+      "status": "visited",
+      "notes": "Hoh Rain Forest",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 85,
+      "city": "Mount Rainier",
+      "state": "WA",
+      "country": "USA",
+      "lon": "-121.7269",
+      "lat": "46.8523",
+      "date": "2027-01-22",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Wildflower meadows at Paradise",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 86,
+      "city": "Sequoia",
+      "state": "CA",
+      "country": "USA",
+      "lon": "-118.5658",
+      "lat": "36.4864",
+      "date": "2023-05-27",
+      "dateEnd": "2023-05-29",
+      "status": "visited",
+      "notes": "General Sherman tree",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 87,
+      "city": "Joshua Tree",
+      "state": "CA",
+      "country": "USA",
+      "lon": "-115.901",
+      "lat": "33.8734",
+      "date": "2026-03-05",
+      "dateEnd": "2026-03-08",
+      "status": "visited",
+      "notes": "Desert stargazing",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 88,
+      "city": "Death Valley",
+      "state": "CA",
+      "country": "USA",
+      "lon": "-116.9325",
+      "lat": "36.5054",
+      "date": "2028-04-16",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Badwater Basin",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 89,
+      "city": "Everglades",
+      "state": "FL",
+      "country": "USA",
+      "lon": "-80.9",
+      "lat": "25.2866",
+      "date": "2025-01-18",
+      "dateEnd": "2025-01-20",
+      "status": "visited",
+      "notes": "Airboat through the sawgrass",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 90,
+      "city": "Big Bend",
+      "state": "TX",
+      "country": "USA",
+      "lon": "-103.25",
+      "lat": "29.1275",
+      "date": "2028-06-03",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Rio Grande canyons",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 91,
+      "city": "Shenandoah",
+      "state": "VA",
+      "country": "USA",
+      "lon": "-78.4661",
+      "lat": "38.5331",
+      "date": "2024-04-06",
+      "dateEnd": "2024-04-08",
+      "status": "visited",
+      "notes": "Skyline Drive in spring",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 92,
+      "city": "Denali",
+      "state": "AK",
+      "country": "USA",
+      "lon": "-151.1926",
+      "lat": "63.1148",
+      "date": "2027-06-20",
+      "dateEnd": "2027-06-28",
+      "status": "planned",
+      "notes": "The high one",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 93,
+      "city": "Crater Lake",
+      "state": "OR",
+      "country": "USA",
+      "lon": "-122.1685",
+      "lat": "42.8684",
+      "date": "2027-09-24",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Bluest water imaginable",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 94,
+      "city": "Carlsbad Caverns",
+      "state": "NM",
+      "country": "USA",
+      "lon": "-104.5571",
+      "lat": "32.1479",
+      "date": "2028-10-04",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Bat flight at dusk",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 95,
+      "city": "Mesa Verde",
+      "state": "CO",
+      "country": "USA",
+      "lon": "-108.4618",
+      "lat": "37.2309",
+      "date": "2024-12-21",
+      "dateEnd": "2024-12-22",
+      "status": "visited",
+      "notes": "Cliff dwellings",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 96,
+      "city": "Badlands",
+      "state": "SD",
+      "country": "USA",
+      "lon": "-102.5",
+      "lat": "43.8554",
+      "date": "2028-12-18",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Layered rock at golden hour",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 97,
+      "city": "Haleakalā",
+      "state": "HI",
+      "country": "USA",
+      "lon": "-156.1718",
+      "lat": "20.7204",
+      "date": "2023-12-05",
+      "dateEnd": "2023-12-06",
+      "status": "visited",
+      "notes": "Sunrise above the clouds",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 98,
+      "city": "Saguaro",
+      "state": "AZ",
+      "country": "USA",
+      "lon": "-110.73",
+      "lat": "32.2967",
+      "date": "2028-02-05",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Giant cacti at sunset",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 99,
+      "city": "Swiss National Park",
+      "state": "",
+      "country": "Switzerland",
+      "lon": "10.1844",
+      "lat": "46.6667",
+      "date": "2027-03-12",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Untouched alpine wilderness",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100,
+      "city": "Cinque Terre",
+      "state": "",
+      "country": "Italy",
+      "lon": "9.7085",
+      "lat": "44.1069",
+      "date": "2024-09-13",
+      "dateEnd": "2024-09-17",
+      "status": "visited",
+      "notes": "Cliffside village trail",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 101,
+      "city": "Gran Paradiso",
+      "state": "",
+      "country": "Italy",
+      "lon": "7.2675",
+      "lat": "45.52",
+      "date": "2027-05-26",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Ibex and glaciers",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 102,
+      "city": "Triglav",
+      "state": "",
+      "country": "Slovenia",
+      "lon": "13.836",
+      "lat": "46.3833",
+      "date": "2026-08-22",
+      "dateEnd": "2026-08-27",
+      "status": "planned",
+      "notes": "Lake Bohinj & the Julian Alps",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 103,
+      "city": "Krka",
+      "state": "",
+      "country": "Croatia",
+      "lon": "15.9667",
+      "lat": "43.8",
+      "date": "2023-07-22",
+      "dateEnd": "2023-07-24",
+      "status": "visited",
+      "notes": "Swim below the waterfalls",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 104,
+      "city": "Picos de Europa",
+      "state": "",
+      "country": "Spain",
+      "lon": "-4.9",
+      "lat": "43.1833",
+      "date": "2028-08-20",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Limestone peaks of the north",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 105,
+      "city": "Teide",
+      "state": "",
+      "country": "Spain",
+      "lon": "-16.6044",
+      "lat": "28.2724",
+      "date": "2025-02-08",
+      "dateEnd": "2025-02-11",
+      "status": "visited",
+      "notes": "Volcano above the clouds",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 106,
+      "city": "Ordesa y Monte Perdido",
+      "state": "",
+      "country": "Spain",
+      "lon": "-0.05",
+      "lat": "42.65",
+      "date": "2028-10-07",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Pyrenean canyons",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 107,
+      "city": "Sierra Nevada",
+      "state": "",
+      "country": "Spain",
+      "lon": "-3.3117",
+      "lat": "37.0539",
+      "date": "2027-11-14",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Snow above Granada",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 108,
+      "city": "Vatnajökull",
+      "state": "",
+      "country": "Iceland",
+      "lon": "-16.9",
+      "lat": "64.4167",
+      "date": "2025-03-02",
+      "dateEnd": "2025-03-06",
+      "status": "visited",
+      "notes": "Ice caves under the glacier",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 109,
+      "city": "Þingvellir",
+      "state": "",
+      "country": "Iceland",
+      "lon": "-21.1278",
+      "lat": "64.2558",
+      "date": "2025-03-06",
+      "dateEnd": "2025-03-07",
+      "status": "visited",
+      "notes": "Rift between continents",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 110,
+      "city": "Snowdonia",
+      "state": "",
+      "country": "United Kingdom",
+      "lon": "-3.9",
+      "lat": "53.0685",
+      "date": "2025-08-05",
+      "dateEnd": "2025-08-08",
+      "status": "visited",
+      "notes": "Summit of Yr Wyddfa",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 111,
+      "city": "Lake District",
+      "state": "",
+      "country": "United Kingdom",
+      "lon": "-3.1",
+      "lat": "54.4609",
+      "date": "2027-03-15",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Wordsworth country",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 112,
+      "city": "Cairngorms",
+      "state": "",
+      "country": "United Kingdom",
+      "lon": "-3.6",
+      "lat": "57.0833",
+      "date": "2028-04-22",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Highland plateau",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 113,
+      "city": "Connemara",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-9.9667",
+      "lat": "53.55",
+      "date": "2026-05-23",
+      "dateEnd": "2026-05-25",
+      "status": "visited",
+      "notes": "Bogland and the Twelve Bens",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 114,
+      "city": "Wicklow Mountains",
+      "state": "",
+      "country": "Ireland",
+      "lon": "-6.3667",
+      "lat": "53.0833",
+      "date": "2022-09-23",
+      "dateEnd": "2022-09-24",
+      "status": "visited",
+      "notes": "Glendalough valley",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 115,
+      "city": "Hohe Tauern",
+      "state": "",
+      "country": "Austria",
+      "lon": "12.6986",
+      "lat": "47.1167",
+      "date": "2027-07-16",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Grossglockner high road",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 116,
+      "city": "Berchtesgaden",
+      "state": "",
+      "country": "Germany",
+      "lon": "12.9333",
+      "lat": "47.55",
+      "date": "2027-09-10",
+      "dateEnd": "2027-09-14",
+      "status": "planned",
+      "notes": "Königssee emerald water",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 117,
+      "city": "Saxon Switzerland",
+      "state": "",
+      "country": "Germany",
+      "lon": "14.25",
+      "lat": "50.9167",
+      "date": "2027-09-03",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Sandstone bridges",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 118,
+      "city": "Mercantour",
+      "state": "",
+      "country": "France",
+      "lon": "7.05",
+      "lat": "44.1",
+      "date": "2028-10-10",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Valley of Marvels",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 119,
+      "city": "Calanques",
+      "state": "",
+      "country": "France",
+      "lon": "5.45",
+      "lat": "43.2167",
+      "date": "2024-07-01",
+      "dateEnd": "2024-07-02",
+      "status": "visited",
+      "notes": "Hiked in from Cassis",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 120,
+      "city": "Écrins",
+      "state": "",
+      "country": "France",
+      "lon": "6.3333",
+      "lat": "44.8833",
+      "date": "2028-12-24",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Glaciated alpine massif",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 121,
+      "city": "Vanoise",
+      "state": "",
+      "country": "France",
+      "lon": "6.8667",
+      "lat": "45.3833",
+      "date": "2026-08-06",
+      "dateEnd": "2026-08-10",
+      "status": "planned",
+      "notes": "First French national park",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 122,
+      "city": "Cévennes",
+      "state": "",
+      "country": "France",
+      "lon": "3.6",
+      "lat": "44.25",
+      "date": "2028-02-11",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "Stevenson’s donkey trail",
+      "visitTypes": [
+        "natlpark"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100001,
+      "city": "Tokyo",
+      "state": "",
+      "country": "Japan",
+      "lon": "139.69",
+      "lat": "35.69",
+      "date": "2015-01-01",
+      "dateEnd": "2015-01-04",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100002,
+      "city": "Kyoto",
+      "state": "",
+      "country": "Japan",
+      "lon": "135.77",
+      "lat": "35.01",
+      "date": "2016-06-08",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100003,
+      "city": "Osaka",
+      "state": "",
+      "country": "Japan",
+      "lon": "135.5",
+      "lat": "34.69",
+      "date": "2017-11-15",
+      "dateEnd": "2017-11-20",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100004,
+      "city": "Hiroshima",
+      "state": "",
+      "country": "Japan",
+      "lon": "132.46",
+      "lat": "34.39",
+      "date": "2018-04-22",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100005,
+      "city": "Sapporo",
+      "state": "",
+      "country": "Japan",
+      "lon": "141.35",
+      "lat": "43.06",
+      "date": "2027-09-02",
+      "dateEnd": "2027-09-09",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100006,
+      "city": "Nara",
+      "state": "",
+      "country": "Japan",
+      "lon": "135.8",
+      "lat": "34.69",
+      "date": "2020-02-09",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100007,
+      "city": "Kanazawa",
+      "state": "",
+      "country": "Japan",
+      "lon": "136.66",
+      "lat": "36.56",
+      "date": "2028-07-16",
+      "dateEnd": "2028-07-25",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100008,
+      "city": "Beijing",
+      "state": "",
+      "country": "China",
+      "lon": "116.41",
+      "lat": "39.9",
+      "date": "2022-12-23",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100009,
+      "city": "Shanghai",
+      "state": "",
+      "country": "China",
+      "lon": "121.47",
+      "lat": "31.23",
+      "date": "2023-05-03",
+      "dateEnd": "2023-05-07",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100010,
+      "city": "Xi'an",
+      "state": "",
+      "country": "China",
+      "lon": "108.94",
+      "lat": "34.34",
+      "date": "2024-10-10",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100011,
+      "city": "Chengdu",
+      "state": "",
+      "country": "China",
+      "lon": "104.07",
+      "lat": "30.57",
+      "date": "2025-03-17",
+      "dateEnd": "2025-03-23",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100012,
+      "city": "Guilin",
+      "state": "",
+      "country": "China",
+      "lon": "110.29",
+      "lat": "25.27",
+      "date": "2015-08-24",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100013,
+      "city": "Hong Kong",
+      "state": "",
+      "country": "China",
+      "lon": "114.17",
+      "lat": "22.32",
+      "date": "2016-01-04",
+      "dateEnd": "2016-01-12",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100014,
+      "city": "Seoul",
+      "state": "",
+      "country": "South Korea",
+      "lon": "126.98",
+      "lat": "37.57",
+      "date": "2027-06-11",
+      "dateEnd": "",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100015,
+      "city": "Busan",
+      "state": "",
+      "country": "South Korea",
+      "lon": "129.08",
+      "lat": "35.18",
+      "date": "2018-11-18",
+      "dateEnd": "2018-11-21",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100016,
+      "city": "Jeju",
+      "state": "",
+      "country": "South Korea",
+      "lon": "126.53",
+      "lat": "33.51",
+      "date": "2019-04-25",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100017,
+      "city": "Taipei",
+      "state": "",
+      "country": "Taiwan",
+      "lon": "121.56",
+      "lat": "25.03",
+      "date": "2020-09-05",
+      "dateEnd": "2020-09-10",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100018,
+      "city": "Taroko",
+      "state": "",
+      "country": "Taiwan",
+      "lon": "121.49",
+      "lat": "24.16",
+      "date": "2021-02-12",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100019,
+      "city": "Bangkok",
+      "state": "",
+      "country": "Thailand",
+      "lon": "100.5",
+      "lat": "13.76",
+      "date": "2022-07-19",
+      "dateEnd": "2022-07-26",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100020,
+      "city": "Chiang Mai",
+      "state": "",
+      "country": "Thailand",
+      "lon": "98.99",
+      "lat": "18.79",
+      "date": "2028-12-26",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100021,
+      "city": "Phuket",
+      "state": "",
+      "country": "Thailand",
+      "lon": "98.34",
+      "lat": "7.88",
+      "date": "2024-05-06",
+      "dateEnd": "2024-05-15",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100022,
+      "city": "Krabi",
+      "state": "",
+      "country": "Thailand",
+      "lon": "98.92",
+      "lat": "8.09",
+      "date": "2025-10-13",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100023,
+      "city": "Hanoi",
+      "state": "",
+      "country": "Vietnam",
+      "lon": "105.83",
+      "lat": "21.03",
+      "date": "2027-03-20",
+      "dateEnd": "2027-03-24",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100024,
+      "city": "Ho Chi Minh City",
+      "state": "",
+      "country": "Vietnam",
+      "lon": "106.66",
+      "lat": "10.82",
+      "date": "2016-08-27",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100025,
+      "city": "Hoi An",
+      "state": "",
+      "country": "Vietnam",
+      "lon": "108.34",
+      "lat": "15.88",
+      "date": "2017-01-07",
+      "dateEnd": "2017-01-13",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100026,
+      "city": "Ha Long Bay",
+      "state": "",
+      "country": "Vietnam",
+      "lon": "107.18",
+      "lat": "20.91",
+      "date": "2018-06-14",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100027,
+      "city": "Siem Reap",
+      "state": "",
+      "country": "Cambodia",
+      "lon": "103.86",
+      "lat": "13.36",
+      "date": "2019-11-21",
+      "dateEnd": "2019-11-29",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100028,
+      "city": "Phnom Penh",
+      "state": "",
+      "country": "Cambodia",
+      "lon": "104.92",
+      "lat": "11.56",
+      "date": "2020-04-01",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100029,
+      "city": "Luang Prabang",
+      "state": "",
+      "country": "Laos",
+      "lon": "102.14",
+      "lat": "19.89",
+      "date": "2021-09-08",
+      "dateEnd": "2021-09-11",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100030,
+      "city": "Singapore",
+      "state": "",
+      "country": "Singapore",
+      "lon": "103.82",
+      "lat": "1.35",
+      "date": "2022-02-15",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100031,
+      "city": "Kuala Lumpur",
+      "state": "",
+      "country": "Malaysia",
+      "lon": "101.69",
+      "lat": "3.14",
+      "date": "2023-07-22",
+      "dateEnd": "2023-07-27",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100032,
+      "city": "Penang",
+      "state": "",
+      "country": "Malaysia",
+      "lon": "100.33",
+      "lat": "5.41",
+      "date": "2027-12-02",
+      "dateEnd": "",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100033,
+      "city": "Langkawi",
+      "state": "",
+      "country": "Malaysia",
+      "lon": "99.8",
+      "lat": "6.35",
+      "date": "2028-05-09",
+      "dateEnd": "2028-05-16",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100034,
+      "city": "Bali",
+      "state": "",
+      "country": "Indonesia",
+      "lon": "115.19",
+      "lat": "-8.41",
+      "date": "2015-10-16",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100035,
+      "city": "Jakarta",
+      "state": "",
+      "country": "Indonesia",
+      "lon": "106.85",
+      "lat": "-6.21",
+      "date": "2016-03-23",
+      "dateEnd": "2016-04-01",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100036,
+      "city": "Yogyakarta",
+      "state": "",
+      "country": "Indonesia",
+      "lon": "110.37",
+      "lat": "-7.8",
+      "date": "2017-08-03",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100037,
+      "city": "Komodo",
+      "state": "",
+      "country": "Indonesia",
+      "lon": "119.49",
+      "lat": "-8.55",
+      "date": "2018-01-10",
+      "dateEnd": "2018-01-14",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100038,
+      "city": "Manila",
+      "state": "",
+      "country": "Philippines",
+      "lon": "120.98",
+      "lat": "14.6",
+      "date": "2019-06-17",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100039,
+      "city": "Cebu",
+      "state": "",
+      "country": "Philippines",
+      "lon": "123.89",
+      "lat": "10.32",
+      "date": "2020-11-24",
+      "dateEnd": "2020-11-30",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100040,
+      "city": "Palawan",
+      "state": "",
+      "country": "Philippines",
+      "lon": "118.74",
+      "lat": "9.84",
+      "date": "2021-04-04",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100041,
+      "city": "Boracay",
+      "state": "",
+      "country": "Philippines",
+      "lon": "121.92",
+      "lat": "11.97",
+      "date": "2027-09-11",
+      "dateEnd": "2027-09-19",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100042,
+      "city": "Delhi",
+      "state": "",
+      "country": "India",
+      "lon": "77.21",
+      "lat": "28.61",
+      "date": "2023-02-18",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100043,
+      "city": "Mumbai",
+      "state": "",
+      "country": "India",
+      "lon": "72.88",
+      "lat": "19.08",
+      "date": "2024-07-25",
+      "dateEnd": "2024-07-28",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100044,
+      "city": "Jaipur",
+      "state": "",
+      "country": "India",
+      "lon": "75.79",
+      "lat": "26.91",
+      "date": "2025-12-05",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100045,
+      "city": "Agra",
+      "state": "",
+      "country": "India",
+      "lon": "78.04",
+      "lat": "27.18",
+      "date": "2015-05-12",
+      "dateEnd": "2015-05-17",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100046,
+      "city": "Varanasi",
+      "state": "",
+      "country": "India",
+      "lon": "82.97",
+      "lat": "25.32",
+      "date": "2028-10-19",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100047,
+      "city": "Goa",
+      "state": "",
+      "country": "India",
+      "lon": "73.83",
+      "lat": "15.3",
+      "date": "2017-03-26",
+      "dateEnd": "2017-04-02",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100048,
+      "city": "Udaipur",
+      "state": "",
+      "country": "India",
+      "lon": "73.71",
+      "lat": "24.58",
+      "date": "2018-08-06",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100049,
+      "city": "Kochi",
+      "state": "",
+      "country": "India",
+      "lon": "76.27",
+      "lat": "9.93",
+      "date": "2019-01-13",
+      "dateEnd": "2019-01-22",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100050,
+      "city": "Kathmandu",
+      "state": "",
+      "country": "Nepal",
+      "lon": "85.32",
+      "lat": "27.7",
+      "date": "2027-06-20",
+      "dateEnd": "",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100051,
+      "city": "Pokhara",
+      "state": "",
+      "country": "Nepal",
+      "lon": "83.99",
+      "lat": "28.21",
+      "date": "2021-11-27",
+      "dateEnd": "2021-12-01",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100052,
+      "city": "Colombo",
+      "state": "",
+      "country": "Sri Lanka",
+      "lon": "79.86",
+      "lat": "6.93",
+      "date": "2022-04-07",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100053,
+      "city": "Kandy",
+      "state": "",
+      "country": "Sri Lanka",
+      "lon": "80.64",
+      "lat": "7.29",
+      "date": "2023-09-14",
+      "dateEnd": "2023-09-20",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100054,
+      "city": "Galle",
+      "state": "",
+      "country": "Sri Lanka",
+      "lon": "80.22",
+      "lat": "6.03",
+      "date": "2024-02-21",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100055,
+      "city": "Malé",
+      "state": "",
+      "country": "Maldives",
+      "lon": "73.51",
+      "lat": "4.18",
+      "date": "2025-07-01",
+      "dateEnd": "2025-07-09",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100056,
+      "city": "Dubai",
+      "state": "",
+      "country": "United Arab Emirates",
+      "lon": "55.27",
+      "lat": "25.2",
+      "date": "2015-12-08",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100057,
+      "city": "Abu Dhabi",
+      "state": "",
+      "country": "United Arab Emirates",
+      "lon": "54.37",
+      "lat": "24.45",
+      "date": "2016-05-15",
+      "dateEnd": "2016-05-18",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100058,
+      "city": "Doha",
+      "state": "",
+      "country": "Qatar",
+      "lon": "51.53",
+      "lat": "25.29",
+      "date": "2017-10-22",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100059,
+      "city": "Muscat",
+      "state": "",
+      "country": "Oman",
+      "lon": "58.41",
+      "lat": "23.59",
+      "date": "2027-03-02",
+      "dateEnd": "2027-03-07",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100060,
+      "city": "Amman",
+      "state": "",
+      "country": "Jordan",
+      "lon": "35.94",
+      "lat": "31.95",
+      "date": "2019-08-09",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100061,
+      "city": "Petra",
+      "state": "",
+      "country": "Jordan",
+      "lon": "35.44",
+      "lat": "30.33",
+      "date": "2020-01-16",
+      "dateEnd": "2020-01-23",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100062,
+      "city": "Wadi Rum",
+      "state": "",
+      "country": "Jordan",
+      "lon": "35.42",
+      "lat": "29.57",
+      "date": "2021-06-23",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100063,
+      "city": "Jerusalem",
+      "state": "",
+      "country": "Israel",
+      "lon": "35.21",
+      "lat": "31.77",
+      "date": "2022-11-03",
+      "dateEnd": "2022-11-12",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100064,
+      "city": "Tel Aviv",
+      "state": "",
+      "country": "Israel",
+      "lon": "34.78",
+      "lat": "32.08",
+      "date": "2023-04-10",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100065,
+      "city": "Istanbul",
+      "state": "",
+      "country": "Turkey",
+      "lon": "28.98",
+      "lat": "41.01",
+      "date": "2024-09-17",
+      "dateEnd": "2024-09-21",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100066,
+      "city": "Cappadocia",
+      "state": "",
+      "country": "Turkey",
+      "lon": "34.83",
+      "lat": "38.64",
+      "date": "2025-02-24",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100067,
+      "city": "Antalya",
+      "state": "",
+      "country": "Turkey",
+      "lon": "30.71",
+      "lat": "36.9",
+      "date": "2015-07-04",
+      "dateEnd": "2015-07-10",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100068,
+      "city": "Izmir",
+      "state": "",
+      "country": "Turkey",
+      "lon": "27.14",
+      "lat": "38.42",
+      "date": "2027-12-11",
+      "dateEnd": "",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100069,
+      "city": "Cairo",
+      "state": "",
+      "country": "Egypt",
+      "lon": "31.24",
+      "lat": "30.04",
+      "date": "2017-05-18",
+      "dateEnd": "2017-05-26",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100070,
+      "city": "Luxor",
+      "state": "",
+      "country": "Egypt",
+      "lon": "32.64",
+      "lat": "25.69",
+      "date": "2018-10-25",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100071,
+      "city": "Aswan",
+      "state": "",
+      "country": "Egypt",
+      "lon": "32.9",
+      "lat": "24.09",
+      "date": "2019-03-05",
+      "dateEnd": "2019-03-08",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100072,
+      "city": "Sharm El Sheikh",
+      "state": "",
+      "country": "Egypt",
+      "lon": "34.33",
+      "lat": "27.91",
+      "date": "2028-08-12",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100073,
+      "city": "Marrakech",
+      "state": "",
+      "country": "Morocco",
+      "lon": "-7.98",
+      "lat": "31.63",
+      "date": "2021-01-19",
+      "dateEnd": "2021-01-24",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100074,
+      "city": "Fes",
+      "state": "",
+      "country": "Morocco",
+      "lon": "-5",
+      "lat": "34.04",
+      "date": "2022-06-26",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100075,
+      "city": "Casablanca",
+      "state": "",
+      "country": "Morocco",
+      "lon": "-7.59",
+      "lat": "33.57",
+      "date": "2023-11-06",
+      "dateEnd": "2023-11-13",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100076,
+      "city": "Chefchaouen",
+      "state": "",
+      "country": "Morocco",
+      "lon": "-5.27",
+      "lat": "35.17",
+      "date": "2024-04-13",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100077,
+      "city": "Tunis",
+      "state": "",
+      "country": "Tunisia",
+      "lon": "10.18",
+      "lat": "36.81",
+      "date": "2027-09-20",
+      "dateEnd": "2027-09-29",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100078,
+      "city": "Nairobi",
+      "state": "",
+      "country": "Kenya",
+      "lon": "36.82",
+      "lat": "-1.29",
+      "date": "2015-02-27",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100079,
+      "city": "Maasai Mara",
+      "state": "",
+      "country": "Kenya",
+      "lon": "35.14",
+      "lat": "-1.5",
+      "date": "2016-07-07",
+      "dateEnd": "2016-07-11",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100080,
+      "city": "Zanzibar",
+      "state": "",
+      "country": "Tanzania",
+      "lon": "39.2",
+      "lat": "-6.16",
+      "date": "2017-12-14",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100081,
+      "city": "Serengeti",
+      "state": "",
+      "country": "Tanzania",
+      "lon": "34.83",
+      "lat": "-2.33",
+      "date": "2018-05-21",
+      "dateEnd": "2018-05-27",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100082,
+      "city": "Arusha",
+      "state": "",
+      "country": "Tanzania",
+      "lon": "36.68",
+      "lat": "-3.37",
+      "date": "2019-10-01",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100083,
+      "city": "Cape Town",
+      "state": "",
+      "country": "South Africa",
+      "lon": "18.42",
+      "lat": "-33.92",
+      "date": "2020-03-08",
+      "dateEnd": "2020-03-16",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100084,
+      "city": "Johannesburg",
+      "state": "",
+      "country": "South Africa",
+      "lon": "28.05",
+      "lat": "-26.2",
+      "date": "2021-08-15",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100085,
+      "city": "Kruger",
+      "state": "",
+      "country": "South Africa",
+      "lon": "31.59",
+      "lat": "-24.01",
+      "date": "2028-01-22",
+      "dateEnd": "2028-01-25",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100086,
+      "city": "Windhoek",
+      "state": "",
+      "country": "Namibia",
+      "lon": "17.08",
+      "lat": "-22.56",
+      "date": "2027-06-02",
+      "dateEnd": "",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100087,
+      "city": "Sossusvlei",
+      "state": "",
+      "country": "Namibia",
+      "lon": "15.29",
+      "lat": "-24.73",
+      "date": "2024-11-09",
+      "dateEnd": "2024-11-14",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100088,
+      "city": "Okavango Delta",
+      "state": "",
+      "country": "Botswana",
+      "lon": "22.9",
+      "lat": "-19.28",
+      "date": "2025-04-16",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100089,
+      "city": "Addis Ababa",
+      "state": "",
+      "country": "Ethiopia",
+      "lon": "38.74",
+      "lat": "9.03",
+      "date": "2015-09-23",
+      "dateEnd": "2015-09-30",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100090,
+      "city": "Athens",
+      "state": "",
+      "country": "Greece",
+      "lon": "23.73",
+      "lat": "37.98",
+      "date": "2016-02-03",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100091,
+      "city": "Santorini",
+      "state": "",
+      "country": "Greece",
+      "lon": "25.43",
+      "lat": "36.39",
+      "date": "2017-07-10",
+      "dateEnd": "2017-07-19",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100092,
+      "city": "Mykonos",
+      "state": "",
+      "country": "Greece",
+      "lon": "25.33",
+      "lat": "37.45",
+      "date": "2018-12-17",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100093,
+      "city": "Crete",
+      "state": "",
+      "country": "Greece",
+      "lon": "25.14",
+      "lat": "35.34",
+      "date": "2019-05-24",
+      "dateEnd": "2019-05-28",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100094,
+      "city": "Rhodes",
+      "state": "",
+      "country": "Greece",
+      "lon": "28.22",
+      "lat": "36.43",
+      "date": "2020-10-04",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100095,
+      "city": "Lisbon",
+      "state": "",
+      "country": "Portugal",
+      "lon": "-9.14",
+      "lat": "38.72",
+      "date": "2027-03-11",
+      "dateEnd": "2027-03-17",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100096,
+      "city": "Porto",
+      "state": "",
+      "country": "Portugal",
+      "lon": "-8.61",
+      "lat": "41.15",
+      "date": "2022-08-18",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100097,
+      "city": "Sintra",
+      "state": "",
+      "country": "Portugal",
+      "lon": "-9.39",
+      "lat": "38.8",
+      "date": "2023-01-25",
+      "dateEnd": "2023-02-02",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100098,
+      "city": "Faro",
+      "state": "",
+      "country": "Portugal",
+      "lon": "-7.93",
+      "lat": "37.02",
+      "date": "2028-06-05",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100099,
+      "city": "Madeira",
+      "state": "",
+      "country": "Portugal",
+      "lon": "-16.92",
+      "lat": "32.76",
+      "date": "2025-11-12",
+      "dateEnd": "2025-11-15",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100100,
+      "city": "Amsterdam",
+      "state": "",
+      "country": "Netherlands",
+      "lon": "4.9",
+      "lat": "52.37",
+      "date": "2015-04-19",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100101,
+      "city": "Rotterdam",
+      "state": "",
+      "country": "Netherlands",
+      "lon": "4.48",
+      "lat": "51.92",
+      "date": "2016-09-26",
+      "dateEnd": "2016-10-01",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100102,
+      "city": "Brussels",
+      "state": "",
+      "country": "Belgium",
+      "lon": "4.35",
+      "lat": "50.85",
+      "date": "2017-02-06",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100103,
+      "city": "Bruges",
+      "state": "",
+      "country": "Belgium",
+      "lon": "3.22",
+      "lat": "51.21",
+      "date": "2018-07-13",
+      "dateEnd": "2018-07-20",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100104,
+      "city": "Copenhagen",
+      "state": "",
+      "country": "Denmark",
+      "lon": "12.57",
+      "lat": "55.68",
+      "date": "2027-12-20",
+      "dateEnd": "",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100105,
+      "city": "Stockholm",
+      "state": "",
+      "country": "Sweden",
+      "lon": "18.07",
+      "lat": "59.33",
+      "date": "2020-05-27",
+      "dateEnd": "2020-06-05",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100106,
+      "city": "Gothenburg",
+      "state": "",
+      "country": "Sweden",
+      "lon": "11.97",
+      "lat": "57.71",
+      "date": "2021-10-07",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100107,
+      "city": "Oslo",
+      "state": "",
+      "country": "Norway",
+      "lon": "10.75",
+      "lat": "59.91",
+      "date": "2022-03-14",
+      "dateEnd": "2022-03-18",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100108,
+      "city": "Bergen",
+      "state": "",
+      "country": "Norway",
+      "lon": "5.32",
+      "lat": "60.39",
+      "date": "2023-08-21",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100109,
+      "city": "Tromsø",
+      "state": "",
+      "country": "Norway",
+      "lon": "18.96",
+      "lat": "69.65",
+      "date": "2024-01-01",
+      "dateEnd": "2024-01-07",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100110,
+      "city": "Lofoten",
+      "state": "",
+      "country": "Norway",
+      "lon": "13.61",
+      "lat": "68.21",
+      "date": "2025-06-08",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100111,
+      "city": "Helsinki",
+      "state": "",
+      "country": "Finland",
+      "lon": "24.94",
+      "lat": "60.17",
+      "date": "2028-11-15",
+      "dateEnd": "2028-11-23",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100112,
+      "city": "Rovaniemi",
+      "state": "",
+      "country": "Finland",
+      "lon": "25.72",
+      "lat": "66.5",
+      "date": "2016-04-22",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100113,
+      "city": "Warsaw",
+      "state": "",
+      "country": "Poland",
+      "lon": "21.01",
+      "lat": "52.23",
+      "date": "2027-09-02",
+      "dateEnd": "2027-09-05",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100114,
+      "city": "Kraków",
+      "state": "",
+      "country": "Poland",
+      "lon": "19.94",
+      "lat": "50.06",
+      "date": "2018-02-09",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100115,
+      "city": "Prague",
+      "state": "",
+      "country": "Czechia",
+      "lon": "14.42",
+      "lat": "50.08",
+      "date": "2019-07-16",
+      "dateEnd": "2019-07-21",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100116,
+      "city": "Budapest",
+      "state": "",
+      "country": "Hungary",
+      "lon": "19.04",
+      "lat": "47.5",
+      "date": "2020-12-23",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100117,
+      "city": "Brașov",
+      "state": "",
+      "country": "Romania",
+      "lon": "25.61",
+      "lat": "45.66",
+      "date": "2021-05-03",
+      "dateEnd": "2021-05-10",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100118,
+      "city": "Tbilisi",
+      "state": "",
+      "country": "Georgia",
+      "lon": "44.8",
+      "lat": "41.72",
+      "date": "2022-10-10",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100119,
+      "city": "Mexico City",
+      "state": "",
+      "country": "Mexico",
+      "lon": "-99.13",
+      "lat": "19.43",
+      "date": "2023-03-17",
+      "dateEnd": "2023-03-26",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100120,
+      "city": "Cancún",
+      "state": "",
+      "country": "Mexico",
+      "lon": "-86.85",
+      "lat": "21.16",
+      "date": "2024-08-24",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100121,
+      "city": "Tulum",
+      "state": "",
+      "country": "Mexico",
+      "lon": "-87.47",
+      "lat": "20.21",
+      "date": "2025-01-04",
+      "dateEnd": "2025-01-08",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100122,
+      "city": "Oaxaca",
+      "state": "",
+      "country": "Mexico",
+      "lon": "-96.73",
+      "lat": "17.07",
+      "date": "2027-06-11",
+      "dateEnd": "",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100123,
+      "city": "Guadalajara",
+      "state": "",
+      "country": "Mexico",
+      "lon": "-103.35",
+      "lat": "20.66",
+      "date": "2016-11-18",
+      "dateEnd": "2016-11-24",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100124,
+      "city": "Havana",
+      "state": "",
+      "country": "Cuba",
+      "lon": "-82.38",
+      "lat": "23.11",
+      "date": "2028-04-25",
+      "dateEnd": "",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100125,
+      "city": "San José",
+      "state": "",
+      "country": "Costa Rica",
+      "lon": "-84.09",
+      "lat": "9.93",
+      "date": "2018-09-05",
+      "dateEnd": "2018-09-13",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100126,
+      "city": "La Fortuna",
+      "state": "",
+      "country": "Costa Rica",
+      "lon": "-84.65",
+      "lat": "10.47",
+      "date": "2019-02-12",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100127,
+      "city": "Bogotá",
+      "state": "",
+      "country": "Colombia",
+      "lon": "-74.07",
+      "lat": "4.71",
+      "date": "2020-07-19",
+      "dateEnd": "2020-07-22",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100128,
+      "city": "Cartagena",
+      "state": "",
+      "country": "Colombia",
+      "lon": "-75.51",
+      "lat": "10.39",
+      "date": "2021-12-26",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100129,
+      "city": "Medellín",
+      "state": "",
+      "country": "Colombia",
+      "lon": "-75.56",
+      "lat": "6.24",
+      "date": "2022-05-06",
+      "dateEnd": "2022-05-11",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100130,
+      "city": "Lima",
+      "state": "",
+      "country": "Peru",
+      "lon": "-77.04",
+      "lat": "-12.05",
+      "date": "2023-10-13",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100131,
+      "city": "Cusco",
+      "state": "",
+      "country": "Peru",
+      "lon": "-71.97",
+      "lat": "-13.53",
+      "date": "2027-03-20",
+      "dateEnd": "2027-03-27",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100132,
+      "city": "Machu Picchu",
+      "state": "",
+      "country": "Peru",
+      "lon": "-72.54",
+      "lat": "-13.16",
+      "date": "2025-08-27",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100133,
+      "city": "La Paz",
+      "state": "",
+      "country": "Bolivia",
+      "lon": "-68.15",
+      "lat": "-16.5",
+      "date": "2015-01-07",
+      "dateEnd": "2015-01-16",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100134,
+      "city": "Uyuni",
+      "state": "",
+      "country": "Bolivia",
+      "lon": "-66.83",
+      "lat": "-20.46",
+      "date": "2016-06-14",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100135,
+      "city": "Santiago",
+      "state": "",
+      "country": "Chile",
+      "lon": "-70.65",
+      "lat": "-33.45",
+      "date": "2017-11-21",
+      "dateEnd": "2017-11-25",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100136,
+      "city": "Atacama",
+      "state": "",
+      "country": "Chile",
+      "lon": "-68.2",
+      "lat": "-22.91",
+      "date": "2018-04-01",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    },
+    {
+      "id": 100137,
+      "city": "Torres del Paine",
+      "state": "",
+      "country": "Chile",
+      "lon": "-72.99",
+      "lat": "-50.94",
+      "date": "2028-09-08",
+      "dateEnd": "2028-09-14",
+      "status": "dream",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100138,
+      "city": "Buenos Aires",
+      "state": "",
+      "country": "Argentina",
+      "lon": "-58.38",
+      "lat": "-34.6",
+      "date": "2020-02-15",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100139,
+      "city": "Mendoza",
+      "state": "",
+      "country": "Argentina",
+      "lon": "-68.84",
+      "lat": "-32.89",
+      "date": "2021-07-22",
+      "dateEnd": "2021-07-30",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "food"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100140,
+      "city": "Bariloche",
+      "state": "",
+      "country": "Argentina",
+      "lon": "-71.31",
+      "lat": "-41.13",
+      "date": "2027-12-02",
+      "dateEnd": "",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100141,
+      "city": "Rio de Janeiro",
+      "state": "",
+      "country": "Brazil",
+      "lon": "-43.18",
+      "lat": "-22.91",
+      "date": "2023-05-09",
+      "dateEnd": "2023-05-12",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "beach"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100142,
+      "city": "São Paulo",
+      "state": "",
+      "country": "Brazil",
+      "lon": "-46.63",
+      "lat": "-23.55",
+      "date": "2024-10-16",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "city"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100143,
+      "city": "Iguazu Falls",
+      "state": "",
+      "country": "Brazil",
+      "lon": "-54.44",
+      "lat": "-25.69",
+      "date": "2025-03-23",
+      "dateEnd": "2025-03-28",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100144,
+      "city": "Quito",
+      "state": "",
+      "country": "Ecuador",
+      "lon": "-78.47",
+      "lat": "-0.18",
+      "date": "2015-08-03",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "cultural"
+      ],
+      "tripTypes": [
+        "vacation"
+      ]
+    },
+    {
+      "id": 100145,
+      "city": "Queenstown",
+      "state": "",
+      "country": "New Zealand",
+      "lon": "168.66",
+      "lat": "-45.03",
+      "date": "2016-01-10",
+      "dateEnd": "2016-01-17",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "adventure"
+      ],
+      "tripTypes": [
+        "work"
+      ]
+    }
+  ]
+}
