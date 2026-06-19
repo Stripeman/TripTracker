@@ -110,6 +110,33 @@
             <button onClick="{{ toggleSpin }}" style="{{ cfgSpinStyle }}">{{ cfgSpinLabel }}</button>
           </div>
         </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">DEFAULT FILTERS</div>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:4px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">YEAR</div>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defYearSeg }}" as="seg" hint-placeholder-count="2">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">TRIP TYPE</div>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defTripSeg }}" as="seg" hint-placeholder-count="3">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">STATUS</div>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defStatusSeg }}" as="seg" hint-placeholder-count="2">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">DATA &amp; STORAGE</div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#566a82; margin-bottom:4px;">CURRENTLY SAVING TO</div>
         <div title="{{ storageTitle }}" style="display:flex; align-items:center; gap:8px; margin-bottom:14px; cursor:default;">
@@ -533,7 +560,7 @@ class Component extends DCLogic {
       { key:'cultural', label:'Cultural', color:'#e879f9' },
     ];
     this.TRIP_TYPES = [
-      { key:'vacation', label:'Vacation', color:'#2dd4bf' },
+      { key:'vacation', label:'Personal', color:'#2dd4bf' },
       { key:'work', label:'Work', color:'#f59e0b' },
     ];
     this.VTC = {}; this.VISIT_TYPES.forEach(o => this.VTC[o.key] = o.color);
@@ -614,6 +641,9 @@ class Component extends DCLogic {
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
     const cfgSpin = cfg.spin !== false;
+    const cfgDefaultYear = cfg.defaultYear === 'all' ? 'all' : 'current';
+    const cfgDefaultTrip = (cfg.defaultTrip === 'all' || cfg.defaultTrip === 'work') ? cfg.defaultTrip : 'vacation';
+    const cfgDefaultStatus = cfg.defaultStatus === 'all' ? 'all' : 'visited';
 
     const now = new Date();
     this.state = {
@@ -632,10 +662,13 @@ class Component extends DCLogic {
       calOpen: false,
       calY: now.getFullYear(),
       calM: now.getMonth(),
-      filterYear: now.getFullYear(),
-      filterStatuses: [],
+      filterYear: cfgDefaultYear === 'all' ? 'all' : now.getFullYear(),
+      filterStatuses: cfgDefaultStatus === 'visited' ? ['visited'] : [],
       filterVisit: [],
-      filterTrip: [],
+      filterTrip: cfgDefaultTrip === 'all' ? [] : [cfgDefaultTrip],
+      cfgDefaultYear,
+      cfgDefaultTrip,
+      cfgDefaultStatus,
       filterText: '',
       filterCountries: [],
       filterCities: [],
@@ -1446,8 +1479,23 @@ class Component extends DCLogic {
     this.setState({ dataMode: 'browser', dataFileName: '', needsReconnect: false });
   }
 
+  cfgObject(s) {
+    return { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus };
+  }
+  setDefaultFilter(key, v) {
+    this.setState(s => {
+      const ns = { [key]: v };
+      if (key === 'cfgDefaultYear') ns.filterYear = v === 'all' ? 'all' : new Date().getFullYear();
+      if (key === 'cfgDefaultTrip') ns.filterTrip = v === 'all' ? [] : [v];
+      if (key === 'cfgDefaultStatus') ns.filterStatuses = v === 'visited' ? ['visited'] : [];
+      const cfg = this.cfgObject({ ...s, ...ns });
+      try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
+      return ns;
+    });
+  }
+
   appSettings() {
-    return { detailsFormDefault: this.state.cfgDetailsFormDefault, detailsCard: this.state.cfgDetailsCard, statusCard: this.state.cfgStatusCard, spin: this.state.cfgSpin };
+    return this.cfgObject(this.state);
   }
 
   downloadJson(obj, name) {
@@ -1471,7 +1519,7 @@ class Component extends DCLogic {
   }
 
   applySettings(settings) {
-    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false, spin: settings.spin !== false };
+    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false, spin: settings.spin !== false, defaultYear: settings.defaultYear === 'all' ? 'all' : 'current', defaultTrip: (settings.defaultTrip === 'all' || settings.defaultTrip === 'work') ? settings.defaultTrip : 'vacation', defaultStatus: settings.defaultStatus === 'all' ? 'all' : 'visited' };
     try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (er) {}
     return cfg;
   }
@@ -1685,7 +1733,7 @@ class Component extends DCLogic {
   toggleCfgKey(stateKey, cfgKey) {
     this.setState(s => {
       const v = !s[stateKey];
-      const cfg = { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin };
+      const cfg = { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus };
       cfg[cfgKey] = v;
       try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
       const out = { [stateKey]: v };
@@ -1912,6 +1960,7 @@ class Component extends DCLogic {
     const fvt = form.visitTypes || [], ftt = form.tripTypes || [];
     const visitTypeChips = this.VISIT_TYPES.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, fvt.includes(o.key)), onToggle: () => this.toggleType('visitTypes', o.key) }));
     const tripTypeChips = this.TRIP_TYPES.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftt.includes(o.key)), onToggle: () => this.toggleType('tripTypes', o.key) }));
+    const segStyle = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 4px; border-radius:7px; cursor:pointer; " + (on ? `color:#04111e; background:${color}; border:1px solid ${color}; font-weight:600;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const cfgPill = (on) => "font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; padding:5px 11px; border-radius:7px; cursor:pointer; flex:none; " + (on ? "color:#04111e; background:#34d399; border:1px solid #34d399; font-weight:600;" : "color:#8093aa; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);");
 
     // calendar
@@ -1994,6 +2043,19 @@ class Component extends DCLogic {
       cfgSpinStyle: cfgPill(this.state.cfgSpin),
       cfgSpinLabel: this.state.cfgSpin ? 'ON' : 'OFF',
       toggleSpin: () => this.toggleCfgKey('cfgSpin', 'spin'),
+      defYearSeg: [
+        { label: 'All years', style: segStyle(this.state.cfgDefaultYear === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'all') },
+        { label: 'Current year', style: segStyle(this.state.cfgDefaultYear === 'current', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'current') },
+      ],
+      defTripSeg: [
+        { label: 'All', style: segStyle(this.state.cfgDefaultTrip === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultTrip', 'all') },
+        { label: 'Personal', style: segStyle(this.state.cfgDefaultTrip === 'vacation', this.TTC.vacation), onSelect: () => this.setDefaultFilter('cfgDefaultTrip', 'vacation') },
+        { label: 'Work', style: segStyle(this.state.cfgDefaultTrip === 'work', this.TTC.work), onSelect: () => this.setDefaultFilter('cfgDefaultTrip', 'work') },
+      ],
+      defStatusSeg: [
+        { label: 'All', style: segStyle(this.state.cfgDefaultStatus === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultStatus', 'all') },
+        { label: 'Visited', style: segStyle(this.state.cfgDefaultStatus === 'visited', this.META.visited.color), onSelect: () => this.setDefaultFilter('cfgDefaultStatus', 'visited') },
+      ],
       cfgDetailsFormDefault: this.state.cfgDetailsFormDefault,
       cfgDetailsCard: this.state.cfgDetailsCard,
       cfgStatusCard: this.state.cfgStatusCard,
