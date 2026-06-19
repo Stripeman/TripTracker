@@ -17,7 +17,7 @@ index.html               → redirects the site root to the app
 Trip Tracker.dc.html     → the app
 support.js               → runtime
 trip-tracker.json        → bundled demo data (fallback / first-run)
-staticwebapp.config.json → routes + Entra auth (GET & write both require sign-in; writes require the `editor` role)
+staticwebapp.config.json → routes + Entra auth (GET & write both require sign-in; writes require the `editor` role; needs the Standard plan)
 api/                      → the Functions API
   host.json
   package.json
@@ -46,12 +46,13 @@ api/                      → the Functions API
    `AZURE_STORAGE_CONNECTION_STRING` = *(the value from step 1)*.
    Optional: `TRIPS_CONTAINER` (default `data`), `TRIPS_BLOB` (default `trip-tracker.json`).
 
-4. **Microsoft Entra sign-in (required — the data is private).** Both reading and writing require a signed-in user; writing also requires the **`editor`** role.
-   a. **Register an Entra app:** Azure Portal → *Microsoft Entra ID* → **App registrations** → **New registration**. Redirect URI (Web): `https://<your-swa-host>/.auth/login/aad/callback`. Note the **Application (client) ID** and **Directory (tenant) ID**.
-   b. **Client secret:** in that app registration → *Certificates & secrets* → **New client secret** → copy the value.
-   c. **Add app settings** to the Static Web App (Environment variables): `AAD_CLIENT_ID` = client ID, `AAD_CLIENT_SECRET` = secret value.
-   d. **Set your tenant** in `staticwebapp.config.json`: replace `<TENANT_ID>` in the `openIdIssuer` URL with your Directory (tenant) ID, then commit.
-   The app's **Sign in** link already points to `/.auth/login/aad`.
+4. **Microsoft Entra sign-in (Standard plan required).** Both reading and writing require a signed-in user; writing also requires the **`editor`** role.
+   a. **Upgrade the Static Web App to Standard** (Portal → Static Web App → *Hosting plan* → Standard) — custom Entra auth is not available on Free.
+   b. **Register an Entra app:** Azure Portal → *Microsoft Entra ID* → **App registrations** → **New registration**. Redirect URI (Web): `https://<your-swa-host>/.auth/login/aad/callback`. Note the **Application (client) ID** and **Directory (tenant) ID**.
+   c. **Client secret:** that app registration → *Certificates & secrets* → **New client secret** → copy the **Value**.
+   d. **Add app settings** to the Static Web App (Environment variables): `AAD_CLIENT_ID` = client ID, `AAD_CLIENT_SECRET` = secret value.
+   e. **Set your tenant** in `staticwebapp.config.json`: replace `<TENANT_ID>` in the `openIdIssuer` URL with your Directory (tenant) ID, then commit.
+   The app's **Sign in** link points to `/.auth/login/aad`.
 
 5. **Grant editing rights (roles).** `authenticated` lets anyone who signs in *read*; the `editor` role is required to *save*.
    - Azure Portal → your Static Web App → **Role management** → **Invite** → enter the user, assign role **`editor`** → send the invite link and have them accept.
