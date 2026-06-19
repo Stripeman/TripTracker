@@ -110,8 +110,18 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 {
   "app": "vacation-location",
   "version": 1,
-  "exportedAt": "2026-06-19T00:00:00.000Z",
-  "settings": { "detailsFormDefault": true, "detailsCard": true, "statusCard": true },
+  "exportedAt": "2026-06-20T00:00:00.000Z",
+  "settings": {
+    "detailsFormDefault": true,
+    "detailsCard": true,
+    "statusCard": true,
+    "spin": true,
+    "defaultYear": "current",
+    "defaultTrip": "vacation",
+    "defaultStatus": "visited",
+    "defaultTraveler": "all",
+    "dataSource": "cloud"
+  },
   "locations": [
     {
       "id": 1,
@@ -120,16 +130,28 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
       "country": "France",
       "lat": "48.8566",
       "lon": "2.3522",
-      "date": "2024-06-14",
-      "dateEnd": "2024-06-21",
+      "date": "2026-06-19",
+      "dateEnd": "2026-06-28",
       "status": "visited",
-      "notes": "Summer evenings in Le Marais",
-      "visitTypes": ["city"],
-      "tripTypes": ["vacation"]
+      "notes": "Spring on the Canal Saint-Martin",
+      "visitTypes": ["city", "family"],
+      "tripTypes": ["vacation"],
+      "travelers": ["terry"],
+      "createdAt": "2026-06-19T13:48:07.884Z",
+      "modifiedAt": "2026-06-19T13:48:07.884Z"
     }
   ]
 }
 ```
+
+**Field values:**
+- `status`: `planned` · `visited` · `dream`
+- `visitTypes` (any number): `natlpark` · `city` · `family` · `beach` · `food` · `adventure` · `roadtrip` · `cultural`
+- `tripTypes` (any number): `vacation` (shown as *Personal*) · `work`
+- `travelers` (any number): `terry` · `karen` · `nikki` · `amanda`
+- `lat` / `lon` are optional strings — leave blank to geocode from city/state/country on save.
+- `dateEnd` is optional (single‑day trips omit it). `createdAt` / `modifiedAt` are set automatically.
+- `settings`: `defaultYear` is `current` or `all`; `defaultTrip` is `all` / `vacation` / `work`; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` / `terry` / `karen`; `dataSource` is `local` or `cloud`.
 
 Data‑only and settings‑only exports contain just the `locations` or `settings` key respectively. Imports accept any of these shapes (a bare array of locations is also supported for backward compatibility).
 

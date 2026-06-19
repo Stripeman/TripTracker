@@ -8,7 +8,7 @@ This hosts the app **and** lets you update the data through the website itself, 
 - **Azure Functions** (`/api/trips`) — `GET` reads the dataset, `POST` writes it (sign-in required).
 - **Azure Blob Storage** — stores the live `trip-tracker.json` (a few cents/month).
 
-The app auto-detects the API: when `/api/trips` responds it runs in **Cloud** mode (and shows cloud controls in ⚙ → Settings); otherwise it falls back to browser storage / the bundled `trip-tracker.json`, so it still works locally with no backend.
+The app defaults to **Cloud** mode and reads `/api/trips` on load; if the API isn't reachable (e.g. running locally with no backend) it falls back to browser storage / the bundled `demo-data.json`, so it still works offline. Users can switch to **Local** in ⚙ → Settings, and that choice is remembered.
 
 ## Files in this repo that matter
 
@@ -16,8 +16,8 @@ The app auto-detects the API: when `/api/trips` responds it runs in **Cloud** mo
 index.html               → redirects the site root to the app
 Trip Tracker.dc.html     → the app
 support.js               → runtime
-trip-tracker.json        → bundled demo data (fallback / first-run)
-staticwebapp.config.json → routes + Entra auth (GET & write both require sign-in; writes require the `editor` role; needs the Standard plan)
+demo-data.json           → bundled demo data (first-run fallback)
+staticwebapp.config.json → routes + role-gated API (GET needs `reader`/`editor`; writes need `editor`; built-in auth, Free plan)
 api/                      → the Functions API
   host.json
   package.json
@@ -46,17 +46,15 @@ api/                      → the Functions API
    `AZURE_STORAGE_CONNECTION_STRING` = *(the value from step 1)*.
    Optional: `TRIPS_CONTAINER` (default `data`), `TRIPS_BLOB` (default `trip-tracker.json`).
 
-4. **Microsoft Entra sign-in (Standard plan required).** Both reading and writing require a signed-in user; writing also requires the **`editor`** role.
-   a. **Upgrade the Static Web App to Standard** (Portal → Static Web App → *Hosting plan* → Standard) — custom Entra auth is not available on Free.
-   b. **Register an Entra app:** Azure Portal → *Microsoft Entra ID* → **App registrations** → **New registration**. Redirect URI (Web): `https://<your-swa-host>/.auth/login/aad/callback`. Note the **Application (client) ID** and **Directory (tenant) ID**.
-   c. **Client secret:** that app registration → *Certificates & secrets* → **New client secret** → copy the **Value**.
-   d. **Add app settings** to the Static Web App (Environment variables): `AAD_CLIENT_ID` = client ID, `AAD_CLIENT_SECRET` = secret value.
-   e. **Set your tenant** in `staticwebapp.config.json`: replace `<TENANT_ID>` in the `openIdIssuer` URL with your Directory (tenant) ID, then commit.
-   The app's **Sign in** link points to `/.auth/login/aad`.
+4. **Sign-in — built-in provider (no app registration, no Standard plan needed).** Azure Static Web Apps ships with **pre-configured auth providers**, so you don't register your own Entra app, create a client secret, or edit `staticwebapp.config.json` — and it all works on the **Free** plan.
+   - The config already protects the API by **role** (`allowedRoles` in `staticwebapp.config.json`); there is intentionally **no `auth` block**. The built-in **Microsoft / Azure AD** provider is live at `/.auth/login/aad` out of the box, and the app's **Sign in** link points there. (GitHub at `/.auth/login/github` is also available if you prefer.)
+   - Anyone can technically *sign in* with the shared provider, but **access is granted only by the roles you assign** (step 5). A signed-in account with no role can't read or write — it sees the in-app *No access — contact the author* message. So you control access purely by who you invite.
+   - *Optional (not required):* to restrict sign-in to **your own Entra tenant** or use a branded app registration, that's the custom-auth path — it needs the **Standard** plan plus an `auth` block with your `openIdIssuer`, `AAD_CLIENT_ID`, and `AAD_CLIENT_SECRET`. Skip it unless you specifically need tenant-locked sign-in.
 
 5. **Grant access (roles).** Three custom roles: **`reader`** (view), **`editor`** (view + add/edit/delete), and **`admin`** (editor + import & clear data).
-   - Azure Portal → your Static Web App → **Role management** → **Invite** → enter the user, assign `reader`, `editor`, and/or `admin` → send the invite link and have them accept.
+   - Azure Portal → your Static Web App → **Role management** → **Invite** → enter the user, pick the provider (e.g. Azure AD), assign `reader`, `editor`, and/or `admin` → generate the invite link and send it. The user opens it, signs in, and accepts.
    - The API enforces read/write: `GET /api/trips` requires `reader` or `editor`; `POST/PUT` requires `editor`. The **Import** and **Clear data** controls are additionally hidden in the UI unless the account has `admin`.
+   - Roles are baked into the session at sign-in — after assigning/changing a role, the user must **sign out and back in** for it to take effect.
 
 ## How data flows once deployed
 
