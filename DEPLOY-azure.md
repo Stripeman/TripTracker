@@ -60,9 +60,9 @@ api/                      → the Functions API
 
 ## How data flows once deployed
 
-- First load (signed out): the API returns 401, so the app shows the bundled demo `trip-tracker.json` and prompts **Sign in**.
-- **Sign in** (⚙ → Settings → Cloud) with an Entra account. Reading your saved trips requires being signed in; an **`editor`** makes any change → it `POST`s the full dataset, creating/updating the blob.
-- Non-editors (or signed-out visitors) cannot read or write your private data — they only ever see the bundled demo.
+- The **entire site requires sign-in** (`/*` route is gated). A signed-out visitor is redirected straight to the Entra login and sees nothing — not the page, not the bundled `trip-tracker.json`.
+- **Sign in** with an Entra account to view. Saving requires the **`editor`** role; an editor's change `POST`s the full dataset, creating/updating the blob.
+- Non-editors who sign in can view; only `editor` accounts can save. To also restrict *viewing* to specific people, change the GET and `/*` routes' `allowedRoles` from `authenticated` to `editor`.
 
 ## Local development
 

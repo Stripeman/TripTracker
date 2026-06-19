@@ -17,10 +17,11 @@
   },
   "routes": [
     { "route": "/api/trips", "methods": ["GET"], "allowedRoles": ["authenticated"] },
-    { "route": "/api/trips", "methods": ["POST", "PUT"], "allowedRoles": ["editor"] }
+    { "route": "/api/trips", "methods": ["POST", "PUT"], "allowedRoles": ["editor"] },
+    { "route": "/.auth/login/aad", "allowedRoles": ["anonymous", "authenticated"] }
   ],
   "responseOverrides": {
-    "401": { "statusCode": 401 }
+    "401": { "redirect": "/.auth/login/aad", "statusCode": 302 }
   },
   "mimeTypes": {
     ".json": "application/json"
