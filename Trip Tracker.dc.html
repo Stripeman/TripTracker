@@ -279,14 +279,14 @@
             </sc-if>
             <span style="color:#7fd6f5; font-size:11px;">{{ filtersArrow }}</span>
           </button>
+          <sc-if value="{{ hasActiveFilters }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearFilters }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; color:#f0b4b4; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.28); border-radius:9px; padding:8px 11px; cursor:pointer;">Clear all</button>
+          </sc-if>
         </div>
         <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:13px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
               <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82;">STATUS</span>
-              <sc-if value="{{ hasActiveFilters }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ clearFilters }}" style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#8093aa; background:none; border:none; cursor:pointer; text-decoration:underline;">Clear all</button>
-              </sc-if>
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">
               <sc-for list="{{ statusFilterChips }}" as="chip" hint-placeholder-count="3">
@@ -699,7 +699,12 @@ class Component extends DCLogic {
 
     let cfg = {};
     try { cfg = JSON.parse(localStorage.getItem(this.CFG) || '{}') || {}; } catch (e) {}
-    const cfgDataSource = cfg.dataSource === 'cloud' ? 'cloud' : 'local';
+    // Default to Cloud unless the user has explicitly chosen Local. On a fresh
+    // browser (no saved choice), seed the config with 'cloud' so it persists.
+    const cfgDataSource = cfg.dataSource === 'local' ? 'local' : 'cloud';
+    if (cfg.dataSource !== 'local' && cfg.dataSource !== 'cloud') {
+      try { localStorage.setItem(this.CFG, JSON.stringify({ ...cfg, dataSource: 'cloud' })); } catch (e) {}
+    }
     const cfgDetailsFormDefault = cfg.detailsFormDefault !== false;
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
