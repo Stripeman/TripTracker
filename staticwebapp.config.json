@@ -1,4 +1,3 @@
-
 {
   "$schema": "https://json.schemastore.org/staticwebapp.config.json",
   "navigationFallback": {
@@ -12,10 +11,10 @@
     {
       "route": "/api/trips",
       "methods": [
-        "GET"
+        "get"
       ],
       "allowedRoles": [
-        "authenticated"
+        "edtior"
       ]
     },
     {
