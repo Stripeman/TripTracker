@@ -115,6 +115,14 @@
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">DEFAULT FILTERS</div>
         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:4px;">
           <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">SORT DESTINATIONS</div>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defSortSeg }}" as="seg" hint-placeholder-count="2">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">YEAR</div>
             <div style="display:flex; gap:6px;">
               <sc-for list="{{ defYearSeg }}" as="seg" hint-placeholder-count="2">
@@ -264,10 +272,7 @@
       <div style="padding:18px 18px 14px; border-bottom:1px solid rgba(56,189,248,0.12);">
         <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">DESTINATIONS</div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <button onClick="{{ toggleSort }}" title="Toggle sort order" style="display:flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:4px 8px; cursor:pointer;"><span style="color:#7fd6f5; font-size:12px;">{{ sortArrow }}</span>{{ sortLabel }}</button>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fbbf24;">{{ totalsText }}</div>
-          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fbbf24;">{{ totalsText }}</div>
         </div>
         <div style="display:flex; gap:8px; margin-top:12px;">
           <select value="{{ filterYearValue }}" onChange="{{ onFilterYear }}" style="flex:1; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:8px 9px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
@@ -333,7 +338,10 @@
                   <span style="flex:none; width:9px; height:9px; border-radius:50%; background:{{ loc.color }}; box-shadow:0 0 10px {{ loc.color }};"></span>
                   <div style="flex:1; min-width:0;">
                     <div style="font-size:14px; font-weight:600; color:#e6edf6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ loc.city }}</div>
-                    <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7587a0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">{{ loc.sub }}</div>
+                    <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:2px;">
+                      <div style="min-width:0; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7587a0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ loc.sub }}</div>
+                      <div style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7587a0; white-space:nowrap;">{{ loc.dateRange }}</div>
+                    </div>
                   </div>
                   <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:{{ loc.color }}; border:1px solid {{ loc.color }}55; border-radius:20px; padding:3px 8px;">{{ loc.statusShort }}</span>
                 </div>
@@ -709,6 +717,7 @@ class Component extends DCLogic {
     const cfgDefaultTrip = (cfg.defaultTrip === 'all' || cfg.defaultTrip === 'work') ? cfg.defaultTrip : 'vacation';
     const cfgDefaultStatus = cfg.defaultStatus === 'all' ? 'all' : 'visited';
     const cfgDefaultTraveler = (cfg.defaultTraveler === 'terry' || cfg.defaultTraveler === 'karen') ? cfg.defaultTraveler : 'all';
+    const cfgSort = cfg.sortDir === 'asc' ? 'asc' : 'desc';
 
     const now = new Date();
     this.state = {
@@ -768,7 +777,7 @@ class Component extends DCLogic {
       helpError: '',
       geocoding: false,
       dupMode: false,
-      sortDir: 'desc',
+      sortDir: cfgSort,
       ready: false,
     };
 
@@ -1728,7 +1737,7 @@ class Component extends DCLogic {
   }
 
   cfgObject(s) {
-    return { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, dataSource: s.cfgDataSource };
+    return { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, sortDir: s.sortDir, dataSource: s.cfgDataSource };
   }
   setDefaultFilter(key, v) {
     this.setState(s => {
@@ -1768,7 +1777,7 @@ class Component extends DCLogic {
   }
 
   applySettings(settings) {
-    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false, spin: settings.spin !== false, defaultYear: settings.defaultYear === 'all' ? 'all' : 'current', defaultTrip: (settings.defaultTrip === 'all' || settings.defaultTrip === 'work') ? settings.defaultTrip : 'vacation', defaultStatus: settings.defaultStatus === 'all' ? 'all' : 'visited', defaultTraveler: (settings.defaultTraveler === 'terry' || settings.defaultTraveler === 'karen') ? settings.defaultTraveler : 'all' };
+    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false, spin: settings.spin !== false, defaultYear: settings.defaultYear === 'all' ? 'all' : 'current', defaultTrip: (settings.defaultTrip === 'all' || settings.defaultTrip === 'work') ? settings.defaultTrip : 'vacation', defaultStatus: settings.defaultStatus === 'all' ? 'all' : 'visited', defaultTraveler: (settings.defaultTraveler === 'terry' || settings.defaultTraveler === 'karen') ? settings.defaultTraveler : 'all', sortDir: settings.sortDir === 'asc' ? 'asc' : 'desc' };
     try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (er) {}
     return cfg;
   }
@@ -1913,8 +1922,13 @@ class Component extends DCLogic {
     const { name, value } = e.target;
     this.setState(s => {
       const form = { ...s.form, [name]: value };
+      // Changing the place text invalidates any existing coordinates — clear them
+      // so the dot re-derives from city/state/country (or geocodes on save).
+      if (name === 'city' || name === 'state' || name === 'country') {
+        form.lat = ''; form.lon = '';
+      }
       // When adding, if a destination already exists for this area, prefill its
-      // location info (everything except the dates).
+      // location info (everything except the dates) — including coords.
       if (name === 'city' && s.editingId == null) {
         const key = value.trim().toLowerCase();
         if (key) {
@@ -2130,8 +2144,21 @@ class Component extends DCLogic {
       const m = meta[l.status] || meta.planned;
       const sel = l.id === selectedId;
       const sub = [l.state, l.country].filter(Boolean).join(', ') || '—';
+      let dateRange = '';
+      if (l.date) {
+        const a = new Date(l.date + 'T00:00');
+        if (l.dateEnd && l.dateEnd !== l.date) {
+          const b = new Date(l.dateEnd + 'T00:00');
+          const mo = (d) => d.toLocaleDateString('en-US', { month: 'short' });
+          if (a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()) dateRange = mo(a) + ' ' + a.getDate() + '\u2013' + b.getDate() + ', ' + a.getFullYear();
+          else if (a.getFullYear() === b.getFullYear()) dateRange = mo(a) + ' ' + a.getDate() + ' \u2013 ' + mo(b) + ' ' + b.getDate() + ', ' + a.getFullYear();
+          else dateRange = mo(a) + ' ' + a.getDate() + ', ' + a.getFullYear() + ' \u2013 ' + mo(b) + ' ' + b.getDate() + ', ' + b.getFullYear();
+        } else {
+          dateRange = a.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+      }
       return {
-        ...l, sub, color: m.color, statusLabel: m.label, statusShort: m.short,
+        ...l, sub, dateRange, color: m.color, statusLabel: m.label, statusShort: m.short,
         bg: sel ? 'rgba(251,191,36,0.10)' : 'rgba(255,255,255,0.03)',
         borderColor: sel ? 'rgba(251,191,36,0.45)' : 'rgba(255,255,255,0.07)',
         onSelect: () => this.selectLocation(l.id),
@@ -2340,6 +2367,10 @@ class Component extends DCLogic {
         { label: 'Terry', style: segStyle(this.state.cfgDefaultTraveler === 'terry', this.TRC.terry), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'terry') },
         { label: 'Karen', style: segStyle(this.state.cfgDefaultTraveler === 'karen', this.TRC.karen), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'karen') },
       ],
+      defSortSeg: [
+        { label: 'Descending', style: segStyle(this.state.sortDir === 'desc', '#5fd3ff'), onSelect: () => this.setDefaultFilter('sortDir', 'desc') },
+        { label: 'Ascending', style: segStyle(this.state.sortDir === 'asc', '#5fd3ff'), onSelect: () => this.setDefaultFilter('sortDir', 'asc') },
+      ],
       cfgDetailsFormDefault: this.state.cfgDetailsFormDefault,
       cfgDetailsCard: this.state.cfgDetailsCard,
       cfgStatusCard: this.state.cfgStatusCard,
@@ -2441,10 +2472,6 @@ class Component extends DCLogic {
       cityHint: (form.city && form.city.trim()) ? '' : '·required',
       dateHint: form.date ? '' : '·required',
       dupWarning: this.formIsDuplicate(),
-      sortDir: this.state.sortDir,
-      sortArrow: this.state.sortDir === 'desc' ? '↓' : '↑',
-      sortLabel: this.state.sortDir === 'desc' ? 'Newest' : 'Oldest',
-      toggleSort: () => this.toggleSort(),
       stateHint: stateReq ? '·required' : '·opt',
       stateHintColor: stateReq ? '#fbbf24' : '#445',
       paneTransform: this.state.paneOpen ? 'translateX(0)' : 'translateX(-360px)',

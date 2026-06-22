@@ -12,15 +12,18 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - Geographically accurate orthographic globe (D3 + world‑atlas TopoJSON) with land, country borders, graticule, and an atmospheric glow.
 - Auto‑rotates when idle; **drag to spin** in any direction.
 - Markers are colour‑coded by status. The selected location gets an **amber pulsing dot**, a label, and the globe flies to centre it.
+- **Live preview dot while adding** — as you fill in the form, a cyan **crosshair dot** appears and narrows: Country → centre of the country, + State → the state, + City → the city, and exact lat/lon pins it precisely. The globe flies to follow it; if a city name matches several places, all of them pulse.
 - **Clustering** — destinations that share a location collapse into a single dot with a count badge. Click it to **fan the entries out** on connector lines and pick a specific trip.
 
 ### 📍 Destinations
-- Add a destination with: **city**, optional **state**, **country**, **latitude/longitude**, **date(s)**, **status**, **visit type(s)**, **trip type(s)**, **traveler(s)**, and free‑form **notes**.
+- Add a destination with (in order): **country**, optional **state**, **city**, optional **latitude/longitude**, **date(s)**, **status**, **visit type(s)**, **trip type(s)**, **traveler(s)**, and free‑form **notes**.
 - **Status**: Planned (blue) · Visited (green) · Dream destination (purple).
 - **Trip type**: Personal · Work.
 - **Travelers**: Terry · Karen · Nikki · Amanda — multi‑select, each colour‑coded; shown on the detail card.
+- The destinations list shows each trip's **date range** on the same line as the country.
 - Click any saved location (on the globe or in the list) to view its detail card, then **Edit** or **Delete** it.
-- **Required fields:** every destination needs a **city**, a **date**, and a **status**. State is also required for U.S. cities.
+- **Required fields:** every destination needs a **city**, a **date**, and a **status** (State is also required for U.S. cities). The `·required` hint clears automatically once a field has a value.
+- **Duplicate guard:** if a trip with the same place and the same date already exists, a *“This trip already exists — add anyway?”* notice appears next to the Dates field. It's informational — you can still add it.
 - **Audit stamps:** the Edit form shows a read-only **Added** timestamp (set when the destination is first created) and a **Last modified** timestamp (updated each time you save changes).
 - **Add another after saving:** a sticky toggle in the form — when on, saving keeps the form open with the same details but the **date cleared**, so you can quickly log repeat visits to the same place. Stays on until you turn it off.
 
@@ -32,6 +35,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 ### 📌 Smart location resolution
 - Leave the coordinates blank and they're **fetched automatically** on save (geocoding), or use the **Auto‑locate** button in the form.
 - If no coordinates are entered, the dot is placed from the **city → state → country**, in that order.
+- **Changing the city, state, or country clears any existing coordinates**, so the dot always reflects the current place (and re‑geocodes on save).
 - **State is required** for U.S. cities.
 - Adding a destination that matches an existing city **pre‑fills** its location info (everything except the dates).
 
@@ -64,11 +68,12 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 
 ### 🎛 Default filters
 - A **Default Filters** section sets what the filters open to on each visit, via colour‑coded segmented toggles that match the filter colours:
+  - **Sort destinations** — Descending (newest first) / Ascending (oldest first); controls the order of the destinations list
   - **Year** — All years / Current year
   - **Trip type** — All / Personal / Work
   - **Status** — All / Visited
   - **Traveler** — All / Terry / Karen
-- Ships defaulting to **Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
+- Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
 
 ### 🖱 Globe controls
 - **Drag** to rotate, **mouse‑wheel** to zoom from 1× to 6× (drag sensitivity scales with zoom).
@@ -120,6 +125,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
     "defaultTrip": "vacation",
     "defaultStatus": "visited",
     "defaultTraveler": "all",
+    "sortDir": "desc",
     "dataSource": "cloud"
   },
   "locations": [
@@ -151,7 +157,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 - `travelers` (any number): `terry` · `karen` · `nikki` · `amanda`
 - `lat` / `lon` are optional strings — leave blank to geocode from city/state/country on save.
 - `dateEnd` is optional (single‑day trips omit it). `createdAt` / `modifiedAt` are set automatically.
-- `settings`: `defaultYear` is `current` or `all`; `defaultTrip` is `all` / `vacation` / `work`; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` / `terry` / `karen`; `dataSource` is `local` or `cloud`.
+- `settings`: `defaultYear` is `current` or `all`; `defaultTrip` is `all` / `vacation` / `work`; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` / `terry` / `karen`; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`.
 
 Data‑only and settings‑only exports contain just the `locations` or `settings` key respectively. Imports accept any of these shapes (a bare array of locations is also supported for backward compatibility).
 
