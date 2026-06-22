@@ -264,7 +264,10 @@
       <div style="padding:18px 18px 14px; border-bottom:1px solid rgba(56,189,248,0.12);">
         <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">DESTINATIONS</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fbbf24;">{{ totalsText }}</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button onClick="{{ toggleSort }}" title="Toggle sort order" style="display:flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:4px 8px; cursor:pointer;"><span style="color:#7fd6f5; font-size:12px;">{{ sortArrow }}</span>{{ sortLabel }}</button>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fbbf24;">{{ totalsText }}</div>
+          </div>
         </div>
         <div style="display:flex; gap:8px; margin-top:12px;">
           <select value="{{ filterYearValue }}" onChange="{{ onFilterYear }}" style="flex:1; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:8px 9px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
@@ -490,19 +493,19 @@
       </div>
 
       <div style="flex:1; overflow-y:auto; padding:22px 26px;">
-        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">CITY <span style="color:#fbbf24;">·required</span></label>
-        <input name="city" value="{{ form.city }}" onChange="{{ onField }}" placeholder="e.g. Tokyo" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none; margin-bottom:18px;">
-
         <div style="display:flex; gap:12px; margin-bottom:18px;">
-          <div style="flex:1;">
-            <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">STATE <span style="color:{{ stateHintColor }};">{{ stateHint }}</span></label>
-            <input name="state" value="{{ form.state }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
-          </div>
           <div style="flex:1;">
             <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">COUNTRY</label>
             <input name="country" value="{{ form.country }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
           </div>
+          <div style="flex:1;">
+            <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">STATE <span style="color:{{ stateHintColor }};">{{ stateHint }}</span></label>
+            <input name="state" value="{{ form.state }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
+          </div>
         </div>
+
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">CITY <span style="color:#fbbf24;">{{ cityHint }}</span></label>
+        <input name="city" value="{{ form.city }}" onChange="{{ onField }}" placeholder="e.g. Tokyo" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none; margin-bottom:18px;">
 
         <div style="display:flex; gap:12px; margin-bottom:9px;">
           <div style="flex:1;">
@@ -517,7 +520,12 @@
         <button onClick="{{ autoLocate }}" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:9px; padding:9px; cursor:pointer; margin-bottom:8px;">{{ autoLocateLabel }}</button>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; line-height:1.5; margin-bottom:18px;">Or leave coordinates blank — they're fetched automatically on save.</div>
 
-        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">DATES <span style="color:#fbbf24;">·required</span></label>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px;">
+          <label style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93;">DATES <span style="color:#fbbf24;">{{ dateHint }}</span></label>
+          <sc-if value="{{ dupWarning }}" hint-placeholder-val="{{ false }}">
+            <span style="font-family:'Space Grotesk',sans-serif; font-size:11px; color:#fcd34d; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.32); border-radius:7px; padding:3px 8px;">This trip already exists — add anyway?</span>
+          </sc-if>
+        </div>
         <button onClick="{{ toggleCal }}" style="width:100%; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:13px; color:{{ dateSummaryColor }}; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; cursor:pointer; outline:none;">{{ dateSummary }}</button>
         <sc-if value="{{ calOpen }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:10px; margin-bottom:18px; background:rgba(255,255,255,0.025); border:1px solid rgba(56,189,248,0.16); border-radius:12px; padding:12px;">
@@ -760,6 +768,7 @@ class Component extends DCLogic {
       helpError: '',
       geocoding: false,
       dupMode: false,
+      sortDir: 'desc',
       ready: false,
     };
 
@@ -1175,6 +1184,21 @@ class Component extends DCLogic {
     window.removeEventListener('pointerup', this._endCal);
   }
 
+  componentDidUpdate() {
+    // Host calls this with no prevState — track the form's geo signature ourselves.
+    const adding = this.state.formOpen && this.state.editingId == null;
+    if (!adding) { this._geoSig = null; this._pvKey = null; return; }
+    const f = this.state.form || {};
+    const sig = [f.country, f.state, f.city, f.lat, f.lon].join('|');
+    if (sig === this._geoSig) return;
+    this._geoSig = sig;
+    const pv = this.previewCandidates(f);
+    if (pv && pv.coords.length) {
+      const key = pv.level + ':' + pv.coords[0].map(n => n.toFixed(2)).join(',');
+      if (key !== this._pvKey) { this._pvKey = key; this.flyTo(pv.coords[0]); }
+    } else { this._pvKey = null; }
+  }
+
   async init() {
     await this.waitFor(() => window.d3 && window.topojson);
     try {
@@ -1314,6 +1338,54 @@ class Component extends DCLogic {
     return null;
   }
 
+  // Candidate coords for the live add-form preview, narrowing as fields fill in.
+  // Returns { level, coords:[[lon,lat],...] } — coords has >1 entry when a city
+  // name is ambiguous (same name in multiple places).
+  previewCandidates(loc) {
+    const lat = parseFloat(loc.lat), lon = parseFloat(loc.lon);
+    if (isFinite(lat) && isFinite(lon)) return { level: 'exact', coords: [[lon, lat]] };
+    const city = (loc.city || '').trim().toLowerCase();
+    if (city) {
+      const hits = [];
+      for (const k in this.CITIES) { if (k === city) hits.push(this.CITIES[k]); }
+      if (hits.length) return { level: 'city', coords: hits };
+      // city typed but unknown → fall through to narrow on state/country
+    }
+    const state = (loc.state || '').trim().toLowerCase();
+    if (state && this.US_STATES[state]) return { level: 'state', coords: [this.US_STATES[state]] };
+    let country = (loc.country || '').trim().toLowerCase();
+    if (country) {
+      if (this.ALIAS[country]) country = this.ALIAS[country];
+      if (this.centroids && this.centroids[country]) return { level: 'country', coords: [this.centroids[country]] };
+    }
+    return null;
+  }
+
+  // Is there already a trip at the same place AND same date as the form?
+  formIsDuplicate() {
+    const f = this.state.form || {};
+    if (!f.date) return false;
+    const fcity = (f.city || '').trim().toLowerCase();
+    const fcountry = (f.country || '').trim().toLowerCase();
+    const fc = this.previewCandidates(f);
+    const fco = fc && fc.coords[0];
+    return this.state.locations.some(l => {
+      if (l.id === this.state.editingId) return false;
+      if ((l.date || '') !== f.date) return false;
+      // same named place?
+      const lcity = (l.city || '').trim().toLowerCase();
+      const lcountry = (l.country || '').trim().toLowerCase();
+      if (fcity && lcity && fcity === lcity && fcountry === lcountry) return true;
+      // or same resolved coordinate?
+      if (fco) {
+        const lc = this.previewCandidates(l);
+        const lco = lc && lc.coords[0];
+        if (lco && Math.abs(lco[0] - fco[0]) < 0.05 && Math.abs(lco[1] - fco[1]) < 0.05) return true;
+      }
+      return false;
+    });
+  }
+
   isUS(country) {
     const c = (country || '').trim().toLowerCase();
     return ['usa','us','u.s.','u.s.a.','united states','united states of america','america'].includes(c);
@@ -1433,6 +1505,39 @@ class Component extends DCLogic {
           ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
         }
         this._hits.push({ x: p[0], y: p[1], r: 16, type: multi ? 'cluster' : 'single', key, id: g.items[0].id });
+      }
+    }
+
+    // live preview dot while adding a location — narrows as fields are filled
+    if (this.state.formOpen && this.state.editingId == null) {
+      const pv = this.previewCandidates(this.state.form);
+      if (pv) {
+        const grow = (Math.sin(t * 0.005) + 1) / 2; // 0..1
+        for (const co of pv.coords) {
+          if (d3.geoDistance(co, center) > Math.PI / 2) continue;
+          const p = proj(co);
+          if (!p) continue;
+          // expanding rings
+          for (let ri = 0; ri < 2; ri++) {
+            const phase = (grow + ri * 0.5) % 1;
+            ctx.beginPath();
+            ctx.arc(p[0], p[1], 6 + phase * 22, 0, 2 * Math.PI);
+            ctx.strokeStyle = `rgba(94,211,255,${0.5 * (1 - phase)})`;
+            ctx.lineWidth = 1.5; ctx.stroke();
+          }
+          // core
+          ctx.beginPath(); ctx.arc(p[0], p[1], 5, 0, 2 * Math.PI);
+          ctx.fillStyle = '#5fd3ff'; ctx.fill();
+          ctx.strokeStyle = 'rgba(220,245,255,0.95)'; ctx.lineWidth = 1.5; ctx.stroke();
+          // crosshair lines for a "pin-pointing" feel
+          ctx.strokeStyle = 'rgba(94,211,255,0.5)'; ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(p[0] - 13, p[1]); ctx.lineTo(p[0] - 8, p[1]);
+          ctx.moveTo(p[0] + 8, p[1]); ctx.lineTo(p[0] + 13, p[1]);
+          ctx.moveTo(p[0], p[1] - 13); ctx.lineTo(p[0], p[1] - 8);
+          ctx.moveTo(p[0], p[1] + 8); ctx.lineTo(p[0], p[1] + 13);
+          ctx.stroke();
+        }
       }
     }
 
@@ -1841,6 +1946,7 @@ class Component extends DCLogic {
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
   toggleDup() { this.setState(s => ({ dupMode: !s.dupMode })); }
+  toggleSort() { this.setState(s => ({ sortDir: s.sortDir === 'desc' ? 'asc' : 'desc' })); }
   toggleType(field, key) {
     this.setState(s => {
       const cur = s.form[field] || [];
@@ -2008,6 +2114,15 @@ class Component extends DCLogic {
     const years = [...new Set([curY, ...datedYears])].sort((a, b) => b - a);
     const fy = this.state.filterYear;
     const visible = locations.filter(l => this.passesFilter(l));
+    // sort by date, direction toggleable; undated always sink to the bottom
+    const dir = this.state.sortDir === 'asc' ? 1 : -1;
+    visible.sort((a, b) => {
+      const da = a.date || '', db = b.date || '';
+      if (da && db) return da < db ? -dir : (da > db ? dir : 0);
+      if (da) return -1;
+      if (db) return 1;
+      return 0;
+    });
     const totalDest = visible.length;
     const totalDays = visible.reduce((s, l) => s + this.dayCount(l), 0);
 
@@ -2323,6 +2438,13 @@ class Component extends DCLogic {
       importJson: (e) => this.importJson(e),
       formOpen,
       formError: this.state.formError,
+      cityHint: (form.city && form.city.trim()) ? '' : '·required',
+      dateHint: form.date ? '' : '·required',
+      dupWarning: this.formIsDuplicate(),
+      sortDir: this.state.sortDir,
+      sortArrow: this.state.sortDir === 'desc' ? '↓' : '↑',
+      sortLabel: this.state.sortDir === 'desc' ? 'Newest' : 'Oldest',
+      toggleSort: () => this.toggleSort(),
       stateHint: stateReq ? '·required' : '·opt',
       stateHintColor: stateReq ? '#fbbf24' : '#445',
       paneTransform: this.state.paneOpen ? 'translateX(0)' : 'translateX(-360px)',

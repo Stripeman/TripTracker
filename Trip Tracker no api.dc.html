@@ -56,9 +56,11 @@
         <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; margin-top:7px; color:#5d7088;">PLOT EVERY JOURNEY — PAST, PRESENT &amp; DREAMED</div>
       </div>
       <div style="display:flex; align-items:center; gap:12px;">
-        <button onClick="{{ openAdd }}" style="pointer-events:auto; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.04em; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:10px; padding:11px 18px; cursor:pointer; box-shadow:0 0 0 1px rgba(120,220,255,0.4),0 8px 28px rgba(34,174,230,0.35);">
-          <span style="font-size:16px; line-height:1;">+</span> Add location
-        </button>
+        <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openAdd }}" style="pointer-events:auto; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.04em; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:10px; padding:11px 18px; cursor:pointer; box-shadow:0 0 0 1px rgba(120,220,255,0.4),0 8px 28px rgba(34,174,230,0.35);">
+            <span style="font-size:16px; line-height:1;">+</span> Add location
+          </button>
+        </sc-if>
         <button onClick="{{ toggleSettings }}" title="Data &amp; storage settings" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; font-size:17px; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">⚙</button>
       </div>
     </div>
@@ -105,8 +107,48 @@
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Show status on card</span>
             <button onClick="{{ toggleStatusCard }}" style="{{ cfgStatusStyle }}">{{ cfgStatusLabel }}</button>
           </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Spin the globe</span>
+            <button onClick="{{ toggleSpin }}" style="{{ cfgSpinStyle }}">{{ cfgSpinLabel }}</button>
+          </div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">DEFAULT FILTERS</div>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:4px;">
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">YEAR</div>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defYearSeg }}" as="seg" hint-placeholder-count="2">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">TRIP TYPE</div>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defTripSeg }}" as="seg" hint-placeholder-count="3">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">STATUS</div>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defStatusSeg }}" as="seg" hint-placeholder-count="2">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">TRAVELER</div>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defTravelerSeg }}" as="seg" hint-placeholder-count="3">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
         </div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">DATA &amp; STORAGE</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; line-height:1.5; margin-bottom:14px;">Data is saved on this device — in browser storage, or in a JSON file you link below for auto-save.</div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#566a82; margin-bottom:4px;">CURRENTLY SAVING TO</div>
         <div title="{{ storageTitle }}" style="display:flex; align-items:center; gap:8px; margin-bottom:14px; cursor:default;">
           <span style="width:8px; height:8px; border-radius:50%; background:#34d399; box-shadow:0 0 8px #34d39999;"></span>
@@ -139,7 +181,9 @@
           </div>
           <div style="display:flex; gap:8px; margin-top:13px;">
             <button onClick="{{ exportSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:9px; padding:9px; cursor:pointer; font-weight:600;">Export</button>
-            <button onClick="{{ importSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:9px; cursor:pointer;">Import</button>
+            <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ importSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:9px; cursor:pointer;">Import</button>
+            </sc-if>
           </div>
         </div>
         <input ref="{{ setImportInput }}" type="file" accept="application/json,.json" onChange="{{ importJson }}" style="display:none;">
@@ -149,8 +193,10 @@
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#4b5d74; line-height:1.6; margin-top:14px;">A linked file auto-saves on every change. Export/Import works anywhere.</div>
 
         <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
-          <sc-if value="{{ notConfirmClear }}" hint-placeholder-val="{{ true }}">
-            <button onClick="{{ askClear }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear data…</button>
+          <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ notConfirmClear }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ askClear }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear data…</button>
+            </sc-if>
           </sc-if>
         </div>
         <sc-if value="{{ confirmClear }}" hint-placeholder-val="{{ false }}">
@@ -174,7 +220,10 @@
       <div style="padding:18px 18px 14px; border-bottom:1px solid rgba(56,189,248,0.12);">
         <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">DESTINATIONS</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fbbf24;">{{ totalsText }}</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button onClick="{{ toggleSort }}" title="Toggle sort order" style="display:flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:4px 8px; cursor:pointer;"><span style="color:#7fd6f5; font-size:12px;">{{ sortArrow }}</span>{{ sortLabel }}</button>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fbbf24;">{{ totalsText }}</div>
+          </div>
         </div>
         <div style="display:flex; gap:8px; margin-top:12px;">
           <select value="{{ filterYearValue }}" onChange="{{ onFilterYear }}" style="flex:1; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:8px 9px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
@@ -189,14 +238,14 @@
             </sc-if>
             <span style="color:#7fd6f5; font-size:11px;">{{ filtersArrow }}</span>
           </button>
+          <sc-if value="{{ hasActiveFilters }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearFilters }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; color:#f0b4b4; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.28); border-radius:9px; padding:8px 11px; cursor:pointer;">Clear all</button>
+          </sc-if>
         </div>
         <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:13px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
               <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82;">STATUS</span>
-              <sc-if value="{{ hasActiveFilters }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ clearFilters }}" style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#8093aa; background:none; border:none; cursor:pointer; text-decoration:underline;">Clear all</button>
-              </sc-if>
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">
               <sc-for list="{{ statusFilterChips }}" as="chip" hint-placeholder-count="3">
@@ -212,6 +261,12 @@
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin:13px 0 7px;">VISIT TYPE</div>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">
               <sc-for list="{{ visitFilterChips }}" as="chip" hint-placeholder-count="8">
+                <button onClick="{{ chip.onToggle }}" style="{{ chip.style }}"><span style="{{ chip.dotStyle }}"></span>{{ chip.label }}</button>
+              </sc-for>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin:13px 0 7px;">TRAVELER</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <sc-for list="{{ travelerFilterChips }}" as="chip" hint-placeholder-count="4">
                 <button onClick="{{ chip.onToggle }}" style="{{ chip.style }}"><span style="{{ chip.dotStyle }}"></span>{{ chip.label }}</button>
               </sc-for>
             </div>
@@ -279,13 +334,25 @@
             </div>
           </sc-if>
         </sc-if>
+        <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:13px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.16em; color:#586a82; margin-bottom:6px;">TRAVELERS</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <sc-for list="{{ selected.cardTravelers }}" as="chip" hint-placeholder-count="2">
+                <span style="{{ chip.style }}">{{ chip.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
         <sc-if value="{{ selected.notes }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08); font-family:'Space Grotesk',sans-serif; font-size:13px; line-height:1.55; color:#c2cfde; white-space:pre-wrap;">{{ selected.notes }}</div>
         </sc-if>
-        <div style="display:flex; gap:9px; margin-top:16px;">
-          <button onClick="{{ editSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 18px rgba(251,191,36,0.35);">Edit</button>
-          <button onClick="{{ deleteSelected }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:10px 14px; cursor:pointer;">Delete</button>
-        </div>
+        <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; gap:9px; margin-top:16px;">
+            <button onClick="{{ editSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 18px rgba(251,191,36,0.35);">Edit</button>
+            <button onClick="{{ deleteSelected }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:10px 14px; cursor:pointer;">Delete</button>
+          </div>
+        </sc-if>
       </div>
     </sc-if>
 
@@ -297,7 +364,11 @@
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">TRAVEL HEAT MAP</div>
             <button onClick="{{ toggleHeat }}" style="width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
           </div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#5d7088; margin-top:8px;">{{ heatCountryCount }} countries · tap one to filter the globe</div>
+          <div style="display:flex; gap:6px; margin-top:11px;">
+            <button onClick="{{ setHeatCountry }}" style="{{ heatModeCountryStyle }}">By country</button>
+            <button onClick="{{ setHeatCity }}" style="{{ heatModeCityStyle }}">By city</button>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#5d7088; margin-top:9px;">{{ heatCountLabel }}</div>
           <sc-if value="{{ hasActiveCountry }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; align-items:center; gap:8px; margin-top:10px; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.35); border-radius:9px; padding:7px 10px;">
               <span style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#fcd34d; line-height:1.3;">Filtering: {{ activeCountryLabel }}</span>
@@ -328,19 +399,16 @@
       </div>
     </sc-if>
 
-    <!-- help / guide overlay -->
-    <sc-if value="{{ helpOpen }}" hint-placeholder-val="{{ false }}">
-      <div onClick="{{ closeHelp }}" style="position:absolute; inset:0; pointer-events:auto; background:rgba(3,6,12,0.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:40px; z-index:30; animation:vl-fade 0.2s ease;">
-        <div onClick="{{ stop }}" style="width:760px; max-width:100%; max-height:100%; display:flex; flex-direction:column; background:rgba(8,14,24,0.96); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6); overflow:hidden;">
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-bottom:1px solid rgba(56,189,248,0.14);">
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">HELP &amp; GUIDE</div>
-            <button onClick="{{ closeHelp }}" style="width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:16px; line-height:1;">×</button>
-          </div>
-          <div style="flex:1; overflow-y:auto; padding:26px 30px;">
-            <sc-if value="{{ helpError }}" hint-placeholder-val="{{ false }}">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; line-height:1.6; color:#fcd34d; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:10px; padding:14px 16px;">{{ helpError }}</div>
-            </sc-if>
-            {{ helpNode }}
+    <!-- cloud access message (cloud mode, not authorized) -->
+    <sc-if value="{{ cloudBlocked }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; inset:0; z-index:28; pointer-events:auto; display:flex; align-items:center; justify-content:center; padding:40px; background:rgba(3,6,12,0.55); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); animation:vl-fade 0.2s ease;">
+        <div style="width:min(420px,92vw); background:rgba(9,15,26,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6); padding:28px; text-align:center;">
+          <div style="width:46px; height:46px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.35); color:#fcd34d; font-size:22px;">🔒</div>
+          <div style="font-family:'Orbitron',sans-serif; font-size:16px; letter-spacing:0.1em; color:#eaf4fd;">{{ cloudBlockTitle }}</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.6; color:#9fb0c6; margin-top:12px;">{{ cloudBlockMsg }}</div>
+          <a href="{{ cloudBlockHref }}" style="display:inline-block; margin-top:20px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border-radius:11px; padding:11px 22px; text-decoration:none;">{{ cloudBlockAction }}</a>
+          <div style="margin-top:14px;">
+            <button onClick="{{ cloudUseLocal }}" style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8093aa; background:none; border:none; cursor:pointer; text-decoration:underline;">Use local demo instead</button>
           </div>
         </div>
       </div>
@@ -352,7 +420,13 @@
         <div onClick="{{ stopProp }}" style="width:min(720px,92vw); max-height:84vh; display:flex; flex-direction:column; background:rgba(9,15,26,0.98); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6); overflow:hidden;">
           <div style="display:flex; align-items:center; justify-content:space-between; padding:17px 22px; border-bottom:1px solid rgba(56,189,248,0.14); flex:none;">
             <div style="font-family:'Orbitron',sans-serif; font-size:14px; letter-spacing:0.14em; color:#e8f3ff;">HELP &amp; GUIDE</div>
-            <button onClick="{{ closeHelp }}" style="width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:16px; line-height:1;">×</button>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="display:flex; gap:3px; padding:3px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:9px;">
+                <button onClick="{{ showAppGuide }}" style="{{ appGuideTabStyle }}">App guide</button>
+                <button onClick="{{ showDeployGuide }}" style="{{ deployGuideTabStyle }}">Deploy guide</button>
+              </div>
+              <button onClick="{{ closeHelp }}" style="width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:16px; line-height:1;">×</button>
+            </div>
           </div>
           <div style="flex:1; overflow-y:auto; padding:22px 26px;">
             <sc-if value="{{ helpError }}" hint-placeholder-val="{{ false }}">
@@ -375,19 +449,19 @@
       </div>
 
       <div style="flex:1; overflow-y:auto; padding:22px 26px;">
-        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">CITY <span style="color:#fbbf24;">·required</span></label>
-        <input name="city" value="{{ form.city }}" onChange="{{ onField }}" placeholder="e.g. Tokyo" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none; margin-bottom:18px;">
-
         <div style="display:flex; gap:12px; margin-bottom:18px;">
-          <div style="flex:1;">
-            <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">STATE <span style="color:{{ stateHintColor }};">{{ stateHint }}</span></label>
-            <input name="state" value="{{ form.state }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
-          </div>
           <div style="flex:1;">
             <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">COUNTRY</label>
             <input name="country" value="{{ form.country }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
           </div>
+          <div style="flex:1;">
+            <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">STATE <span style="color:{{ stateHintColor }};">{{ stateHint }}</span></label>
+            <input name="state" value="{{ form.state }}" onChange="{{ onField }}" placeholder="optional" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;">
+          </div>
         </div>
+
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">CITY <span style="color:#fbbf24;">{{ cityHint }}</span></label>
+        <input name="city" value="{{ form.city }}" onChange="{{ onField }}" placeholder="e.g. Tokyo" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none; margin-bottom:18px;">
 
         <div style="display:flex; gap:12px; margin-bottom:9px;">
           <div style="flex:1;">
@@ -402,7 +476,12 @@
         <button onClick="{{ autoLocate }}" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.04em; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:9px; padding:9px; cursor:pointer; margin-bottom:8px;">{{ autoLocateLabel }}</button>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; line-height:1.5; margin-bottom:18px;">Or leave coordinates blank — they're fetched automatically on save.</div>
 
-        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">DATES <span style="color:#fbbf24;">·required</span></label>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px;">
+          <label style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93;">DATES <span style="color:#fbbf24;">{{ dateHint }}</span></label>
+          <sc-if value="{{ dupWarning }}" hint-placeholder-val="{{ false }}">
+            <span style="font-family:'Space Grotesk',sans-serif; font-size:11px; color:#fcd34d; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.32); border-radius:7px; padding:3px 8px;">This trip already exists — add anyway?</span>
+          </sc-if>
+        </div>
         <button onClick="{{ toggleCal }}" style="width:100%; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:13px; color:{{ dateSummaryColor }}; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; cursor:pointer; outline:none;">{{ dateSummary }}</button>
         <sc-if value="{{ calOpen }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:10px; margin-bottom:18px; background:rgba(255,255,255,0.025); border:1px solid rgba(56,189,248,0.16); border-radius:12px; padding:12px;">
@@ -453,6 +532,12 @@
                 <button onClick="{{ chip.onToggle }}" style="{{ chip.style }}">{{ chip.label }}</button>
               </sc-for>
             </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin:15px 0 8px;">TRAVELER</div>
+            <div style="display:flex; flex-wrap:wrap; gap:7px;">
+              <sc-for list="{{ travelerChips }}" as="chip" hint-placeholder-count="4">
+                <button onClick="{{ chip.onToggle }}" style="{{ chip.style }}">{{ chip.label }}</button>
+              </sc-for>
+            </div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin:15px 0 8px;">TRIP TYPE</div>
             <div style="display:flex; flex-wrap:wrap; gap:7px;">
               <sc-for list="{{ tripTypeChips }}" as="chip" hint-placeholder-count="2">
@@ -464,9 +549,22 @@
 
         <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">NOTES <span style="color:#445;">·opt</span></label>
         <textarea name="notes" value="{{ form.notes }}" onChange="{{ onField }}" placeholder="Anything to remember — hotels, highlights, who you went with…" rows="3" style="width:100%; resize:vertical; min-height:74px; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.5; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:11px 13px; outline:none;"></textarea>
+
+        <sc-if value="{{ showCreated }}" hint-placeholder-val="{{ false }}">
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">ADDED <span style="color:#445;">·read-only</span></label>
+          <div style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8093aa; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 13px;">{{ createdText }}</div>
+        </sc-if>
+        <sc-if value="{{ showModified }}" hint-placeholder-val="{{ false }}">
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:14px 0 7px;">LAST MODIFIED <span style="color:#445;">·read-only</span></label>
+          <div style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8093aa; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 13px;">{{ modifiedText }}</div>
+        </sc-if>
       </div>
 
       <div style="padding:16px 26px 24px; border-top:1px solid rgba(56,189,248,0.12);">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
+          <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Add another after saving<span style="color:#6b7c93;"> · clears the date</span></span>
+          <button onClick="{{ toggleDup }}" style="{{ dupStyle }}">{{ dupLabel }}</button>
+        </div>
         <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:9px; padding:9px 11px; margin-bottom:12px;">{{ formError }}</div>
         </sc-if>
@@ -484,7 +582,7 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.STORE = 'vacation-location:locations:v3';
+    this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
     this.VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
@@ -497,13 +595,21 @@ class Component extends DCLogic {
       { key:'cultural', label:'Cultural', color:'#e879f9' },
     ];
     this.TRIP_TYPES = [
-      { key:'vacation', label:'Vacation', color:'#2dd4bf' },
+      { key:'vacation', label:'Personal', color:'#2dd4bf' },
       { key:'work', label:'Work', color:'#f59e0b' },
+    ];
+    this.TRAVELERS = [
+      { key:'terry', label:'Terry', color:'#fb7185' },
+      { key:'karen', label:'Karen', color:'#c084fc' },
+      { key:'nikki', label:'Nikki', color:'#22d3ee' },
+      { key:'amanda', label:'Amanda', color:'#fb923c' },
     ];
     this.VTC = {}; this.VISIT_TYPES.forEach(o => this.VTC[o.key] = o.color);
     this.TTC = {}; this.TRIP_TYPES.forEach(o => this.TTC[o.key] = o.color);
     this.VTL = {}; this.VISIT_TYPES.forEach(o => this.VTL[o.key] = o.label);
     this.TTL = {}; this.TRIP_TYPES.forEach(o => this.TTL[o.key] = o.label);
+    this.TRC = {}; this.TRAVELERS.forEach(o => this.TRC[o.key] = o.color);
+    this.TRL = {}; this.TRAVELERS.forEach(o => this.TRL[o.key] = o.label);
     this.META = {
       planned: { label: 'Planned', short: 'Planned', color: '#38bdf8' },
       visited: { label: 'Visited', short: 'Visited', color: '#34d399' },
@@ -541,42 +647,20 @@ class Component extends DCLogic {
 
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(this.STORE) || 'null'); } catch (e) {}
-    this._hadSaved = !!(saved && Array.isArray(saved) && saved.length);
-    if (!saved || !Array.isArray(saved) || !saved.length) saved = this.seed();
-
-    // One-time migration: give every yearless destination a target year so it
-    // appears under the year filter and on the globe.
-    try {
-      if (!localStorage.getItem('vacation-location:yearfill')) {
-        let changed = false;
-        saved.forEach((l, i) => {
-          if (!l.date) {
-            const yr = 2027 + (i % 2);
-            const mo = String((i % 12) + 1).padStart(2, '0');
-            const dy = String(((i * 7) % 27) + 1).padStart(2, '0');
-            l.date = `${yr}-${mo}-${dy}`;
-            changed = true;
-          }
-        });
-        localStorage.setItem('vacation-location:yearfill', '1');
-        if (changed) { try { localStorage.setItem(this.STORE, JSON.stringify(saved)); } catch (e) {} }
-      }
-    } catch (e) {}
-
-    // One-time additive seed: 145 diverse visits across new countries.
-    try {
-      if (!localStorage.getItem('trip-tracker:diversity145')) {
-        saved = saved.concat(this.diversitySeed());
-        localStorage.setItem('trip-tracker:diversity145', '1');
-        try { localStorage.setItem(this.STORE, JSON.stringify(saved)); } catch (e) {}
-      }
-    } catch (e) {}
+    if (!saved || !Array.isArray(saved)) saved = [];
 
     let cfg = {};
     try { cfg = JSON.parse(localStorage.getItem(this.CFG) || '{}') || {}; } catch (e) {}
+    // No-API build: always local-first; never contacts a cloud API.
+    const cfgDataSource = 'local';
     const cfgDetailsFormDefault = cfg.detailsFormDefault !== false;
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
+    const cfgSpin = cfg.spin !== false;
+    const cfgDefaultYear = cfg.defaultYear === 'all' ? 'all' : 'current';
+    const cfgDefaultTrip = (cfg.defaultTrip === 'all' || cfg.defaultTrip === 'work') ? cfg.defaultTrip : 'vacation';
+    const cfgDefaultStatus = cfg.defaultStatus === 'all' ? 'all' : 'visited';
+    const cfgDefaultTraveler = (cfg.defaultTraveler === 'terry' || cfg.defaultTraveler === 'karen') ? cfg.defaultTraveler : 'all';
 
     const now = new Date();
     this.state = {
@@ -585,6 +669,8 @@ class Component extends DCLogic {
       cfgDetailsFormDefault,
       cfgDetailsCard,
       cfgStatusCard,
+      cfgSpin,
+      cfgDataSource,
       selectedId: null,
       formOpen: false,
       editingId: null,
@@ -594,16 +680,31 @@ class Component extends DCLogic {
       calOpen: false,
       calY: now.getFullYear(),
       calM: now.getMonth(),
-      filterYear: now.getFullYear(),
-      filterStatuses: [],
+      filterYear: cfgDefaultYear === 'all' ? 'all' : now.getFullYear(),
+      filterStatuses: cfgDefaultStatus === 'visited' ? ['visited'] : [],
       filterVisit: [],
-      filterTrip: [],
+      filterTrip: cfgDefaultTrip === 'all' ? [] : [cfgDefaultTrip],
+      filterTravelers: cfgDefaultTraveler === 'all' ? [] : [cfgDefaultTraveler],
+      cfgDefaultYear,
+      cfgDefaultTrip,
+      cfgDefaultStatus,
+      cfgDefaultTraveler,
       filterText: '',
       filterCountries: [],
+      filterCities: [],
+      heatMode: 'country',
       filtersOpen: false,
       heatOpen: false,
       settingsOpen: false,
       dataMode: 'browser',
+      confirmLocal: false,
+      cloudSeed: 0,
+      cloudAvailable: false,
+      cloudAuth: false,
+      cloudState: 'ok',
+      cloudUser: '',
+      cloudRoles: [],
+      cloudMsg: '',
       dataFileName: '',
       fsSupported: false,
       needsReconnect: false,
@@ -615,8 +716,11 @@ class Component extends DCLogic {
       authorOpen: false,
       helpOpen: false,
       helpHtml: '',
+      helpDoc: 'readme',
       helpError: '',
       geocoding: false,
+      dupMode: false,
+      sortDir: 'desc',
       ready: false,
     };
 
@@ -640,7 +744,7 @@ class Component extends DCLogic {
     this.setImportInput = (el) => { this.importInput = el; };
   }
 
-  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'] }; }
+  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'' }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -784,8 +888,133 @@ class Component extends DCLogic {
       id: i + 1, city: r[0], state: r[1], country: r[2],
       lon: String(r[3]), lat: String(r[4]),
       date: r[5] || '', dateEnd: r[6] || '', status: r[7], notes: r[8] || '',
-      visitTypes: r[9] || [], tripTypes: r[10] || ['vacation'],
+      visitTypes: r[9] || [], tripTypes: r[10] || ['vacation'], travelers: r[11] || [],
     }));
+  }
+
+  async bootData() {
+    if (this.state.cfgDataSource === 'cloud') {
+      const ok = await this.cloudLoad();
+      if (!ok) await this.loadLocal();
+    } else {
+      await this.loadLocal();
+    }
+  }
+
+  async loadLocal() {
+    // local mode: localStorage → trip-tracker.json → demo-data.json
+    if (this.state.locations.length) return;
+    for (const f of ['trip-tracker.json', 'demo-data.json']) {
+      try {
+        const res = await fetch(f, { cache: 'no-store' });
+        if (!res.ok) continue;
+        const data = await res.json();
+        const locs = Array.isArray(data) ? data : (data && Array.isArray(data.locations) ? data.locations : null);
+        if (locs && locs.length) {
+          this.persistLocal(locs);
+          const ns = { locations: locs };
+          const settings = (data && data.settings) || null;
+          if (settings) { const cfg = this.applySettings(settings); ns.cfgDetailsFormDefault = cfg.detailsFormDefault; ns.cfgDetailsCard = cfg.detailsCard; ns.cfgStatusCard = cfg.statusCard; ns.cfgSpin = cfg.spin; ns.detailsOpen = cfg.detailsFormDefault; }
+          this.setState(ns);
+          return;
+        }
+      } catch (e) {}
+    }
+  }
+
+  setDataSource(src) {
+    const cfg = { ...this.cfgObject(this.state), dataSource: src };
+    try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
+    this.setState({ cfgDataSource: src, dataMode: src === 'cloud' ? 'cloud' : 'browser', cloudMsg: '', confirmLocal: false }, () => {
+      if (src === 'cloud') this.cloudLoad();
+    });
+  }
+
+  // Guard: switching Cloud → Local shows a separate browser-only dataset.
+  // Confirm first so nobody mistakes it for data loss.
+  requestLocalSource() {
+    if (this.state.cfgDataSource === 'cloud') this.setState({ confirmLocal: true });
+    else this.setDataSource('local');
+  }
+  cancelLocalSwitch() { this.setState({ confirmLocal: false }); }
+
+  async cloudLoad() {
+    this._cloudSynced = false; // block cloud writes until we've confirmed cloud's state
+    try {
+      const res = await fetch('/api/trips', { cache: 'no-store' });
+      if (res.status === 401) {
+        this._cloud = true;
+        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: false, cloudState: 'anon', cloudMsg: '' });
+        return true;
+      }
+      if (res.status === 403) {
+        this._cloud = true;
+        this.setState({ dataMode: 'cloud', cloudAvailable: true, cloudAuth: true, cloudState: 'denied', cloudMsg: '' });
+        this.checkAuth();
+        return true;
+      }
+      if (res.status !== 200 && res.status !== 204) return false; // no API → local
+      this._cloud = true;
+      let ns = { dataMode: 'cloud', cloudAvailable: true, cloudState: 'ok' };
+      let cloudLocs = [];
+      if (res.status === 200) {
+        const data = await res.json();
+        cloudLocs = Array.isArray(data) ? data : (data.locations || []);
+        const settings = data && data.settings;
+        if (cloudLocs.length && settings) {
+          const cfg = this.applySettings(settings);
+          ns.cfgDetailsFormDefault = cfg.detailsFormDefault; ns.cfgDetailsCard = cfg.detailsCard; ns.cfgStatusCard = cfg.statusCard; ns.cfgSpin = cfg.spin; ns.detailsOpen = cfg.detailsFormDefault;
+        }
+      }
+      // Cloud is now the source of truth.
+      this._cloudCount = cloudLocs.length;
+      this._cloudSynced = true;
+      if (cloudLocs.length) {
+        this.persistLocal(cloudLocs);
+        ns.locations = cloudLocs;
+        ns.cloudSeed = 0;
+      } else if ((this.state.locations || []).length) {
+        // Cloud reachable but empty, and this device has trips. Do NOT auto-upload
+        // (that's how data gets clobbered) — ask the user what to do.
+        ns.cloudSeed = this.state.locations.length;
+      } else {
+        ns.cloudSeed = 0;
+      }
+      this.setState(ns);
+      this.checkAuth();
+      return true;
+    } catch (e) { return false; }
+  }
+
+  uploadLocalToCloud() {
+    const list = this.state.locations || [];
+    this._cloudCount = list.length;
+    this.cloudSave(list);
+    this.setState({ cloudSeed: 0, cloudMsg: 'Uploaded ' + list.length + ' trips to the cloud.' });
+  }
+  discardLocalForCloud() {
+    this.persistLocal([]);
+    this._cloudCount = 0;
+    this.setState({ locations: [], selectedId: null, cloudSeed: 0 });
+  }
+
+  async checkAuth() {
+    try {
+      const r = await fetch('/.auth/me');
+      const j = await r.json();
+      const p = j && (j.clientPrincipal || (j[0] && j[0].clientPrincipal));
+      this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '', cloudRoles: (p && p.userRoles) || [] });
+    } catch (e) {}
+  }
+
+  async cloudSave(list) {
+    try {
+      const body = JSON.stringify({ app: 'vacation-location', version: 1, settings: this.appSettings(), locations: list });
+      const res = await fetch('/api/trips', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      if (res.status === 401) this.setState({ cloudMsg: 'Sign in to save changes to the cloud.' });
+      else if (!res.ok) this.setState({ cloudMsg: 'Cloud save failed (' + res.status + ').' });
+      else { this._cloudCount = list.length; this.setState({ cloudMsg: '' }); }
+    } catch (e) { this.setState({ cloudMsg: 'Cloud offline — changes saved on this device.' }); }
   }
 
   async loadBundledData() {
@@ -808,6 +1037,7 @@ class Component extends DCLogic {
         ns.cfgDetailsFormDefault = cfg.detailsFormDefault;
         ns.cfgDetailsCard = cfg.detailsCard;
         ns.cfgStatusCard = cfg.statusCard;
+        ns.cfgSpin = cfg.spin;
         ns.detailsOpen = cfg.detailsFormDefault;
       }
       this.setState(ns);
@@ -886,14 +1116,14 @@ class Component extends DCLogic {
       const date = `${year}-${pad(month)}-${pad(day)}`;
       const dateEnd = (i % 2 === 0) ? addDays(date, 3 + (i % 7)) : '';
       const tripTypes = (i % 9 === 0) ? ['work'] : ['vacation'];
-      return { id: 100001 + i, city, state: '', country, lon: String(lon), lat: String(lat), date, dateEnd, status, notes: '', visitTypes: [vtype], tripTypes };
+      const travelers = [['terry'], ['karen'], ['terry','karen'], ['nikki'], ['terry','karen','nikki','amanda'], ['amanda'], ['karen','nikki']][i % 7];
+      return { id: 100001 + i, city, state: '', country, lon: String(lon), lat: String(lat), date, dateEnd, status, notes: '', visitTypes: [vtype], tripTypes, travelers };
     });
   }
 
   componentDidMount() {
     this.init();
-    this.loadData();
-    this.loadBundledData();
+    this.bootData();
     this._onResize = () => this.resize();
     window.addEventListener('resize', this._onResize);
     this._endCal = () => this.endCalDrag();
@@ -904,6 +1134,21 @@ class Component extends DCLogic {
     cancelAnimationFrame(this._raf);
     window.removeEventListener('resize', this._onResize);
     window.removeEventListener('pointerup', this._endCal);
+  }
+
+  componentDidUpdate() {
+    // Host calls this with no prevState — track the form's geo signature ourselves.
+    const adding = this.state.formOpen && this.state.editingId == null;
+    if (!adding) { this._geoSig = null; this._pvKey = null; return; }
+    const f = this.state.form || {};
+    const sig = [f.country, f.state, f.city, f.lat, f.lon].join('|');
+    if (sig === this._geoSig) return;
+    this._geoSig = sig;
+    const pv = this.previewCandidates(f);
+    if (pv && pv.coords.length) {
+      const key = pv.level + ':' + pv.coords[0].map(n => n.toFixed(2)).join(',');
+      if (key !== this._pvKey) { this._pvKey = key; this.flyTo(pv.coords[0]); }
+    } else { this._pvKey = null; }
   }
 
   async init() {
@@ -1045,6 +1290,54 @@ class Component extends DCLogic {
     return null;
   }
 
+  // Candidate coords for the live add-form preview, narrowing as fields fill in.
+  // Returns { level, coords:[[lon,lat],...] } — coords has >1 entry when a city
+  // name is ambiguous (same name in multiple places).
+  previewCandidates(loc) {
+    const lat = parseFloat(loc.lat), lon = parseFloat(loc.lon);
+    if (isFinite(lat) && isFinite(lon)) return { level: 'exact', coords: [[lon, lat]] };
+    const city = (loc.city || '').trim().toLowerCase();
+    if (city) {
+      const hits = [];
+      for (const k in this.CITIES) { if (k === city) hits.push(this.CITIES[k]); }
+      if (hits.length) return { level: 'city', coords: hits };
+      // city typed but unknown → fall through to narrow on state/country
+    }
+    const state = (loc.state || '').trim().toLowerCase();
+    if (state && this.US_STATES[state]) return { level: 'state', coords: [this.US_STATES[state]] };
+    let country = (loc.country || '').trim().toLowerCase();
+    if (country) {
+      if (this.ALIAS[country]) country = this.ALIAS[country];
+      if (this.centroids && this.centroids[country]) return { level: 'country', coords: [this.centroids[country]] };
+    }
+    return null;
+  }
+
+  // Is there already a trip at the same place AND same date as the form?
+  formIsDuplicate() {
+    const f = this.state.form || {};
+    if (!f.date) return false;
+    const fcity = (f.city || '').trim().toLowerCase();
+    const fcountry = (f.country || '').trim().toLowerCase();
+    const fc = this.previewCandidates(f);
+    const fco = fc && fc.coords[0];
+    return this.state.locations.some(l => {
+      if (l.id === this.state.editingId) return false;
+      if ((l.date || '') !== f.date) return false;
+      // same named place?
+      const lcity = (l.city || '').trim().toLowerCase();
+      const lcountry = (l.country || '').trim().toLowerCase();
+      if (fcity && lcity && fcity === lcity && fcountry === lcountry) return true;
+      // or same resolved coordinate?
+      if (fco) {
+        const lc = this.previewCandidates(l);
+        const lco = lc && lc.coords[0];
+        if (lco && Math.abs(lco[0] - fco[0]) < 0.05 && Math.abs(lco[1] - fco[1]) < 0.05) return true;
+      }
+      return false;
+    });
+  }
+
   isUS(country) {
     const c = (country || '').trim().toLowerCase();
     return ['usa','us','u.s.','u.s.a.','united states','united states of america','america'].includes(c);
@@ -1057,7 +1350,7 @@ class Component extends DCLogic {
       this.rotation[0] = this.tween.from[0] + this.tween.dLon * e;
       this.rotation[1] = this.tween.from[1] + (this.tween.to[1] - this.tween.from[1]) * e;
       if (p >= 1) this.rotation = [this.tween.to[0], this.tween.to[1]], this.tween = null;
-    } else if (!this.dragging && !this.state.formOpen && this.state.selectedId == null && !this.expandedKey) {
+    } else if (!this.dragging && !this.state.formOpen && this.state.selectedId == null && !this.expandedKey && this.state.cfgSpin) {
       this.rotation[0] += 0.055;
     }
     if (this.rotation[0] > 180) this.rotation[0] -= 360;
@@ -1167,6 +1460,39 @@ class Component extends DCLogic {
       }
     }
 
+    // live preview dot while adding a location — narrows as fields are filled
+    if (this.state.formOpen && this.state.editingId == null) {
+      const pv = this.previewCandidates(this.state.form);
+      if (pv) {
+        const grow = (Math.sin(t * 0.005) + 1) / 2; // 0..1
+        for (const co of pv.coords) {
+          if (d3.geoDistance(co, center) > Math.PI / 2) continue;
+          const p = proj(co);
+          if (!p) continue;
+          // expanding rings
+          for (let ri = 0; ri < 2; ri++) {
+            const phase = (grow + ri * 0.5) % 1;
+            ctx.beginPath();
+            ctx.arc(p[0], p[1], 6 + phase * 22, 0, 2 * Math.PI);
+            ctx.strokeStyle = `rgba(94,211,255,${0.5 * (1 - phase)})`;
+            ctx.lineWidth = 1.5; ctx.stroke();
+          }
+          // core
+          ctx.beginPath(); ctx.arc(p[0], p[1], 5, 0, 2 * Math.PI);
+          ctx.fillStyle = '#5fd3ff'; ctx.fill();
+          ctx.strokeStyle = 'rgba(220,245,255,0.95)'; ctx.lineWidth = 1.5; ctx.stroke();
+          // crosshair lines for a "pin-pointing" feel
+          ctx.strokeStyle = 'rgba(94,211,255,0.5)'; ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(p[0] - 13, p[1]); ctx.lineTo(p[0] - 8, p[1]);
+          ctx.moveTo(p[0] + 8, p[1]); ctx.lineTo(p[0] + 13, p[1]);
+          ctx.moveTo(p[0], p[1] - 13); ctx.lineTo(p[0], p[1] - 8);
+          ctx.moveTo(p[0], p[1] + 8); ctx.lineTo(p[0], p[1] + 13);
+          ctx.stroke();
+        }
+      }
+    }
+
     // faint country label under the cursor (never covering a placed dot)
     if (this._mouse && !this.dragging && this.countries) {
       const m = this._mouse;
@@ -1259,6 +1585,7 @@ class Component extends DCLogic {
   persist(list) {
     this.persistLocal(list);
     if (this._fileHandle && this.state.dataMode === 'file' && !this.state.needsReconnect) this.writeFile(list);
+    if (this.state.dataMode === 'cloud' && this._cloud && this._cloudSynced) this.cloudSave(list);
   }
 
   _idb() {
@@ -1352,8 +1679,24 @@ class Component extends DCLogic {
     this.setState({ dataMode: 'browser', dataFileName: '', needsReconnect: false });
   }
 
+  cfgObject(s) {
+    return { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, dataSource: s.cfgDataSource };
+  }
+  setDefaultFilter(key, v) {
+    this.setState(s => {
+      const ns = { [key]: v };
+      if (key === 'cfgDefaultYear') ns.filterYear = v === 'all' ? 'all' : new Date().getFullYear();
+      if (key === 'cfgDefaultTrip') ns.filterTrip = v === 'all' ? [] : [v];
+      if (key === 'cfgDefaultTraveler') ns.filterTravelers = v === 'all' ? [] : [v];
+      if (key === 'cfgDefaultStatus') ns.filterStatuses = v === 'visited' ? ['visited'] : [];
+      const cfg = this.cfgObject({ ...s, ...ns });
+      try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
+      return ns;
+    });
+  }
+
   appSettings() {
-    return { detailsFormDefault: this.state.cfgDetailsFormDefault, detailsCard: this.state.cfgDetailsCard, statusCard: this.state.cfgStatusCard };
+    return this.cfgObject(this.state);
   }
 
   downloadJson(obj, name) {
@@ -1377,7 +1720,7 @@ class Component extends DCLogic {
   }
 
   applySettings(settings) {
-    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false };
+    const cfg = { detailsFormDefault: settings.detailsFormDefault !== false, detailsCard: settings.detailsCard !== false, statusCard: settings.statusCard !== false, spin: settings.spin !== false, defaultYear: settings.defaultYear === 'all' ? 'all' : 'current', defaultTrip: (settings.defaultTrip === 'all' || settings.defaultTrip === 'work') ? settings.defaultTrip : 'vacation', defaultStatus: settings.defaultStatus === 'all' ? 'all' : 'visited', defaultTraveler: (settings.defaultTraveler === 'terry' || settings.defaultTraveler === 'karen') ? settings.defaultTraveler : 'all' };
     try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (er) {}
     return cfg;
   }
@@ -1404,6 +1747,7 @@ class Component extends DCLogic {
           next.cfgDetailsFormDefault = cfg.detailsFormDefault;
           next.cfgDetailsCard = cfg.detailsCard;
           next.cfgStatusCard = cfg.statusCard;
+          next.cfgSpin = cfg.spin;
           next.detailsOpen = cfg.detailsFormDefault;
           done.push('settings');
         }
@@ -1423,20 +1767,24 @@ class Component extends DCLogic {
 
   toggleAuthor() { this.setState(s => ({ authorOpen: !s.authorOpen })); }
   closeHelp() { this.setState({ helpOpen: false }); }
-  async openHelp() {
-    this.setState({ helpOpen: true });
-    if (this.state.helpHtml || this._helpLoading) return;
-    this._helpLoading = true;
+  openHelp() { this.setState({ helpOpen: true }); this.loadHelpDoc('readme'); }
+  showAppGuide() { this.loadHelpDoc('readme'); }
+  showDeployGuide() { this.loadHelpDoc('deploy'); }
+  async loadHelpDoc(which) {
+    const file = which === 'deploy' ? 'DEPLOY-azure.md' : 'README.md';
+    this._docCache = this._docCache || {};
+    if (this._docCache[which]) { this.setState({ helpDoc: which, helpHtml: this._docCache[which], helpError: '' }); return; }
+    this.setState({ helpDoc: which, helpHtml: '', helpError: '' });
     try {
-      const res = await fetch('README.md', { cache: 'no-store' });
+      const res = await fetch(file, { cache: 'no-store' });
       if (!res.ok) throw new Error('not found');
       const md = await res.text();
       const html = (window.marked && window.marked.parse) ? window.marked.parse(md) : md;
+      this._docCache[which] = html;
       this.setState({ helpHtml: html, helpError: '' });
     } catch (e) {
-      this.setState({ helpError: 'Could not load README.md. Open the app over a local server (e.g. VS Code Live Server) so the help file can be read.' });
+      this.setState({ helpError: 'Could not load ' + file + '. Open the app over a local server (e.g. VS Code Live Server) so the guide can be read.' });
     }
-    this._helpLoading = false;
   }
   toggleSel(key) { this.setState(s => ({ [key]: !s[key] })); }
   selKind() { const d = this.state.selData, s = this.state.selSettings; if (d && s) return 'both'; if (d) return 'data'; if (s) return 'settings'; return null; }
@@ -1545,10 +1893,12 @@ class Component extends DCLogic {
   editSelected() {
     const loc = this.state.locations.find(l => l.id === this.state.selectedId);
     if (!loc) return;
-    this.setState({ formOpen: true, editingId: loc.id, formError: '', detailsOpen: this.state.cfgDetailsFormDefault, form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'] } });
+    this.setState({ formOpen: true, editingId: loc.id, formError: '', detailsOpen: this.state.cfgDetailsFormDefault, form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [] } });
   }
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
+  toggleDup() { this.setState(s => ({ dupMode: !s.dupMode })); }
+  toggleSort() { this.setState(s => ({ sortDir: s.sortDir === 'desc' ? 'asc' : 'desc' })); }
   toggleType(field, key) {
     this.setState(s => {
       const cur = s.form[field] || [];
@@ -1556,14 +1906,18 @@ class Component extends DCLogic {
       return { form: { ...s.form, [field]: next } };
     });
   }
-  passesFilter(l, ignoreCountry) {
+  passesFilter(l, ignore) {
     const s = this.state;
+    const ignoreCountry = ignore === 'country' || ignore === 'geo';
+    const ignoreCity = ignore === 'city' || ignore === 'geo';
     const yr = l.date ? Number(l.date.slice(0, 4)) : null;
     if (s.filterYear !== 'all' && yr !== s.filterYear) return false;
     if (!ignoreCountry && s.filterCountries.length && !s.filterCountries.includes((l.country || '').trim())) return false;
+    if (!ignoreCity && s.filterCities.length && !s.filterCities.includes(((l.city || '').trim() + '|' + (l.country || '').trim()))) return false;
     if (s.filterStatuses.length && !s.filterStatuses.includes(l.status)) return false;
     if (s.filterVisit.length && !(l.visitTypes || []).some(k => s.filterVisit.includes(k))) return false;
     if (s.filterTrip.length && !(l.tripTypes || []).some(k => s.filterTrip.includes(k))) return false;
+    if (s.filterTravelers.length && !(l.travelers || []).some(k => s.filterTravelers.includes(k))) return false;
     const q = (s.filterText || '').trim().toLowerCase();
     if (q) {
       const hay = [l.city, l.state, l.country, l.notes].filter(Boolean).join(' ').toLowerCase();
@@ -1579,13 +1933,15 @@ class Component extends DCLogic {
   }
   toggleFilters() { this.setState(s => ({ filtersOpen: !s.filtersOpen })); }
   toggleHeat() { this.setState(s => ({ heatOpen: !s.heatOpen })); }
-  clearFilters() { this.setState({ filterStatuses: [], filterVisit: [], filterTrip: [], filterText: '', filterCountries: [] }); }
+  setHeatMode(m) { this.setState({ heatMode: m }); }
+  clearFilters() { this.setState({ filterYear: 'all', filterStatuses: [], filterVisit: [], filterTrip: [], filterTravelers: [], filterText: '', filterCountries: [], filterCities: [] }); }
   toggleCountry(c) { this.setState(s => { const cur = s.filterCountries; return { filterCountries: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
+  toggleCity(c) { this.setState(s => { const cur = s.filterCities; return { filterCities: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
 
   toggleCfgKey(stateKey, cfgKey) {
     this.setState(s => {
       const v = !s[stateKey];
-      const cfg = { detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard };
+      const cfg = this.cfgObject(s);
       cfg[cfgKey] = v;
       try { localStorage.setItem(this.CFG, JSON.stringify(cfg)); } catch (e) {}
       const out = { [stateKey]: v };
@@ -1682,13 +2038,19 @@ class Component extends DCLogic {
     let list, savedId;
     if (this.state.editingId != null) {
       savedId = this.state.editingId;
-      list = this.state.locations.map(l => l.id === savedId ? { ...l, ...f } : l);
+      list = this.state.locations.map(l => l.id === savedId ? { ...l, ...f, modifiedAt: new Date().toISOString() } : l);
     } else {
       savedId = Date.now();
-      list = [...this.state.locations, { ...f, id: savedId }];
+      list = [...this.state.locations, { ...f, id: savedId, createdAt: new Date().toISOString() }];
     }
     this.persist(list);
-    this.setState({ locations: list, formOpen: false, editingId: null, formError: '', selectedId: savedId });
+    if (this.state.dupMode) {
+      const dup = { ...f, date: '', dateEnd: '' };
+      delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
+      this.setState({ locations: list, formOpen: true, editingId: null, formError: '', selectedId: savedId, form: dup, calOpen: false });
+    } else {
+      this.setState({ locations: list, formOpen: false, editingId: null, formError: '', selectedId: savedId });
+    }
     const c = this.resolveCoords(list.find(l => l.id === savedId));
     if (c) this.flyTo(c);
   }
@@ -1704,6 +2066,15 @@ class Component extends DCLogic {
     const years = [...new Set([curY, ...datedYears])].sort((a, b) => b - a);
     const fy = this.state.filterYear;
     const visible = locations.filter(l => this.passesFilter(l));
+    // sort by date, direction toggleable; undated always sink to the bottom
+    const dir = this.state.sortDir === 'asc' ? 1 : -1;
+    visible.sort((a, b) => {
+      const da = a.date || '', db = b.date || '';
+      if (da && db) return da < db ? -dir : (da > db ? dir : 0);
+      if (da) return -1;
+      if (db) return 1;
+      return 0;
+    });
     const totalDest = visible.length;
     const totalDays = visible.reduce((s, l) => s + this.dayCount(l), 0);
 
@@ -1723,37 +2094,46 @@ class Component extends DCLogic {
     const yearOptions = [{ id: 'all', value: 'all', label: 'All years', selected: fy === 'all' }, ...years.map(y => ({ id: String(y), value: String(y), label: String(y), selected: fy === y }))];
 
     // color-coded filter chips
-    const fStat = this.state.filterStatuses, fVis = this.state.filterVisit, fTrip = this.state.filterTrip;
+    const fStat = this.state.filterStatuses, fVis = this.state.filterVisit, fTrip = this.state.filterTrip, fTrav = this.state.filterTravelers;
     const filterChip = (color, on) => "display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.03em; padding:5px 9px; border-radius:7px; cursor:pointer; transition:all .15s; " + (on ? `color:#04111e; background:${color}; border:1px solid ${color}; font-weight:600;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const filterDot = (color, on) => `width:7px; height:7px; border-radius:50%; flex:none; background:${on ? 'rgba(4,17,30,0.55)' : color};`;
     const statusFilterChips = ['planned', 'visited', 'dream'].map(k => { const m = meta[k]; const on = fStat.includes(k); return { key: k, label: m.short, style: filterChip(m.color, on), dotStyle: filterDot(m.color, on), onToggle: () => this.toggleFilter('filterStatuses', k) }; });
     const visitFilterChips = this.VISIT_TYPES.map(o => { const on = fVis.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterVisit', o.key) }; });
     const tripFilterChips = this.TRIP_TYPES.map(o => { const on = fTrip.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterTrip', o.key) }; });
-    const activeFilterCount = fStat.length + fVis.length + fTrip.length + (this.state.filterText.trim() ? 1 : 0) + this.state.filterCountries.length;
+    const travelerFilterChips = this.TRAVELERS.map(o => { const on = fTrav.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterTravelers', o.key) }; });
+    const activeFilterCount = fStat.length + fVis.length + fTrip.length + fTrav.length + (this.state.filterText.trim() ? 1 : 0) + this.state.filterCountries.length;
 
     // --- heat map (country intensity over the filtered set) ---
     const lerp = (a, b, t) => a + (b - a) * t;
     const stops = [[29, 74, 94], [56, 189, 248], [251, 191, 36]];
     const mix = (a, b, t) => `rgb(${Math.round(lerp(a[0], b[0], t))},${Math.round(lerp(a[1], b[1], t))},${Math.round(lerp(a[2], b[2], t))})`;
     const heatColor = (t) => t <= 0.5 ? mix(stops[0], stops[1], t / 0.5) : mix(stops[1], stops[2], (t - 0.5) / 0.5);
-    const heatVisible = locations.filter(l => this.passesFilter(l, true));
-    const byCountry = {};
-    heatVisible.forEach(l => { const c = (l.country || '').trim() || '—'; (byCountry[c] = byCountry[c] || { count: 0, days: 0 }); byCountry[c].count++; byCountry[c].days += this.dayCount(l); });
-    const heatRows = Object.keys(byCountry).map(c => ({ country: c, count: byCountry[c].count, days: byCountry[c].days })).sort((a, b) => b.count - a.count || b.days - a.days);
+    const heatCity = this.state.heatMode === 'city';
+    const heatVisible = locations.filter(l => this.passesFilter(l, heatCity ? 'city' : 'country'));
+    const buckets = {};
+    heatVisible.forEach(l => {
+      const country = (l.country || '').trim();
+      const key = heatCity ? ((l.city || '').trim() || '—') + '|' + country : (country || '—');
+      const label = heatCity ? ((l.city || '').trim() || '—') : (country || '—');
+      const sub = heatCity ? country : '';
+      (buckets[key] = buckets[key] || { key, label, sub, count: 0, days: 0 });
+      buckets[key].count++; buckets[key].days += this.dayCount(l);
+    });
+    const heatRows = Object.keys(buckets).map(k => buckets[k]).sort((a, b) => b.count - a.count || b.days - a.days);
     const heatMax = heatRows.reduce((m, r) => Math.max(m, r.count), 0) || 1;
-    const activeCountries = this.state.filterCountries;
+    const activeGeo = heatCity ? this.state.filterCities : this.state.filterCountries;
     const heatTiles = heatRows.map(r => {
       const t = r.count / heatMax;
       const bg = heatColor(t);
       const dark = t > 0.52;
-      const sel = activeCountries.includes(r.country);
-      const dimmed = activeCountries.length > 0 && !sel;
+      const sel = activeGeo.includes(r.key);
+      const dimmed = activeGeo.length > 0 && !sel;
       return {
-        country: r.country, count: r.count,
+        country: r.label, sub: r.sub, count: r.count,
         countLabel: `${r.count} ${r.count === 1 ? 'trip' : 'trips'} · ${r.days}d`,
         style: `display:flex; flex-direction:column; justify-content:space-between; min-height:62px; padding:11px 12px; border-radius:11px; cursor:pointer; background:${bg}; color:${dark ? '#04111e' : '#e6f1fb'}; opacity:${dimmed ? '0.35' : '1'}; transition:opacity .15s; ` + (sel ? 'outline:2px solid #fbbf24; outline-offset:-2px; border:1px solid transparent;' : 'border:1px solid rgba(255,255,255,0.08);'),
         subColor: dark ? 'rgba(4,17,30,0.7)' : 'rgba(230,241,251,0.7)',
-        onSelect: () => this.toggleCountry(r.country),
+        onSelect: heatCity ? (() => this.toggleCity(r.key)) : (() => this.toggleCountry(r.key)),
       };
     });
     const heatLegend = `linear-gradient(90deg, ${heatColor(0)}, ${heatColor(0.5)}, ${heatColor(1)})`;
@@ -1772,8 +2152,10 @@ class Component extends DCLogic {
       const addr = [sl.city, sl.state, sl.country].filter(Boolean).join(', ');
       const cardPill = (txt, color) => ({ label: txt, style: `font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase; padding:4px 8px; border-radius:6px; color:${color}; background:${color}1f; border:1px solid ${color}66;` });
       const typeChips = [...(sl.visitTypes || []).map(k => cardPill(this.VTL[k] || k, this.VTC[k] || '#9fd6f0')), ...(sl.tripTypes || []).map(k => cardPill(this.TTL[k] || k, this.TTC[k] || '#c4b5fd'))];
+      const cardTravelers = (sl.travelers || []).map(k => cardPill(this.TRL[k] || k, this.TRC[k] || '#fb7185'));
       selected = {
         typeChips, hasTypes: typeChips.length > 0,
+        cardTravelers, hasTravelers: cardTravelers.length > 0,
         ...sl, color: m.color, statusLabel: m.label,
         sub: [sl.state, sl.country].filter(Boolean).join(', ') || '—',
         coordsLabel: manual ? 'COORDS' : 'LOCATED BY',
@@ -1804,6 +2186,10 @@ class Component extends DCLogic {
     const fvt = form.visitTypes || [], ftt = form.tripTypes || [];
     const visitTypeChips = this.VISIT_TYPES.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, fvt.includes(o.key)), onToggle: () => this.toggleType('visitTypes', o.key) }));
     const tripTypeChips = this.TRIP_TYPES.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftt.includes(o.key)), onToggle: () => this.toggleType('tripTypes', o.key) }));
+    const ftr = form.travelers || [];
+    const travelerChips = this.TRAVELERS.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftr.includes(o.key)), onToggle: () => this.toggleType('travelers', o.key) }));
+    const segStyle = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 4px; border-radius:7px; cursor:pointer; " + (on ? `color:#04111e; background:${color}; border:1px solid ${color}; font-weight:600;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
+    const helpTabStyle = (on) => "font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; padding:5px 10px; border-radius:7px; cursor:pointer; border:none; " + (on ? "color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); font-weight:600;" : "color:#9fb0c6; background:transparent;");
     const cfgPill = (on) => "font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; padding:5px 11px; border-radius:7px; cursor:pointer; flex:none; " + (on ? "color:#04111e; background:#34d399; border:1px solid #34d399; font-weight:600;" : "color:#8093aa; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);");
 
     // calendar
@@ -1850,6 +2236,7 @@ class Component extends DCLogic {
       statusFilterChips,
       visitFilterChips,
       tripFilterChips,
+      travelerFilterChips,
       activeFilterCount,
       hasActiveFilters: activeFilterCount > 0,
       filtersOpen: this.state.filtersOpen,
@@ -1865,18 +2252,46 @@ class Component extends DCLogic {
       heatEmpty: heatTiles.length === 0,
       heatLegend,
       heatCountryCount: heatRows.length,
-      activeCountryLabel: this.state.filterCountries.join(', '),
-      hasActiveCountry: this.state.filterCountries.length > 0,
-      clearCountry: () => this.setState({ filterCountries: [] }),
+      heatMode: this.state.heatMode,
+      heatCountLabel: heatRows.length + ' ' + (this.state.heatMode === 'city' ? 'cities' : 'countries') + ' · tap to filter the globe',
+      heatModeCountryStyle: this.state.heatMode !== 'city' ? 'flex:1; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:5px; border-radius:6px; cursor:pointer; color:#04111e; background:#5fd3ff; border:none; font-weight:600;' : 'flex:1; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:5px; border-radius:6px; cursor:pointer; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);',
+      heatModeCityStyle: this.state.heatMode === 'city' ? 'flex:1; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:5px; border-radius:6px; cursor:pointer; color:#04111e; background:#5fd3ff; border:none; font-weight:600;' : 'flex:1; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:5px; border-radius:6px; cursor:pointer; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);',
+      setHeatCountry: () => this.setHeatMode('country'),
+      setHeatCity: () => this.setHeatMode('city'),
+      activeCountryLabel: (this.state.heatMode === 'city' ? this.state.filterCities.map(k => k.split('|')[0]) : this.state.filterCountries).join(', '),
+      hasActiveCountry: (this.state.heatMode === 'city' ? this.state.filterCities : this.state.filterCountries).length > 0,
+      clearCountry: () => this.setState({ filterCountries: [], filterCities: [] }),
       heatBtnStyle: 'flex:none; width:38px; display:flex; align-items:center; justify-content:center; border-radius:9px; cursor:pointer; ' + (this.state.heatOpen ? 'color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:1px solid #5fd3ff;' : 'color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25);'),
       selected,
       visitTypeChips,
       tripTypeChips,
+      travelerChips,
       detailsOpen: this.state.detailsOpen,
       detailsArrow: this.state.detailsOpen ? '▾' : '▸',
       toggleDetails: () => this.toggleDetails(),
       showDetailsCard: this.state.cfgDetailsCard,
       showStatusCard: this.state.cfgStatusCard,
+      cfgSpinStyle: cfgPill(this.state.cfgSpin),
+      cfgSpinLabel: this.state.cfgSpin ? 'ON' : 'OFF',
+      toggleSpin: () => this.toggleCfgKey('cfgSpin', 'spin'),
+      defYearSeg: [
+        { label: 'All years', style: segStyle(this.state.cfgDefaultYear === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'all') },
+        { label: 'Current year', style: segStyle(this.state.cfgDefaultYear === 'current', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'current') },
+      ],
+      defTripSeg: [
+        { label: 'All', style: segStyle(this.state.cfgDefaultTrip === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultTrip', 'all') },
+        { label: 'Personal', style: segStyle(this.state.cfgDefaultTrip === 'vacation', this.TTC.vacation), onSelect: () => this.setDefaultFilter('cfgDefaultTrip', 'vacation') },
+        { label: 'Work', style: segStyle(this.state.cfgDefaultTrip === 'work', this.TTC.work), onSelect: () => this.setDefaultFilter('cfgDefaultTrip', 'work') },
+      ],
+      defStatusSeg: [
+        { label: 'All', style: segStyle(this.state.cfgDefaultStatus === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultStatus', 'all') },
+        { label: 'Visited', style: segStyle(this.state.cfgDefaultStatus === 'visited', this.META.visited.color), onSelect: () => this.setDefaultFilter('cfgDefaultStatus', 'visited') },
+      ],
+      defTravelerSeg: [
+        { label: 'All', style: segStyle(this.state.cfgDefaultTraveler === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'all') },
+        { label: 'Terry', style: segStyle(this.state.cfgDefaultTraveler === 'terry', this.TRC.terry), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'terry') },
+        { label: 'Karen', style: segStyle(this.state.cfgDefaultTraveler === 'karen', this.TRC.karen), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'karen') },
+      ],
       cfgDetailsFormDefault: this.state.cfgDetailsFormDefault,
       cfgDetailsCard: this.state.cfgDetailsCard,
       cfgStatusCard: this.state.cfgStatusCard,
@@ -1894,10 +2309,44 @@ class Component extends DCLogic {
       autoLocateLabel: this.state.geocoding ? 'Locating…' : '⌖  Auto-locate from city / country',
       settingsOpen: this.state.settingsOpen,
       toggleSettings: () => this.toggleSettings(),
-      storageLabel: this.state.dataMode === 'file' ? (this.state.dataFileName || 'Linked JSON file') : 'Browser storage',
-      storageTitle: this.state.dataMode === 'file'
-        ? 'Linked file: ' + (this.state.dataFileName || 'trip-locations.json') + ' — browsers don’t expose the full folder path for security.'
-        : 'Saved in this browser’s local storage on this device.',
+      storageLabel: this.state.dataMode === 'cloud' ? 'Cloud (Azure)' : (this.state.dataMode === 'file' ? (this.state.dataFileName || 'Linked JSON file') : 'Browser storage'),
+      storageTitle: this.state.dataMode === 'cloud'
+        ? 'Synced to Azure Blob Storage via the site API.'
+        : (this.state.dataMode === 'file'
+          ? 'Linked file: ' + (this.state.dataFileName || 'trip-locations.json') + ' — browsers don’t expose the full folder path for security.'
+          : 'Saved in this browser’s local storage on this device.'),
+      cloudAvailable: this.state.cloudAvailable,
+      cloudNotAvailable: !this.state.cloudAvailable,
+      cloudDotColor: this.state.cloudAvailable ? (this.state.cloudAuth ? '#34d399' : '#fbbf24') : '#5a6b80',
+      cloudAuth: this.state.cloudAuth,
+      cloudMsg: this.state.cloudMsg,
+      reloadCloud: () => this.cloudLoad(),
+      dsLocalStyle: segStyle(this.state.cfgDataSource === 'local', '#5fd3ff'),
+      dsCloudStyle: segStyle(this.state.cfgDataSource === 'cloud', '#5fd3ff'),
+      setLocalSource: () => this.requestLocalSource(),
+      setCloudSource: () => this.setDataSource('cloud'),
+      confirmLocal: this.state.confirmLocal,
+      cancelLocalSwitch: () => this.cancelLocalSwitch(),
+      doLocalSwitch: () => this.setDataSource('local'),
+      hasCloudSeed: (this.state.cloudSeed || 0) > 0,
+      cloudSeedCount: this.state.cloudSeed || 0,
+      uploadLocalToCloud: () => this.uploadLocalToCloud(),
+      discardLocalForCloud: () => this.discardLocalForCloud(),
+      isCloudSource: false,
+      canEdit: true,
+      canAdmin: true,
+      cloudBlocked: this.state.cfgDataSource === 'cloud' && this.state.cloudState !== 'ok',
+      cloudBlockTitle: this.state.cloudState === 'denied' ? 'No access' : 'Sign in required',
+      cloudBlockMsg: this.state.cloudState === 'denied'
+        ? ((this.state.cloudUser ? 'Signed in as ' + this.state.cloudUser + ', but this' : 'This') + ' account has no rights to view or edit this data. Please contact the author to request reader (view) or editor (edit) access.')
+        : 'This data is private. Sign in with an authorized account to view it, or contact the author for access.',
+      cloudBlockAction: this.state.cloudState === 'denied' ? 'Sign out' : 'Sign in',
+      cloudBlockHref: this.state.cloudState === 'denied' ? '/.auth/logout' : '/.auth/login/aad',
+      cloudUseLocal: () => this.setDataSource('local'),
+      cloudAuthLabel: this.state.cloudAuth ? 'Signed in — edits sync' : 'Sign in to view & edit your trips',
+      cloudAuthColor: this.state.cloudAuth ? '#7ee0a8' : '#fcd34d',
+      cloudAuthAction: this.state.cloudAuth ? 'Sign out' : 'Sign in',
+      cloudAuthHref: this.state.cloudAuth ? '/.auth/logout' : '/.auth/login/aad',
       isFileMode: this.state.dataMode === 'file',
       fsSupported: this.state.fsSupported,
       needsReconnect: this.state.needsReconnect,
@@ -1915,6 +2364,10 @@ class Component extends DCLogic {
       helpError: this.state.helpError,
       openHelp: () => this.openHelp(),
       closeHelp: () => this.closeHelp(),
+      showAppGuide: () => this.showAppGuide(),
+      showDeployGuide: () => this.showDeployGuide(),
+      appGuideTabStyle: helpTabStyle(this.state.helpDoc !== 'deploy'),
+      deployGuideTabStyle: helpTabStyle(this.state.helpDoc === 'deploy'),
       stopProp: (e) => e.stopPropagation(),
       stop: (e) => { e.stopPropagation(); },
       helpNode: this.state.helpHtml ? React.createElement('div', { className: 'vl-help', dangerouslySetInnerHTML: { __html: this.state.helpHtml } }) : null,
@@ -1937,6 +2390,13 @@ class Component extends DCLogic {
       importJson: (e) => this.importJson(e),
       formOpen,
       formError: this.state.formError,
+      cityHint: (form.city && form.city.trim()) ? '' : '·required',
+      dateHint: form.date ? '' : '·required',
+      dupWarning: this.formIsDuplicate(),
+      sortDir: this.state.sortDir,
+      sortArrow: this.state.sortDir === 'desc' ? '↓' : '↑',
+      sortLabel: this.state.sortDir === 'desc' ? 'Newest' : 'Oldest',
+      toggleSort: () => this.toggleSort(),
       stateHint: stateReq ? '·required' : '·opt',
       stateHintColor: stateReq ? '#fbbf24' : '#445',
       paneTransform: this.state.paneOpen ? 'translateX(0)' : 'translateX(-360px)',
@@ -1947,6 +2407,14 @@ class Component extends DCLogic {
       formMode: editingId != null ? 'EDIT DESTINATION' : 'NEW DESTINATION',
       formTitle: editingId != null ? 'Edit location' : 'Add location',
       saveLabel: this.state.geocoding ? 'Locating…' : (editingId != null ? 'Save changes' : 'Add to globe'),
+      dupOn: this.state.dupMode,
+      dupStyle: cfgPill(this.state.dupMode),
+      dupLabel: this.state.dupMode ? 'ON' : 'OFF',
+      toggleDup: () => this.toggleDup(),
+      showCreated: editingId != null && !!form.createdAt,
+      createdText: form.createdAt ? (() => { try { return new Date(form.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return form.createdAt; } })() : '',
+      showModified: editingId != null && !!form.modifiedAt,
+      modifiedText: form.modifiedAt ? (() => { try { return new Date(form.modifiedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return form.modifiedAt; } })() : '',
       form,
       onField: this.onField,
       openAdd: this.openAdd,
