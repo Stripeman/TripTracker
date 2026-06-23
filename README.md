@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-v1.4-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-v1.5-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -61,19 +61,34 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **Export / Import** with independent **Data** and **Settings** switches: back up or restore destinations, display settings, or both. Import only applies what you've switched on *and* what the file contains.
 - **Clear data** always downloads a dated backup first.
 
-### ⚙ Display settings
+### ⚙ Settings — three tabs
+The ⚙ panel has a left‑hand tab rail; **Filters is selected by default**:
+
+**Filters tab** — sets what the filters open to on each visit, via colour‑coded segmented toggles that match the filter colours:
+- **Sort destinations** — Descending (newest first) / Ascending (oldest first)
+- **Year** — All years / Current year
+- **Trip type** — All / *(your trip types)*
+- **Visit type** — All / *(your visit types)*
+- **Status** — All / Visited
+- **Traveler** — All / *(your travelers)*
+- Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
+
+**System tab** — display + storage:
 - Toggle whether the **Trip details** section is open by default on the form.
 - Toggle whether **trip details** and the **status** appear on the detail card.
 - **Spin the globe** — turn the idle auto‑rotation on or off (you can always drag to spin manually).
+- **Data source**, linked file / browser storage, and **Export / Import** (see Storage & backup).
 
-### 🎛 Default filters
-- A **Default Filters** section sets what the filters open to on each visit, via colour‑coded segmented toggles that match the filter colours:
-  - **Sort destinations** — Descending (newest first) / Ascending (oldest first); controls the order of the destinations list
-  - **Year** — All years / Current year
-  - **Trip type** — All / Personal / Work
-  - **Status** — All / Visited
-  - **Traveler** — All / Terry / Karen
-- Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
+**Data tab** — editable reference data (see below).
+
+### 🧩 Configuration data (editable lists)
+The **Data** tab turns what used to be fixed lists into editable data. For each category you can **rename**, **recolour** (colour swatch), **add**, and **remove** items; changes flow live into the Add/Edit form, the filters, the detail card, and the globe colours:
+- **Travelers** (e.g. Terry · Karen · Nikki · Amanda)
+- **Trip types** (e.g. Personal · Work)
+- **Visit types** (e.g. National park · City · Family · Beach · Food & wine · Adventure · Road trip · Cultural)
+- **Statuses** (Planned · Visited · Dream) — can be renamed/recoloured but **not** added or removed, since the app's date‑driven logic relies on those three.
+- A **settings version number** increments on every change and is shown at the bottom of the tab. It travels with settings export/import so you can tell which revision a backup came from.
+- All four lists, plus the version, are part of the **settings** payload — exported and imported with the Settings switch.
 
 ### 🖱 Globe controls
 - **Drag** to rotate, **mouse‑wheel** to zoom from 1× to 6× (drag sensitivity scales with zoom).
@@ -117,6 +132,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
   "version": 1,
   "exportedAt": "2026-06-20T00:00:00.000Z",
   "settings": {
+    "version": 7,
     "detailsFormDefault": true,
     "detailsCard": true,
     "statusCard": true,
@@ -126,7 +142,11 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
     "defaultStatus": "visited",
     "defaultTraveler": "all",
     "sortDir": "desc",
-    "dataSource": "cloud"
+    "dataSource": "cloud",
+    "travelers": [{ "key": "terry", "label": "Terry", "color": "#fb7185" }],
+    "tripTypes": [{ "key": "vacation", "label": "Personal", "color": "#2dd4bf" }],
+    "visitTypes": [{ "key": "city", "label": "City", "color": "#38bdf8" }],
+    "statuses": [{ "key": "visited", "label": "Visited", "short": "Visited", "color": "#34d399" }]
   },
   "locations": [
     {
@@ -152,12 +172,13 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 
 **Field values:**
 - `status`: `planned` · `visited` · `dream`
-- `visitTypes` (any number): `natlpark` · `city` · `family` · `beach` · `food` · `adventure` · `roadtrip` · `cultural`
-- `tripTypes` (any number): `vacation` (shown as *Personal*) · `work`
-- `travelers` (any number): `terry` · `karen` · `nikki` · `amanda`
+- `visitTypes` (any number): keys from your editable **Visit types** list (defaults: `natlpark` · `city` · `family` · `beach` · `food` · `adventure` · `roadtrip` · `cultural`)
+- `tripTypes` (any number): keys from your editable **Trip types** list (defaults: `vacation` shown as *Personal* · `work`)
+- `travelers` (any number): keys from your editable **Travelers** list (defaults: `terry` · `karen` · `nikki` · `amanda`)
 - `lat` / `lon` are optional strings — leave blank to geocode from city/state/country on save.
 - `dateEnd` is optional (single‑day trips omit it). `createdAt` / `modifiedAt` are set automatically.
-- `settings`: `defaultYear` is `current` or `all`; `defaultTrip` is `all` / `vacation` / `work`; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` / `terry` / `karen`; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`.
+- `settings`: `version` is a number that auto‑increments on every settings change; `defaultYear` is `current` or `all`; `defaultTrip` is `all` or any trip‑type key; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` or any traveler key; `defaultVisit` is `all` or any visit‑type key; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`.
+- `settings.travelers` / `tripTypes` / `visitTypes` / `statuses` are the **editable reference lists** — each item is `{ key, label, color }` (statuses also carry a `short` label). Omit them to fall back to the built‑in defaults.
 
 Data‑only and settings‑only exports contain just the `locations` or `settings` key respectively. Imports accept any of these shapes (a bare array of locations is also supported for backward compatibility).
 
