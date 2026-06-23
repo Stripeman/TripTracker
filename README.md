@@ -29,7 +29,8 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 
 ### 🗓 Dates
 - Pick a **single day**, **drag across the calendar**, or **click a start day then an end day** to select a date range.
-- The calendar is a **continuously scrolling list of months** (one year back to two years forward), so a range that spans month boundaries is just a scroll — no paging. It opens scrolled to the current month.
+- **Type a date directly** — the calendar popover has editable **Start** and **End** fields (`YYYY-MM-DD`, also accepts `MM/DD/YYYY`). This is the way to enter dates far in the past or future; typing a start date re-centres the calendar on that month. Input is strictly validated — only a complete, real calendar date is accepted (e.g. `2001-02-30` is rejected), so partial/garbage text never sets a date.
+- The calendar is a **continuously scrolling list of months** (one year back to two years forward), so a nearby range that spans month boundaries is just a scroll — no paging. It opens scrolled to the current month (or to the start date you've typed).
 - Choosing a date auto‑sets the status: a future date → **Planned**, today or past → **Visited** (you can still override).
 
 ### 📌 Smart location resolution

@@ -1,0 +1,866 @@
+{
+  "app": "vacation-location",
+  "version": 1,
+  "exportedAt": "2026-06-23T11:08:26.976Z",
+  "locations": [
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-06-18",
+      "dateEnd": "2026-06-21",
+      "status": "visited",
+      "notes": "Seeing my Baby <3 <3",
+      "visitTypes": [
+        "family"
+      ],
+      "tripTypes": [
+        "vacation"
+      ],
+      "createdAt": "2026-06-19T20:36:26.830Z",
+      "id": 1781901386830,
+      "modifiedAt": "2026-06-22T20:08:35.888Z",
+      "travelers": []
+    },
+    {
+      "city": "Norfolk",
+      "state": "VA",
+      "country": "USA",
+      "lat": "36.8468",
+      "lon": "-76.2852",
+      "date": "2026-05-08",
+      "dateEnd": "2026-05-23",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "family"
+      ],
+      "tripTypes": [
+        "vacation"
+      ],
+      "createdAt": "2026-06-19T20:46:43.680Z",
+      "id": 1781902003680
+    },
+    {
+      "city": "Colorado Springs",
+      "state": "Colorado",
+      "country": "USA",
+      "lat": "38.8339",
+      "lon": "-104.8214",
+      "date": "2024-10-25",
+      "dateEnd": "2024-11-07",
+      "status": "visited",
+      "notes": "Amanda and Conner's Wedding",
+      "visitTypes": [
+        "family"
+      ],
+      "tripTypes": [
+        "vacation"
+      ],
+      "createdAt": "2026-06-19T20:48:39.923Z",
+      "id": 1781902119923
+    },
+    {
+      "city": "Dublin",
+      "state": "",
+      "country": "Ireland",
+      "lat": "53.3331",
+      "lon": "-6.2489",
+      "date": "2022-04-22",
+      "dateEnd": "2022-04-27",
+      "status": "visited",
+      "notes": "Nikki, Coleen and Karen",
+      "visitTypes": [
+        "family",
+        "adventure"
+      ],
+      "tripTypes": [
+        "vacation"
+      ],
+      "createdAt": "2026-06-19T20:50:15.383Z",
+      "id": 1781902215383
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-07-02",
+      "dateEnd": "2026-07-05",
+      "status": "planned",
+      "notes": "Normandy",
+      "visitTypes": [
+        "family"
+      ],
+      "tripTypes": [
+        "vacation"
+      ],
+      "createdAt": "2026-06-19T20:54:07.704Z",
+      "id": 1781902447704
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-06-05",
+      "dateEnd": "2026-06-07",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "family"
+      ],
+      "tripTypes": [
+        "vacation"
+      ],
+      "createdAt": "2026-06-19T20:56:30.585Z",
+      "id": 1781902590585
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-04-17",
+      "dateEnd": "2026-04-19",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [
+        "family"
+      ],
+      "tripTypes": [
+        "vacation"
+      ],
+      "createdAt": "2026-06-19T20:57:14.141Z",
+      "id": 1781902634141
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-07-02",
+      "dateEnd": "2026-07-05",
+      "status": "planned",
+      "notes": "",
+      "visitTypes": [
+        "family"
+      ],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "createdAt": "2026-06-19T22:05:54.082Z",
+      "id": 1781906754082
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-03-20",
+      "dateEnd": "2026-03-22",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "createdAt": "2026-06-22T20:32:51.786Z",
+      "id": 1782160371786
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-04-29",
+      "dateEnd": "2026-05-03",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160436179,
+      "createdAt": "2026-06-22T20:33:56.179Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-03-06",
+      "dateEnd": "2026-03-08",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160461121,
+      "createdAt": "2026-06-22T20:34:21.121Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-02-20",
+      "dateEnd": "2026-02-22",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160474275,
+      "createdAt": "2026-06-22T20:34:34.275Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-02-13",
+      "dateEnd": "2026-02-15",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160486033,
+      "createdAt": "2026-06-22T20:34:46.033Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-01-30",
+      "dateEnd": "2026-02-01",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160500087,
+      "createdAt": "2026-06-22T20:35:00.087Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-01-16",
+      "dateEnd": "2026-01-18",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160511548,
+      "createdAt": "2026-06-22T20:35:11.548Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2026-01-09",
+      "dateEnd": "2026-01-11",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160521629,
+      "createdAt": "2026-06-22T20:35:21.629Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2025-12-15",
+      "dateEnd": "2025-12-17",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160548752,
+      "createdAt": "2026-06-22T20:35:48.752Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2025-11-21",
+      "dateEnd": "2025-11-23",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160565855,
+      "createdAt": "2026-06-22T20:36:05.855Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2025-12-02",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160843848,
+      "createdAt": "2026-06-22T20:40:43.848Z"
+    },
+    {
+      "city": "Saint-Rémy-de-Provence",
+      "state": "",
+      "country": "France",
+      "lat": "43.7885",
+      "lon": "4.8317",
+      "date": "2025-12-03",
+      "dateEnd": "2025-12-09",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782160910531,
+      "createdAt": "2026-06-22T20:41:50.531Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2025-11-08",
+      "dateEnd": "2025-11-09",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "createdAt": "2026-06-22T20:47:38.569Z",
+      "id": 1782161258569
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2025-10-03",
+      "dateEnd": "2025-10-05",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782161311338,
+      "createdAt": "2026-06-22T20:48:31.338Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2025-09-25",
+      "dateEnd": "2025-09-28",
+      "status": "visited",
+      "notes": "Whisky Live Paris",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782161342643,
+      "createdAt": "2026-06-22T20:49:02.643Z",
+      "modifiedAt": "2026-06-22T20:50:52.443Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2025-09-12",
+      "dateEnd": "2025-09-14",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782161362633,
+      "createdAt": "2026-06-22T20:49:22.633Z"
+    },
+    {
+      "city": "Nice",
+      "state": "",
+      "country": "France",
+      "lat": "43.7031",
+      "lon": "7.2661",
+      "date": "2025-08-28",
+      "dateEnd": "2025-09-01",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782161375474,
+      "createdAt": "2026-06-22T20:49:35.474Z",
+      "modifiedAt": "2026-06-22T20:52:31.838Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2025-08-22",
+      "dateEnd": "2025-08-24",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782161387796,
+      "createdAt": "2026-06-22T20:49:47.796Z"
+    },
+    {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lat": "48.8534",
+      "lon": "2.3488",
+      "date": "2025-06-13",
+      "dateEnd": "2025-06-15",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782161398553,
+      "createdAt": "2026-06-22T20:49:58.553Z"
+    },
+    {
+      "city": "Split",
+      "state": "",
+      "country": "Croasia",
+      "lat": "43.5089",
+      "lon": "16.4392",
+      "date": "2025-07-27",
+      "dateEnd": "2025-08-01",
+      "status": "visited",
+      "notes": "",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry",
+        "karen"
+      ],
+      "id": 1782161666575,
+      "createdAt": "2026-06-22T20:54:26.575Z"
+    },
+    {
+      "city": "München",
+      "state": "",
+      "country": "Germany",
+      "lat": "48.1374",
+      "lon": "11.5755",
+      "date": "2024-07-27",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "\nTaylor Swift 27 July 2024 18:15 local time at Olympiastadion München\nSaturday, July 27, 2024⋅18:15",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry",
+        "karen"
+      ],
+      "createdAt": "2026-06-22T21:03:00.828Z",
+      "id": 1782162180828
+    },
+    {
+      "city": "Cinque Terre",
+      "state": "",
+      "country": "Italy",
+      "lat": "44.122",
+      "lon": "9.7133",
+      "date": "2024-06-09",
+      "dateEnd": "2024-06-15",
+      "status": "visited",
+      "notes": "\nTaylor Swift 27 July 2024 18:15 local time at Olympiastadion München\nSaturday, July 27, 2024⋅18:15",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry",
+        "karen"
+      ],
+      "id": 1782162762463,
+      "createdAt": "2026-06-22T21:12:42.463Z"
+    },
+    {
+      "city": "Poprad",
+      "state": "",
+      "country": "Slovakia",
+      "lat": "49.0614",
+      "lon": "20.2980",
+      "date": "2020-09-01",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "Not sure of the Date nor location but it was just across the polish border",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "createdAt": "2026-06-22T21:17:58.320Z",
+      "id": 1782163078320
+    },
+    {
+      "city": "Krakow",
+      "state": "",
+      "country": "Poland",
+      "lat": "50.0614",
+      "lon": "19.9366",
+      "date": "2020-09-01",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "Not sure of the Date nor location but it was just across the polish border",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782163108493,
+      "createdAt": "2026-06-22T21:18:28.493Z",
+      "modifiedAt": "2026-06-22T21:19:18.911Z"
+    },
+    {
+      "city": "Prag",
+      "state": "",
+      "country": "Czech Republic",
+      "lat": "50.0880",
+      "lon": "14.4208",
+      "date": "2020-09-01",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "Not sure of the Date nor location but it was just across the polish border",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "id": 1782163268717,
+      "createdAt": "2026-06-22T21:21:08.717Z"
+    },
+    {
+      "city": "Boise",
+      "state": "Idaho",
+      "country": "",
+      "lat": "43.6135",
+      "lon": "-116.2035",
+      "date": "2021-03-17",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "John :(  7  March 2021",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry"
+      ],
+      "createdAt": "2026-06-22T21:26:25.849Z",
+      "id": 1782163585849
+    },
+    {
+      "city": "Norfolk",
+      "state": "VA",
+      "country": "USA",
+      "lat": "36.8468",
+      "lon": "-76.2852",
+      "date": "2022-08-07",
+      "dateEnd": "2022-08-14",
+      "status": "visited",
+      "notes": "John :(  7  March 2021",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry",
+        "karen"
+      ],
+      "id": 1782163688556,
+      "createdAt": "2026-06-22T21:28:08.556Z"
+    },
+    {
+      "city": "Spokane",
+      "state": "WA",
+      "country": "USA",
+      "lat": "47.6597",
+      "lon": "-117.4291",
+      "date": "2022-02-04",
+      "dateEnd": "",
+      "status": "visited",
+      "notes": "Dad Passed Away",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry",
+        "karen"
+      ],
+      "id": 1782164085885,
+      "createdAt": "2026-06-22T21:34:45.885Z"
+    },
+    {
+      "city": "Skagway",
+      "state": " Alaska",
+      "country": "USA",
+      "lat": "59.4583",
+      "lon": "-135.3139",
+      "date": "2023-07-13",
+      "dateEnd": "2023-07-30",
+      "status": "visited",
+      "notes": "Juneau, Ketchikan, Skagway, and Sitka",
+      "visitTypes": [],
+      "tripTypes": [
+        "vacation"
+      ],
+      "travelers": [
+        "terry",
+        "karen",
+        "nikki"
+      ],
+      "id": 1782164678284,
+      "createdAt": "2026-06-22T21:44:38.284Z",
+      "modifiedAt": "2026-06-22T21:44:45.916Z"
+    }
+  ],
+  "settings": {
+    "version": 6,
+    "detailsFormDefault": true,
+    "detailsCard": true,
+    "statusCard": true,
+    "spin": true,
+    "defaultYear": "current",
+    "defaultTrip": "vacation",
+    "defaultStatus": "visited",
+    "defaultTraveler": "all",
+    "defaultVisit": "all",
+    "sortDir": "desc",
+    "dataSource": "cloud",
+    "visitTypes": [
+      {
+        "key": "natlpark",
+        "label": "National park",
+        "color": "#4ade80"
+      },
+      {
+        "key": "city",
+        "label": "City",
+        "color": "#38bdf8"
+      },
+      {
+        "key": "family",
+        "label": "Family",
+        "color": "#fb7185"
+      },
+      {
+        "key": "beach",
+        "label": "Beach",
+        "color": "#22d3ee"
+      },
+      {
+        "key": "food",
+        "label": "Food & wine",
+        "color": "#fbbf24"
+      },
+      {
+        "key": "adventure",
+        "label": "Adventure",
+        "color": "#fb923c"
+      },
+      {
+        "key": "roadtrip",
+        "label": "Road trip",
+        "color": "#a78bfa"
+      },
+      {
+        "key": "cultural",
+        "label": "Cultural",
+        "color": "#e879f9"
+      }
+    ],
+    "tripTypes": [
+      {
+        "key": "vacation",
+        "label": "Personal",
+        "color": "#2dd4bf"
+      },
+      {
+        "key": "work",
+        "label": "Work",
+        "color": "#f59e0b"
+      }
+    ],
+    "travelers": [
+      {
+        "key": "terry",
+        "label": "Terry",
+        "color": "#fb7185"
+      },
+      {
+        "key": "karen",
+        "label": "Karen",
+        "color": "#c084fc"
+      },
+      {
+        "key": "nikki",
+        "label": "Nikki",
+        "color": "#22d3ee"
+      },
+      {
+        "key": "amanda",
+        "label": "Amanda",
+        "color": "#fb923c"
+      }
+    ],
+    "statuses": [
+      {
+        "key": "planned",
+        "label": "Planned",
+        "short": "Planned",
+        "color": "#38bdf8"
+      },
+      {
+        "key": "visited",
+        "label": "Visited",
+        "short": "Visited",
+        "color": "#34d399"
+      },
+      {
+        "key": "dream",
+        "label": "Dream destination",
+        "short": "Dream",
+        "color": "#c084fc"
+      }
+    ]
+  }
+}
