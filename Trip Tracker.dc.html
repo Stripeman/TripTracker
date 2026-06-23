@@ -69,7 +69,7 @@
     <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
       <div style="position:absolute; top:80px; right:30px; width:384px; max-height:calc(100vh - 110px); display:flex; flex-direction:column; pointer-events:auto; background:rgba(8,14,24,0.94); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid rgba(56,189,248,0.22); border-radius:14px; padding:18px; box-shadow:0 16px 50px rgba(0,0,0,0.55); animation:vl-fade 0.2s ease;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex:none;">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">SETTINGS</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">CONFIGURATION</div>
           <div style="display:flex; align-items:center; gap:8px;">
             <button onClick="{{ openHelp }}" title="Help &amp; guide" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center; font-weight:700;">?</button>
             <button onClick="{{ toggleAuthor }}" title="About the author" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center;">ⓘ</button>
@@ -94,10 +94,11 @@
           </div>
         </sc-if>
         <div style="display:flex; gap:12px; flex:1; min-height:0;">
-          <div style="width:84px; flex:none;">
-            <button onClick="{{ setTabFilters }}" style="{{ tabFiltersStyle }}">Filters</button>
-            <button onClick="{{ setTabConfig }}" style="{{ tabConfigStyle }}">Data</button>
-            <button onClick="{{ setTabSystem }}" style="{{ tabSystemStyle }}">System</button>
+          <div style="width:104px; flex:none;">
+            <button onClick="{{ setTabFilters }}" style="{{ tabFiltersStyle }}">Defaults</button>
+            <button onClick="{{ setTabConfig }}" style="{{ tabConfigStyle }}">Settings</button>
+            <button onClick="{{ setTabSystem }}" style="{{ tabSystemStyle }}">Preferences</button>
+            <button onClick="{{ setTabStorage }}" style="{{ tabStorageStyle }}">System</button>
           </div>
           <div style="flex:1; min-width:0; overflow-y:auto; padding-right:2px;">
 
@@ -124,7 +125,7 @@
         </sc-if>
 
         <sc-if value="{{ showFiltersTab }}" hint-placeholder-val="{{ true }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:12px;">DEFAULT FILTERS</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:12px;">FILTERS</div>
         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:4px;">
           <div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">SORT DESTINATIONS</div>
@@ -177,8 +178,8 @@
         </div>
         </sc-if>
 
-        <sc-if value="{{ showSystemTab }}" hint-placeholder-val="{{ false }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:12px;">DATA &amp; STORAGE</div>
+        <sc-if value="{{ showStorageTab }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:12px;">DATA &amp; STORAGE</div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">DATA SOURCE</div>
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <button onClick="{{ setLocalSource }}" style="{{ dsLocalStyle }}">Local</button>
@@ -257,7 +258,7 @@
           <div style="display:flex; gap:8px; margin-top:13px;">
             <button onClick="{{ exportSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); border:none; border-radius:9px; padding:9px; cursor:pointer; font-weight:600;">Export</button>
             <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
-              <button onClick="{{ importSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:9px; cursor:pointer;">Import</button>
+              <button onClick="{{ importSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:9px; cursor:pointer;">Restore</button>
             </sc-if>
           </div>
         </div>
@@ -265,7 +266,7 @@
         <sc-if value="{{ storageMsg }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:#fcd34d; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:9px; padding:9px 11px;">{{ storageMsg }}</div>
         </sc-if>
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#4b5d74; line-height:1.6; margin-top:14px;">A linked file auto-saves on every change. Export/Import works anywhere.</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#4b5d74; line-height:1.6; margin-top:14px;">A linked file auto-saves on every change. Export/Restore works anywhere.</div>
 
         <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
           <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
@@ -1723,7 +1724,7 @@ class Component extends DCLogic {
         return new Date(loc.date + 'T00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
       } catch (e) { return loc.date; }
     }
-    return (this.META[loc.status] || this.META.planned).short;
+    return (this.META[loc.status] || this.META.planned || { short: '—' }).short;
   }
 
   // ---- data storage (browser + optional linked JSON file) ----
@@ -1782,12 +1783,12 @@ class Component extends DCLogic {
   pickerBlocked(e) {
     // Aborted by the user → no message. Anything else in a sandboxed frame → explain.
     if (e && e.name === 'AbortError') return false;
-    this.setState({ storageMsg: 'File linking is blocked inside this preview. Open the app in its own browser tab (or run it locally) to link a file. Use Export / Import here.' });
+    this.setState({ storageMsg: 'File linking is blocked inside this preview. Open the app in its own browser tab (or run it locally) to link a file. Use Export / Restore here.' });
     return true;
   }
 
   async linkNewFile() {
-    if (!('showSaveFilePicker' in window)) { this.setState({ storageMsg: 'This browser can’t link files. Use Export / Import instead.' }); return; }
+    if (!('showSaveFilePicker' in window)) { this.setState({ storageMsg: 'This browser can’t link files. Use Export / Restore instead.' }); return; }
     try {
       const handle = await window.showSaveFilePicker({ suggestedName: 'trip-locations.json', types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }] });
       this._fileHandle = handle;
@@ -1798,7 +1799,7 @@ class Component extends DCLogic {
   }
 
   async openExistingFile() {
-    if (!('showOpenFilePicker' in window)) { this.setState({ storageMsg: 'This browser can’t link files. Use Import instead.' }); return; }
+    if (!('showOpenFilePicker' in window)) { this.setState({ storageMsg: 'This browser can’t link files. Use Restore instead.' }); return; }
     try {
       const [handle] = await window.showOpenFilePicker({ types: [{ description: 'JSON file', accept: { 'application/json': ['.json'] } }] });
       const data = JSON.parse(await (await handle.getFile()).text());
@@ -1943,7 +1944,7 @@ class Component extends DCLogic {
         }
 
         let msg;
-        if (done.length) msg = `Imported ${done.join(' + ')}.`;
+        if (done.length) msg = `Restored ${done.join(' + ')}.`;
         else if (wantData && wantSettings) msg = 'That file had no destinations or settings.';
         else if (wantData) msg = 'No destinations found in that file.';
         else msg = 'No settings found in that file.';
@@ -2163,7 +2164,6 @@ class Component extends DCLogic {
   dataItemRemove(cat, key) {
     const lk = this._listKey(cat);
     this.setState(s => {
-      if (cat === 'status') return {}; // statuses are fixed
       const list = s[lk].filter(o => o.key !== key);
       if (!list.length) return {};
       return this.persistConfig(s, { [lk]: list });
@@ -2172,14 +2172,15 @@ class Component extends DCLogic {
   dataItemAdd(cat) {
     const lk = this._listKey(cat);
     this.setState(s => {
-      if (cat === 'status') return {};
-      const base = { visit: 'New type', trip: 'New type', traveler: 'New traveler' }[cat];
+      const base = { visit: 'New type', trip: 'New type', traveler: 'New traveler', status: 'New status' }[cat];
       let key = 'new', i = 1;
       const taken = new Set(s[lk].map(o => o.key));
       while (taken.has(key)) { key = 'new' + (++i); }
       const palette = ['#5fd3ff', '#fb7185', '#c084fc', '#22d3ee', '#fbbf24', '#fb923c', '#a78bfa', '#4ade80', '#e879f9'];
       const color = palette[s[lk].length % palette.length];
-      const list = [...s[lk], { key, label: base, color }];
+      const item = { key, label: base, color };
+      if (cat === 'status') item.short = base;
+      const list = [...s[lk], item];
       return this.persistConfig(s, { [lk]: list });
     });
   }
@@ -2216,7 +2217,8 @@ class Component extends DCLogic {
       if (d) {
         const t = new Date();
         const today = this.iso(t.getFullYear(), t.getMonth(), t.getDate());
-        form.status = d > today ? 'planned' : 'visited';
+        const want = d > today ? 'planned' : 'visited';
+        if (s.cfgStatuses.some(o => o.key === want)) form.status = want;
       }
       return { form, formError: '' };
     });
@@ -2326,7 +2328,7 @@ class Component extends DCLogic {
     const totalDays = visible.reduce((s, l) => s + this.dayCount(l), 0);
 
     const mapped = visible.map(l => {
-      const m = meta[l.status] || meta.planned;
+      const m = meta[l.status] || meta.planned || { label: l.status || '—', short: l.status || '—', color: '#8093aa' };
       const sel = l.id === selectedId;
       const sub = [l.state, l.country].filter(Boolean).join(', ') || '—';
       let dateRange = '';
@@ -2580,18 +2582,21 @@ class Component extends DCLogic {
       tabFiltersStyle: tabBtnStyle(this.state.settingsTab === 'filters'),
       tabSystemStyle: tabBtnStyle(this.state.settingsTab === 'system'),
       tabConfigStyle: tabBtnStyle(this.state.settingsTab === 'config'),
+      tabStorageStyle: tabBtnStyle(this.state.settingsTab === 'storage'),
       showFiltersTab: this.state.settingsTab === 'filters',
       showSystemTab: this.state.settingsTab === 'system',
       showConfigTab: this.state.settingsTab === 'config',
+      showStorageTab: this.state.settingsTab === 'storage',
       setTabFilters: () => this.setSettingsTab('filters'),
       setTabSystem: () => this.setSettingsTab('system'),
       setTabConfig: () => this.setSettingsTab('config'),
+      setTabStorage: () => this.setSettingsTab('storage'),
       cfgVersion: this.state.cfgVersion,
       dataEditors: [
         editorGroup('Travelers', 'traveler', this.state.cfgTravelers, false),
         editorGroup('Trip types', 'trip', this.state.cfgTripTypes, false),
         editorGroup('Visit types', 'visit', this.state.cfgVisitTypes, false),
-        editorGroup('Statuses', 'status', this.state.cfgStatuses, true),
+        editorGroup('Statuses', 'status', this.state.cfgStatuses, false),
       ],
       cfgFormStyle: cfgPill(this.state.cfgDetailsFormDefault),
       cfgFormLabel: this.state.cfgDetailsFormDefault ? 'ON' : 'OFF',

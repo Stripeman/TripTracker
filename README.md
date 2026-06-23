@@ -82,11 +82,11 @@ The ⚙ panel has a left‑hand tab rail; **Filters is selected by default**:
 **Data tab** — editable reference data (see below).
 
 ### 🧩 Configuration data (editable lists)
-The **Data** tab turns what used to be fixed lists into editable data. For each category you can **rename**, **recolour** (colour swatch), **add**, and **remove** items; changes flow live into the Add/Edit form, the filters, the detail card, and the globe colours:
+The **Settings** tab turns what used to be fixed lists into editable data. For each category you can **rename**, **recolour** (colour swatch), **add**, and **remove** items; changes flow live into the Add/Edit form, the filters, the detail card, and the globe colours:
 - **Travelers** (e.g. Terry · Karen · Nikki · Amanda)
 - **Trip types** (e.g. Personal · Work)
 - **Visit types** (e.g. National park · City · Family · Beach · Food & wine · Adventure · Road trip · Cultural)
-- **Statuses** (Planned · Visited · Dream) — can be renamed/recoloured but **not** added or removed, since the app's date‑driven logic relies on those three.
+- **Statuses** (defaults: Planned · Visited · Dream) — fully editable: rename, recolour, **add**, and **remove**. The date‑driven auto‑select looks for `planned` / `visited` and simply skips if you've removed them; existing trips keep their stored status even if you delete it from the list.
 - A **settings version number** increments on every change and is shown at the bottom of the tab. It travels with settings export/import so you can tell which revision a backup came from.
 - All four lists, plus the version, are part of the **settings** payload — exported and imported with the Settings switch.
 
@@ -171,7 +171,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 ```
 
 **Field values:**
-- `status`: `planned` · `visited` · `dream`
+- `status`: a key from your editable **Statuses** list (defaults: `planned` · `visited` · `dream`)
 - `visitTypes` (any number): keys from your editable **Visit types** list (defaults: `natlpark` · `city` · `family` · `beach` · `food` · `adventure` · `roadtrip` · `cultural`)
 - `tripTypes` (any number): keys from your editable **Trip types** list (defaults: `vacation` shown as *Personal* · `work`)
 - `travelers` (any number): keys from your editable **Travelers** list (defaults: `terry` · `karen` · `nikki` · `amanda`)
