@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-v1.5-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-v1.6-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -62,10 +62,10 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **Export / Import** with independent **Data** and **Settings** switches: back up or restore destinations, display settings, or both. Import only applies what you've switched on *and* what the file contains.
 - **Clear data** always downloads a dated backup first.
 
-### ⚙ Settings — three tabs
-The ⚙ panel has a left‑hand tab rail; **Filters is selected by default**:
+### ⚙ Configuration — four tabs
+The ⚙ **Configuration** panel has a left‑hand tab rail; **Defaults is selected by default**:
 
-**Filters tab** — sets what the filters open to on each visit, via colour‑coded segmented toggles that match the filter colours:
+**Defaults tab** — sets what the filters open to on each visit, via colour‑coded segmented toggles that match the filter colours:
 - **Sort destinations** — Descending (newest first) / Ascending (oldest first)
 - **Year** — All years / Current year
 - **Trip type** — All / *(your trip types)*
@@ -74,13 +74,19 @@ The ⚙ panel has a left‑hand tab rail; **Filters is selected by default**:
 - **Traveler** — All / *(your travelers)*
 - Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
 
-**System tab** — display + storage:
+**Settings tab** — editable reference data (see *Configuration data* below).
+
+**Preferences tab** — display options:
 - Toggle whether the **Trip details** section is open by default on the form.
 - Toggle whether **trip details** and the **status** appear on the detail card.
 - **Spin the globe** — turn the idle auto‑rotation on or off (you can always drag to spin manually).
-- **Data source**, linked file / browser storage, and **Export / Import** (see Storage & backup).
 
-**Data tab** — editable reference data (see below).
+**System tab** — data, storage & app info:
+- **Data source** (Local browser / linked file, or Cloud), **Export / Restore**, and **Clear data** (see Storage & backup).
+- **Repository** — a link to the project's GitHub repo, [`Stripeman/TripTracker`](https://github.com/Stripeman/TripTracker).
+
+### 🔔 Update notice
+The app knows its own build version and quietly checks the server for a newer deployed version (on load, whenever the tab regains focus, and every 10 minutes). When a newer build is live, an **UPDATE AVAILABLE** badge appears to the right of the title and a dismissible amber **notice bar** drops in at the top with a **Reload** button to pick up the new version. Detection is automatic from the version number — nothing to configure.
 
 ### 🧩 Configuration data (editable lists)
 The **Settings** tab turns what used to be fixed lists into editable data. For each category you can **rename**, **recolour** (colour swatch), **add**, and **remove** items; changes flow live into the Add/Edit form, the filters, the detail card, and the globe colours:

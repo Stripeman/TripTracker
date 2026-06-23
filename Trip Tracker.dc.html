@@ -15,6 +15,8 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; height: 100%; background: #04070e; overflow: hidden; }
   @keyframes vl-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes vl-ping { 0% { transform: scale(0.5); opacity: 0.85; } 80%, 100% { transform: scale(2); opacity: 0; } }
+  @keyframes vl-upulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(251,191,36,0.55), 0 0 13px rgba(251,191,36,0.3); } 50% { box-shadow: 0 0 0 1px rgba(251,191,36,0.8), 0 0 22px rgba(251,191,36,0.6); } }
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.25); border-radius: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -52,7 +54,14 @@
     <!-- top bar -->
     <div style="position:absolute; top:0; left:0; right:0; display:flex; align-items:flex-start; justify-content:space-between; padding:26px 30px;">
       <div>
-        <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.32em; color:#e8f3ff; text-shadow:0 0 24px rgba(56,189,248,0.45);">TRIP&nbsp;&nbsp;TRACKER</div>
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.32em; color:#e8f3ff; text-shadow:0 0 24px rgba(56,189,248,0.45);">TRIP&nbsp;&nbsp;TRACKER</div>
+          <sc-if value="{{ updateAvailable }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ reloadApp }}" title="Reload to update" style="pointer-events:auto; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:9px; font-weight:600; letter-spacing:0.14em; color:#1a1304; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:999px; padding:4px 10px; cursor:pointer; animation:vl-upulse 2.4s ease-in-out infinite;">
+              <span style="width:5px; height:5px; border-radius:50%; background:#7a4d00;"></span>UPDATE AVAILABLE
+            </button>
+          </sc-if>
+        </div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; margin-top:7px; color:#5d7088;">PLOT EVERY JOURNEY — PAST, PRESENT &amp; DREAMED</div>
       </div>
       <div style="display:flex; align-items:center; gap:12px;">
@@ -64,6 +73,21 @@
         <button onClick="{{ toggleSettings }}" title="Data &amp; storage settings" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; font-size:17px; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">⚙</button>
       </div>
     </div>
+
+    <sc-if value="{{ showUpdateBar }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; top:20px; left:50%; transform:translateX(-50%); z-index:55; pointer-events:auto; display:flex; align-items:center; gap:14px; max-width:calc(100vw - 60px); background:linear-gradient(180deg, rgba(30,23,7,0.97), rgba(21,16,6,0.97)); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:1px solid rgba(251,191,36,0.5); border-radius:12px; padding:11px 13px 11px 16px; box-shadow:0 14px 44px rgba(0,0,0,0.55), 0 0 0 1px rgba(251,191,36,0.12);">
+        <span style="position:relative; width:9px; height:9px; flex:none;">
+          <span style="position:absolute; inset:0; border-radius:50%; background:#fbbf24;"></span>
+          <span style="position:absolute; inset:-3px; border-radius:50%; border:1px solid rgba(251,191,36,0.7); animation:vl-ping 1.7s ease-out infinite;"></span>
+        </span>
+        <div style="display:flex; flex-direction:column; gap:1px;">
+          <span style="font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:#fde9b0;">A new version is available</span>
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; color:#bfa264;">v{{ latestVersion }} ready · you're on {{ appVersion }}</span>
+        </div>
+        <button onClick="{{ reloadApp }}" style="margin-left:6px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:9px; padding:8px 16px; cursor:pointer; box-shadow:0 4px 16px rgba(251,191,36,0.35); flex:none;">Reload</button>
+        <button onClick="{{ dismissUpdate }}" title="Dismiss" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14); color:#cdbb86; cursor:pointer; font-size:12px; line-height:1;">✕</button>
+      </div>
+    </sc-if>
 
     <!-- settings / storage panel -->
     <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
@@ -284,11 +308,19 @@
             </div>
           </div>
         </sc-if>
+        <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; color:#5d7088; margin-bottom:7px;">REPOSITORY</div>
+          <a href="https://github.com/Stripeman/TripTracker" target="_blank" rel="noopener" style="pointer-events:auto; display:flex; align-items:center; gap:9px; text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.22); border-radius:9px; padding:9px 11px;" style-hover="border-color:rgba(56,189,248,0.45); color:#cdeafd;">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" style="flex:none;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 014 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+            <span style="flex:1;">Stripeman/TripTracker</span>
+            <span style="color:#5d7088; font-size:13px;">↗</span>
+          </a>
+        </div>
         </sc-if>
 
         <sc-if value="{{ showConfigTab }}" hint-placeholder-val="{{ false }}">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:6px;">CONFIGURATION DATA</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:16px;">Rename, recolour, add or remove the options used across the form, filters, and globe. Statuses can be renamed/recoloured but not removed.</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:16px;">Rename, recolour, add or remove the options used across the form, filters, and globe. Every list — including Statuses — can be renamed, recoloured, added to, and removed.</div>
           <sc-for list="{{ dataEditors }}" as="grp" hint-placeholder-count="4">
             <div style="margin-bottom:17px;">
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:8px;">{{ grp.title }}</div>
@@ -699,6 +731,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
+    this.APP_VERSION = '1.6';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -854,6 +887,9 @@ class Component extends DCLogic {
       selData: true,
       selSettings: true,
       authorOpen: false,
+      updateAvailable: false,
+      latestVersion: '',
+      updateDismissed: false,
       helpOpen: false,
       helpHtml: '',
       helpDoc: 'readme',
@@ -1258,6 +1294,10 @@ class Component extends DCLogic {
   componentDidMount() {
     this.init();
     this.bootData();
+    this.checkForUpdate();
+    this._updTimer = setInterval(() => this.checkForUpdate(), 600000);
+    this._onVis = () => { if (document.visibilityState === 'visible') this.checkForUpdate(); };
+    document.addEventListener('visibilitychange', this._onVis);
     this._onResize = () => this.resize();
     window.addEventListener('resize', this._onResize);
     this._endCal = () => this.endCalDrag();
@@ -1968,6 +2008,27 @@ class Component extends DCLogic {
     e.target.value = '';
   }
 
+  cmpVer(a, b) {
+    const pa = String(a).split('.').map(n => parseInt(n, 10) || 0);
+    const pb = String(b).split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const x = pa[i] || 0, y = pb[i] || 0;
+      if (x !== y) return x > y ? 1 : -1;
+    }
+    return 0;
+  }
+  async checkForUpdate() {
+    try {
+      const res = await fetch(location.pathname + '?_v=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) return;
+      const txt = await res.text();
+      const m = txt.match(/APP_VERSION\s*=\s*['"]([0-9][0-9.]*)['"]/);
+      if (!m) return;
+      if (this.cmpVer(m[1], this.APP_VERSION) > 0) this.setState({ updateAvailable: true, latestVersion: m[1] });
+    } catch (e) {}
+  }
+  reloadApp() { try { location.reload(); } catch (e) {} }
+  dismissUpdate() { this.setState({ updateDismissed: true }); }
   toggleAuthor() { this.setState(s => ({ authorOpen: !s.authorOpen })); }
   closeHelp() { this.setState({ helpOpen: false }); }
   openHelp() { this.setState({ helpOpen: true }); this.loadHelpDoc('readme'); }
@@ -2719,8 +2780,13 @@ class Component extends DCLogic {
       authorName: 'Terry Remsik',
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
-      appVersion: 'v1.5',
+      appVersion: 'v' + this.APP_VERSION,
       appUpdated: 'June 23, 2026',
+      updateAvailable: this.state.updateAvailable,
+      showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
+      latestVersion: this.state.latestVersion,
+      reloadApp: () => this.reloadApp(),
+      dismissUpdate: () => this.dismissUpdate(),
       toggleAuthor: () => this.toggleAuthor(),
       helpOpen: this.state.helpOpen,
       helpError: this.state.helpError,
