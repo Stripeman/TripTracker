@@ -1,137 +1,228 @@
 # Deploying Trip Tracker to Azure
 
-This hosts the app **and** lets you update the data through the website itself, cheaply.
+This guide gets your Trip Tracker online so you (and people you invite) can use it from anywhere, with your data saved in the cloud. **It's written for non-experts — just follow the steps in order.** Everything here uses the Azure website (the "Portal"), so there's nothing to install.
 
-## Architecture (≈ $0–$1 / month)
+**Cost:** about **$0–$1 a month**. The website hosting is free; you only pay a few cents for data storage.
 
-- **Azure Static Web Apps (Free plan)** — serves the app, SSL + custom domain, includes a managed Functions API.
-- **Azure Functions** (`/api/trips`) — `GET` reads the dataset, `POST` writes it (sign-in required).
-- **Azure Blob Storage** — stores the live `trip-tracker.json` (a few cents/month).
+**Time:** ~20 minutes the first time.
 
-The app defaults to **Cloud** mode and reads `/api/trips` on load; if the API isn't reachable (e.g. running locally with no backend) it falls back to browser storage / the bundled `demo-data.json`, so it still works offline. Users can switch to **Local** in ⚙ → Settings, and that choice is remembered.
+---
 
-## Files in this repo that matter
+## What you'll set up (the big picture)
 
-```
-index.html               → redirects the site root to the app
-Trip Tracker.dc.html     → the app
-support.js               → runtime
-demo-data.json           → bundled demo data (first-run fallback)
-staticwebapp.config.json → routes + role-gated API (GET needs `reader`/`editor`; writes need `editor`; built-in auth, Free plan)
-api/                      → the Functions API
-  host.json
-  package.json
-  trips/function.json
-  trips/index.js
-```
+You'll create three things and connect them:
 
-## One-time setup
+1. **A GitHub copy of the app** — where the code lives.
+2. **A Static Web App** — the website itself (free, includes the behind-the-scenes "API").
+3. **A Storage account** — a safe place to keep your trips data file.
 
-1. **Storage account** (cheapest: StorageV2, LRS):
-   ```
-   az group create -n trip-tracker -l eastus
-   az storage account create -n triptrackerdata -g trip-tracker --sku Standard_LRS
-   az storage account show-connection-string -n triptrackerdata -g trip-tracker -o tsv
-   ```
-   Copy that connection string.
+Then you'll **invite yourself** so you can see and edit the data, and (optionally) turn on **email for access requests**.
 
-2. **Deploy the Static Web App** — easiest via the Azure Portal → *Create Static Web App* → connect this GitHub repo. Set:
-   - **App location**: `/`
-   - **Api location**: `api`
-   - **Output location**: *(blank)*
-   (A GitHub Action is added to your repo and deploys on every push.)
+> Don't worry about what these words mean — the steps tell you exactly what to click.
 
-3. **Add the storage connection string** to the Static Web App:
-   Portal → your Static Web App → **Environment variables** (or **Configuration**) → add
-   `AZURE_STORAGE_CONNECTION_STRING` = *(the value from step 1)*.
-   Optional: `TRIPS_CONTAINER` (default `data`), `TRIPS_BLOB` (default `trip-tracker.json`).
+---
 
-4. **Sign-in — built-in provider (no app registration, no Standard plan needed).** Azure Static Web Apps ships with **pre-configured auth providers**, so you don't register your own Entra app, create a client secret, or edit `staticwebapp.config.json` — and it all works on the **Free** plan.
-   - The config already protects the API by **role** (`allowedRoles` in `staticwebapp.config.json`); there is intentionally **no `auth` block**. The built-in **Microsoft / Azure AD** provider is live at `/.auth/login/aad` out of the box, and the app's **Sign in** link points there. (GitHub at `/.auth/login/github` is also available if you prefer.)
-   - Anyone can technically *sign in* with the shared provider, but **access is granted only by the roles you assign** (step 5). A signed-in account with no role can't read or write — it sees the in-app *No access — contact the author* message. So you control access purely by who you invite.
-   - *Optional (not required):* to restrict sign-in to **your own Entra tenant** or use a branded app registration, that's the custom-auth path — it needs the **Standard** plan plus an `auth` block with your `openIdIssuer`, `AAD_CLIENT_ID`, and `AAD_CLIENT_SECRET`. Skip it unless you specifically need tenant-locked sign-in.
+## Before you start
 
-5. **Grant access (roles).** Three custom roles: **`reader`** (view), **`editor`** (view + add/edit/delete), and **`admin`** (editor + import & clear data).
-   - Azure Portal → your Static Web App → **Role management** → **Invite** → enter the user, pick the provider (e.g. Azure AD), assign `reader`, `editor`, and/or `admin` → generate the invite link and send it. The user opens it, signs in, and accepts.
-   - The API enforces read/write: `GET /api/trips` requires `reader` or `editor`; `POST/PUT` requires `editor`. The **Import** and **Clear data** controls are additionally hidden in the UI unless the account has `admin`.
-   - Roles are baked into the session at sign-in — after assigning/changing a role, the user must **sign out and back in** for it to take effect.
+- A **GitHub account** (free — github.com) with this app's code in a repository. If a developer set this up for you, you already have this.
+- An **Azure account** (free — portal.azure.com). A new account includes free credit.
 
-6. **Email access requests (optional, via Resend).** When someone without access submits their email on the sign-in screen, the app can email you the request through a small `/api/request-access` Function backed by [Resend](https://resend.com). Without this, the button falls back to opening the visitor's own mail app (`mailto:`) — so this step is optional but nicer.
-   - Create a free **Resend** account → **API Keys** → create a key (starts with `re_`).
-   - **Verify a sender:** add and verify a domain in Resend (recommended), or use Resend's `onboarding@resend.dev` test sender to start. Your `RESEND_FROM` must use a verified address.
-   - In the Azure Portal → your Static Web App → **Environment variables**, add:
-     - `RESEND_API_KEY` = your Resend key
-     - `RESEND_FROM` = a verified sender, e.g. `Trip Tracker <noreply@yourdomain.com>`
-     - `ACCESS_REQUEST_TO` = the address that should receive requests (your email)
-   - That's it — no redeploy needed for env-var changes. The visitor's email is put in the message **reply-to**, so you can reply to them directly. For security the recipient is read **only** from `ACCESS_REQUEST_TO` on the server (never from the request), so the endpoint can't be used as an open mail relay.
-   - Set the same address in the app at **⚙ → System → Access requests** so it's also shown on the sign-in screen as a direct-email fallback.
+---
 
-## Troubleshooting — "Not connected" / app shows Browser storage on the live site
+## Step 1 — Create the Storage account (your data's home)
 
-If the deployed site stays on **Browser storage** and ⚙ → System → CLOUD SYNC shows **"Not connected"** with a diagnostic like **`HTTP 404 from /api/trips`**, the Functions API isn't deployed. The cause is almost always the **GitHub Actions workflow has a blank `api_location`** — the deploy log shows:
+1. Go to **portal.azure.com** and sign in.
+2. In the top search bar, type **Storage accounts** and click it.
+3. Click **+ Create**.
+4. Fill in:
+   - **Resource group:** click **Create new**, name it `trip-tracker`, click OK.
+   - **Storage account name:** a lowercase, no-spaces name that's unique, e.g. `triptrackerdata123`. Remember it.
+   - **Region:** pick one near you.
+   - **Redundancy:** choose **Locally-redundant storage (LRS)** (cheapest).
+5. Click **Review + create**, then **Create**. Wait ~1 minute for it to finish, then click **Go to resource**.
+6. **Get the connection string** (you'll paste it in Step 3):
+   - In the left menu, scroll to **Security + networking** → click **Access keys**.
+   - Click **Show** next to **key1's Connection string**, then the **copy** icon.
+   - Paste it somewhere temporary (a sticky note / Notepad). You'll need it shortly.
 
-```
-No Api directory specified. Azure Functions will not be created.
-```
+---
 
-Fix it in the workflow file (one line):
+## Step 2 — Create the website (Static Web App)
 
-1. In your repo, open `.github/workflows/azure-static-web-apps-*.yml`.
-2. Find the `Azure/static-web-apps-deploy` step's `with:` block and set:
+1. In the Azure search bar, type **Static Web Apps** and click it.
+2. Click **+ Create**.
+3. Fill in:
+   - **Resource group:** choose the `trip-tracker` group you made in Step 1.
+   - **Name:** anything, e.g. `trip-tracker`.
+   - **Plan type:** **Free**.
+   - **Region:** pick one near you.
+   - **Source:** **GitHub**. Click **Sign in with GitHub** and authorize.
+   - Pick your **Organization**, **Repository** (the app's repo), and **Branch** (usually `main`).
+4. Under **Build Details**, set these **exactly**:
+   - **Build Presets:** **Custom**
+   - **App location:** `/`
+   - **Api location:** `api`
+   - **Output location:** *(leave blank)*
+5. Click **Review + create**, then **Create**.
+6. Azure now builds your site automatically. Click **Go to resource**, and after a couple of minutes you'll see a **URL** at the top — that's your live site. (If it's not ready yet, wait and refresh.)
+
+> **What just happened:** Azure added a small file to your GitHub repo that rebuilds the site every time the code changes. You don't have to touch it.
+
+---
+
+## Step 3 — Connect the storage (so saving works)
+
+1. In the Azure Portal, open your **Static Web App** (from Step 2).
+2. Left menu → **Environment variables** (under *Settings*).
+3. Click **+ Add** and enter:
+   - **Name:** `AZURE_STORAGE_CONNECTION_STRING`
+   - **Value:** the connection string you copied in Step 1.
+4. Click **Apply** / **Save**.
+
+That's it — no rebuild needed. Your site can now read and save the trips data file.
+
+---
+
+## Step 4 — Invite yourself so you can see the data
+
+Your data is **private**. Even you need to be given access. Here's how:
+
+1. Open your **Static Web App** → left menu → **Role management**.
+2. Click **+ Invite**.
+3. Fill in:
+   - **Authentication provider:** **Azure Active Directory** (a.k.a. Microsoft).
+   - **Invitee details:** your email.
+   - **Role:** type `admin` (this gives you full control — view, edit, import, clear).
+   - **Domain:** the dropdown value shown (your site's address).
+4. Click **Generate**, copy the **invite link**, open it in your browser, sign in, and **Accept**.
+5. Go to your site's URL → click **Sign in** → you should now see your data.
+
+**The three access levels** (assign whichever fits when inviting others):
+
+| Role | What they can do |
+|------|------------------|
+| `reader` | View trips only |
+| `editor` | View + add / edit / delete trips |
+| `admin` | Everything, plus import & clear data |
+
+> After changing someone's role, they must **sign out and back in** for it to take effect.
+
+**You're done!** The app is live, your data saves to the cloud, and only people you invite can see it. The steps below are optional extras.
+
+---
+
+## Step 5 (optional) — Email for "Request access"
+
+When someone without access visits, they can click **Request access** and enter their email. By default this opens *their* email app. If you want the request **emailed straight to you** instead, do this 5-minute setup using a free service called **Resend**.
+
+**A. Get a Resend key**
+1. Go to **resend.com** and sign up (free). Note the email you sign up with — call it **YOUR-EMAIL**.
+2. In Resend, click **API Keys** → **Create API Key** → copy the key (starts with `re_`).
+
+**B. Add 3 settings in Azure**
+1. Azure Portal → your **Static Web App** → **Environment variables** → **+ Add**.
+2. Add these three (one at a time), then **Save**:
+
+   | Name | Value |
+   |------|-------|
+   | `RESEND_API_KEY` | the `re_…` key you copied |
+   | `RESEND_FROM` | `onboarding@resend.dev` |
+   | `ACCESS_REQUEST_TO` | **YOUR-EMAIL** (the exact address you used to sign up to Resend) |
+
+**C. Test it**
+1. Open your site → **Request access** → type any email → **Send request**.
+2. You should see **"Request sent ✓"** and get an email at **YOUR-EMAIL** within a minute.
+
+> ⚠️ **The one catch:** the free `onboarding@resend.dev` sender can **only** email **YOUR-EMAIL**. So `ACCESS_REQUEST_TO` must be that same address. For personal use that's perfect — requests land in your inbox.
+>
+> **Want requests to go to a different inbox?** In Resend → **Domains**, add your own website domain and follow their steps until it says **Verified**. Then change `RESEND_FROM` to e.g. `Trip Tracker <noreply@yourdomain.com>` and you can set `ACCESS_REQUEST_TO` to any address.
+
+Finally, type the same email into the app at **⚙ → System → Access requests** so it also appears on the sign-in screen as a backup.
+
+---
+
+## Step 6 (optional but recommended) — Turn on data backups
+
+Every save replaces the whole data file, so it's smart to let Azure keep old copies you can roll back to.
+
+1. Azure Portal → your **Storage account** → left menu → **Data protection**.
+2. Tick these boxes and **Save**:
+   - **Enable versioning for blobs**
+   - **Enable soft delete for blobs** — set 30 days
+   - **Enable soft delete for containers** — set 30 days
+
+Now every save keeps the previous version. To restore one:
+- Storage account → **Containers** → `data` → click `trip-tracker.json` → **Versions** tab → pick a time *before* the problem → **…** → **Restore**.
+
+The app also auto-downloads a dated backup before any *Clear data*, and **⚙ → Export** makes a manual backup anytime.
+
+---
+
+## Troubleshooting
+
+**The site shows "Not connected" / keeps using Browser storage.**
+The behind-the-scenes API didn't deploy. This is almost always because the build settings were blank. Check the diagnostic at **⚙ → System** — if it says `HTTP 404 from /api/trips`:
+1. In GitHub, open the file `.github/workflows/azure-static-web-apps-*.yml`.
+2. Find the section with `app_location`, `api_location`, `output_location` and make sure it reads:
    ```yaml
    app_location: "/"
-   api_location: "api"      # ← was "" — this is what was missing
+   api_location: "api"
    output_location: ""
    ```
-3. Commit + push. The Action redeploys; watch the log for **"Found Api directory"** / a Functions build (it runs `npm install` in `api/`).
-4. Reload the site → ⚙ → System → **Retry connection**. The diagnostic should clear; an anon visitor now gets a 401 → the **Sign in** prompt instead of "Not connected".
+   (The common mistake is `api_location: ""` — it must be `"api"`.)
+3. Save/commit. Azure rebuilds automatically in a couple of minutes. Then reload the site → **⚙ → System → Retry connection**.
 
-Other diagnostics and what they mean:
-- **`HTTP 404 from /api/trips`** — API not deployed (the `api_location` fix above), or `staticwebapp.config.json` not deployed.
-- **`HTTP 500`** — API deployed but `AZURE_STORAGE_CONNECTION_STRING` is missing/wrong (set it in Static Web App → Environment variables, then it works without redeploy).
-- **`Could not reach /api/trips` / network error** — you're opening the file directly (not through the SWA host) or offline; this is expected in Local mode.
-- **Access-request email not arriving** — the `/api/request-access` Function falls back to a `mailto:` link unless all three of `RESEND_API_KEY`, `RESEND_FROM`, and `ACCESS_REQUEST_TO` are set (see step 6). If set but still failing, check the Function logs: a Resend rejection usually means `RESEND_FROM` isn't a verified sender.
+**What the diagnostics mean** (shown at ⚙ → System):
+- `HTTP 404 from /api/trips` — the API isn't deployed (do the fix above).
+- `HTTP 500` — the API is deployed but the storage connection string is missing or wrong (re-check Step 3).
+- `Could not reach /api/trips` — you're opening the file directly instead of through the site's web address (normal for Local mode).
 
-## How data flows once deployed
+**Access-request email isn't arriving.**
+- Make sure all three settings from Step 5 are present.
+- If you see **"Email service rejected the request" (502)**: you're using the free `onboarding@resend.dev` sender but `ACCESS_REQUEST_TO` isn't your Resend account email. Set it to your Resend signup email, or verify your own domain (see the note in Step 5).
 
-- The **page always loads** (not gated). In **Cloud** mode, an unauthorized visitor sees a clean *No access / Sign in* message — never your data.
-- **Roles:** `reader` can view; `editor` can view and save. A signed-in account with neither role gets the “contact the author for access” message.
-- An editor's change `POST`s the full dataset to the blob (creating it on first save). The bundled `demo-data.json` / `trip-tracker.json` are only used in **Local** mode — they never expose cloud data.
+**I signed in but see "No access".**
+Your account hasn't been given a role yet, or you changed roles and need to sign out and back in. Do Step 4.
 
-## Protecting the data (blob versioning + soft delete)
+---
 
-The app writes the **whole dataset** on every save, so a bad client state could in theory overwrite good data. The app guards against this (it never pushes to the cloud before it has read the cloud, and asks before seeding an empty cloud), but you should **also** enable storage-side safety nets so any overwrite is recoverable:
+## For developers (optional)
 
-1. **Enable blob versioning + soft delete** (one-time, on the storage account):
-   ```
-   az storage account blob-service-properties update \
-     -n triptrackerdata -g trip-tracker \
-     --enable-versioning true \
-     --enable-delete-retention true --delete-retention-days 30 \
-     --enable-container-delete-retention true --container-delete-retention-days 30
-   ```
-   Or in the Portal: **Storage account → Data protection** → tick **Enable versioning for blobs**, **Enable soft delete for blobs** (e.g. 30 days), and **Enable soft delete for containers**.
+Prefer the command line, or want to run it locally? These are conveniences — the Portal steps above are all you need.
 
-2. **What this buys you:** every save keeps the previous blob as an immutable **version**. If `trip-tracker.json` ever gets clobbered, you can roll back instead of losing data. Cost is negligible at this size (a few KB per version).
+**Create storage via CLI:**
+```
+az group create -n trip-tracker -l eastus
+az storage account create -n triptrackerdata -g trip-tracker --sku Standard_LRS
+az storage account show-connection-string -n triptrackerdata -g trip-tracker -o tsv
+```
 
-3. **Restore a previous version:**
-   - Portal → **Storage account → Containers → `data` → `trip-tracker.json` → Versions** tab. Pick a timestamp from *before* the bad save → **…** → **Restore** (promotes it to current). Or **Download** that version, then in the app (signed in as `editor`/`admin`) use **⚙ → Import → Data** to push it back to the cloud.
-   - CLI:
-     ```
-     az storage blob list --account-name triptrackerdata -c data --prefix trip-tracker.json --include v -o table
-     az storage blob copy start --account-name triptrackerdata \
-       --destination-container data --destination-blob trip-tracker.json \
-       --source-uri "https://triptrackerdata.blob.core.windows.net/data/trip-tracker.json?versionId=<VERSION_ID>"
-     ```
+**Enable versioning/soft-delete via CLI:**
+```
+az storage account blob-service-properties update \
+  -n triptrackerdata -g trip-tracker \
+  --enable-versioning true \
+  --enable-delete-retention true --delete-retention-days 30 \
+  --enable-container-delete-retention true --container-delete-retention-days 30
+```
 
-4. **Belt and braces:** the app still auto-downloads a dated JSON **backup** before any *Clear data*, and **⚙ → Export** gives you a manual snapshot anytime.
-
-## Local development
-
-Run with the [SWA CLI](https://aka.ms/swa-cli) to emulate the API + auth locally:
+**Run locally with the [SWA CLI](https://aka.ms/swa-cli)** (emulates the API + auth):
 ```
 npm i -g @azure/static-web-apps-cli
 cd api && npm install && cd ..
 swa start . --api-location api
 ```
-Without it, plain Live Server works too — the app just stays in local mode.
+Without it, a plain local web server works too — the app just stays in Local mode.
+
+**Sign-in internals:** the app uses Azure Static Web Apps' built-in auth (no app registration, no Standard plan). The API is role-gated in `staticwebapp.config.json` (`GET /api/trips` needs `reader`/`editor`; writes need `editor`); there's intentionally no custom `auth` block. To lock sign-in to your own Entra tenant, that's the custom-auth path (needs the Standard plan) — not required for normal use.
+
+**Environment variables reference:**
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `AZURE_STORAGE_CONNECTION_STRING` | Yes | Where trips data is stored |
+| `TRIPS_CONTAINER` | No (default `data`) | Storage container name |
+| `TRIPS_BLOB` | No (default `trip-tracker.json`) | Data file name |
+| `RESEND_API_KEY` | For email | Resend API key |
+| `RESEND_FROM` | For email | Verified sender address |
+| `ACCESS_REQUEST_TO` | For email | Where access requests are sent |
