@@ -846,7 +846,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '2.4';
+    this.APP_VERSION = '2.5';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -937,7 +937,7 @@ class Component extends DCLogic {
     const visitKeys = cfgVisitTypes.map(o => o.key);
     const cfgDefaultTrip = (cfg.defaultTrip === 'all' || tripKeys.includes(cfg.defaultTrip)) ? cfg.defaultTrip : (tripKeys.includes('vacation') ? 'vacation' : 'all');
     const cfgDefaultStatus = cfg.defaultStatus === 'all' ? 'all' : 'visited';
-    const cfgDefaultTraveler = (cfg.defaultTraveler === 'all' || travKeys.includes(cfg.defaultTraveler)) ? cfg.defaultTraveler : 'all';
+    const cfgDefaultTraveler = (cfg.defaultTraveler === 'all' || cfg.defaultTraveler === 'auto' || travKeys.includes(cfg.defaultTraveler)) ? cfg.defaultTraveler : 'auto';
     const cfgDefaultVisit = (cfg.defaultVisit === 'all' || visitKeys.includes(cfg.defaultVisit)) ? cfg.defaultVisit : 'all';
     const cfgSort = cfg.sortDir === 'asc' ? 'asc' : 'desc';
     const cfgVersion = Number.isFinite(cfg.version) ? cfg.version : 1;
@@ -978,7 +978,7 @@ class Component extends DCLogic {
       filterStatuses: cfgDefaultStatus === 'visited' ? ['visited'] : [],
       filterVisit: cfgDefaultVisit === 'all' ? [] : [cfgDefaultVisit],
       filterTrip: cfgDefaultTrip === 'all' ? [] : [cfgDefaultTrip],
-      filterTravelers: cfgDefaultTraveler === 'all' ? [] : [cfgDefaultTraveler],
+      filterTravelers: (cfgDefaultTraveler === 'all' || cfgDefaultTraveler === 'auto') ? [] : [cfgDefaultTraveler],
       ownerFilter: 'everyone',
       cfgDefaultYear,
       cfgDefaultTrip,
@@ -1394,7 +1394,7 @@ class Component extends DCLogic {
       const j = await r.json();
       const p = j && (j.clientPrincipal || (j[0] && j[0].clientPrincipal));
       this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '', cloudUserId: (p && p.userId) || '', cloudUserEmail: (p && (p.userDetails || '')).toLowerCase() || '', cloudRoles: (p && p.userRoles) || [] });
-      if (p) this.presenceTick();
+      if (p) { this.presenceTick(); this.applyAutoTravelerFilter(); }
     } catch (e) {}
   }
   // ---- presence ("who's online") — heartbeat + poll, Cloud mode only ----
@@ -1420,6 +1420,16 @@ class Component extends DCLogic {
       else if (!res.ok) this.setState({ cloudMsg: 'Cloud save failed (' + res.status + ').' });
       else { this._cloudCount = list.length; this.setState({ cloudMsg: '' }); }
     } catch (e) { this.setState({ cloudMsg: 'Cloud offline — changes saved on this device.' }); }
+  }
+
+  // Push config/settings (travelers + their emails, visit types, etc.) to the cloud so
+  // they're saved AND shared with other users. Debounced so typing doesn't spam the API.
+  scheduleCloudSettingsPush() {
+    if (this.state.dataMode !== 'cloud' || !this._cloud || !this._cloudSynced) return;
+    clearTimeout(this._cfgPushT);
+    this._cfgPushT = setTimeout(() => {
+      if (this.state.dataMode === 'cloud' && this._cloud && this._cloudSynced) this.cloudSave(this.state.locations || []);
+    }, 1500);
   }
 
   // Admin-only full overwrite of the entire cloud dataset (Import / Clear).
@@ -2141,6 +2151,7 @@ class Component extends DCLogic {
       this.rebuildLookups(merged);
     }
     try { localStorage.setItem(this.CFG, JSON.stringify(this.cfgObject(merged))); } catch (e) {}
+    this.scheduleCloudSettingsPush();
     return { ...ns, cfgVersion: ver };
   }
 
@@ -2152,6 +2163,7 @@ class Component extends DCLogic {
       this.rebuildLookups(merged);
     }
     try { localStorage.setItem(this.CFG, JSON.stringify(this.cfgObject(merged))); } catch (e) {}
+    this.scheduleCloudSettingsPush();
     return ns;
   }
 
@@ -2168,7 +2180,7 @@ class Component extends DCLogic {
       const ns = { [key]: v };
       if (key === 'cfgDefaultYear') ns.filterYear = v === 'all' ? 'all' : new Date().getFullYear();
       if (key === 'cfgDefaultTrip') ns.filterTrip = v === 'all' ? [] : [v];
-      if (key === 'cfgDefaultTraveler') ns.filterTravelers = v === 'all' ? [] : [v];
+      if (key === 'cfgDefaultTraveler') ns.filterTravelers = (v === 'all') ? [] : (v === 'auto' ? (this.myTravelerKey() ? [this.myTravelerKey()] : []) : [v]);
       if (key === 'cfgDefaultVisit') ns.filterVisit = v === 'all' ? [] : [v];
       if (key === 'cfgDefaultStatus') ns.filterStatuses = v === 'visited' ? ['visited'] : [];
       return this.persistConfig(s, ns);
@@ -2216,7 +2228,7 @@ class Component extends DCLogic {
       cfgDefaultYear: settings.defaultYear === 'all' ? 'all' : 'current',
       cfgDefaultTrip: (settings.defaultTrip === 'all' || tripKeys.includes(settings.defaultTrip)) ? settings.defaultTrip : (tripKeys.includes('vacation') ? 'vacation' : 'all'),
       cfgDefaultStatus: settings.defaultStatus === 'all' ? 'all' : 'visited',
-      cfgDefaultTraveler: (settings.defaultTraveler === 'all' || travKeys.includes(settings.defaultTraveler)) ? settings.defaultTraveler : 'all',
+      cfgDefaultTraveler: (settings.defaultTraveler === 'all' || settings.defaultTraveler === 'auto' || travKeys.includes(settings.defaultTraveler)) ? settings.defaultTraveler : 'auto',
       cfgDefaultVisit: (settings.defaultVisit === 'all' || visitKeys.includes(settings.defaultVisit)) ? settings.defaultVisit : 'all',
       sortDir: settings.sortDir === 'asc' ? 'asc' : 'desc',
       cfgVisitTypes: visit, cfgTripTypes: trip, cfgTravelers: trav, cfgStatuses: stat,
@@ -2480,6 +2492,7 @@ class Component extends DCLogic {
     return true;
   }
   toggleFilter(field, key) {
+    if (field === 'filterTravelers') this._travelerTouched = true;
     this.setState(s => {
       const cur = s[field] || [];
       return { [field]: cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key] };
@@ -2529,6 +2542,14 @@ class Component extends DCLogic {
   // name↔email helpers for sharing & owner display
   travelerEmail(key) { const t = (this.state.cfgTravelers || []).find(o => o.key === key); return t && t.email ? t.email : ''; }
   travelerNameByEmail(email) { if (!email) return ''; const e = String(email).toLowerCase(); const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.label : ''; }
+  myTravelerKey() { const e = (this.state.cloudUserEmail || '').toLowerCase(); if (!e) return ''; const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.key : ''; }
+  // When the default-traveler filter is "Auto (me)", point it at the signed-in user's
+  // own traveler once their identity is known (unless they've changed it this session).
+  applyAutoTravelerFilter() {
+    if (this.state.cfgDefaultTraveler !== 'auto' || this._travelerTouched) return;
+    const k = this.myTravelerKey();
+    if (k && !(this.state.filterTravelers || []).length) this.setState({ filterTravelers: [k] });
+  }
   dataItemRemove(cat, key) {
     const lk = this._listKey(cat);
     this.setState(s => {
@@ -3038,6 +3059,7 @@ class Component extends DCLogic {
         { label: (this.META.visited && this.META.visited.short) || 'Visited', style: segStyle(this.state.cfgDefaultStatus === 'visited', (this.META.visited || {}).color || '#34d399'), onSelect: () => this.setDefaultFilter('cfgDefaultStatus', 'visited') },
       ],
       defTravelerSeg: [
+        { label: 'Auto (me)', style: segStyle(this.state.cfgDefaultTraveler === 'auto', '#7ee0a8'), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'auto') },
         { label: 'All', style: segStyle(this.state.cfgDefaultTraveler === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', 'all') },
         ...this.state.cfgTravelers.map(o => ({ label: o.label, style: segStyle(this.state.cfgDefaultTraveler === o.key, o.color), onSelect: () => this.setDefaultFilter('cfgDefaultTraveler', o.key) })),
       ],

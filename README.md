@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-v2.4-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-v2.5-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -72,6 +72,7 @@ In Cloud mode every trip belongs to whoever created it, and the server only ever
   - **👥 All users** — any signed-in user can view it.
   - **✉ Specific people** — share **by name**: pick from your **Traveler** chips (Terry, Karen, …) instead of typing emails. Each Traveler can hold an optional email in **⚙ → Settings → Travelers**; that's the address access is granted to. Travelers without an email are greyed out with a hint. A **"+ other email"** box covers anyone who isn't a Traveler.
 - **Names, not emails:** because Travelers map names → emails, the owner badge and share picker show **names** ("Karen"), and when you're signed in with a Traveler's email the app greets you by that name. Sharing still resolves to emails under the hood (that's what sign-in matches on).
+- **Settings sync to the cloud:** editing configuration data (Travelers and their **emails**, visit/trip types, statuses, default filters, display options) saves to the cloud automatically a moment after you change it — so the name↔email mapping and your settings persist and are shared with other users, not just stored in your browser. (Requires the `editor`/`admin` role, like any cloud write.)
 - **You can only edit your own trips.** Trips shared with you are view-only (the detail card shows an owner badge, a visibility badge, and "Shared with you · view only" instead of Edit/Delete). A normal save never touches anyone else's data.
 - **Owner filter:** the left filter panel adds an **Owner** row — **Everyone** (all you can see) / **Mine** / **Shared with me** — and the globe follows the filter.
 - **Legacy trips** (created before this feature, with no owner) stay visible to everyone; an admin can re-own them via Import.
@@ -87,7 +88,7 @@ The ⚙ **Configuration** panel has a left‑hand tab rail; **Defaults is select
 - **Trip type** — All / *(your trip types)*
 - **Visit type** — All / *(your visit types)*
 - **Status** — All / Visited
-- **Traveler** — All / *(your travelers)*
+- **Traveler** — **Auto (me)** / All / *(your travelers)*. **Auto (me)** is the default: when you're signed in, the list opens filtered to **your own** trips (matched by your email → Traveler), so each person lands on their own travels first. Set a specific traveler or All to override.
 - Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
 
 **Settings tab** — editable reference data (see *Configuration data* below).
