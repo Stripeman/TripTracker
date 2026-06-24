@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-v2.0-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-v2.1-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -63,6 +63,18 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **Sign in or request access:** when an unauthorized visitor opens the site in Cloud mode they get a clean **Sign in required / No access** screen (no data is shown) with two paths — **Sign in** with an authorized account, or **Request access** by entering their email. If the optional Resend email backend is configured (see deploy guide), the request is emailed straight to the owner ("Request sent ✓"); otherwise it falls back to opening the visitor's own mail app. The destination address is set in **⚙ → System → "Access requests go to"** and is shown on the sign-in screen so people can also email it directly.
 - **Export / Import** with independent **Data** and **Settings** switches: back up or restore destinations, display settings, or both. Import only applies what you've switched on *and* what the file contains.
 - **Clear data** always downloads a dated backup first.
+
+### 👤 Per-user data & sharing (Cloud mode)
+In Cloud mode every trip belongs to whoever created it, and the server only ever sends each person the trips they're allowed to see — privacy is enforced on the server, not just hidden in the browser.
+- **Who's signed in:** **⚙ → System → Cloud sync** shows your account (avatar, email, and your role — `reader` / `editor` / `admin`) with a **Sign out** button.
+- **Visibility per trip:** the add/edit form has a **"Who can see this"** picker:
+  - **🔒 Only me** — private to you (default).
+  - **👥 All users** — any signed-in user can view it.
+  - **✉ Specific people** — enter one or more emails; only those people (plus you) can view it.
+- **You can only edit your own trips.** Trips shared with you are view-only (the detail card shows an owner badge, a visibility badge, and "Shared with you · view only" instead of Edit/Delete). A normal save never touches anyone else's data.
+- **Owner filter:** the left filter panel adds an **Owner** row — **Everyone** (all you can see) / **Mine** / **Shared with me** — and the globe follows the filter.
+- **Legacy trips** (created before this feature, with no owner) stay visible to everyone; an admin can re-own them via Import.
+- **Admins** get no special *viewing* power — they see a trip only if its owner shared it, same as anyone. Admin rights apply to **Import** and **Clear data** (full-dataset operations).
 
 ### ⚙ Configuration — four tabs
 The ⚙ **Configuration** panel has a left‑hand tab rail; **Defaults is selected by default**:

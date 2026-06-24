@@ -246,10 +246,22 @@
               <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.16em; color:#7c8ea6;">CLOUD SYNC</span>
             </div>
             <sc-if value="{{ cloudAvailable }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:{{ cloudAuthColor }};">{{ cloudAuthLabel }}</span>
-                <a href="{{ cloudAuthHref }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#04111e; background:#5fd3ff; border-radius:6px; padding:4px 9px; text-decoration:none; font-weight:600;">{{ cloudAuthAction }}</a>
-              </div>
+              <sc-if value="{{ cloudAuth }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; gap:9px; margin-bottom:9px; background:rgba(126,224,168,0.06); border:1px solid rgba(126,224,168,0.2); border-radius:9px; padding:9px 11px;">
+                  <span style="width:26px; height:26px; flex:none; border-radius:50%; background:linear-gradient(135deg,#5fd3ff,#22aee6); color:#04111e; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px; display:flex; align-items:center; justify-content:center;">{{ cloudUserInitial }}</span>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#e6edf6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ cloudUser }}</div>
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:{{ cloudRoleColor }};">{{ cloudRoleLabel }}</div>
+                  </div>
+                  <button onClick="{{ doSignOut }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:5px 9px; cursor:pointer;">Sign out</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ cloudNotAuth }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:{{ cloudAuthColor }};">{{ cloudAuthLabel }}</span>
+                  <a href="{{ cloudAuthHref }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#04111e; background:#5fd3ff; border-radius:6px; padding:4px 9px; text-decoration:none; font-weight:600;">{{ cloudAuthAction }}</a>
+                </div>
+              </sc-if>
               <button onClick="{{ reloadCloud }}" disabled="{{ reloadBusy }}" style="width:100%; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#cfe6f5; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px; cursor:pointer;">{{ reloadBtnLabel }}</button>
               <sc-if value="{{ reloadOpen }}" hint-placeholder-val="{{ false }}">
                 <div style="margin-top:10px; background:rgba(56,189,248,0.07); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:12px;">
@@ -397,6 +409,16 @@
           </sc-if>
         </div>
         <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ showOwnerFilter }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:13px;">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82;">OWNER</span>
+              <div style="display:flex; gap:6px; margin-top:7px;">
+                <button onClick="{{ setOwnerEveryone }}" style="{{ ownerEveryoneStyle }}">Everyone</button>
+                <button onClick="{{ setOwnerMine }}" style="{{ ownerMineStyle }}">Mine</button>
+                <button onClick="{{ setOwnerShared }}" style="{{ ownerSharedStyle }}">Shared with me</button>
+              </div>
+            </div>
+          </sc-if>
           <div style="margin-top:13px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
               <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82;">STATUS</span>
@@ -475,6 +497,14 @@
             </sc-if>
             <div style="font-size:19px; font-weight:600; color:#f1f6fc; margin-top:9px;">{{ selected.city }}</div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8093aa; margin-top:3px;">{{ selected.sub }}</div>
+            <sc-if value="{{ selected.ownerBadge }}" hint-placeholder-val="{{ null }}">
+              <div style="display:flex; align-items:center; gap:7px; margin-top:8px;">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:{{ selected.ownerBadge.color }}; border:1px solid {{ selected.ownerBadge.color }}44; border-radius:6px; padding:2px 7px;">{{ selected.ownerBadge.label }}</span>
+                <sc-if value="{{ selected.visBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
+                </sc-if>
+              </div>
+            </sc-if>
           </div>
           <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
         </div>
@@ -504,11 +534,14 @@
         <sc-if value="{{ selected.notes }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08); font-family:'Space Grotesk',sans-serif; font-size:13px; line-height:1.55; color:#c2cfde; white-space:pre-wrap;">{{ selected.notes }}</div>
         </sc-if>
-        <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex; gap:9px; margin-top:16px;">
             <button onClick="{{ editSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 18px rgba(251,191,36,0.35);">Edit</button>
             <button onClick="{{ deleteSelected }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:10px 14px; cursor:pointer;">Delete</button>
           </div>
+        </sc-if>
+        <sc-if value="{{ selectedReadOnly }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:16px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5; text-align:center;">Shared with you · view only</div>
         </sc-if>
       </div>
     </sc-if>
@@ -739,6 +772,19 @@
         <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">NOTES <span style="color:#445;">·opt</span></label>
         <textarea name="notes" value="{{ form.notes }}" onChange="{{ onField }}" placeholder="Anything to remember — hotels, highlights, who you went with…" rows="3" style="width:100%; resize:vertical; min-height:74px; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.5; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;"></textarea>
 
+        <sc-if value="{{ showVisibility }}" hint-placeholder-val="{{ false }}">
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 8px;">WHO CAN SEE THIS</label>
+          <div style="display:flex; gap:7px;">
+            <button onClick="{{ setVisPrivate }}" style="{{ visPrivateStyle }}">🔒 Only me</button>
+            <button onClick="{{ setVisAll }}" style="{{ visAllStyle }}">👥 All users</button>
+            <button onClick="{{ setVisShared }}" style="{{ visSharedStyle }}">✉ Specific people</button>
+          </div>
+          <sc-if value="{{ visIsShared }}" hint-placeholder-val="{{ false }}">
+            <input name="sharedWithText" value="{{ form.sharedWithText }}" onChange="{{ onField }}" placeholder="email@example.com, another@example.com" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:10px 12px; outline:none;">
+            <div style="margin-top:6px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5;">Comma-separated. They'll see this trip when signed in with that email.</div>
+          </sc-if>
+        </sc-if>
+
         <sc-if value="{{ showCreated }}" hint-placeholder-val="{{ false }}">
           <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">ADDED <span style="color:#445;">·read-only</span></label>
           <div style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8093aa; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 13px;">{{ createdText }}</div>
@@ -773,7 +819,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '2.0';
+    this.APP_VERSION = '2.1';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -906,6 +952,7 @@ class Component extends DCLogic {
       filterVisit: cfgDefaultVisit === 'all' ? [] : [cfgDefaultVisit],
       filterTrip: cfgDefaultTrip === 'all' ? [] : [cfgDefaultTrip],
       filterTravelers: cfgDefaultTraveler === 'all' ? [] : [cfgDefaultTraveler],
+      ownerFilter: 'everyone',
       cfgDefaultYear,
       cfgDefaultTrip,
       cfgDefaultVisit,
@@ -928,6 +975,8 @@ class Component extends DCLogic {
       cloudAuth: false,
       cloudState: cfgDataSource === 'cloud' ? 'pending' : 'ok',
       cloudUser: '',
+      cloudUserId: '',
+      cloudUserEmail: '',
       cloudRoles: [],
       cloudMsg: '',
       cloudDiag: '',
@@ -973,7 +1022,7 @@ class Component extends DCLogic {
     this.setImportInput = (el) => { this.importInput = el; };
   }
 
-  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'' }; }
+  blankForm() { return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:'private', sharedWith:[], sharedWithText:'' }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -1192,6 +1241,7 @@ class Component extends DCLogic {
         const data = await res.json();
         cloudLocs = Array.isArray(data) ? data : (data.locations || []);
         const settings = data && data.settings;
+        if (data && data.me) { ns.cloudUserId = data.me.id || ''; ns.cloudUserEmail = (data.me.email || '').toLowerCase(); if (Array.isArray(data.me.roles)) ns.cloudRoles = data.me.roles; }
         if (cloudLocs.length && settings) {
           Object.assign(ns, this.applySettings(settings));
         }
@@ -1315,9 +1365,10 @@ class Component extends DCLogic {
       const r = await fetch('/.auth/me');
       const j = await r.json();
       const p = j && (j.clientPrincipal || (j[0] && j[0].clientPrincipal));
-      this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '', cloudRoles: (p && p.userRoles) || [] });
+      this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '', cloudUserId: (p && p.userId) || '', cloudUserEmail: (p && (p.userDetails || '')).toLowerCase() || '', cloudRoles: (p && p.userRoles) || [] });
     } catch (e) {}
   }
+  signOut() { try { window.location.href = '/.auth/logout'; } catch (e) {} }
 
   async cloudSave(list) {
     try {
@@ -1327,6 +1378,23 @@ class Component extends DCLogic {
       else if (!res.ok) this.setState({ cloudMsg: 'Cloud save failed (' + res.status + ').' });
       else { this._cloudCount = list.length; this.setState({ cloudMsg: '' }); }
     } catch (e) { this.setState({ cloudMsg: 'Cloud offline — changes saved on this device.' }); }
+  }
+
+  // Admin-only full overwrite of the entire cloud dataset (Import / Clear).
+  async cloudReplace(list) {
+    try {
+      const body = JSON.stringify({ app: 'vacation-location', version: 1, settings: this.appSettings(), locations: list });
+      const res = await fetch('/api/trips?mode=replace', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      if (res.status === 403) this.setState({ storageMsg: 'Admin role is required to replace all cloud data.' });
+      else if (!res.ok) this.setState({ storageMsg: 'Cloud replace failed (' + res.status + ').' });
+      else this._cloudCount = list.length;
+    } catch (e) { this.setState({ storageMsg: 'Cloud offline — replace not sent.' }); }
+  }
+  // Like persist(), but uses replace mode for cloud (whole-dataset overwrite).
+  persistReplace(list) {
+    this.persistLocal(list);
+    if (this._fileHandle && this.state.dataMode === 'file' && !this.state.needsReconnect) this.writeFile(list);
+    if (this.state.dataMode === 'cloud' && this._cloud && this._cloudSynced) this.cloudReplace(list);
   }
 
   async loadBundledData() {
@@ -2128,7 +2196,7 @@ class Component extends DCLogic {
 
         const next = {};
         const done = [];
-        if (wantData && locs) { this.persist(locs); next.locations = locs; done.push(`${locs.length} destinations`); }
+        if (wantData && locs) { this.persistReplace(locs); next.locations = locs; done.push(`${locs.length} destinations`); }
         if (wantSettings && settings) {
           Object.assign(next, this.applySettings(settings));
           done.push('settings');
@@ -2201,7 +2269,7 @@ class Component extends DCLogic {
   confirmClearDb() {
     // Always download a dated backup before wiping.
     const backedUp = this.backupBeforeClear();
-    this.persist([]);
+    this.persistReplace([]);
     this.setState({ locations: [], selectedId: null, confirmClear: false, storageMsg: backedUp ? 'Backup downloaded — database cleared.' : 'Database cleared.' });
     this.expandedKey = null;
   }
@@ -2301,10 +2369,24 @@ class Component extends DCLogic {
   editSelected() {
     const loc = this.state.locations.find(l => l.id === this.state.selectedId);
     if (!loc) return;
-    this.setState({ formOpen: true, editingId: loc.id, dateText: null, dateEndText: null, formError: '', detailsOpen: this.state.cfgDetailsFormDefault, form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [] } });
+    this.setState({ formOpen: true, editingId: loc.id, dateText: null, dateEndText: null, formError: '', detailsOpen: this.state.cfgDetailsFormDefault, form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [], visibility: loc.visibility || 'private', sharedWith: loc.sharedWith || [], sharedWithText: (loc.sharedWith || []).join(', ') } });
   }
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
+  setVisibility(v) { this.setState(s => ({ form: { ...s.form, visibility: v } })); }
+  // Card badges describing ownership + who can see a trip (cloud mode only).
+  ownerBadge(l) {
+    if (this.state.cfgDataSource !== 'cloud' || !l) return null;
+    if (!l.owner) return { label: 'Unassigned', color: '#8093aa' };
+    if (l.owner === (this.state.cloudUserId || '')) return { label: 'You', color: '#7ee0a8' };
+    return { label: l.ownerEmail || 'Another user', color: '#9fb6cf' };
+  }
+  visBadge(l) {
+    if (this.state.cfgDataSource !== 'cloud' || !l || !l.owner) return null;
+    if (l.visibility === 'all') return { label: '👥 All users', color: '#5fd3ff' };
+    if (l.visibility === 'shared') return { label: '✉ Shared', color: '#fbbf24' };
+    return { label: '🔒 Private', color: '#9fb6cf' };
+  }
   toggleDup() { this.setState(s => ({ dupMode: !s.dupMode })); }
   toggleSort() { this.setState(s => ({ sortDir: s.sortDir === 'desc' ? 'asc' : 'desc' })); }
   toggleType(field, key) {
@@ -2326,6 +2408,12 @@ class Component extends DCLogic {
     if (s.filterVisit.length && !(l.visitTypes || []).some(k => s.filterVisit.includes(k))) return false;
     if (s.filterTrip.length && !(l.tripTypes || []).some(k => s.filterTrip.includes(k))) return false;
     if (s.filterTravelers.length && !(l.travelers || []).some(k => s.filterTravelers.includes(k))) return false;
+    // owner filter (cloud only) — Mine / Shared with me / Everyone-visible
+    if (s.cfgDataSource === 'cloud' && s.ownerFilter && s.ownerFilter !== 'everyone' && l.owner) {
+      const mine = l.owner === s.cloudUserId;
+      if (s.ownerFilter === 'mine' && !mine) return false;
+      if (s.ownerFilter === 'shared' && mine) return false;
+    }
     const q = (s.filterText || '').trim().toLowerCase();
     if (q) {
       const hay = [l.city, l.state, l.country, l.notes].filter(Boolean).join(' ').toLowerCase();
@@ -2342,7 +2430,8 @@ class Component extends DCLogic {
   toggleFilters() { this.setState(s => ({ filtersOpen: !s.filtersOpen })); }
   toggleHeat() { this.setState(s => ({ heatOpen: !s.heatOpen })); }
   setHeatMode(m) { this.setState({ heatMode: m }); }
-  clearFilters() { this.setState({ filterYear: 'all', filterStatuses: [], filterVisit: [], filterTrip: [], filterTravelers: [], filterText: '', filterCountries: [], filterCities: [] }); }
+  clearFilters() { this.setState({ filterYear: 'all', filterStatuses: [], filterVisit: [], filterTrip: [], filterTravelers: [], filterText: '', filterCountries: [], filterCities: [], ownerFilter: 'everyone' }); }
+  setOwnerFilter(v) { this.setState({ ownerFilter: v }); }
   toggleCountry(c) { this.setState(s => { const cur = s.filterCountries; return { filterCountries: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
   toggleCity(c) { this.setState(s => { const cur = s.filterCities; return { filterCities: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
 
@@ -2539,17 +2628,28 @@ class Component extends DCLogic {
     }
     // A range must run forwards; otherwise treat it as a single day.
     if (f.date && f.dateEnd && f.dateEnd < f.date) f.dateEnd = '';
+    // Normalize visibility + sharedWith (sharedWithText is the editable mirror).
+    if (['private','shared','all'].indexOf(f.visibility) === -1) f.visibility = 'private';
+    if (f.visibility === 'shared') {
+      f.sharedWith = String(f.sharedWithText || '').split(/[,;\n]/).map(x => x.trim().toLowerCase()).filter(Boolean);
+    } else {
+      f.sharedWith = [];
+    }
+    delete f.sharedWithText;
+    // Stamp ownership (cloud identity if known; harmless in local mode).
+    const meId = this.state.cloudUserId || '';
+    const meEmail = this.state.cloudUserEmail || '';
     let list, savedId;
     if (this.state.editingId != null) {
       savedId = this.state.editingId;
-      list = this.state.locations.map(l => l.id === savedId ? { ...l, ...f, modifiedAt: new Date().toISOString() } : l);
+      list = this.state.locations.map(l => l.id === savedId ? { ...l, ...f, owner: l.owner || meId, ownerEmail: l.ownerEmail || meEmail, modifiedAt: new Date().toISOString() } : l);
     } else {
       savedId = Date.now();
-      list = [...this.state.locations, { ...f, id: savedId, createdAt: new Date().toISOString() }];
+      list = [...this.state.locations, { ...f, id: savedId, owner: meId, ownerEmail: meEmail, createdAt: new Date().toISOString() }];
     }
     this.persist(list);
     if (this.state.dupMode) {
-      const dup = { ...f, date: '', dateEnd: '' };
+      const dup = { ...f, date: '', dateEnd: '', sharedWithText: (f.sharedWith || []).join(', ') };
       delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
       this.setState({ locations: list, formOpen: true, editingId: null, dateText: null, dateEndText: null, formError: '', selectedId: savedId, form: dup, calOpen: false });
     } else {
@@ -2682,8 +2782,13 @@ class Component extends DCLogic {
         coordsLabel: manual ? 'COORDS' : 'LOCATED BY',
         coordsText: manual ? `${co[1].toFixed(2)}, ${co[0].toFixed(2)}` : (co ? (addr || '—') : 'not located'),
         dateText,
+        ownerBadge: this.ownerBadge(sl),
+        visBadge: this.visBadge(sl),
       };
     }
+    const meId = this.state.cloudUserId || '';
+    const selOwnedByMe = !sl || !sl.owner || sl.owner === meId;
+    const canEditSelected = (this.state.cfgDataSource !== 'cloud') || ((this.state.cloudRoles || []).includes('editor') && selOwnedByMe);
 
     const segBase = "display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13.5px; text-align:left; padding:12px 14px; border-radius:11px; cursor:pointer; transition:all 0.16s; width:100%;";
     const seg = (key) => {
@@ -2705,6 +2810,8 @@ class Component extends DCLogic {
     const tripTypeChips = this.state.cfgTripTypes.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftt.includes(o.key)), onToggle: () => this.toggleType('tripTypes', o.key) }));
     const ftr = form.travelers || [];
     const travelerChips = this.state.cfgTravelers.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftr.includes(o.key)), onToggle: () => this.toggleType('travelers', o.key) }));
+    const visSeg = (on, color) => "flex:1; text-align:center; font-family:'Space Grotesk',sans-serif; font-size:11.5px; padding:9px 6px; border-radius:9px; cursor:pointer; " + (on ? ('color:#04111e; font-weight:600; background:' + color + '; border:1px solid ' + color + ';') : ('color:#9fb0c6; background:rgba(255,255,255,0.03); border:1px solid ' + color + '44;'));
+    const ownerSeg = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.02em; padding:7px 5px; border-radius:8px; cursor:pointer; " + (on ? ('color:#04111e; font-weight:600; background:' + color + '; border:1px solid ' + color + ';') : ('color:#9fb0c6; background:rgba(255,255,255,0.03); border:1px solid ' + color + '44;'));
     const segStyle = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 4px; border-radius:7px; cursor:pointer; " + (on ? `color:#04111e; background:${color}; border:1px solid ${color}; font-weight:600;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const helpTabStyle = (on) => "font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; padding:5px 10px; border-radius:7px; cursor:pointer; border:none; " + (on ? "color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); font-weight:600;" : "color:#9fb0c6; background:transparent;");
     const tabBtnStyle = (on) => "display:block; width:100%; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; padding:10px 11px; border-radius:8px; cursor:pointer; border:none; margin-bottom:5px; transition:all .12s; " + (on ? "color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); font-weight:600;" : "color:#9fb0c6; background:rgba(255,255,255,0.04);");
@@ -2777,6 +2884,13 @@ class Component extends DCLogic {
       filterYearValue: fy === 'all' ? 'all' : String(fy),
       onFilterYear: (e) => this.setState({ filterYear: e.target.value === 'all' ? 'all' : Number(e.target.value) }),
       statusFilterChips,
+      showOwnerFilter: this.state.cfgDataSource === 'cloud',
+      ownerEveryoneStyle: ownerSeg(this.state.ownerFilter === 'everyone', '#9fb6cf'),
+      ownerMineStyle: ownerSeg(this.state.ownerFilter === 'mine', '#7ee0a8'),
+      ownerSharedStyle: ownerSeg(this.state.ownerFilter === 'shared', '#fbbf24'),
+      setOwnerEveryone: () => this.setOwnerFilter('everyone'),
+      setOwnerMine: () => this.setOwnerFilter('mine'),
+      setOwnerShared: () => this.setOwnerFilter('shared'),
       visitFilterChips,
       tripFilterChips,
       travelerFilterChips,
@@ -2809,6 +2923,14 @@ class Component extends DCLogic {
       visitTypeChips,
       tripTypeChips,
       travelerChips,
+      showVisibility: this.state.cfgDataSource === 'cloud',
+      visIsShared: (form.visibility || 'private') === 'shared',
+      visPrivateStyle: visSeg((form.visibility || 'private') === 'private', '#9fb6cf'),
+      visAllStyle: visSeg(form.visibility === 'all', '#5fd3ff'),
+      visSharedStyle: visSeg(form.visibility === 'shared', '#fbbf24'),
+      setVisPrivate: () => this.setVisibility('private'),
+      setVisAll: () => this.setVisibility('all'),
+      setVisShared: () => this.setVisibility('shared'),
       detailsOpen: this.state.detailsOpen,
       detailsArrow: this.state.detailsOpen ? '▾' : '▸',
       toggleDetails: () => this.toggleDetails(),
@@ -2912,6 +3034,8 @@ class Component extends DCLogic {
       discardLocalForCloud: () => this.discardLocalForCloud(),
       isCloudSource: this.state.cfgDataSource === 'cloud',
       canEdit: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('editor'),
+      canEditSelected,
+      selectedReadOnly: !!selected && !canEditSelected && (this.state.cloudRoles || []).includes('editor'),
       canAdmin: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin'),
       cloudBlocked: this.state.cfgDataSource === 'cloud' && (this.state.cloudState === 'anon' || this.state.cloudState === 'denied'),
       cloudBlockTitle: this.state.cloudState === 'denied' ? 'No access' : 'Sign in required',
@@ -2939,6 +3063,12 @@ class Component extends DCLogic {
       reqSendDisabled: !(this.state.reqEmail || '').trim() || this.state.reqSending,
       onAccessEmail: (e) => this.setAccessEmail(e),
       cloudAuthLabel: this.state.cloudAuth ? 'Signed in — edits sync' : 'Sign in to view & edit your trips',
+      cloudAuth: this.state.cloudAuth,
+      cloudNotAuth: !this.state.cloudAuth,
+      cloudUserInitial: (this.state.cloudUser || '?').trim().charAt(0).toUpperCase() || '?',
+      cloudRoleLabel: (() => { const r = (this.state.cloudRoles || []).filter(x => ['reader','editor','admin'].includes(x)); return r.length ? r.join(' · ').toUpperCase() : 'NO ROLE — VIEW ONLY'; })(),
+      cloudRoleColor: (this.state.cloudRoles || []).includes('admin') ? '#fbbf24' : ((this.state.cloudRoles || []).includes('editor') ? '#7ee0a8' : '#9fb6cf'),
+      doSignOut: () => this.signOut(),
       cloudAuthColor: this.state.cloudAuth ? '#7ee0a8' : '#fcd34d',
       cloudAuthAction: this.state.cloudAuth ? 'Sign out' : 'Sign in',
       cloudAuthHref: this.state.cloudAuth ? '/.auth/logout' : '/.auth/login/aad',
