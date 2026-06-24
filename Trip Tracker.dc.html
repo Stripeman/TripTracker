@@ -44,6 +44,15 @@
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </helmet>
+<!-- ===========================================================================
+     TRIP TRACKER — template (the markup).  This half is the VIEW: every {{ name }}
+     hole is filled by a value of the same name returned from renderVals() in the
+     <script> logic block below. The full-screen <canvas> is the globe (painted by
+     draw() in the logic, not by this markup). The overlay div sits on top and holds
+     all the UI: header, destinations list (left), filters, the selected-trip card,
+     the slide-in add/edit form (right), the config panel, dialogs, and the
+     who's-online bar. Pointer events pass THROUGH the overlay's gaps to the globe.
+============================================================================ -->
 <div style="position:fixed; inset:0; font-family:'Space Grotesk',sans-serif; color:#c8d2e0; background:radial-gradient(circle at 50% 45%, #0a1422 0%, #05080f 55%, #03050a 100%);">
 
   <canvas ref="{{ setCanvas }}" style="position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; touch-action:none;"></canvas>
@@ -118,7 +127,7 @@
           </div>
         </sc-if>
         <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;">
-          <div style="display:flex; gap:6px; flex:none;">
+          <div style="display:flex; gap:2px; flex:none; border-bottom:1px solid rgba(255,255,255,0.08);">
             <button onClick="{{ setTabFilters }}" style="{{ tabFiltersStyle }}">Defaults</button>
             <button onClick="{{ setTabConfig }}" style="{{ tabConfigStyle }}">Settings</button>
             <button onClick="{{ setTabSystem }}" style="{{ tabSystemStyle }}">Preferences</button>
@@ -842,12 +851,50 @@
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script>
+/* ============================================================================
+ * TRIP TRACKER — application logic
+ * ============================================================================
+ * This single class drives the whole app. It is a DCLogic component (a thin
+ * React-class wrapper): `this.state` holds all live data, `setState` re-renders,
+ * and renderVals() (near the bottom) hands plain values to the HTML template
+ * above. The 3D globe is drawn manually on a <canvas> in draw(), not by React.
+ *
+ * The big pieces, in the order they appear below:
+ *   1. constructor()        — defines the reference data (visit/trip/traveler/
+ *                             status lists, country aliases, city & US-state
+ *                             coordinates), then reads saved trips + config out
+ *                             of localStorage and builds the initial state.
+ *   2. Data loading         — bootData / loadLocal / cloudLoad decide where the
+ *                             trips come from: the cloud API, a linked JSON
+ *                             file, browser storage, or the bundled demo file.
+ *   3. Cloud + auth          — checkAuth, presence ("who's online"), cloudSave/
+ *                             cloudReplace, and the sign-in / access-request flow.
+ *   4. Globe rendering      — init/resize/attachPointer set up the canvas;
+ *                             loop()/draw() run every animation frame; handleClick
+ *                             hit-tests the markers; flyTo spins the globe.
+ *   5. Geocoding helpers    — resolveCoords / previewCandidates turn a city /
+ *                             state / country (or lat-lon) into a globe position.
+ *   6. Storage helpers      — persist + IndexedDB + File-System-Access plumbing.
+ *   7. Config + settings    — cfgObject/persistConfig keep the editable data
+ *                             lists and preferences, and sync them to the cloud.
+ *   8. Import / export       — exportKind / importKind read & write JSON files.
+ *   9. renderVals()         — the bridge: computes everything the template binds
+ *                             to (filtered list, card details, filter chips, …).
+ *
+ * Storage keys: trips live under localStorage['vacation-location:locations:v4'];
+ * all preferences/config under localStorage['vacation-location:config'].
+ * (The "vacation-location" prefix is historical — the app was renamed to Trip
+ * Tracker but the keys were kept so existing saved data still loads.)
+ * ==========================================================================*/
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.STORE = 'vacation-location:locations:v4';
-    this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '2.6';
+    // --- storage keys + app version ---
+    this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
+    this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
+    this.APP_VERSION = '2.6';                       // shown in ⓘ / help; compared against cloud to flag updates
+    // --- reference data: the editable "data lists" (Settings tab can change these) ---
+    // Each entry: { key (stable id), label (shown), color (chip + map) }.
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -879,6 +926,8 @@ class Component extends DCLogic {
     this.TRIP_TYPES = this.DEF_TRIP_TYPES;
     this.TRAVELERS = this.DEF_TRAVELERS;
     this.rebuildLookups({ cfgVisitTypes: this.DEF_VISIT_TYPES, cfgTripTypes: this.DEF_TRIP_TYPES, cfgTravelers: this.DEF_TRAVELERS, cfgStatuses: this.DEF_STATUSES });
+    // ALIAS normalises country spellings/abbreviations to the name used by the
+    // world-atlas data, so "USA", "U.S.", "America" all match "united states of america".
     this.ALIAS = {
       'usa':'united states of america','us':'united states of america','u.s.a.':'united states of america',
       'united states':'united states of america','america':'united states of america',
@@ -887,6 +936,8 @@ class Component extends DCLogic {
       'czech republic':'czechia','holland':'netherlands','south korea':'south korea','korea':'south korea',
       'russia':'russia','burma':'myanmar','ivory coast':'côte d\'ivoire'
     };
+    // CITIES: built-in [lon, lat] for well-known cities, so a trip with just a
+    // city name (no lat/lon entered) still lands in the right spot on the globe.
     this.CITIES = {
       'new york':[-74.0,40.71],'los angeles':[-118.24,34.05],'chicago':[-87.63,41.88],'san francisco':[-122.42,37.77],'seattle':[-122.33,47.61],'miami':[-80.19,25.76],'las vegas':[-115.14,36.17],'boston':[-71.06,42.36],'washington':[-77.04,38.91],'new orleans':[-90.07,29.95],'austin':[-97.74,30.27],'denver':[-104.99,39.74],
       'toronto':[-79.38,43.65],'vancouver':[-123.12,49.28],'montreal':[-73.57,45.5],'mexico city':[-99.13,19.43],'cancun':[-86.85,21.16],'havana':[-82.38,23.11],
@@ -901,6 +952,9 @@ class Component extends DCLogic {
       'hong kong':[114.17,22.32],'shanghai':[121.47,31.23],'beijing':[116.41,39.9],'tokyo':[139.69,35.69],'kyoto':[135.77,35.01],'osaka':[135.5,34.69],'sapporo':[141.35,43.06],'seoul':[126.98,37.57],'taipei':[121.56,25.03],'manila':[120.98,14.6],
       'sydney':[151.21,-33.87],'melbourne':[144.96,-37.81],'brisbane':[153.03,-27.47],'auckland':[174.76,-36.85],'queenstown':[168.66,-45.03],'wellington':[174.78,-41.29],'honolulu':[-157.86,21.31],'fiji':[178.07,-17.71],'bora bora':[-151.74,-16.5]
     };
+    // ST = approximate [lon, lat] centre of each US state; ABBR maps 2-letter
+    // codes to the full name. Combined into US_STATES below so a trip located by
+    // state (e.g. "Colorado" or "CO", no city) drops a dot at the state's centre.
     const ST = {
       'alabama':[-86.8,32.8],'alaska':[-152,64],'arizona':[-111.7,34.3],'arkansas':[-92.4,34.8],'california':[-119.4,37.2],'colorado':[-105.5,39],'connecticut':[-72.7,41.6],'delaware':[-75.5,39],'florida':[-81.7,28.6],'georgia':[-83.4,32.6],'hawaii':[-156.3,20.3],'idaho':[-114.6,44.4],'illinois':[-89.2,40],'indiana':[-86.3,39.9],'iowa':[-93.5,42],'kansas':[-98.4,38.5],'kentucky':[-85.3,37.5],'louisiana':[-92.4,31],'maine':[-69.2,45.4],'maryland':[-76.8,39],'massachusetts':[-71.8,42.3],'michigan':[-85,44.3],'minnesota':[-94.3,46.3],'mississippi':[-89.7,32.7],'missouri':[-92.5,38.4],'montana':[-109.6,47],'nebraska':[-99.8,41.5],'nevada':[-116.9,39.3],'new hampshire':[-71.6,43.7],'new jersey':[-74.5,40.2],'new mexico':[-106.1,34.4],'new york':[-75.5,42.9],'north carolina':[-79.4,35.6],'north dakota':[-100.3,47.5],'ohio':[-82.8,40.3],'oklahoma':[-97.5,35.6],'oregon':[-120.5,44],'pennsylvania':[-77.8,40.9],'rhode island':[-71.5,41.7],'south carolina':[-80.9,33.9],'south dakota':[-100.2,44.4],'tennessee':[-86.3,35.9],'texas':[-99.3,31.5],'utah':[-111.7,39.3],'vermont':[-72.7,44.1],'virginia':[-78.8,37.5],'washington':[-120.4,47.4],'west virginia':[-80.6,38.6],'wisconsin':[-89.9,44.6],'wyoming':[-107.5,43]
     };
@@ -909,10 +963,15 @@ class Component extends DCLogic {
     for (const k in ST) this.US_STATES[k] = ST[k];
     for (const a in ABBR) this.US_STATES[a] = ST[ABBR[a]];
 
+    // --- read saved data out of the browser ---
+    // saved = the trips array from a previous session (or [] on first run).
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(this.STORE) || 'null'); } catch (e) {}
     if (!saved || !Array.isArray(saved)) saved = [];
 
+    // cfg = the saved config/preferences object (data lists, default filters,
+    // display toggles, cloud-vs-local choice, etc.). The const lines below pull
+    // each setting out with a sensible fallback if it was never set.
     let cfg = {};
     try { cfg = JSON.parse(localStorage.getItem(this.CFG) || '{}') || {}; } catch (e) {}
     // Default to Cloud unless the user has explicitly chosen Local. On a fresh
@@ -944,6 +1003,7 @@ class Component extends DCLogic {
     const cfgVersion = Number.isFinite(cfg.version) ? cfg.version : 1;
 
     const now = new Date();
+    // --- the single source of truth: every piece of live UI state lives here ---
     this.state = {
       locations: saved,
       detailsOpen: cfgDetailsFormDefault,
@@ -1199,6 +1259,10 @@ class Component extends DCLogic {
     }));
   }
 
+  /* --- DATA LOADING: decide where trips come from ----------------------------
+   * bootData runs once on mount. In Cloud mode it tries the API (cloudLoad);
+   * anything else falls back to loadLocal, which prefers, in order: trips already
+   * in browser storage → a linked trip-tracker.json → the bundled demo-data.json. */
   async bootData() {
     if (this.state.cfgDataSource === 'cloud') {
       const ok = await this.cloudLoad();
@@ -1245,6 +1309,11 @@ class Component extends DCLogic {
   }
   cancelLocalSwitch() { this.setState({ confirmLocal: false }); }
 
+  /* --- CLOUD LOAD: fetch trips from the Azure API ----------------------------
+   * Returns true if the cloud answered (so we stay in Cloud mode), false if there
+   * is no API / not signed in (so we drop to local). cloudState tracks the auth
+   * situation: 'ok' | 'anon' (must sign in) | 'denied' (no role) | 'pending'.
+   * _cloudSynced gates writes so we never push before we've read cloud's state. */
   async cloudLoad() {
     this._cloudSynced = false; // block cloud writes until we've confirmed cloud's state
     try {
@@ -1549,6 +1618,7 @@ class Component extends DCLogic {
     });
   }
 
+  /* --- LIFECYCLE: mount/unmount/update --------------------------------------- */
   componentDidMount() {
     this.init();
     this.bootData();
@@ -1586,6 +1656,10 @@ class Component extends DCLogic {
     } else { this._pvKey = null; }
   }
 
+  /* --- GLOBE SETUP: canvas + D3 projection ----------------------------------
+   * init waits for the D3 + world-atlas scripts, builds the orthographic
+   * projection, then starts the render loop. resize keeps the canvas crisp on
+   * HiDPI screens; attachPointer wires drag-to-spin and click hit-testing. */
   async init() {
     await this.waitFor(() => window.d3 && window.topojson);
     try {
@@ -1709,6 +1783,11 @@ class Component extends DCLogic {
     this.tween = { from: [this.rotation[0], this.rotation[1]], dLon: d, to, start: performance.now(), dur: 850 };
   }
 
+  /* --- GEOCODING: turn a trip into a globe coordinate ------------------------
+   * resolveCoords returns the [lon, lat] a saved trip's dot should sit at. It
+   * tries, most-specific first: explicit lat/lon → known city → US state centre →
+   * country centroid (centroids are computed from the world-atlas on load).
+   * Returns null if nothing matches (the trip then has no map dot). */
   resolveCoords(loc) {
     const lat = parseFloat(loc.lat), lon = parseFloat(loc.lon);
     if (isFinite(lat) && isFinite(lon)) return [lon, lat];
@@ -1804,6 +1883,10 @@ class Component extends DCLogic {
     return ['usa','us','u.s.','u.s.a.','united states','united states of america','america'].includes(c);
   }
 
+  /* --- RENDER LOOP: runs every animation frame -------------------------------
+   * loop advances any in-progress flyTo tween and the idle auto-spin, then calls
+   * draw. draw paints the ocean, land, graticule, every visible marker, the
+   * live "add" preview dot, and hover labels straight onto the 2D canvas. */
   loop(t) {
     if (this.tween) {
       const p = Math.min(1, (t - this.tween.start) / this.tween.dur);
@@ -1820,6 +1903,10 @@ class Component extends DCLogic {
     this._raf = requestAnimationFrame(this.loop);
   }
 
+  /* --- DRAW: paint one frame of the globe onto the canvas --------------------
+   * Order matters (back to front): ocean disc → graticule → land/borders →
+   * country heat tint → markers (clustered when several share a spot) → the live
+   * add-preview dot → hover country label. Everything is plain canvas 2D calls. */
   draw(t) {
     const ctx = this.ctx, proj = this.proj;
     if (!ctx || !proj) return;
@@ -2141,6 +2228,11 @@ class Component extends DCLogic {
     this.setState({ dataMode: 'browser', dataFileName: '', needsReconnect: false });
   }
 
+  /* --- CONFIG + SETTINGS: the editable data lists & preferences ---------------
+   * cfgObject serialises all preferences into one plain object (what gets saved
+   * to localStorage and exported). persistConfig writes it AND bumps a version
+   * number; persistConfigNoBump is used mid-typing in the data editor so the
+   * version only ticks once on blur. Any config change also schedules a cloud push. */
   cfgObject(s) {
     return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
   }
@@ -2199,6 +2291,8 @@ class Component extends DCLogic {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  // Export trips and/or settings to a downloaded JSON file. kind is
+  // 'data' | 'settings' | 'both' — driven by the Export switches in the panel.
   exportKind(kind) {
     const o = { app: 'vacation-location', version: 1, exportedAt: new Date().toISOString() };
     if (kind === 'data' || kind === 'both') o.locations = this.state.locations;
@@ -2207,6 +2301,9 @@ class Component extends DCLogic {
     this.downloadJson(o, names[kind]);
   }
 
+  // Restore from a JSON file. Opens the file picker; the chosen file is read in
+  // setImportInput's onChange handler, which applies only what the user switched
+  // on (data / settings) AND what the file actually contains.
   importKind(kind) {
     this._importKind = kind;
     if (this.importInput) { this.importInput.value = ''; this.importInput.click(); }
@@ -2467,6 +2564,9 @@ class Component extends DCLogic {
       return { form: { ...s.form, [field]: next } };
     });
   }
+  // Returns true if a trip passes every active filter (year, status, visit/trip
+  // type, traveler, owner, free-text, and any country/city chips). `ignore` lets
+  // a caller skip one dimension — used so the heat map can count totals correctly.
   passesFilter(l, ignore) {
     const s = this.state;
     const ignoreCountry = ignore === 'country' || ignore === 'geo';
@@ -2691,6 +2791,11 @@ class Component extends DCLogic {
   }
   clearDates() { this.applyDates('', ''); }
 
+  /* --- SAVE FORM: validate + write one trip ----------------------------------
+   * Reads this.state.form, enforces the required fields (city, a date, status;
+   * US trips also need a state), normalises visibility/sharing, stamps owner +
+   * created/modified timestamps, then persists. dupMode keeps the form open with
+   * the date cleared so you can quickly log the next leg of the same trip. */
   async saveForm() {
     const f = { ...this.state.form };
     const hasCity = !!(f.city && f.city.trim());
@@ -2750,6 +2855,11 @@ class Component extends DCLogic {
     if (c) this.flyTo(c);
   }
 
+  /* --- renderVals(): THE TEMPLATE BRIDGE ------------------------------------
+   * Called on every render. It returns one big object of plain values + handler
+   * functions; each `{{ name }}` in the HTML template above binds to a key here.
+   * This is where the filtered/sorted list, the selected-trip card details, all
+   * the filter chips, the calendar, and the cloud/presence UI are computed. */
   renderVals() {
     const { selectedId, formOpen, editingId, form } = this.state;
     // In Cloud mode, render NO trips until cloud access is confirmed ('ok').
@@ -2905,7 +3015,7 @@ class Component extends DCLogic {
     const ownerSeg = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.02em; padding:7px 5px; border-radius:8px; cursor:pointer; " + (on ? ('color:#04111e; font-weight:600; background:' + color + '; border:1px solid ' + color + ';') : ('color:#9fb0c6; background:rgba(255,255,255,0.03); border:1px solid ' + color + '44;'));
     const segStyle = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 4px; border-radius:7px; cursor:pointer; " + (on ? `color:#04111e; background:${color}; border:1px solid ${color}; font-weight:600;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const helpTabStyle = (on) => "font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; padding:5px 10px; border-radius:7px; cursor:pointer; border:none; " + (on ? "color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); font-weight:600;" : "color:#9fb0c6; background:transparent;");
-    const tabBtnStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:9px 4px; border-radius:8px; cursor:pointer; border:none; transition:all .12s; " + (on ? "color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); font-weight:600;" : "color:#9fb0c6; background:rgba(255,255,255,0.04);");
+    const tabBtnStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; padding:9px 4px; margin-bottom:-1px; background:none; border:none; border-bottom:2px solid " + (on ? "#5fd3ff" : "transparent") + "; cursor:pointer; transition:color .12s, border-color .12s; " + (on ? "color:#eaf4fd;" : "color:#7184a0;");
     const editorGroup = (title, cat, list, fixed) => ({
       title, cat,
       items: list.map(o => ({
