@@ -654,6 +654,7 @@
                 <button onClick="{{ showAppGuide }}" style="{{ appGuideTabStyle }}">App guide</button>
                 <button onClick="{{ showDeployGuide }}" style="{{ deployGuideTabStyle }}">Deploy guide</button>
               </div>
+              <a href="{{ helpPageHref }}" target="_blank" rel="noopener" title="Open this guide in its own page — shareable by link, and printable to PDF" style="display:flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; color:#cfe6f5; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:6px 10px; cursor:pointer; text-decoration:none;">↗ Open / PDF</a>
               <button onClick="{{ closeHelp }}" style="width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:16px; line-height:1;">×</button>
             </div>
           </div>
@@ -846,7 +847,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '2.5';
+    this.APP_VERSION = '2.6';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -3215,6 +3216,7 @@ class Component extends DCLogic {
       stopProp: (e) => e.stopPropagation(),
       stop: (e) => { e.stopPropagation(); },
       helpNode: this.state.helpHtml ? React.createElement('div', { className: 'vl-help', dangerouslySetInnerHTML: { __html: this.state.helpHtml } }) : null,
+      helpPageHref: 'help.html?doc=' + (this.state.helpDoc === 'deploy' ? 'deploy' : 'readme'),
       askClear: () => this.askClear(),
       cancelClear: () => this.cancelClear(),
       confirmClearDb: () => this.confirmClearDb(),

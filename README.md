@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-v2.5-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-v2.6-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -141,6 +141,12 @@ Because the app fetches map data and (optionally) links files, open it over **ht
 ### In‑app help
 
 This very document is the app's help screen. The **?** button (top of the ⚙ settings panel, left of ⓘ) opens a guide rendered live from `README.md` — so there's only ever one file to maintain. Keep `README.md` next to the app and serve over http for it to load.
+
+A matching **standalone page** lives at **`help.html`** — it renders these same guides (App guide + Deploy guide) with identical styling. Use it to:
+- **Share a link** to the guide without opening the app — e.g. `https://your-site/help.html` (or `help.html?doc=deploy` for the deploy guide; the chosen tab is kept in the URL).
+- **Save as PDF** — the page has a **Save PDF** button (your browser's print-to-PDF), and the dark theme is preserved in the output. No separate PDF file to maintain — the page *is* the shareable, printable artifact.
+
+Inside the app, the **↗ Open / PDF** link in the Help &amp; Guide header opens this page for whichever guide you're viewing.
 
 ---
 

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trip Tracker — Help &amp; Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(circle at 50% 0%, #0a1422 0%, #05080f 55%, #03050a 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #c8d2e0;
+    font-family: 'Space Grotesk', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.22); border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .page { max-width: 820px; margin: 0 auto; padding: 0 26px 80px; }
+
+  /* sticky top bar with title, tabs, print button */
+  .bar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    padding: 18px 26px;
+    margin: 0 -26px 26px;
+    background: rgba(7,12,21,0.86);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(56,189,248,0.18);
+  }
+  .brand { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.22em; color: #e8f3ff; text-shadow: 0 0 22px rgba(56,189,248,0.4); }
+  .controls { display: flex; align-items: center; gap: 9px; }
+  .tabs { display: flex; gap: 3px; padding: 3px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; }
+  .tab {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em;
+    color: #9fb0c6; background: none; border: none; border-radius: 7px; padding: 7px 12px; cursor: pointer; transition: all .12s;
+  }
+  .tab.active { color: #04111e; background: linear-gradient(180deg,#5fd3ff,#22aee6); font-weight: 600; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em;
+    color: #cfe6f5; background: rgba(255,255,255,0.05); border: 1px solid rgba(56,189,248,0.28);
+    border-radius: 8px; padding: 8px 13px; cursor: pointer; transition: all .12s; text-decoration: none;
+  }
+  .btn:hover { background: rgba(56,189,248,0.14); color: #fff; }
+
+  .updated { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #566a82; margin: -8px 0 22px; }
+
+  /* markdown body — identical to the app's .vl-help styles */
+  .vl-help { color:#c8d2e0; font-family:'Space Grotesk',sans-serif; line-height:1.65; font-size:14px; }
+  .vl-help h1,.vl-help h2,.vl-help h3 { color:#eaf4fd; font-family:'Orbitron',sans-serif; font-weight:500; }
+  .vl-help h1 { font-size:21px; letter-spacing:0.08em; margin:0 0 6px; }
+  .vl-help h2 { font-size:16px; letter-spacing:0.04em; margin:26px 0 10px; padding-bottom:7px; border-bottom:1px solid rgba(56,189,248,0.16); }
+  .vl-help h3 { font-size:13.5px; letter-spacing:0.04em; margin:18px 0 6px; color:#bcd2e6; }
+  .vl-help p { margin:9px 0; }
+  .vl-help a { color:#7fd6f5; text-decoration:none; }
+  .vl-help ul,.vl-help ol { padding-left:20px; margin:8px 0; }
+  .vl-help li { margin:4px 0; }
+  .vl-help strong { color:#eef4fb; }
+  .vl-help code { background:rgba(255,255,255,0.07); padding:2px 5px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#9fd6f0; }
+  .vl-help pre { background:rgba(0,0,0,0.34); border:1px solid rgba(56,189,248,0.15); border-radius:8px; padding:12px 14px; overflow:auto; }
+  .vl-help pre code { background:none; padding:0; color:#bcd9ea; }
+  .vl-help hr { border:none; border-top:1px solid rgba(255,255,255,0.1); margin:22px 0; }
+  .vl-help blockquote { border-left:3px solid rgba(56,189,248,0.4); margin:12px 0; padding:2px 0 2px 13px; color:#9fb0c6; }
+  .vl-help img { max-width:100%; vertical-align:middle; }
+  .vl-help table { border-collapse:collapse; width:100%; margin:10px 0; }
+  .vl-help th,.vl-help td { border:1px solid rgba(255,255,255,0.12); padding:6px 9px; text-align:left; font-size:13px; }
+
+  .err { font-family:'IBM Plex Mono',monospace; font-size:13px; color:#fcd34d; line-height:1.6; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.22); border-radius:10px; padding:16px 18px; }
+
+  /* Print / Save-as-PDF — preserve the dark theme exactly as shown on screen */
+  @media print {
+    @page { margin: 14mm; }
+    html, body { background: #05080f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bar, .updated { display: none !important; }
+    .page { max-width: none; padding: 0; }
+    .vl-help pre, .vl-help blockquote, .vl-help table { break-inside: avoid; }
+    .vl-help h1, .vl-help h2, .vl-help h3 { break-after: avoid; }
+    .vl-help a { color: #7fd6f5; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="bar">
+      <div class="brand">TRIP&nbsp;&nbsp;TRACKER</div>
+      <div class="controls">
+        <div class="tabs">
+          <button class="tab active" id="tab-readme" onclick="loadDoc('readme')">App guide</button>
+          <button class="tab" id="tab-deploy" onclick="loadDoc('deploy')">Deploy guide</button>
+        </div>
+        <button class="btn" onclick="window.print()" title="Print or save as PDF">⤓&nbsp;Save&nbsp;PDF</button>
+      </div>
+    </div>
+    <div class="updated" id="updated"></div>
+    <div class="vl-help" id="doc">Loading…</div>
+  </div>
+
+  <script>
+    var FILES = { readme: 'README.md', deploy: 'DEPLOY-azure.md' };
+    var TITLES = { readme: 'App guide', deploy: 'Deploy guide' };
+    var cache = {};
+
+    function setActiveTab(which) {
+      document.getElementById('tab-readme').classList.toggle('active', which === 'readme');
+      document.getElementById('tab-deploy').classList.toggle('active', which === 'deploy');
+      document.title = 'Trip Tracker — ' + TITLES[which];
+    }
+
+    async function loadDoc(which) {
+      setActiveTab(which);
+      // keep the chosen guide in the URL so the link is shareable/bookmarkable
+      try { history.replaceState(null, '', '?doc=' + which); } catch (e) {}
+      var doc = document.getElementById('doc');
+      var upd = document.getElementById('updated');
+      if (cache[which]) { doc.innerHTML = cache[which].html; upd.textContent = cache[which].updated; return; }
+      doc.textContent = 'Loading…'; upd.textContent = '';
+      try {
+        var res = await fetch(FILES[which], { cache: 'no-store' });
+        if (!res.ok) throw new Error('not found');
+        var md = await res.text();
+        var html = (window.marked && window.marked.parse) ? window.marked.parse(md) : md;
+        var updated = '';
+        try {
+          var lm = res.headers.get('last-modified');
+          if (lm) updated = 'Last updated ' + new Date(lm).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+        } catch (e) {}
+        cache[which] = { html: html, updated: updated };
+        doc.innerHTML = html;
+        upd.textContent = updated;
+      } catch (e) {
+        doc.innerHTML = '<div class="err">Could not load ' + FILES[which] + '. Open this page over a web server (the deployed site, or a local server such as VS Code Live Server) so the guide file can be read.</div>';
+      }
+    }
+
+    var start = (new URLSearchParams(location.search).get('doc') === 'deploy') ? 'deploy' : 'readme';
+    loadDoc(start);
+  </script>
+</body>
+</html>
