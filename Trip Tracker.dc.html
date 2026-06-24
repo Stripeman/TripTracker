@@ -117,8 +117,8 @@
             </div>
           </div>
         </sc-if>
-        <div style="display:flex; gap:12px; flex:1; min-height:0;">
-          <div style="width:104px; flex:none;">
+        <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;">
+          <div style="display:flex; gap:6px; flex:none;">
             <button onClick="{{ setTabFilters }}" style="{{ tabFiltersStyle }}">Defaults</button>
             <button onClick="{{ setTabConfig }}" style="{{ tabConfigStyle }}">Settings</button>
             <button onClick="{{ setTabSystem }}" style="{{ tabSystemStyle }}">Preferences</button>
@@ -360,16 +360,14 @@
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:8px;">{{ grp.title }}</div>
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
-                  <div style="display:flex; flex-direction:column; gap:5px;">
-                    <div style="display:flex; align-items:center; gap:7px;">
-                      <input type="color" defaultValue="{{ it.color }}" onChange="{{ it.onColor }}" onBlur="{{ it.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
-                      <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
-                      <sc-if value="{{ it.removable }}" hint-placeholder-val="{{ true }}">
-                        <button onClick="{{ it.onRemove }}" title="Remove" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.26); color:#f0a6a6; cursor:pointer; font-size:14px; line-height:1;">×</button>
-                      </sc-if>
-                    </div>
+                  <div style="display:flex; align-items:center; gap:7px;">
+                    <input type="color" defaultValue="{{ it.color }}" onChange="{{ it.onColor }}" onBlur="{{ it.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
+                    <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" style="flex:0 1 92px; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
                     <sc-if value="{{ it.isTraveler }}" hint-placeholder-val="{{ false }}">
-                      <input defaultValue="{{ it.email }}" onChange="{{ it.onEmail }}" onBlur="{{ it.onCommit }}" type="email" placeholder="email (so you can share trips with them)" style="margin-left:35px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:6px 9px; outline:none;">
+                      <input defaultValue="{{ it.email }}" onChange="{{ it.onEmail }}" onBlur="{{ it.onCommit }}" type="email" placeholder="email — to share with them" style="flex:1 1 auto; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:7px 9px; outline:none;">
+                    </sc-if>
+                    <sc-if value="{{ it.removable }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ it.onRemove }}" title="Remove" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.26); color:#f0a6a6; cursor:pointer; font-size:14px; line-height:1;">×</button>
                     </sc-if>
                   </div>
                 </sc-for>
@@ -832,7 +830,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '2.2';
+    this.APP_VERSION = '2.3';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -2851,7 +2849,7 @@ class Component extends DCLogic {
     const ownerSeg = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.02em; padding:7px 5px; border-radius:8px; cursor:pointer; " + (on ? ('color:#04111e; font-weight:600; background:' + color + '; border:1px solid ' + color + ';') : ('color:#9fb0c6; background:rgba(255,255,255,0.03); border:1px solid ' + color + '44;'));
     const segStyle = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 4px; border-radius:7px; cursor:pointer; " + (on ? `color:#04111e; background:${color}; border:1px solid ${color}; font-weight:600;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const helpTabStyle = (on) => "font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; padding:5px 10px; border-radius:7px; cursor:pointer; border:none; " + (on ? "color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); font-weight:600;" : "color:#9fb0c6; background:transparent;");
-    const tabBtnStyle = (on) => "display:block; width:100%; text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; padding:10px 11px; border-radius:8px; cursor:pointer; border:none; margin-bottom:5px; transition:all .12s; " + (on ? "color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); font-weight:600;" : "color:#9fb0c6; background:rgba(255,255,255,0.04);");
+    const tabBtnStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:9px 4px; border-radius:8px; cursor:pointer; border:none; transition:all .12s; " + (on ? "color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); font-weight:600;" : "color:#9fb0c6; background:rgba(255,255,255,0.04);");
     const editorGroup = (title, cat, list, fixed) => ({
       title, cat,
       items: list.map(o => ({
