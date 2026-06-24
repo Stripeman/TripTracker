@@ -70,8 +70,6 @@ In Cloud mode every trip belongs to whoever created it, and the server only ever
 - **Visibility per trip:** the add/edit form has a **"Who can see this"** picker:
   - **🔒 Only me** — private to you (default).
   - **👥 All users** — any signed-in user can view it.
-  - **✉ Specific people** — share **by name**: pick from your **Traveler** chips (Terry, …) instead of typing emails. Each Traveler can hold an optional email in **⚙ → Settings → Travelers**; that's the address access is granted to. Travelers without an email are greyed out with a hint. A **"+ other email"** box covers anyone who isn't a Traveler.
-- **Names, not emails:** because Travelers map names → emails, the owner badge and share picker show **names** ("Karen"), and when you're signed in with a Traveler's email the app greets you by that name. Sharing still resolves to emails under the hood (that's what sign-in matches on).
   - **✉ Specific people** — share **by name**: pick from your **Traveler** chips (Terry, [others], …) instead of typing emails. Each Traveler can hold an optional email in **⚙ → Settings → Travelers**; that's the address access is granted to. Travelers without an email are greyed out with a hint. A **"+ other email"** box covers anyone who isn't a Traveler.
 - **Names, not emails:** because Travelers map names → emails, the owner badge and share picker show **names** (e.g. "Terry"), and when you're signed in with a Traveler's email the app greets you by that name. Sharing still resolves to emails under the hood (that's what sign-in matches on).
 - **Settings sync to the cloud:** editing configuration data (Travelers and their **emails**, visit/trip types, statuses, default filters, display options) saves to the cloud automatically a moment after you change it — so the name↔email mapping and your settings persist and are shared with other users, not just stored in your browser. (Requires the `editor`/`admin` role, like any cloud write.)
@@ -109,7 +107,6 @@ The app knows its own build version and quietly checks the server for a newer de
 
 ### 🧩 Configuration data (editable lists)
 The **Settings** tab turns what used to be fixed lists into editable data. For each category you can **rename**, **recolour** (colour swatch), **add**, and **remove** items; changes flow live into the Add/Edit form, the filters, the detail card, and the globe colours:
-- **Travelers** (e.g. Terry · [others])
 - **Travelers** (e.g. Terry · [others])
 - **Trip types** (e.g. Personal · Work)
 - **Visit types** (e.g. National park · City · Family · Beach · Food & wine · Adventure · Road trip · Cultural)
