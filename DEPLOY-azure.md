@@ -156,6 +156,8 @@ Now every save keeps the previous version. To restore one:
 
 The app also auto-downloads a dated backup before any *Clear data*, and **⚙ → Export** makes a manual backup anytime.
 
+> **"Who's online" needs nothing extra.** The presence feature uses the **same storage account** (a small **Table Storage** table, created automatically on first heartbeat) and the same `AZURE_STORAGE_CONNECTION_STRING` — no new resource, env var, or setup. It just works once the API is deployed.
+
 ---
 
 ## Troubleshooting
@@ -223,6 +225,7 @@ Without it, a plain local web server works too — the app just stays in Local m
 | `AZURE_STORAGE_CONNECTION_STRING` | Yes | Where trips data is stored |
 | `TRIPS_CONTAINER` | No (default `data`) | Storage container name |
 | `TRIPS_BLOB` | No (default `trip-tracker.json`) | Data file name |
+| `PRESENCE_TABLE` | No (default `presence`) | Table Storage table for "who's online" |
 | `RESEND_API_KEY` | For email | Resend API key |
 | `RESEND_FROM` | For email | Verified sender address |
 | `ACCESS_REQUEST_TO` | For email | Where access requests are sent |

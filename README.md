@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-v2.2-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-v2.4-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -76,6 +76,7 @@ In Cloud mode every trip belongs to whoever created it, and the server only ever
 - **Owner filter:** the left filter panel adds an **Owner** row — **Everyone** (all you can see) / **Mine** / **Shared with me** — and the globe follows the filter.
 - **Legacy trips** (created before this feature, with no owner) stay visible to everyone; an admin can re-own them via Import.
 - **Admins** get no special *viewing* power — they see a trip only if its owner shared it, same as anyone. Admin rights apply to **Import** and **Clear data** (full-dataset operations).
+- **Who's online:** a thin bar at the bottom-right shows the names of everyone signed in right now (green dot + name; "you" highlighted). Hover a name to see when they were last active. Each browser quietly sends a heartbeat every ~30s and is shown as online for up to ~90s after — so it reflects "active in the last minute or so," not instant presence. Only signed-in users see it, and it's Cloud-mode only.
 
 ### ⚙ Configuration — four tabs
 The ⚙ **Configuration** panel has a left‑hand tab rail; **Defaults is selected by default**:

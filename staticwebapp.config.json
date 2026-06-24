@@ -6,7 +6,8 @@
   },
   "routes": [
     { "route": "/api/trips", "methods": ["GET"], "allowedRoles": ["reader", "editor"] },
-    { "route": "/api/trips", "methods": ["POST", "PUT"], "allowedRoles": ["editor"] }
+    { "route": "/api/trips", "methods": ["POST", "PUT"], "allowedRoles": ["editor"] },
+    { "route": "/api/presence", "methods": ["GET", "POST"], "allowedRoles": ["reader", "editor"] }
   ],
   "responseOverrides": {
     "401": { "statusCode": 401 }
