@@ -99,8 +99,8 @@
       </div>
     </sc-if>
 
-    <!-- accepted-invite tooltip (cursor-tracking; positioned via direct DOM) -->
-    <div ref="{{ setAcceptedTipRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; background:rgba(8,18,14,0.96); border:1px solid rgba(52,211,153,0.5); color:#7ee0a8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.05em; padding:5px 9px; border-radius:7px; box-shadow:0 6px 18px rgba(0,0,0,0.45); white-space:nowrap;">✓ Accepted invite</div>
+    <!-- shared cursor-tracking tooltip (text set via direct DOM; used by the Traveler presence dots) -->
+    <div ref="{{ setTipRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; background:rgba(10,16,26,0.96); border:1px solid rgba(95,211,255,0.4); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:5px 9px; border-radius:7px; box-shadow:0 6px 18px rgba(0,0,0,0.45); white-space:nowrap;"></div>
     <!-- settings / storage panel -->
     <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
       <sc-if value="{{ pendingDelete }}" hint-placeholder-val="{{ null }}">
@@ -406,7 +406,10 @@
                 <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
                   <div style="display:flex; align-items:center; gap:7px;">
                     <input type="color" defaultValue="{{ it.color }}" onChange="{{ it.onColor }}" onBlur="{{ it.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
-                    <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" onMouseEnter="{{ it.onTip }}" onMouseMove="{{ it.onTip }}" onMouseLeave="{{ it.offTip }}" style="{{ it.nameStyle }}">
+                    <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" style="flex:0 1 92px; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
+                    <sc-if value="{{ it.showDot }}" hint-placeholder-val="{{ false }}">
+                      <span onMouseEnter="{{ it.onDotTip }}" onMouseMove="{{ it.onDotTip }}" onMouseLeave="{{ it.offDotTip }}" style="{{ it.dotStyle }}"></span>
+                    </sc-if>
                     <sc-if value="{{ it.isTraveler }}" hint-placeholder-val="{{ false }}">
                       <input defaultValue="{{ it.email }}" onChange="{{ it.onEmail }}" onBlur="{{ it.onCommit }}" type="email" placeholder="email — to share with them" style="flex:1 1 auto; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:7px 9px; outline:none;">
                     </sc-if>
@@ -1158,7 +1161,7 @@ class Component extends DCLogic {
     this._pa = false;
 
     this.setCanvasRef = this.setCanvasRef.bind(this);
-    this.setAcceptedTipRef = this.setAcceptedTipRef.bind(this);
+    this.setTipRef = this.setTipRef.bind(this);
     this.onField = this.onField.bind(this);
     this.openAdd = this.openAdd.bind(this);
     this.closeForm = this.closeForm.bind(this);
@@ -1525,7 +1528,7 @@ class Component extends DCLogic {
       const j = await r.json();
       const p = j && (j.clientPrincipal || (j[0] && j[0].clientPrincipal));
       this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '', cloudUserId: (p && p.userId) || '', cloudUserEmail: (p && (p.userDetails || '')).toLowerCase() || '', cloudRoles: (p && p.userRoles) || [] });
-      if (p) { this.presenceTick(); this.applyAutoTravelerFilter(); this.stampSelfAccepted(); }
+      if (p) { this.presenceTick(); this.applyAutoTravelerFilter(); }
     } catch (e) {}
   }
   // ---- presence ("who's online") — heartbeat + poll, Cloud mode only ----
@@ -1922,7 +1925,6 @@ class Component extends DCLogic {
       const item = { key, label: o.label.trim(), color: /^#[0-9a-f]{3,8}$/i.test(o.color) ? o.color : '#5fd3ff' };
       if (isStatus) item.short = (typeof o.short === 'string' && o.short.trim()) ? o.short.trim() : item.label;
       if (typeof o.email === 'string' && o.email.trim()) item.email = o.email.trim().toLowerCase();
-      if (o.accepted === true) item.accepted = true;
       out.push(item);
     });
     return out.length ? out : def.map(o => ({ ...o }));
@@ -2753,23 +2755,12 @@ class Component extends DCLogic {
   // name↔email helpers for sharing & owner display
   travelerEmail(key) { const t = (this.state.cfgTravelers || []).find(o => o.key === key); return t && t.email ? t.email : ''; }
   travelerNameByEmail(email) { if (!email) return ''; const e = String(email).toLowerCase(); const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.label : ''; }
-  // "Accepted invite": when the signed-in cloud user's email matches a Traveler,
-  // stamp that Traveler accepted:true (persists in config, propagates via settings
-  // sync). Each user self-stamps on sign-in — so over time every real user lights up.
-  stampSelfAccepted() {
-    const e = (this.state.cloudUserEmail || '').toLowerCase();
-    if (!e) return;
-    const list = this.state.cfgTravelers || [];
-    const t = list.find(o => o.email && o.email === e);
-    if (!t || t.accepted) return;
-    const next = list.map(o => o.key === t.key ? { ...o, accepted: true } : o);
-    this.setState(s => this.persistConfigNoBump(s, { cfgTravelers: next }));
-  }
-  // cursor-tracking tooltip for an accepted Traveler's name field (offset to the
-  // bottom-right of the pointer so it never covers the field). Direct-DOM, no re-render.
-  setAcceptedTipRef(el) { this._acceptedTipEl = el; }
-  showAcceptedTip(e) { const t = this._acceptedTipEl; if (!t) return; t.style.display = 'block'; t.style.left = (e.clientX + 14) + 'px'; t.style.top = (e.clientY + 18) + 'px'; }
-  hideAcceptedTip() { const t = this._acceptedTipEl; if (t) t.style.display = 'none'; }
+  // Shared cursor-tracking tooltip (offset to the bottom-right of the pointer so it never
+  // covers what you're hovering). Direct-DOM positioned — no re-render. Used by the
+  // per-Traveler presence dot to show online status + role(s).
+  setTipRef(el) { this._tipEl = el; }
+  showTip(e, text) { const t = this._tipEl; if (!t) return; if (text != null) t.textContent = text; t.style.display = 'block'; t.style.left = (e.clientX + 14) + 'px'; t.style.top = (e.clientY + 18) + 'px'; }
+  hideTip() { const t = this._tipEl; if (t) t.style.display = 'none'; }
   myTravelerKey() { const e = (this.state.cloudUserEmail || '').toLowerCase(); if (!e) return ''; const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.key : ''; }
   // When the default-traveler filter is "Auto (me)", point it at the signed-in user's
   // own traveler once their identity is known (unless they've changed it this session).
@@ -3170,15 +3161,33 @@ class Component extends DCLogic {
     const segStyle = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 4px; border-radius:7px; cursor:pointer; transition:all .15s; " + (on ? `color:${color}; background:${color}1f; border:1px solid ${color}; font-weight:600; box-shadow:0 0 9px ${color}30;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const helpTabStyle = (on) => "font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; padding:5px 10px; border-radius:7px; cursor:pointer; border:none; " + (on ? "color:#04111e; background:linear-gradient(180deg,#5fd3ff,#22aee6); font-weight:600;" : "color:#9fb0c6; background:transparent;");
     const tabBtnStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; padding:9px 4px; margin-bottom:-1px; background:none; border:none; border-bottom:2px solid " + (on ? "#5fd3ff" : "transparent") + "; cursor:pointer; transition:color .12s, border-color .12s; " + (on ? "color:#eaf4fd;" : "color:#7184a0;");
+    const isCloudMode = this.state.cfgDataSource === 'cloud';
+    const presByEmail = {};
+    (this.state.presenceUsers || []).forEach(u => { if (u && u.email) presByEmail[String(u.email).toLowerCase()] = u; });
+    const myEmailLc = (this.state.cloudUserEmail || '').toLowerCase();
+    const fmtRoles = (roles) => { const r = (roles || []).filter(x => x && x !== 'anonymous' && x !== 'authenticated'); return r.length ? r.join(', ') : 'no role assigned'; };
     const editorGroup = (title, cat, list, fixed) => ({
       title, cat,
-      items: list.map(o => ({
+      items: list.map(o => {
+        const em = (o.email || '').toLowerCase();
+        const pres = (cat === 'traveler' && em) ? presByEmail[em] : null;
+        const isMe = cat === 'traveler' && em && em === myEmailLc;
+        const online = !!pres || isMe;
+        const roles = pres ? (pres.roles || []) : (isMe ? (this.state.cloudRoles || []) : []);
+        let tip = null;
+        if (cat === 'traveler') {
+          if (!em) tip = 'No email set \u2014 can\u2019t match a signed-in user';
+          else if (online) tip = (isMe ? 'You' : 'Online') + ' \u00b7 ' + fmtRoles(roles);
+          else tip = 'Offline \u00b7 role shows once they sign in';
+        }
+        const dotBase = 'width:9px; height:9px; border-radius:50%; flex:none; cursor:default; ';
+        return {
         key: o.key, label: o.label, color: o.color,
         isTraveler: cat === 'traveler',
-        accepted: cat === 'traveler' && !!o.accepted,
-        nameStyle: "flex:0 1 92px; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border-radius:8px; padding:7px 9px; outline:none; " + ((cat === 'traveler' && o.accepted) ? "border:1px solid rgba(52,211,153,0.55); box-shadow:0 0 0 1px rgba(52,211,153,0.12);" : "border:1px solid rgba(255,255,255,0.12);"),
-        onTip: (cat === 'traveler' && o.accepted) ? (e) => this.showAcceptedTip(e) : null,
-        offTip: (cat === 'traveler' && o.accepted) ? () => this.hideAcceptedTip() : null,
+        showDot: cat === 'traveler' && isCloudMode,
+        dotStyle: dotBase + (online ? 'background:#34d399; box-shadow:0 0 7px #34d399;' : 'background:#3a4658; border:1px solid rgba(255,255,255,0.14);'),
+        onDotTip: (e) => this.showTip(e, tip),
+        offDotTip: () => this.hideTip(),
         email: o.email || '',
         onEmail: (e) => this.dataItemEmail(o.key, e.target.value),
         onLabel: (e) => this.dataItemLabel(cat, o.key, e.target.value),
@@ -3186,7 +3195,8 @@ class Component extends DCLogic {
         onCommit: () => this.dataItemCommit(),
         onRemove: () => this.dataItemRemove(cat, o.key),
         removable: !fixed && list.length > 1,
-      })),
+        };
+      }),
       canAdd: !fixed,
       onAdd: () => this.dataItemAdd(cat),
     });
@@ -3551,7 +3561,7 @@ class Component extends DCLogic {
       statusDream: () => this.setStatus('dream'),
       statusFormChips,
       setCanvas: this.setCanvasRef,
-      setAcceptedTipRef: this.setAcceptedTipRef,
+      setTipRef: this.setTipRef,
     };
   }
 }
