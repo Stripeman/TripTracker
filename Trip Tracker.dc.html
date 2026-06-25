@@ -8,6 +8,7 @@
 <body>
 <x-dc>
 <helmet>
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -98,6 +99,8 @@
       </div>
     </sc-if>
 
+    <!-- accepted-invite tooltip (cursor-tracking; positioned via direct DOM) -->
+    <div ref="{{ setAcceptedTipRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; background:rgba(8,18,14,0.96); border:1px solid rgba(52,211,153,0.5); color:#7ee0a8; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.05em; padding:5px 9px; border-radius:7px; box-shadow:0 6px 18px rgba(0,0,0,0.45); white-space:nowrap;">✓ Accepted invite</div>
     <!-- settings / storage panel -->
     <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
       <sc-if value="{{ pendingDelete }}" hint-placeholder-val="{{ null }}">
@@ -172,6 +175,13 @@
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Spin the globe</span>
             <button onClick="{{ toggleSpin }}" style="{{ cfgSpinStyle }}">{{ cfgSpinLabel }}</button>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.05);">
+            <div style="flex:1; padding-right:8px;">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">State / province borders</span>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px; letter-spacing:0.03em; line-height:1.4;">Drawn on large countries (Korea-sized and up) while the globe is still</div>
+            </div>
+            <button onClick="{{ toggleStateBorders }}" style="{{ cfgStateBordersStyle }}">{{ cfgStateBordersLabel }}</button>
           </div>
         </div>
         </sc-if>
@@ -396,7 +406,7 @@
                 <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
                   <div style="display:flex; align-items:center; gap:7px;">
                     <input type="color" defaultValue="{{ it.color }}" onChange="{{ it.onColor }}" onBlur="{{ it.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
-                    <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" style="flex:0 1 92px; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
+                    <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" onMouseEnter="{{ it.onTip }}" onMouseMove="{{ it.onTip }}" onMouseLeave="{{ it.offTip }}" style="{{ it.nameStyle }}">
                     <sc-if value="{{ it.isTraveler }}" hint-placeholder-val="{{ false }}">
                       <input defaultValue="{{ it.email }}" onChange="{{ it.onEmail }}" onBlur="{{ it.onCommit }}" type="email" placeholder="email — to share with them" style="flex:1 1 auto; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:7px 9px; outline:none;">
                     </sc-if>
@@ -936,7 +946,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '3.0';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '3.2';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- reference data: the editable "data lists" (Settings tab can change these) ---
     // Each entry: { key (stable id), label (shown), color (chip + map) }.
     this.DEF_VISIT_TYPES = [
@@ -1028,6 +1038,7 @@ class Component extends DCLogic {
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
     const cfgSpin = cfg.spin !== false;
+    const cfgStateBorders = cfg.stateBorders === true;
     const cfgAccessEmail = (typeof cfg.accessEmail === 'string' && cfg.accessEmail.trim()) ? cfg.accessEmail.trim() : 'Terry.Remsik@gmail.com';
     const cfgDefaultYear = cfg.defaultYear === 'all' ? 'all' : 'current';
     // Editable data lists (fall back to built-in defaults), then refresh lookups.
@@ -1055,6 +1066,7 @@ class Component extends DCLogic {
       cfgDetailsCard,
       cfgStatusCard,
       cfgSpin,
+      cfgStateBorders,
       cfgAccessEmail,
       reqAccessOpen: false,
       reqEmail: '',
@@ -1146,6 +1158,7 @@ class Component extends DCLogic {
     this._pa = false;
 
     this.setCanvasRef = this.setCanvasRef.bind(this);
+    this.setAcceptedTipRef = this.setAcceptedTipRef.bind(this);
     this.onField = this.onField.bind(this);
     this.openAdd = this.openAdd.bind(this);
     this.closeForm = this.closeForm.bind(this);
@@ -1512,7 +1525,7 @@ class Component extends DCLogic {
       const j = await r.json();
       const p = j && (j.clientPrincipal || (j[0] && j[0].clientPrincipal));
       this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '', cloudUserId: (p && p.userId) || '', cloudUserEmail: (p && (p.userDetails || '')).toLowerCase() || '', cloudRoles: (p && p.userRoles) || [] });
-      if (p) { this.presenceTick(); this.applyAutoTravelerFilter(); }
+      if (p) { this.presenceTick(); this.applyAutoTravelerFilter(); this.stampSelfAccepted(); }
     } catch (e) {}
   }
   // ---- presence ("who's online") — heartbeat + poll, Cloud mode only ----
@@ -1909,6 +1922,7 @@ class Component extends DCLogic {
       const item = { key, label: o.label.trim(), color: /^#[0-9a-f]{3,8}$/i.test(o.color) ? o.color : '#5fd3ff' };
       if (isStatus) item.short = (typeof o.short === 'string' && o.short.trim()) ? o.short.trim() : item.label;
       if (typeof o.email === 'string' && o.email.trim()) item.email = o.email.trim().toLowerCase();
+      if (o.accepted === true) item.accepted = true;
       out.push(item);
     });
     return out.length ? out : def.map(o => ({ ...o }));
@@ -1947,6 +1961,10 @@ class Component extends DCLogic {
     }
     if (this.rotation[0] > 180) this.rotation[0] -= 360;
     if (this.rotation[0] < -180) this.rotation[0] += 360;
+    // idle = rotation unchanged this frame (no spin / drag / tween) — gates state borders
+    const pr = this._prevRot;
+    this._idle = !this.dragging && !this.tween && !!pr && Math.abs(pr[0] - this.rotation[0]) < 1e-6 && Math.abs(pr[1] - this.rotation[1]) < 1e-6;
+    this._prevRot = [this.rotation[0], this.rotation[1]];
     this.draw(t);
     this._raf = requestAnimationFrame(this.loop);
   }
@@ -1996,6 +2014,11 @@ class Component extends DCLogic {
     if (this.borders) {
       ctx.beginPath(); path(this.borders);
       ctx.strokeStyle = 'rgba(56,189,248,0.18)'; ctx.lineWidth = 0.4; ctx.stroke();
+    }
+    // state / province borders — only for large countries, only while the globe is still
+    if (this.state.cfgStateBorders && this.stateBorders && this._idle) {
+      ctx.beginPath(); path(this.stateBorders);
+      ctx.strokeStyle = 'rgba(120,200,240,0.14)'; ctx.lineWidth = 0.3; ctx.stroke();
     }
 
     // rim
@@ -2282,7 +2305,7 @@ class Component extends DCLogic {
    * number; persistConfigNoBump is used mid-typing in the data editor so the
    * version only ticks once on blur. Any config change also schedules a cloud push. */
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -2332,6 +2355,44 @@ class Component extends DCLogic {
     return this.cfgObject(this.state);
   }
 
+  // Turn state borders on/off; lazy-load the admin-1 line data the first time it's enabled.
+  toggleStateBorders() {
+    const turningOn = !this.state.cfgStateBorders;
+    this.toggleCfgKey('cfgStateBorders', 'stateBorders');
+    if (turningOn) this.loadStateBorders();
+  }
+
+  /* Fetch Natural Earth 50m admin-1 boundary LINES (internal state/province borders),
+   * keep only countries whose geographic area is >= South Korea's, and stash the
+   * result as a GeoJSON FeatureCollection for the draw loop. ~880KB, fetched once. */
+  async loadStateBorders() {
+    if (this.stateBorders || this._stateLoading || !window.d3) return;
+    this._stateLoading = true;
+    try {
+      let koreaA = 2.4e-3; // steradians, ~South Korea (fallback if not found in atlas)
+      const areaByName = {};
+      if (this.countries) {
+        for (const f of this.countries) {
+          const n = (f.properties && f.properties.name || '').toLowerCase();
+          if (!n) continue;
+          const a = d3.geoArea(f);
+          areaByName[n] = a;
+          if (n === 'south korea') koreaA = a;
+        }
+      }
+      const r = await fetch('https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson/ne_50m_admin_1_states_provinces_lines.geojson');
+      const gj = await r.json();
+      const keep = (gj.features || []).filter(f => {
+        let c = (f.properties && f.properties.ADM0_NAME || '').toLowerCase();
+        c = (this.ALIAS && this.ALIAS[c]) || c;
+        const a = areaByName[c];
+        return a != null && a >= koreaA;
+      });
+      this.stateBorders = { type: 'FeatureCollection', features: keep };
+    } catch (e) { /* offline: silently skip — country borders still show */ }
+    this._stateLoading = false;
+  }
+
   downloadJson(obj, name) {
     const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -2369,6 +2430,7 @@ class Component extends DCLogic {
       cfgDetailsCard: settings.detailsCard !== false,
       cfgStatusCard: settings.statusCard !== false,
       cfgSpin: settings.spin !== false,
+      cfgStateBorders: settings.stateBorders === true,
       cfgAccessEmail: (typeof settings.accessEmail === 'string' && settings.accessEmail.trim()) ? settings.accessEmail.trim() : ((this.state && this.state.cfgAccessEmail) || 'Terry.Remsik@gmail.com'),
       detailsOpen: settings.detailsFormDefault !== false,
       cfgDefaultYear: settings.defaultYear === 'all' ? 'all' : 'current',
@@ -2691,6 +2753,23 @@ class Component extends DCLogic {
   // name↔email helpers for sharing & owner display
   travelerEmail(key) { const t = (this.state.cfgTravelers || []).find(o => o.key === key); return t && t.email ? t.email : ''; }
   travelerNameByEmail(email) { if (!email) return ''; const e = String(email).toLowerCase(); const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.label : ''; }
+  // "Accepted invite": when the signed-in cloud user's email matches a Traveler,
+  // stamp that Traveler accepted:true (persists in config, propagates via settings
+  // sync). Each user self-stamps on sign-in — so over time every real user lights up.
+  stampSelfAccepted() {
+    const e = (this.state.cloudUserEmail || '').toLowerCase();
+    if (!e) return;
+    const list = this.state.cfgTravelers || [];
+    const t = list.find(o => o.email && o.email === e);
+    if (!t || t.accepted) return;
+    const next = list.map(o => o.key === t.key ? { ...o, accepted: true } : o);
+    this.setState(s => this.persistConfigNoBump(s, { cfgTravelers: next }));
+  }
+  // cursor-tracking tooltip for an accepted Traveler's name field (offset to the
+  // bottom-right of the pointer so it never covers the field). Direct-DOM, no re-render.
+  setAcceptedTipRef(el) { this._acceptedTipEl = el; }
+  showAcceptedTip(e) { const t = this._acceptedTipEl; if (!t) return; t.style.display = 'block'; t.style.left = (e.clientX + 14) + 'px'; t.style.top = (e.clientY + 18) + 'px'; }
+  hideAcceptedTip() { const t = this._acceptedTipEl; if (t) t.style.display = 'none'; }
   myTravelerKey() { const e = (this.state.cloudUserEmail || '').toLowerCase(); if (!e) return ''; const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.key : ''; }
   // When the default-traveler filter is "Auto (me)", point it at the signed-in user's
   // own traveler once their identity is known (unless they've changed it this session).
@@ -3096,6 +3175,10 @@ class Component extends DCLogic {
       items: list.map(o => ({
         key: o.key, label: o.label, color: o.color,
         isTraveler: cat === 'traveler',
+        accepted: cat === 'traveler' && !!o.accepted,
+        nameStyle: "flex:0 1 92px; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border-radius:8px; padding:7px 9px; outline:none; " + ((cat === 'traveler' && o.accepted) ? "border:1px solid rgba(52,211,153,0.55); box-shadow:0 0 0 1px rgba(52,211,153,0.12);" : "border:1px solid rgba(255,255,255,0.12);"),
+        onTip: (cat === 'traveler' && o.accepted) ? (e) => this.showAcceptedTip(e) : null,
+        offTip: (cat === 'traveler' && o.accepted) ? () => this.hideAcceptedTip() : null,
         email: o.email || '',
         onEmail: (e) => this.dataItemEmail(o.key, e.target.value),
         onLabel: (e) => this.dataItemLabel(cat, o.key, e.target.value),
@@ -3232,6 +3315,9 @@ class Component extends DCLogic {
       cfgSpinStyle: cfgPill(this.state.cfgSpin),
       cfgSpinLabel: this.state.cfgSpin ? 'ON' : 'OFF',
       toggleSpin: () => this.toggleCfgKey('cfgSpin', 'spin'),
+      cfgStateBordersStyle: cfgPill(this.state.cfgStateBorders),
+      cfgStateBordersLabel: this.state.cfgStateBorders ? 'ON' : 'OFF',
+      toggleStateBorders: () => this.toggleStateBorders(),
       defYearSeg: [
         { label: 'All years', style: segStyle(this.state.cfgDefaultYear === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'all') },
         { label: 'Current year', style: segStyle(this.state.cfgDefaultYear === 'current', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'current') },
@@ -3465,6 +3551,7 @@ class Component extends DCLogic {
       statusDream: () => this.setStatus('dream'),
       statusFormChips,
       setCanvas: this.setCanvasRef,
+      setAcceptedTipRef: this.setAcceptedTipRef,
     };
   }
 }

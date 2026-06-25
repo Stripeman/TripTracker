@@ -8,6 +8,7 @@
 <body>
 <x-dc>
 <helmet>
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -163,6 +164,13 @@
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Spin the globe</span>
             <button onClick="{{ toggleSpin }}" style="{{ cfgSpinStyle }}">{{ cfgSpinLabel }}</button>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.05);">
+            <div style="flex:1; padding-right:8px;">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">State / province borders</span>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px; letter-spacing:0.03em; line-height:1.4;">Drawn on large countries (Korea-sized and up) while the globe is still</div>
+            </div>
+            <button onClick="{{ toggleStateBorders }}" style="{{ cfgStateBordersStyle }}">{{ cfgStateBordersLabel }}</button>
           </div>
         </div>
         </sc-if>
@@ -743,7 +751,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '3.0';
+    this.APP_VERSION = '3.1';
     this.DEF_VISIT_TYPES = [
       { key:'natlpark', label:'National park', color:'#4ade80' },
       { key:'city', label:'City', color:'#38bdf8' },
@@ -817,6 +825,7 @@ class Component extends DCLogic {
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
     const cfgSpin = cfg.spin !== false;
+    const cfgStateBorders = cfg.stateBorders === true;
     const cfgDefaultYear = cfg.defaultYear === 'all' ? 'all' : 'current';
     // Editable data lists (fall back to built-in defaults), then refresh lookups.
     const cfgVisitTypes = this.sanitizeList(cfg.visitTypes, this.DEF_VISIT_TYPES);
@@ -842,6 +851,7 @@ class Component extends DCLogic {
       cfgDetailsCard,
       cfgStatusCard,
       cfgSpin,
+      cfgStateBorders,
       cfgDataSource,
       cfgVisitTypes,
       cfgTripTypes,
@@ -1569,6 +1579,10 @@ class Component extends DCLogic {
     }
     if (this.rotation[0] > 180) this.rotation[0] -= 360;
     if (this.rotation[0] < -180) this.rotation[0] += 360;
+    // idle = rotation unchanged this frame (no spin / drag / tween) — gates state borders
+    const pr = this._prevRot;
+    this._idle = !this.dragging && !this.tween && !!pr && Math.abs(pr[0] - this.rotation[0]) < 1e-6 && Math.abs(pr[1] - this.rotation[1]) < 1e-6;
+    this._prevRot = [this.rotation[0], this.rotation[1]];
     this.draw(t);
     this._raf = requestAnimationFrame(this.loop);
   }
@@ -1614,6 +1628,11 @@ class Component extends DCLogic {
     if (this.borders) {
       ctx.beginPath(); path(this.borders);
       ctx.strokeStyle = 'rgba(56,189,248,0.18)'; ctx.lineWidth = 0.4; ctx.stroke();
+    }
+    // state / province borders — only for large countries, only while the globe is still
+    if (this.state.cfgStateBorders && this.stateBorders && this._idle) {
+      ctx.beginPath(); path(this.stateBorders);
+      ctx.strokeStyle = 'rgba(120,200,240,0.14)'; ctx.lineWidth = 0.3; ctx.stroke();
     }
 
     // rim
@@ -1902,7 +1921,7 @@ class Component extends DCLogic {
     return 'cloud';
   }
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: this.preservedDataSource(), visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: this.preservedDataSource(), visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -1950,6 +1969,44 @@ class Component extends DCLogic {
     return this.cfgObject(this.state);
   }
 
+  // Turn state borders on/off; lazy-load the admin-1 line data the first time it's enabled.
+  toggleStateBorders() {
+    const turningOn = !this.state.cfgStateBorders;
+    this.toggleCfgKey('cfgStateBorders', 'stateBorders');
+    if (turningOn) this.loadStateBorders();
+  }
+
+  /* Fetch Natural Earth 50m admin-1 boundary LINES (internal state/province borders),
+   * keep only countries whose geographic area is >= South Korea's, and stash the
+   * result as a GeoJSON FeatureCollection for the draw loop. ~880KB, fetched once. */
+  async loadStateBorders() {
+    if (this.stateBorders || this._stateLoading || !window.d3) return;
+    this._stateLoading = true;
+    try {
+      let koreaA = 2.4e-3; // steradians, ~South Korea (fallback if not found in atlas)
+      const areaByName = {};
+      if (this.countries) {
+        for (const f of this.countries) {
+          const n = (f.properties && f.properties.name || '').toLowerCase();
+          if (!n) continue;
+          const a = d3.geoArea(f);
+          areaByName[n] = a;
+          if (n === 'south korea') koreaA = a;
+        }
+      }
+      const r = await fetch('https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson/ne_50m_admin_1_states_provinces_lines.geojson');
+      const gj = await r.json();
+      const keep = (gj.features || []).filter(f => {
+        let c = (f.properties && f.properties.ADM0_NAME || '').toLowerCase();
+        c = (this.ALIAS && this.ALIAS[c]) || c;
+        const a = areaByName[c];
+        return a != null && a >= koreaA;
+      });
+      this.stateBorders = { type: 'FeatureCollection', features: keep };
+    } catch (e) { /* offline: silently skip — country borders still show */ }
+    this._stateLoading = false;
+  }
+
   downloadJson(obj, name) {
     const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -1982,6 +2039,7 @@ class Component extends DCLogic {
       cfgDetailsCard: settings.detailsCard !== false,
       cfgStatusCard: settings.statusCard !== false,
       cfgSpin: settings.spin !== false,
+      cfgStateBorders: settings.stateBorders === true,
       detailsOpen: settings.detailsFormDefault !== false,
       cfgDefaultYear: settings.defaultYear === 'all' ? 'all' : 'current',
       cfgDefaultTrip: (settings.defaultTrip === 'all' || tripKeys.includes(settings.defaultTrip)) ? settings.defaultTrip : (tripKeys.includes('vacation') ? 'vacation' : 'all'),
@@ -2725,6 +2783,9 @@ class Component extends DCLogic {
       cfgSpinStyle: cfgPill(this.state.cfgSpin),
       cfgSpinLabel: this.state.cfgSpin ? 'ON' : 'OFF',
       toggleSpin: () => this.toggleCfgKey('cfgSpin', 'spin'),
+      cfgStateBordersStyle: cfgPill(this.state.cfgStateBorders),
+      cfgStateBordersLabel: this.state.cfgStateBorders ? 'ON' : 'OFF',
+      toggleStateBorders: () => this.toggleStateBorders(),
       defYearSeg: [
         { label: 'All years', style: segStyle(this.state.cfgDefaultYear === 'all', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'all') },
         { label: 'Current year', style: segStyle(this.state.cfgDefaultYear === 'current', '#5fd3ff'), onSelect: () => this.setDefaultFilter('cfgDefaultYear', 'current') },

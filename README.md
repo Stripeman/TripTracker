@@ -72,6 +72,7 @@ In Cloud mode every trip belongs to whoever created it, and the server only ever
   - **👥 All users** — any signed-in user can view it.
   - **✉ Specific people** — share **by name**: pick from your **Traveler** chips (Terry, [others], …) instead of typing emails. Each Traveler can hold an optional email in **⚙ → Settings → Travelers**; that's the address access is granted to. Travelers without an email are greyed out with a hint. A **"+ other email"** box covers anyone who isn't a Traveler.
 - **Names, not emails:** because Travelers map names → emails, the owner badge and share picker show **names** (e.g. "Terry"), and when you're signed in with a Traveler's email the app greets you by that name. Sharing still resolves to emails under the hood (that's what sign-in matches on).
+- **"Accepted invite" indicator:** in **⚙ → Settings → Travelers**, a Traveler whose email has actually signed in gets a **faint green border** on their name field (instead of the usual grey), and hovering it shows a small **"✓ Accepted invite"** tooltip that follows your cursor (offset to the bottom-right so it never covers the field). Each person self-confirms on sign-in, and the flag syncs through the cloud settings — so at a glance you can see which Travelers are real, active users versus names you've only typed in.
 - **Settings sync to the cloud:** editing configuration data (Travelers and their **emails**, visit/trip types, statuses, default filters, display options) saves to the cloud automatically a moment after you change it — so the name↔email mapping and your settings persist and are shared with other users, not just stored in your browser. (Requires the `editor`/`admin` role, like any cloud write.)
 - **You can only edit your own trips.** Trips shared with you are view-only (the detail card shows an owner badge, a visibility badge, and "Shared with you · view only" instead of Edit/Delete). A normal save never touches anyone else's data.
 - **Owner filter:** the left filter panel adds an **Owner** row — **Everyone** (all you can see) / **Mine** / **Shared with me** — and the globe follows the filter.
@@ -97,6 +98,7 @@ The ⚙ **Configuration** panel has a left‑hand tab rail; **Defaults is select
 - Toggle whether the **Trip details** section is open by default on the form.
 - Toggle whether **trip details** and the **status** appear on the detail card.
 - **Spin the globe** — turn the idle auto‑rotation on or off (you can always drag to spin manually).
+- **State / province borders** — overlay internal admin‑1 borders on large countries (USA, Canada, Brazil, Australia, China, India, Russia, Indonesia, South Africa). Off by default; the data (~880 KB) is fetched lazily only the first time you enable it, and the lines are drawn only while the globe is still, so spin performance is unaffected. Countries smaller than South Korea are never drawn.
 
 **System tab** — data, storage & app info:
 - **Data source** (Local browser / linked file, or Cloud), **Export / Restore**, and **Clear data** (see Storage & backup).
@@ -167,6 +169,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
     "detailsCard": true,
     "statusCard": true,
     "spin": true,
+    "stateBorders": false,
     "defaultYear": "current",
     "defaultTrip": "vacation",
     "defaultStatus": "visited",
