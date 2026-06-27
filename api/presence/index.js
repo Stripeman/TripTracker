@@ -56,7 +56,7 @@ module.exports = async function (context, req) {
         ? body.name.trim().slice(0, 120)
         : (me.email || "Someone");
       await table.upsertEntity(
-        { partitionKey: PARTITION, rowKey: me.id, name, email: me.email, lastSeen: now },
+        { partitionKey: PARTITION, rowKey: me.id, name, email: me.email, roles: (me.roles || []).join(","), lastSeen: now },
         "Replace"
       );
       json(200, { ok: true });
@@ -69,7 +69,7 @@ module.exports = async function (context, req) {
     const iter = table.listEntities({ queryOptions: { filter: `PartitionKey eq '${PARTITION}'` } });
     for await (const e of iter) {
       if (typeof e.lastSeen === "number" && e.lastSeen >= cutoff) {
-        users.push({ id: e.rowKey, name: e.name || e.email || "Someone", email: e.email || "", lastSeen: e.lastSeen, you: e.rowKey === me.id });
+        users.push({ id: e.rowKey, name: e.name || e.email || "Someone", email: e.email || "", roles: (typeof e.roles === "string" && e.roles) ? e.roles.split(",").filter(Boolean) : [], lastSeen: e.lastSeen, you: e.rowKey === me.id });
       }
     }
     users.sort((a, b) => String(a.name).localeCompare(String(b.name)));
