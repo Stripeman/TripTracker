@@ -83,6 +83,37 @@ That's it — no rebuild needed. Your site can now read and save the trips data 
 
 ---
 
+## Step 3.5 — Set up Microsoft sign-in (one time)
+
+This is what lets people log in with a Microsoft (or invited Google/email) account. You create a small “app registration” in Microsoft Entra and tell your site about it. Do this **once**.
+
+> **Your real address is `https://www.triptracking.org`** (the `www`). The plain `triptracking.org` just forwards to it, so **always use the `www` address** for sign-in and invites — never the bare apex.
+
+**1. Find your Tenant ID.** Portal → search **Microsoft Entra ID** → **Overview** → copy the **Tenant ID** (a long GUID). Keep it handy.
+
+**2. Register the app.** Entra ID → **App registrations** → **+ New registration**.
+   - **Name:** `Trip Tracker`
+   - **Supported account types:** **Accounts in this organizational directory only** (single tenant). Outside family/friends will be added as **guests** to your directory — they still work with this option.
+   - **Redirect URI:** choose **Web**, and enter:
+     `https://www.triptracking.org/.auth/login/aad/callback`
+   - Click **Register**. Copy the **Application (client) ID** from the Overview page.
+
+**3. Add the other redirect URIs.** In the registration → **Authentication** → **Add URI**, add (Web type):
+   - `https://delightful-dune-0b6ba6d0f.7.azurestaticapps.net/.auth/login/aad/callback`  *(the default address — handy for testing)*
+   - *(Skip the bare `triptracking.org` — it only forwards to `www`.)*
+   Click **Save**.
+
+**4. Make a client secret.** Same registration → **Certificates & secrets** → **+ New client secret** → set an expiry → **Add**. **Copy the secret “Value” immediately** (you can't see it again later).
+
+**5. Tell your site the three values.** Open `staticwebapp.config.json` in the repo and replace `REPLACE_WITH_YOUR_TENANT_ID` with your **Tenant ID** from step 1. Commit/push. Then in the Portal → your **Static Web App** → **Settings → Environment variables** → add two:
+   - `AAD_CLIENT_ID` = the **Application (client) ID** (step 2)
+   - `AAD_CLIENT_SECRET` = the secret **Value** (step 4)
+   Save. (A redeploy may take a couple of minutes to pick these up.)
+
+**6. Inviting outside family/friends (guests).** For anyone not already in your organization: Entra ID → **External Identities** → **Invite user** (or **Users → + New guest user**), enter their email, send. Gmail/other-email folks redeem with a one-time passcode. Once they're a guest, give them an app role in **Step 4**. (People already in your organization can skip straight to Step 4.)
+
+---
+
 ## Step 4 — Invite yourself so you can see the data
 
 Your data is **private**. Even you need to be given access. Here's how:
@@ -93,7 +124,7 @@ Your data is **private**. Even you need to be given access. Here's how:
    - **Authentication provider:** **Azure Active Directory** (a.k.a. Microsoft).
    - **Invitee details:** your email.
    - **Role:** type `admin` (this gives you full control — view, edit, import, clear).
-   - **Domain:** the dropdown value shown (your site's address).
+   - **Domain:** pick **`www.triptracking.org`** (your real address). **Do not** pick the bare `triptracking.org` — it only forwards to `www` and the invite will fail there.
 4. Click **Generate**, copy the **invite link**, open it in your browser, sign in, and **Accept**.
 5. Go to your site's URL → click **Sign in** → you should now see your data.
 
@@ -216,12 +247,14 @@ swa start . --api-location api
 ```
 Without it, a plain local web server works too — the app just stays in Local mode.
 
-**Sign-in internals:** the app uses Azure Static Web Apps' built-in auth (no app registration, no Standard plan). The API is role-gated in `staticwebapp.config.json` (`GET /api/trips` needs `reader`/`editor`; writes need `editor`); there's intentionally no custom `auth` block. To lock sign-in to your own Entra tenant, that's the custom-auth path (needs the Standard plan) — not required for normal use.
+**Sign-in internals:** the app uses a **custom Microsoft Entra (Azure AD) registration** wired through `staticwebapp.config.json` (`auth.identityProviders.azureActiveDirectory`), which references the `AAD_CLIENT_ID` / `AAD_CLIENT_SECRET` app settings and your tenant issuer. Requires the **Standard** plan. The API is role-gated in the same file (`GET /api/trips` needs `reader`/`editor`; writes need `editor`). Anonymous visitors aren't blocked from loading the page — the app itself shows a “no access” message and the data API stays locked.
 
 **Environment variables reference:**
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
+| `AAD_CLIENT_ID` | Yes (sign-in) | Entra app registration's Application (client) ID |
+| `AAD_CLIENT_SECRET` | Yes (sign-in) | Entra app registration's client secret value |
 | `AZURE_STORAGE_CONNECTION_STRING` | Yes | Where trips data is stored |
 | `TRIPS_CONTAINER` | No (default `data`) | Storage container name |
 | `TRIPS_BLOB` | No (default `trip-tracker.json`) | Data file name |
