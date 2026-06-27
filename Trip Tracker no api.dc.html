@@ -373,8 +373,8 @@
             </sc-if>
             <span style="color:#7fd6f5; font-size:11px;">{{ filtersArrow }}</span>
           </button>
-          <sc-if value="{{ hasActiveFilters }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ clearFilters }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; color:#f0b4b4; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.28); border-radius:9px; padding:8px 11px; cursor:pointer;">Clear all</button>
+          <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearFilters }}" title="Clear all filters" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; color:#f0b4b4; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.28); border-radius:9px; padding:8px 11px; cursor:pointer;">Clear</button>
           </sc-if>
         </div>
         <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
@@ -730,7 +730,7 @@
 
       <div style="padding:16px 26px 24px; border-top:1px solid rgba(56,189,248,0.12);">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
-          <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Add another after saving<span style="color:#6b7c93;"> · clears the date</span></span>
+          <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Duplicate this Trip<span style="color:#6b7c93;"> · clears date</span></span>
           <button onClick="{{ toggleDup }}" style="{{ dupStyle }}">{{ dupLabel }}</button>
         </div>
         <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
@@ -767,7 +767,7 @@ class Component extends DCLogic {
     super(props);
     this.STORE = 'vacation-location:locations:v4';
     this.CFG = 'vacation-location:config';
-    this.APP_VERSION = '3.5';
+    this.APP_VERSION = '3.6';
     // THEMES: 10 named looks. A single CSS `filter` on the root wrapper retints the
     // whole app at once (tiles, cards, the <canvas> globe). hue-rotate spins the cyan
     // accent around the wheel; saturate/brightness fine-tune. Uniform 3-function lists

@@ -101,6 +101,8 @@
 
     <!-- shared cursor-tracking tooltip (text set via direct DOM; used by the Traveler presence dots) -->
     <div ref="{{ setTipRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; background:rgba(10,16,26,0.96); border:1px solid rgba(95,211,255,0.4); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:5px 9px; border-radius:7px; box-shadow:0 6px 18px rgba(0,0,0,0.45); white-space:nowrap;"></div>
+    <!-- admin login-stats bubble — positioned to the BOTTOM-LEFT of the cursor so it never covers the row you're editing -->
+    <div ref="{{ setStatRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; min-width:170px; background:rgba(9,15,25,0.97); border:1px solid rgba(95,211,255,0.38); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.55; padding:9px 11px; border-radius:9px; box-shadow:0 8px 22px rgba(0,0,0,0.5);"></div>
     <!-- settings / storage panel -->
     <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
       <sc-if value="{{ pendingDelete }}" hint-placeholder-val="{{ null }}">
@@ -148,7 +150,9 @@
         <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;">
           <div style="display:flex; gap:2px; flex:none; border-bottom:1px solid rgba(255,255,255,0.08);">
             <button onClick="{{ setTabFilters }}" style="{{ tabFiltersStyle }}">Defaults</button>
-            <button onClick="{{ setTabConfig }}" style="{{ tabConfigStyle }}">Settings</button>
+            <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ setTabConfig }}" style="{{ tabConfigStyle }}">Settings</button>
+            </sc-if>
             <button onClick="{{ setTabSystem }}" style="{{ tabSystemStyle }}">Preferences</button>
             <button onClick="{{ setTabStorage }}" style="{{ tabStorageStyle }}">System</button>
           </div>
@@ -263,12 +267,14 @@
         </sc-if>
 
         <sc-if value="{{ showStorageTab }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
         <div style="margin-bottom:18px; background:rgba(251,191,36,0.05); border:1px solid rgba(251,191,36,0.22); border-radius:12px; padding:13px 14px;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:4px;">ACCESS REQUESTS</div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#8a7a52; line-height:1.5; margin-bottom:10px;">Where "Request access" messages from the sign-in screen are sent. Also shown there so people can email you directly.</div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#7c8ea6; margin-bottom:6px;">SEND REQUESTS TO</div>
           <input value="{{ accessEmail }}" onInput="{{ onAccessEmail }}" type="email" placeholder="you@example.com" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.05); border:1px solid rgba(251,191,36,0.32); border-radius:8px; padding:8px 10px; outline:none;">
         </div>
+        </sc-if>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:12px;">DATA &amp; STORAGE</div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">DATA SOURCE</div>
         <div style="display:flex; gap:6px; margin-bottom:6px;">
@@ -356,7 +362,7 @@
             </div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; line-height:1.55; margin-bottom:11px;">Who may sign in, and what they can do. Anyone not listed gets a “no access” message. Email is matched across Microsoft / Google / Yahoo sign-in.</div>
             <sc-for list="{{ accessRows }}" as="row" hint-placeholder-count="2">
-              <div style="display:flex; align-items:center; gap:6px; margin-bottom:7px;">
+              <div onMouseMove="{{ row.onHover }}" onMouseLeave="{{ hideStat }}" style="display:flex; align-items:center; gap:6px; margin-bottom:7px;">
                 <input value="{{ row.email }}" onInput="{{ row.onEmail }}" type="email" placeholder="name@example.com" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.32); border-radius:8px; padding:7px 9px; outline:none;">
                 <select value="{{ row.role }}" onChange="{{ row.onRole }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#cfe6f5; background:rgba(13,21,34,0.96); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px 6px; outline:none;">
                   <option value="reader">reader</option>
@@ -496,8 +502,8 @@
             </sc-if>
             <span style="color:#7fd6f5; font-size:11px;">{{ filtersArrow }}</span>
           </button>
-          <sc-if value="{{ hasActiveFilters }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ clearFilters }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; color:#f0b4b4; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.28); border-radius:9px; padding:8px 11px; cursor:pointer;">Clear all</button>
+          <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearFilters }}" title="Clear all filters" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; color:#f0b4b4; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.28); border-radius:9px; padding:8px 11px; cursor:pointer;">Clear</button>
           </sc-if>
         </div>
         <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
@@ -964,7 +970,7 @@
 
       <div style="padding:16px 26px 24px; border-top:1px solid rgba(56,189,248,0.12);">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
-          <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Add another after saving<span style="color:#6b7c93;"> · clears the date</span></span>
+          <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Duplicate this Trip<span style="color:#6b7c93;"> · clears date</span></span>
           <button onClick="{{ toggleDup }}" style="{{ dupStyle }}">{{ dupLabel }}</button>
         </div>
         <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
@@ -1022,7 +1028,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '3.5';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '3.6';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1177,6 +1183,7 @@ class Component extends DCLogic {
       cfgVersion,
       settingsTab: 'filters',
       accessList: [],
+      loginStats: {},
       accessLoading: false,
       accessSaving: false,
       accessMsg: '',
@@ -1646,11 +1653,27 @@ class Component extends DCLogic {
       return;
     }
     const name = this.travelerNameByEmail(this.state.cloudUserEmail) || this.state.cloudUser || this.state.cloudUserEmail || 'Someone';
+    // The very first heartbeat of this page-load counts as a login (login:true), so we
+    // can tell who actually signed in and how often. Later heartbeats just refresh lastSeen.
+    const isLogin = !this._loginSent;
     try {
-      await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+      await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, login: isLogin }) });
+      this._loginSent = true;
       const res = await fetch('/api/presence', { cache: 'no-store' });
       if (res.ok) { const data = await res.json(); this.setState({ presenceUsers: Array.isArray(data.users) ? data.users : [] }); }
     } catch (e) { /* offline / no API — leave as-is */ }
+  }
+  // Admin-only: load per-user login analytics + trip counts for the access-list hover bubble.
+  async loadLoginStats() {
+    if (this.state.cfgDataSource !== 'cloud' || !(this.state.cloudRoles || []).includes('admin')) return;
+    try {
+      const res = await fetch('/api/presence?stats=1', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      const byEmail = {};
+      (data.stats || []).forEach(s => { if (s && s.email) byEmail[String(s.email).toLowerCase()] = s; });
+      this.setState({ loginStats: byEmail });
+    } catch (e) { /* best-effort */ }
   }
   signOut() { try { window.location.href = '/.auth/logout'; } catch (e) {} }
 
@@ -2886,6 +2909,11 @@ class Component extends DCLogic {
         && (this.state.cloudRoles || []).includes('admin') && !this._accessLoaded) {
       this.loadAccess();
     }
+    // Refresh login analytics each time an admin opens the System tab.
+    if (tab === 'storage' && this.state.cfgDataSource === 'cloud'
+        && (this.state.cloudRoles || []).includes('admin')) {
+      this.loadLoginStats();
+    }
   }
 
   // ACCESS LIST (admin): the email→role allowlist that /api/roles reads to grant access.
@@ -2963,6 +2991,39 @@ class Component extends DCLogic {
   setTipRef(el) { this._tipEl = el; }
   showTip(e, text) { const t = this._tipEl; if (!t) return; if (text != null) t.textContent = text; t.style.display = 'block'; t.style.left = (e.clientX + 14) + 'px'; t.style.top = (e.clientY + 18) + 'px'; }
   hideTip() { const t = this._tipEl; if (t) t.style.display = 'none'; }
+  // Admin login-stats bubble for an access-list row. Positioned bottom-LEFT of the cursor
+  // (its own width to the left) so it never blocks the email field being edited.
+  setStatRef(el) { this._statEl = el; }
+  showStat(e, email) {
+    const t = this._statEl; if (!t) return;
+    const em = String(email || '').toLowerCase().trim();
+    const s = (this.state.loginStats || {})[em];
+    const name = (s && s.name && s.name !== em ? s.name : '') || this.travelerNameByEmail(em) || '';
+    const fmt = (ts) => { if (!ts) return '—'; const d = new Date(ts); return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) + ' · ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); };
+    let rows;
+    if (!em) {
+      rows = '<div style="color:#8a9ab2;">Enter an email to see activity</div>';
+    } else if (!s) {
+      rows = '<div style="font-weight:600; color:#eaf4fd; margin-bottom:4px;">' + (name || em) + '</div>'
+        + '<div style="color:#e6a3a3;">Never signed in</div>'
+        + '<div style="color:#8a9ab2; margin-top:3px;">Trips logged: 0</div>';
+    } else {
+      const dot = s.online ? '#34d399' : '#5d7088';
+      rows = '<div style="font-weight:600; color:#eaf4fd; margin-bottom:5px;">' + (name ? name + ' · ' : '') + '<span style="color:#9fb3c8;">' + em + '</span></div>'
+        + '<div><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + dot + ';margin-right:6px;"></span>' + (s.online ? 'Online now' : (s.logins ? 'Signed in before' : 'Never signed in')) + '</div>'
+        + '<div style="color:#9fb3c8; margin-top:3px;">Logins: <span style="color:#eaf4fd;">' + (s.logins || 0) + '</span></div>'
+        + '<div style="color:#9fb3c8;">Last login: <span style="color:#eaf4fd;">' + fmt(s.lastLogin) + '</span></div>'
+        + '<div style="color:#9fb3c8;">Trips logged: <span style="color:#eaf4fd;">' + (s.trips || 0) + '</span></div>';
+    }
+    t.innerHTML = rows;
+    t.style.display = 'block';
+    const w = t.offsetWidth || 180;
+    let left = e.clientX - 14 - w;
+    if (left < 8) left = 8;
+    t.style.left = left + 'px';
+    t.style.top = (e.clientY + 18) + 'px';
+  }
+  hideStat() { const t = this._statEl; if (t) t.style.display = 'none'; }
   myTravelerKey() { const e = (this.state.cloudUserEmail || '').toLowerCase(); if (!e) return ''; const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.key : ''; }
   // When the default-traveler filter is "Auto (me)", point it at the signed-in user's
   // own traveler once their identity is known (unless they've changed it this session).
@@ -3575,7 +3636,7 @@ class Component extends DCLogic {
       tabStorageStyle: tabBtnStyle(this.state.settingsTab === 'storage'),
       showFiltersTab: this.state.settingsTab === 'filters',
       showSystemTab: this.state.settingsTab === 'system',
-      showConfigTab: this.state.settingsTab === 'config',
+      showConfigTab: this.state.settingsTab === 'config' && (this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin')),
       showStorageTab: this.state.settingsTab === 'storage',
       setTabFilters: () => this.setSettingsTab('filters'),
       setTabSystem: () => this.setSettingsTab('system'),
@@ -3676,7 +3737,10 @@ class Component extends DCLogic {
         onEmail: (e) => this.accessSetEmail(i, e.target.value),
         onRole: (e) => this.accessSetRole(i, e.target.value),
         onRemove: () => this.accessRemove(i),
+        onHover: (e) => this.showStat(e, r.email),
       })),
+      setStatRef: (el) => this.setStatRef(el),
+      hideStat: () => this.hideStat(),
       accessAddRow: () => this.accessAddRow(),
       saveAccess: () => this.saveAccess(),
       reloadAccess: () => this.loadAccess(),
