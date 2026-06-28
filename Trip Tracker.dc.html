@@ -581,6 +581,23 @@
               </div>
             </sc-for>
           </div>
+
+          <sc-if value="{{ showClaimAll }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.18em; color:#6b7d94; margin-bottom:9px;">ADMIN · OWNERSHIP</div>
+              <button onClick="{{ askClaimAll }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe0f2; background:rgba(56,189,248,0.08); border:1px solid rgba(95,211,255,0.3); border-radius:9px; padding:9px 12px; cursor:pointer;">Claim all unowned trips ({{ unownedCount }})</button>
+              <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6b7d94; line-height:1.55;">Stamps your ownership on legacy trips that have no owner yet, so they become editable and counted in your stats.</div>
+              <sc-if value="{{ confirmClaim }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.32); border-radius:10px; padding:11px 12px;">
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#f1d79a; line-height:1.5; margin-bottom:10px;">Claim all {{ unownedCount }} unowned trips under your account? This can't be auto-undone.</div>
+                  <div style="display:flex; gap:8px;">
+                    <button onClick="{{ cancelClaimAll }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:8px; cursor:pointer;">Cancel</button>
+                    <button onClick="{{ claimAllUnowned }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; color:#04111e; background:#fbbf24; border:1px solid #fbbf24; border-radius:8px; padding:8px; cursor:pointer;">Claim {{ unownedCount }}</button>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
         </sc-if>
 
           </div>
@@ -1353,6 +1370,7 @@ class Component extends DCLogic {
       needsReconnect: false,
       storageMsg: '',
       confirmClear: false,
+      confirmClaim: false,
       pendingDelete: null,
       pendingTripDelete: null,
       includeSettings: true,
@@ -3155,6 +3173,19 @@ class Component extends DCLogic {
     t.style.top = (e.clientY + 18) + 'px';
   }
   hideStat() { const t = this._statEl; if (t) t.style.display = 'none'; }
+  // Admin bulk action: stamp the signed-in admin's ownership on every unowned/legacy trip
+  // at once. The server reconciliation then claims them (they become editable + counted).
+  askClaimAll() { this.setState({ confirmClaim: true }); }
+  cancelClaimAll() { this.setState({ confirmClaim: false }); }
+  claimAllUnowned() {
+    const meId = this.state.cloudUserId || '';
+    const meEmail = (this.state.cloudUserEmail || '').toLowerCase();
+    if (!meId) { this.setState({ confirmClaim: false }); return; }
+    const now = new Date().toISOString();
+    const list = (this.state.locations || []).map(l => (!l.owner) ? { ...l, owner: meId, ownerEmail: meEmail, modifiedAt: now } : l);
+    this.setState({ confirmClaim: false });
+    this.persist(list);
+  }
   myTravelerKey() { const e = (this.state.cloudUserEmail || '').toLowerCase(); if (!e) return ''; const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.key : ''; }
   // When the default-traveler filter is "Auto (me)", point it at the signed-in user's
   // own traveler once their identity is known (unless they've changed it this session).
@@ -3829,6 +3860,12 @@ class Component extends DCLogic {
         editorGroup('Statuses', 'status', this.state.cfgStatuses, false),
       ],
       addPerson: () => this.addPerson(),
+      showClaimAll: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('admin'),
+      unownedCount: (this.state.locations || []).filter(l => !l.owner).length,
+      confirmClaim: this.state.confirmClaim,
+      askClaimAll: () => this.askClaimAll(),
+      cancelClaimAll: () => this.cancelClaimAll(),
+      claimAllUnowned: () => this.claimAllUnowned(),
       peopleRows: (() => {
         const isCloud = this.state.cfgDataSource === 'cloud';
         const isAdmin = (this.state.cloudRoles || []).includes('admin');
