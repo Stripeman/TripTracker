@@ -1656,8 +1656,14 @@ class Component extends DCLogic {
     // The very first heartbeat of this page-load counts as a login (login:true), so we
     // can tell who actually signed in and how often. Later heartbeats just refresh lastSeen.
     const isLogin = !this._loginSent;
+    // Stable id for THIS browser session (survives refresh within the tab, new per sign-in/tab),
+    // so the server can count a fresh session as a login even if the first-tick flag is lost.
+    if (!this._sid) {
+      try { this._sid = sessionStorage.getItem('tt:sid') || ''; } catch (e) { this._sid = ''; }
+      if (!this._sid) { this._sid = 's-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8); try { sessionStorage.setItem('tt:sid', this._sid); } catch (e) {} }
+    }
     try {
-      await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, login: isLogin }) });
+      await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, login: isLogin, sid: this._sid }) });
       this._loginSent = true;
       const res = await fetch('/api/presence', { cache: 'no-store' });
       if (res.ok) { const data = await res.json(); this.setState({ presenceUsers: Array.isArray(data.users) ? data.users : [] }); }

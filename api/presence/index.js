@@ -94,25 +94,31 @@ module.exports = async function (context, req) {
         ? body.name.trim().slice(0, 120)
         : (me.email || "Someone");
       const isLogin = !!(body && body.login);
+      const sid = (body && typeof body.sid === "string" && body.sid) ? body.sid.slice(0, 64) : "";
 
       // Base fields written on every heartbeat. Merge mode preserves the login counters.
       const entity = { partitionKey: PARTITION, rowKey: me.id, name, email: me.email, roles: (me.roles || []).join(","), lastSeen: now };
 
-      if (isLogin) {
-        // read existing counters so we can increment without a race-prone read-modify loop
-        let prevLogins = 0, firstLogin = now;
-        try {
-          const ex = await table.getEntity(PARTITION, me.id);
-          if (ex && typeof ex.logins === "number") prevLogins = ex.logins;
-          if (ex && typeof ex.firstLogin === "number") firstLogin = ex.firstLogin;
-        } catch (e) { /* first time for this user */ }
-        entity.logins = prevLogins + 1;
-        entity.firstLogin = firstLogin;
+      // Read the existing row once so we can record logins reliably (and self-heal old
+      // rows that predate login tracking). We count a login when:
+      //   - the client explicitly flags login:true (first heartbeat of a page-load), OR
+      //   - this browser session id differs from the one we last stored (new session), OR
+      //   - the row has no login counter yet (first time / legacy row).
+      let prev = null;
+      try { prev = await table.getEntity(PARTITION, me.id); } catch (e) { /* no row yet */ }
+      const hasCounter = prev && typeof prev.logins === "number";
+      const newSession = sid && (!prev || prev.sid !== sid);
+      const countLogin = isLogin || newSession || !hasCounter;
+
+      if (countLogin) {
+        entity.logins = (hasCounter ? prev.logins : 0) + 1;
+        entity.firstLogin = (prev && typeof prev.firstLogin === "number") ? prev.firstLogin : now;
         entity.lastLogin = now;
       }
+      if (sid) entity.sid = sid;
 
       await table.upsertEntity(entity, "Merge");
-      json(200, { ok: true });
+      json(200, { ok: true, logins: entity.logins });
       return;
     }
 
