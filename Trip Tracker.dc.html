@@ -183,10 +183,10 @@
         <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;">
           <div style="display:flex; gap:2px; flex:none; border-bottom:1px solid rgba(255,255,255,0.08);">
             <button onClick="{{ setTabFilters }}" style="{{ tabFiltersStyle }}">Settings</button>
+            <button onClick="{{ setTabSystem }}" style="{{ tabSystemStyle }}">Preferences</button>
             <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
               <button onClick="{{ setTabConfig }}" style="{{ tabConfigStyle }}">Users</button>
             </sc-if>
-            <button onClick="{{ setTabSystem }}" style="{{ tabSystemStyle }}">Preferences</button>
             <button onClick="{{ setTabStorage }}" style="{{ tabStorageStyle }}">System</button>
           </div>
           <div style="flex:1; min-width:0; overflow-y:auto; padding-right:2px;">
@@ -528,7 +528,7 @@
 
                 <!-- VIEW MODE -->
                 <sc-if value="{{ p.viewing }}" hint-placeholder-val="{{ true }}">
-                  <div style="display:flex; align-items:center; gap:10px;">
+                  <div onMouseMove="{{ p.onHover }}" onMouseLeave="{{ hideStat }}" style="display:flex; align-items:center; gap:10px;">
                     <span style="width:14px; height:14px; flex:none; border-radius:50%; background:{{ p.colorLive }}; box-shadow:0 0 8px {{ p.colorGlow }};"></span>
                     <div style="flex:1; min-width:0;">
                       <div style="display:flex; align-items:center; gap:7px;">
@@ -3037,8 +3037,8 @@ class Component extends DCLogic {
         && (this.state.cloudRoles || []).includes('admin') && !this._accessLoaded) {
       this.loadAccess();
     }
-    // Refresh login analytics each time an admin opens the System tab.
-    if (tab === 'storage' && this.state.cfgDataSource === 'cloud'
+    // Refresh login analytics when an admin opens the System OR Users tab.
+    if ((tab === 'storage' || tab === 'config') && this.state.cfgDataSource === 'cloud'
         && (this.state.cloudRoles || []).includes('admin')) {
       this.loadLoginStats();
     }
@@ -3143,6 +3143,9 @@ class Component extends DCLogic {
         + '<div style="color:#9fb3c8;">Last login: <span style="color:#eaf4fd;">' + fmt(s.lastLogin) + '</span></div>'
         + '<div style="color:#9fb3c8;">Trips logged: <span style="color:#eaf4fd;">' + (s.trips || 0) + '</span></div>';
     }
+    const trav = (this.state.cfgTravelers || []).find(o => o.email && String(o.email).toLowerCase() === em);
+    const owner = trav && trav.createdBy ? trav.createdBy : '';
+    if (em && owner) rows += '<div style="color:#9fb3c8; margin-top:4px; padding-top:4px; border-top:1px solid rgba(255,255,255,0.1);">Added by: <span style="color:#eaf4fd;">' + owner + '</span></div>';
     t.innerHTML = rows;
     t.style.display = 'block';
     const w = t.offsetWidth || 180;
@@ -3856,6 +3859,7 @@ class Component extends DCLogic {
             canDelete,
             deleteBlockedMsg: blocked,
             onEdit: () => this.editPerson(o.key),
+            onHover: (e) => this.showStat(e, o.email),
             onDone: () => this.donePerson(),
             onLabel: (e) => this.dataItemLabel('traveler', o.key, e.target.value),
             onColor: (e) => this.dataItemColor('traveler', o.key, e.target.value),
