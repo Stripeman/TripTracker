@@ -243,6 +243,15 @@
             </div>
             <button onClick="{{ toggleStateBorders }}" style="{{ cfgStateBordersStyle }}">{{ cfgStateBordersLabel }}</button>
           </div>
+          <sc-if value="{{ showAutoClaim }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.05);">
+              <div style="flex:1; min-width:0;">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Auto-claim unowned trips</span>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px; letter-spacing:0.03em; line-height:1.4;">Admin only — when on, any trip with no owner is automatically claimed under your account when you sign in.</div>
+              </div>
+              <button onClick="{{ toggleAutoClaim }}" style="{{ cfgAutoClaimStyle }}">{{ cfgAutoClaimLabel }}</button>
+            </div>
+          </sc-if>
         </div>
         </sc-if>
 
@@ -565,6 +574,17 @@
                         <option value="reader" style="background:#0a1422;">Reader</option>
                         <option value="editor" style="background:#0a1422;">Editor</option>
                         <option value="admin" style="background:#0a1422;">Admin</option>
+                      </select>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ p.canSetParent }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">OWNED BY</span>
+                      <select value="{{ p.parentValue }}" onChange="{{ p.onParent }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                        <option value="" style="background:#0a1422;">— Unassigned —</option>
+                        <sc-for list="{{ p.parentOptions }}" as="po" hint-placeholder-count="2">
+                          <option value="{{ po.value }}" style="background:#0a1422;">{{ po.label }}</option>
+                        </sc-for>
                       </select>
                     </div>
                   </sc-if>
@@ -1265,6 +1285,7 @@ class Component extends DCLogic {
     const cfgStatusCard = cfg.statusCard !== false;
     const cfgSpin = cfg.spin !== false;
     const cfgStateBorders = cfg.stateBorders === true;
+    const cfgAutoClaim = cfg.autoClaim === true;
     const cfgAccessEmail = (typeof cfg.accessEmail === 'string' && cfg.accessEmail.trim()) ? cfg.accessEmail.trim() : 'Terry.Remsik@gmail.com';
     const cfgDefaultYear = cfg.defaultYear === 'all' ? 'all' : 'current';
     // Selected theme key (one of this.THEMES); falls back to 'aurora' (default cyan).
@@ -1295,6 +1316,7 @@ class Component extends DCLogic {
       cfgStatusCard,
       cfgSpin,
       cfgStateBorders,
+      cfgAutoClaim,
       cfgAccessEmail,
       reqAccessOpen: false,
       reqEmail: '',
@@ -1668,6 +1690,7 @@ class Component extends DCLogic {
       }
       this.setState(ns);
       this.checkAuth();
+      setTimeout(() => this.maybeAutoClaim(), 700);
       return true;
     } catch (e) { this.setState({ cloudDiag: (e && e.message) ? ('Could not reach /api/trips — ' + e.message) : 'Network error reaching /api/trips' }); return false; }
   }
@@ -2585,7 +2608,7 @@ class Component extends DCLogic {
    * number; persistConfigNoBump is used mid-typing in the data editor so the
    * version only ticks once on blur. Any config change also schedules a cloud push. */
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -2711,6 +2734,7 @@ class Component extends DCLogic {
       cfgStatusCard: settings.statusCard !== false,
       cfgSpin: settings.spin !== false,
       cfgStateBorders: settings.stateBorders === true,
+      cfgAutoClaim: settings.autoClaim === true,
       cfgAccessEmail: (typeof settings.accessEmail === 'string' && settings.accessEmail.trim()) ? settings.accessEmail.trim() : ((this.state && this.state.cfgAccessEmail) || 'Terry.Remsik@gmail.com'),
       detailsOpen: settings.detailsFormDefault !== false,
       cfgDefaultYear: settings.defaultYear === 'all' ? 'all' : 'current',
@@ -3255,6 +3279,29 @@ class Component extends DCLogic {
   donePerson() { this.setState({ editingPersonKey: null }); }
   // Is this person tagged on any trip? (blocks deletion)
   personUsedOnTrip(key) { return (this.state.locations || []).some(l => Array.isArray(l.travelers) && l.travelers.includes(key)); }
+  // Associate a name-only person with a parent user (admin, cloud) by setting createdBy
+  // to that user's email. This is who "owns"/manages the traveler.
+  personSetParent(key, parentEmail) {
+    const pe = String(parentEmail || '').toLowerCase().trim();
+    this.setState(s => {
+      const list = s.cfgTravelers.map(o => o.key === key ? { ...o, createdBy: pe } : o);
+      return this.persistConfig(s, { cfgTravelers: list });
+    });
+  }
+  // Admin toggle: auto-claim ownership of unowned trips. Turning it on claims immediately.
+  toggleAutoClaim() {
+    const turningOn = !this.state.cfgAutoClaim;
+    this.toggleCfgKey('cfgAutoClaim', 'autoClaim');
+    if (turningOn) this.maybeAutoClaim();
+  }
+  // If auto-claim is on and the signed-in admin has unowned trips, claim them all.
+  maybeAutoClaim() {
+    if (!this.state.cfgAutoClaim) return;
+    if (this.state.cfgDataSource !== 'cloud') return;
+    if (!(this.state.cloudRoles || []).includes('admin')) return;
+    if (!(this.state.cloudUserId || '')) return;
+    if ((this.state.locations || []).some(l => !l.owner)) this.claimAllUnowned();
+  }
   // Set a person's access role (admin, cloud only) — writes the email→role into the
   // server access list and saves it.
   personSetRole(email, role) {
@@ -3802,6 +3849,10 @@ class Component extends DCLogic {
       cfgStateBordersStyle: cfgPill(this.state.cfgStateBorders),
       cfgStateBordersLabel: this.state.cfgStateBorders ? 'ON' : 'OFF',
       toggleStateBorders: () => this.toggleStateBorders(),
+      showAutoClaim: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('admin'),
+      cfgAutoClaimStyle: cfgPill(this.state.cfgAutoClaim),
+      cfgAutoClaimLabel: this.state.cfgAutoClaim ? 'ON' : 'OFF',
+      toggleAutoClaim: () => this.toggleAutoClaim(),
       themeTiles: this.THEMES.map(t => {
         const on = this.state.cfgTheme === t.key;
         return {
@@ -3903,6 +3954,10 @@ class Component extends DCLogic {
             onEmail: (e) => this.dataItemEmail(o.key, e.target.value),
             onCommit: () => this.dataItemCommit(),
             onRole: (e) => this.personSetRole(o.email, e.target.value),
+            canSetParent: isCloud && isAdmin && !o.email,
+            parentValue: o.createdBy ? String(o.createdBy).toLowerCase().trim() : '',
+            parentOptions: (this.state.cfgTravelers || []).filter(t => t.email && t.key !== o.key).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
+            onParent: (e) => this.personSetParent(o.key, e.target.value),
             onRemove: () => this.personRemove(o.key),
           };
         });
