@@ -3195,7 +3195,8 @@ class Component extends DCLogic {
   closeForm() { this.setState({ formOpen: false, editingId: null, formError: '' }); }
 
   editSelected(id) {
-    const loc = this.state.locations.find(l => l.id === (id != null ? id : this.state.selectedId));
+    const useId = (typeof id === 'number' || typeof id === 'string') ? id : this.state.selectedId;
+    const loc = this.state.locations.find(l => l.id === useId);
     if (!loc) return;
     // Split a stored email share list into traveler chips + leftover "other" emails.
     const shared = (loc.sharedWith || []).map(e => String(e).toLowerCase());
