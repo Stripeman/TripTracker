@@ -80,6 +80,11 @@
             <span style="font-size:16px; line-height:1;">+</span> Add location
           </button>
         </sc-if>
+        <sc-if value="{{ showProfileBtn }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleProfile }}" title="Your profile" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg>
+          </button>
+        </sc-if>
         <button onClick="{{ toggleSettings }}" title="Data &amp; storage settings" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; font-size:17px; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">⚙</button>
       </div>
     </div>
@@ -103,6 +108,51 @@
     <div ref="{{ setTipRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; background:rgba(10,16,26,0.96); border:1px solid rgba(95,211,255,0.4); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:5px 9px; border-radius:7px; box-shadow:0 6px 18px rgba(0,0,0,0.45); white-space:nowrap;"></div>
     <!-- admin login-stats bubble — positioned to the BOTTOM-LEFT of the cursor so it never covers the row you're editing -->
     <div ref="{{ setStatRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; min-width:170px; background:rgba(9,15,25,0.97); border:1px solid rgba(95,211,255,0.38); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.55; padding:9px 11px; border-radius:9px; box-shadow:0 8px 22px rgba(0,0,0,0.5);"></div>
+    <!-- profile dialog -->
+    <sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeProfile }}" style="position:fixed; inset:0; z-index:70; display:flex; align-items:flex-start; justify-content:flex-end; padding:78px 30px 30px; background:rgba(4,8,15,0.45); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); pointer-events:auto;">
+        <div onClick="{{ stop }}" style="width:330px; max-width:calc(100vw - 60px); background:linear-gradient(180deg, rgba(12,19,30,0.98), rgba(7,12,20,0.98)); border:1px solid rgba(56,189,248,0.28); border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,0.6); overflow:hidden;">
+          <div style="padding:18px 20px; border-bottom:1px solid rgba(56,189,248,0.12); display:flex; align-items:center; gap:13px;">
+            <div style="width:46px; height:46px; flex:none; border-radius:50%; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.34); display:flex; align-items:center; justify-content:center; color:#7fd4f5;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg>
+            </div>
+            <div style="min-width:0;">
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; color:#eaf4fd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ profileName }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ profileEmail }}</div>
+              <sc-if value="{{ profileRoleLabel }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:4px; display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.16em; color:#7fd4f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:5px; padding:2px 7px;">{{ profileRoleLabel }}</div>
+              </sc-if>
+            </div>
+          </div>
+          <div style="padding:16px 20px; display:flex; flex-direction:column; gap:9px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#5d7088; margin-bottom:2px;">YOUR TRIPS</div>
+            <div style="display:flex; gap:9px;">
+              <div style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(56,189,248,0.14); border-radius:11px; padding:11px 12px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:23px; font-weight:600; color:#eaf4fd;">{{ profileOwned }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:#8093aa;">CREATED BY YOU</div>
+              </div>
+              <div style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(56,189,248,0.14); border-radius:11px; padding:11px 12px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:23px; font-weight:600; color:#eaf4fd;">{{ profileAssociated }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:#8093aa;">YOU'RE A TRAVELER</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px;">
+              <div style="flex:1; display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:8px 11px;">
+                <span style="color:#8093aa;">Private</span><span style="color:#cfe6f5; font-weight:600;">{{ profilePrivate }}</span>
+              </div>
+              <div style="flex:1; display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:8px 11px;">
+                <span style="color:#8093aa;">Shared</span><span style="color:#cfe6f5; font-weight:600;">{{ profileShared }}</span>
+              </div>
+            </div>
+          </div>
+          <div style="padding:4px 20px 18px; display:flex; gap:9px;">
+            <button onClick="{{ closeProfile }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:10px; cursor:pointer;">Close</button>
+            <a href="/.auth/logout" style="flex:1; text-align:center; text-decoration:none; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#f0b4b4; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.34); border-radius:10px; padding:10px; cursor:pointer;">Sign out</a>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- settings / storage panel -->
     <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
       <sc-if value="{{ pendingDelete }}" hint-placeholder-val="{{ null }}">
@@ -130,6 +180,17 @@
             <button onClick="{{ toggleSettings }}" style="width:24px; height:24px; border-radius:7px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:14px; line-height:1;">×</button>
           </div>
         </div>
+        <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;">
+          <div style="display:flex; gap:2px; flex:none; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <button onClick="{{ setTabFilters }}" style="{{ tabFiltersStyle }}">Settings</button>
+            <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ setTabConfig }}" style="{{ tabConfigStyle }}">Users</button>
+            </sc-if>
+            <button onClick="{{ setTabSystem }}" style="{{ tabSystemStyle }}">Preferences</button>
+            <button onClick="{{ setTabStorage }}" style="{{ tabStorageStyle }}">System</button>
+          </div>
+          <div style="flex:1; min-width:0; overflow-y:auto; padding-right:2px;">
+
         <sc-if value="{{ authorOpen }}" hint-placeholder-val="{{ false }}">
           <div style="margin-bottom:14px; flex:none; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.22); border-radius:10px; padding:13px;">
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.18em; color:#5d7088; margin-bottom:7px;">CREATED BY</div>
@@ -145,18 +206,13 @@
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#a9bace; margin-top:2px;">{{ appUpdated }}</div>
               </div>
             </div>
+            <a href="https://github.com/Stripeman/TripTracker" target="_blank" rel="noopener" style="pointer-events:auto; display:flex; align-items:center; gap:9px; margin-top:12px; text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.2); border-radius:9px; padding:9px 11px;" style-hover="border-color:rgba(56,189,248,0.45); color:#cdeafd;">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" style="flex:none;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 014 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+              <span style="flex:1;">Stripeman/TripTracker</span>
+              <span style="color:#5d7088; font-size:13px;">↗</span>
+            </a>
           </div>
         </sc-if>
-        <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;">
-          <div style="display:flex; gap:2px; flex:none; border-bottom:1px solid rgba(255,255,255,0.08);">
-            <button onClick="{{ setTabFilters }}" style="{{ tabFiltersStyle }}">Defaults</button>
-            <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
-              <button onClick="{{ setTabConfig }}" style="{{ tabConfigStyle }}">Settings</button>
-            </sc-if>
-            <button onClick="{{ setTabSystem }}" style="{{ tabSystemStyle }}">Preferences</button>
-            <button onClick="{{ setTabStorage }}" style="{{ tabStorageStyle }}">System</button>
-          </div>
-          <div style="flex:1; min-width:0; overflow-y:auto; padding-right:2px;">
 
         <sc-if value="{{ showSystemTab }}" hint-placeholder-val="{{ false }}">
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">FORM &amp; CARDS</div>
@@ -264,6 +320,32 @@
             </sc-for>
           </div>
         </div>
+
+        <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin:18px 0 6px;">CONFIGURATION DATA</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:14px;">Rename, recolour, add or remove the options used across the form, filters, and globe.</div>
+          <sc-for list="{{ dataEditorsSettings }}" as="grp" hint-placeholder-count="3">
+            <div style="margin-bottom:13px;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">{{ grp.title }}</div>
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px;">
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
+                  <div style="display:flex; align-items:center; gap:7px;">
+                    <input type="color" defaultValue="{{ it.color }}" onChange="{{ it.onColor }}" onBlur="{{ it.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
+                    <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" style="flex:1 1 auto; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
+                    <sc-if value="{{ it.removable }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ it.onRemove }}" title="Remove" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.26); color:#f0a6a6; cursor:pointer; font-size:14px; line-height:1;">×</button>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ grp.canAdd }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ grp.onAdd }}" style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.22); border-radius:8px; padding:6px 12px; cursor:pointer;">+ Add</button>
+              </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </sc-if>
         </sc-if>
 
         <sc-if value="{{ showStorageTab }}" hint-placeholder-val="{{ false }}">
@@ -432,46 +514,73 @@
             </div>
           </div>
         </sc-if>
-        <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; color:#5d7088; margin-bottom:7px;">REPOSITORY</div>
-          <a href="https://github.com/Stripeman/TripTracker" target="_blank" rel="noopener" style="pointer-events:auto; display:flex; align-items:center; gap:9px; text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.22); border-radius:9px; padding:9px 11px;" style-hover="border-color:rgba(56,189,248,0.45); color:#cdeafd;">
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" style="flex:none;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 014 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
-            <span style="flex:1;">Stripeman/TripTracker</span>
-            <span style="color:#5d7088; font-size:13px;">↗</span>
-          </a>
-        </div>
         </sc-if>
 
         <sc-if value="{{ showConfigTab }}" hint-placeholder-val="{{ false }}">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:6px;">CONFIGURATION DATA</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:16px;">Rename, recolour, add or remove the options used across the form, filters, and globe. Every list — including Statuses — can be renamed, recoloured, added to, and removed.</div>
-          <sc-for list="{{ dataEditors }}" as="grp" hint-placeholder-count="4">
-            <div style="margin-bottom:13px;">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">{{ grp.title }}</div>
-              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px;">
-              <div style="display:flex; flex-direction:column; gap:6px;">
-                <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:6px;">PEOPLE</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:14px;">Everyone you can tag on a trip. Give a person an email to let them sign in — then a role and presence appear. People without an email are just names you can pick.</div>
+
+          <button onClick="{{ addPerson }}" style="width:100%; box-sizing:border-box; margin-bottom:12px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:10px; padding:9px; cursor:pointer;">+ Add person</button>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <sc-for list="{{ peopleRows }}" as="p" hint-placeholder-count="3">
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:11px 12px;">
+
+                <!-- VIEW MODE -->
+                <sc-if value="{{ p.viewing }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="width:14px; height:14px; flex:none; border-radius:50%; background:{{ p.colorLive }}; box-shadow:0 0 8px {{ p.colorGlow }};"></span>
+                    <div style="flex:1; min-width:0;">
+                      <div style="display:flex; align-items:center; gap:7px;">
+                        <span style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; font-weight:600; color:#eaf4fd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.label }}</span>
+                        <sc-if value="{{ p.online }}" hint-placeholder-val="{{ false }}">
+                          <span title="Online now" style="width:7px; height:7px; flex:none; border-radius:50%; background:#34d399; box-shadow:0 0 7px #34d399;"></span>
+                        </sc-if>
+                      </div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.emailText }}</div>
+                    </div>
+                    <sc-if value="{{ p.roleLabel }}" hint-placeholder-val="{{ false }}">
+                      <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.14em; color:#7fd4f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:5px; padding:2px 7px;">{{ p.roleLabel }}</span>
+                    </sc-if>
+                    <button onClick="{{ p.onEdit }}" title="Edit" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.24); color:#9fd6f0; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                    </button>
+                  </div>
+                </sc-if>
+
+                <!-- EDIT MODE -->
+                <sc-if value="{{ p.editing }}" hint-placeholder-val="{{ false }}">
                   <div style="display:flex; align-items:center; gap:7px;">
-                    <input type="color" defaultValue="{{ it.color }}" onChange="{{ it.onColor }}" onBlur="{{ it.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
-                    <input defaultValue="{{ it.label }}" onChange="{{ it.onLabel }}" onBlur="{{ it.onCommit }}" style="flex:0 1 92px; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
-                    <sc-if value="{{ it.showDot }}" hint-placeholder-val="{{ false }}">
-                      <span onMouseEnter="{{ it.onDotTip }}" onMouseMove="{{ it.onDotTip }}" onMouseLeave="{{ it.offDotTip }}" style="{{ it.dotStyle }}"></span>
-                    </sc-if>
-                    <sc-if value="{{ it.isTraveler }}" hint-placeholder-val="{{ false }}">
-                      <input defaultValue="{{ it.email }}" onChange="{{ it.onEmail }}" onBlur="{{ it.onCommit }}" type="email" placeholder="email — to share with them" style="flex:1 1 auto; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:7px 9px; outline:none;">
-                    </sc-if>
-                    <sc-if value="{{ it.removable }}" hint-placeholder-val="{{ true }}">
-                      <button onClick="{{ it.onRemove }}" title="Remove" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.26); color:#f0a6a6; cursor:pointer; font-size:14px; line-height:1;">×</button>
+                    <input type="color" defaultValue="{{ p.color }}" onChange="{{ p.onColor }}" onBlur="{{ p.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
+                    <input defaultValue="{{ p.label }}" onChange="{{ p.onLabel }}" onBlur="{{ p.onCommit }}" placeholder="Name" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
+                  </div>
+                  <sc-if value="{{ p.canSetEmail }}" hint-placeholder-val="{{ false }}">
+                    <input defaultValue="{{ p.email }}" onChange="{{ p.onEmail }}" onBlur="{{ p.onCommit }}" type="email" placeholder="email — lets them sign in (optional)" style="width:100%; box-sizing:border-box; margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:7px 9px; outline:none;">
+                  </sc-if>
+                  <sc-if value="{{ p.canSetRole }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">ROLE</span>
+                      <select value="{{ p.role }}" onChange="{{ p.onRole }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                        <option value="" style="background:#0a1422;">No access</option>
+                        <option value="reader" style="background:#0a1422;">Reader</option>
+                        <option value="editor" style="background:#0a1422;">Editor</option>
+                        <option value="admin" style="background:#0a1422;">Admin</option>
+                      </select>
+                    </div>
+                  </sc-if>
+                  <div style="display:flex; gap:7px; margin-top:9px;">
+                    <button onClick="{{ p.onDone }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">Done</button>
+                    <sc-if value="{{ p.canDelete }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ p.onRemove }}" title="Delete person" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#f0a6a6; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:7px 13px; cursor:pointer;">Delete</button>
                     </sc-if>
                   </div>
-                </sc-for>
+                  <sc-if value="{{ p.deleteBlockedMsg }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a7a52; line-height:1.5;">{{ p.deleteBlockedMsg }}</div>
+                  </sc-if>
+                </sc-if>
               </div>
-              <sc-if value="{{ grp.canAdd }}" hint-placeholder-val="{{ true }}">
-                <button onClick="{{ grp.onAdd }}" style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.22); border-radius:8px; padding:6px 12px; cursor:pointer;">+ Add</button>
-              </sc-if>
-              </div>
-            </div>
-          </sc-for>
+            </sc-for>
+          </div>
         </sc-if>
 
           </div>
@@ -1028,7 +1137,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '3.6';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1182,6 +1291,7 @@ class Component extends DCLogic {
       cfgStatuses,
       cfgVersion,
       settingsTab: 'filters',
+      editingPersonKey: null,
       accessList: [],
       loginStats: {},
       accessLoading: false,
@@ -1221,6 +1331,7 @@ class Component extends DCLogic {
       filtersOpen: false,
       heatOpen: false,
       settingsOpen: false,
+      profileOpen: false,
       dataMode: 'browser',
       confirmLocal: false,
       cloudSeed: 0,
@@ -2682,6 +2793,17 @@ class Component extends DCLogic {
 
   toggleSettings() { this.setState(s => ({ settingsOpen: !s.settingsOpen, storageMsg: '', confirmClear: false, authorOpen: false })); }
 
+  toggleProfile() { this.setState(s => ({ profileOpen: !s.profileOpen })); }
+  closeProfile() { this.setState({ profileOpen: false }); }
+  stop(e) { if (e && e.stopPropagation) e.stopPropagation(); }
+  // My traveler key (the person record whose email matches my login), for "associated" counts.
+  myTravelerKey() {
+    const em = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    if (!em) return null;
+    const t = (this.state.cfgTravelers || []).find(o => String(o.email || '').toLowerCase().trim() === em);
+    return t ? t.key : null;
+  }
+
   askClear() { this.setState({ confirmClear: true }); }
   cancelClear() { this.setState({ confirmClear: false }); }
   confirmClearDb() {
@@ -2910,8 +3032,8 @@ class Component extends DCLogic {
   // ---- Configuration (data) editor ----
   setSettingsTab(tab) {
     this.setState({ settingsTab: tab });
-    // Lazy-load the access list the first time an admin opens the System tab in cloud mode.
-    if (tab === 'storage' && this.state.cfgDataSource === 'cloud'
+    // Load the access list (for roles) when an admin opens the System OR Users tab in cloud mode.
+    if ((tab === 'storage' || tab === 'config') && this.state.cfgDataSource === 'cloud'
         && (this.state.cloudRoles || []).includes('admin') && !this._accessLoaded) {
       this.loadAccess();
     }
@@ -3078,6 +3200,55 @@ class Component extends DCLogic {
       const list = [...s[lk], item];
       return this.persistConfig(s, { [lk]: list });
     });
+  }
+
+  // ---- People (Users tab): travelers + access roles unified ----
+  // Add a person under the current user (createdBy stamps ownership for delete rules),
+  // and open it straight into edit mode.
+  addPerson() {
+    this.setState(s => {
+      let key = 'p', i = 1;
+      const taken = new Set(s.cfgTravelers.map(o => o.key));
+      while (taken.has(key)) { key = 'p' + (++i); }
+      const palette = ['#5fd3ff', '#fb7185', '#c084fc', '#22d3ee', '#fbbf24', '#fb923c', '#a78bfa', '#4ade80', '#e879f9'];
+      const color = palette[s.cfgTravelers.length % palette.length];
+      const createdBy = (s.cloudUserEmail || '').toLowerCase().trim();
+      const item = { key, label: 'New person', color, email: '', createdBy };
+      return { ...this.persistConfig(s, { cfgTravelers: [...s.cfgTravelers, item] }), editingPersonKey: key };
+    });
+  }
+  editPerson(key) { this.setState({ editingPersonKey: key }); }
+  donePerson() { this.setState({ editingPersonKey: null }); }
+  // Is this person tagged on any trip? (blocks deletion)
+  personUsedOnTrip(key) { return (this.state.locations || []).some(l => Array.isArray(l.travelers) && l.travelers.includes(key)); }
+  // Set a person's access role (admin, cloud only) — writes the email→role into the
+  // server access list and saves it.
+  personSetRole(email, role) {
+    const em = String(email || '').toLowerCase().trim();
+    if (!em) return;
+    this.setState(s => {
+      let list = (s.accessList || []).slice();
+      const idx = list.findIndex(r => String(r.email || '').toLowerCase().trim() === em);
+      if (!role) { if (idx >= 0) list.splice(idx, 1); }
+      else if (idx >= 0) list[idx] = { ...list[idx], role };
+      else list.push({ email: em, role });
+      return { accessList: list };
+    }, () => { if (this.saveAccess) this.saveAccess(); });
+  }
+  personRemove(key) {
+    const p = (this.state.cfgTravelers || []).find(o => o.key === key);
+    if (!p) return;
+    if (this.personUsedOnTrip(key)) { return; } // guarded in UI too
+    const isAdmin = (this.state.cloudRoles || []).includes('admin');
+    const meEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    const mine = !p.createdBy || String(p.createdBy).toLowerCase().trim() === meEmail;
+    if (this.state.cfgDataSource === 'cloud' && !isAdmin && !mine) return; // not yours
+    this.setState(s => {
+      const list = s.cfgTravelers.filter(o => o.key !== key);
+      return { ...this.persistConfig(s, { cfgTravelers: list }), editingPersonKey: null };
+    });
+    // if this person had an access role, drop it too (admin)
+    if (isAdmin && p.email) this.personSetRole(p.email, '');
   }
 
   deleteSelected() {
@@ -3642,19 +3813,59 @@ class Component extends DCLogic {
       tabStorageStyle: tabBtnStyle(this.state.settingsTab === 'storage'),
       showFiltersTab: this.state.settingsTab === 'filters',
       showSystemTab: this.state.settingsTab === 'system',
-      showConfigTab: this.state.settingsTab === 'config' && (this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin')),
+      showConfigTab: this.state.settingsTab === 'config' && (this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('editor')),
       showStorageTab: this.state.settingsTab === 'storage',
       setTabFilters: () => this.setSettingsTab('filters'),
       setTabSystem: () => this.setSettingsTab('system'),
       setTabConfig: () => this.setSettingsTab('config'),
       setTabStorage: () => this.setSettingsTab('storage'),
       cfgVersion: this.state.cfgVersion,
-      dataEditors: [
-        editorGroup('Travelers', 'traveler', this.state.cfgTravelers, false),
+      dataEditorsSettings: [
         editorGroup('Trip types', 'trip', this.state.cfgTripTypes, false),
         editorGroup('Visit types', 'visit', this.state.cfgVisitTypes, false),
         editorGroup('Statuses', 'status', this.state.cfgStatuses, false),
       ],
+      addPerson: () => this.addPerson(),
+      peopleRows: (() => {
+        const isCloud = this.state.cfgDataSource === 'cloud';
+        const isAdmin = (this.state.cloudRoles || []).includes('admin');
+        const meEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
+        const roleByEmail = {};
+        (this.state.accessList || []).forEach(r => { const e = String(r.email || '').toLowerCase().trim(); if (e) roleByEmail[e] = r.role; });
+        const onlineEmails = new Set((this.state.presenceUsers || []).map(u => String(u.email || '').toLowerCase().trim()).filter(Boolean));
+        const editingKey = this.state.editingPersonKey;
+        return (this.state.cfgTravelers || []).map(o => {
+          const email = String(o.email || '').toLowerCase().trim();
+          const role = email ? (roleByEmail[email] || '') : '';
+          const used = this.personUsedOnTrip(o.key);
+          const mine = !o.createdBy || String(o.createdBy).toLowerCase().trim() === meEmail;
+          const canDelete = !used && (!isCloud || isAdmin || mine);
+          let blocked = '';
+          if (used) blocked = 'Tagged on one or more trips — remove it from those first.';
+          else if (isCloud && !isAdmin && !mine) blocked = 'Added by someone else — only they or an admin can remove it.';
+          return {
+            key: o.key, label: o.label, color: o.color, email: o.email || '',
+            colorLive: o.color, colorGlow: (o.color || '#5fd3ff') + '66',
+            viewing: editingKey !== o.key,
+            editing: editingKey === o.key,
+            emailText: o.email ? o.email : 'No login — name only',
+            role, roleLabel: role ? role.toUpperCase() : '',
+            online: !!email && onlineEmails.has(email),
+            canSetEmail: !isCloud || isAdmin,
+            canSetRole: isCloud && isAdmin && !!o.email,
+            canDelete,
+            deleteBlockedMsg: blocked,
+            onEdit: () => this.editPerson(o.key),
+            onDone: () => this.donePerson(),
+            onLabel: (e) => this.dataItemLabel('traveler', o.key, e.target.value),
+            onColor: (e) => this.dataItemColor('traveler', o.key, e.target.value),
+            onEmail: (e) => this.dataItemEmail(o.key, e.target.value),
+            onCommit: () => this.dataItemCommit(),
+            onRole: (e) => this.personSetRole(o.email, e.target.value),
+            onRemove: () => this.personRemove(o.key),
+          };
+        });
+      })(),
       cfgFormStyle: cfgPill(this.state.cfgDetailsFormDefault),
       cfgFormLabel: this.state.cfgDetailsFormDefault ? 'ON' : 'OFF',
       cfgCardStyle: cfgPill(this.state.cfgDetailsCard),
@@ -3669,6 +3880,27 @@ class Component extends DCLogic {
       autoLocateLabel: this.state.geocoding ? 'Locating…' : '⌖  Auto-locate from city / country',
       settingsOpen: this.state.settingsOpen,
       toggleSettings: () => this.toggleSettings(),
+      showProfileBtn: this.state.cfgDataSource === 'cloud' && this.state.cloudAuth,
+      profileOpen: this.state.profileOpen,
+      toggleProfile: () => this.toggleProfile(),
+      closeProfile: () => this.closeProfile(),
+      stop: (e) => this.stop(e),
+      profileName: this.travelerNameByEmail(this.state.cloudUserEmail) || this.state.cloudUser || this.state.cloudUserEmail || 'You',
+      profileEmail: this.state.cloudUserEmail || '',
+      profileRoleLabel: (() => { const r = this.state.cloudRoles || []; if (r.includes('admin')) return 'ADMIN'; if (r.includes('editor')) return 'EDITOR'; if (r.includes('reader')) return 'READER'; return ''; })(),
+      ...(() => {
+        const all = this.state.locations || [];
+        const me = (this.state.cloudUserEmail || '').toLowerCase().trim();
+        const mine = all.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === me && me);
+        const myKey = this.myTravelerKey();
+        const assoc = myKey ? all.filter(l => Array.isArray(l.travelers) && l.travelers.includes(myKey)).length : 0;
+        return {
+          profileOwned: mine.length,
+          profilePrivate: mine.filter(l => (l.visibility || 'private') === 'private').length,
+          profileShared: mine.filter(l => l.visibility === 'shared' || l.visibility === 'all').length,
+          profileAssociated: assoc,
+        };
+      })(),
       storageLabel: this.state.dataMode === 'cloud' ? 'Cloud (Azure)' : (this.state.dataMode === 'file' ? (this.state.dataFileName || 'Linked JSON file') : 'Browser storage'),
       storageTitle: this.state.dataMode === 'cloud'
         ? 'Synced to Azure Blob Storage via the site API.'
@@ -3810,7 +4042,7 @@ class Component extends DCLogic {
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
-      appUpdated: 'June 24, 2026',
+      appUpdated: 'June 28, 2026',
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
       latestVersion: this.state.latestVersion,

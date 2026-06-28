@@ -72,9 +72,10 @@ In Cloud mode every trip belongs to whoever created it, and the server only ever
 - **Visibility per trip:** the add/edit form has a **"Who can see this"** picker:
   - **🔒 Only me** — private to you (default).
   - **👥 All users** — any signed-in user can view it.
-  - **✉ Specific people** — share **by name**: pick from your **Traveler** chips (Terry, [others], …) instead of typing emails. Each Traveler can hold an optional email in **⚙ → Settings → Travelers**; that's the address access is granted to. Travelers without an email are greyed out with a hint. A **"+ other email"** box covers anyone who isn't a Traveler.
+  - **✉ Specific people** — share **by name**: pick from your **People** chips (Terry, [others], …) instead of typing emails. Each person can hold an optional email in **⚙ → Users**. Travelers**; that's the address access is granted to. Travelers without an email are greyed out with a hint. A **"+ other email"** box covers anyone who isn't a Traveler.
+- **Your profile:** a **person icon** sits in the top‑right, just left of the ⚙ cog (Cloud mode, when signed in). It opens a themed card showing **who you're signed in as** and your role, your **trip stats** (created by you, private vs. shared, and how many trips you're tagged on as a traveler), and a **Sign out** button.
 - **Names, not emails:** because Travelers map names → emails, the owner badge and share picker show **names** (e.g. "Terry"), and when you're signed in with a Traveler's email the app greets you by that name. Sharing still resolves to emails under the hood (that's what sign-in matches on).
-- **Traveler presence dot:** in **⚙ → Settings → Travelers**, each Traveler shows a small status dot to the right of their name — **green** when that person (matched by their email) is currently online, **grey** when offline. Hovering the dot shows a cursor-following tooltip with their **online status and role(s)** (e.g. "Online · editor, reader"). Roles are reported by each browser's presence heartbeat, so a Traveler's role is shown while they're online; offline, the tooltip notes the role appears once they sign in. (This is separate from the always-on "ONLINE" bar at the bottom of the screen.)
+- **Traveler presence dot:** in **⚙ → Users**, each person with an email shows a small status dot next to their name — **green** when that person (matched by their email) is currentlyly online, **grey** when offline. Hovering the dot shows a cursor-following tooltip with their **online status and role(s)** (e.g. "Online · editor, reader"). Roles are reported by each browser's presence heartbeat, so a Traveler's role is shown while they're online; offline, the tooltip notes the role appears once they sign in. (This is separate from the always-on "ONLINE" bar at the bottom of the screen.)
 - **Settings sync to the cloud:** editing configuration data (Travelers and their **emails**, visit/trip types, statuses, default filters, display options) saves to the cloud automatically a moment after you change it — so the name↔email mapping and your settings persist and are shared with other users, not just stored in your browser. (Requires the `editor`/`admin` role, like any cloud write.)
 - **You can only edit your own trips.** Trips shared with you are view-only (the detail card shows an owner badge, a visibility badge, and "Shared with you · view only" instead of Edit/Delete). A nor
 - **Quick permission editor:** on a trip you own (Cloud mode), the detail card has a **🔒 lock button** next to the close button. It opens a compact "Who can see this" picker — **Private / All users / People** — where People shows each registered Traveler as a **colored first-initial circle** (hover for their full name + email). Changes **save instantly**, and your last choice becomes the **default visibility for the next new trip** you create.mal save never touches anyone else's data.
@@ -85,9 +86,9 @@ In Cloud mode every trip belongs to whoever created it, and the server only ever
 - **Login analytics (admin):** in **⚙ → System → Access list**, an admin can **hover any person's row** to see a stat bubble — whether they've actually signed in, their **total login count**, **last login**, and **how many trips they've logged**. The bubble appears to the *bottom-left* of the cursor so it never blocks the email field. Login counts are recorded server-side (one count per page-load); trip totals are read from the dataset, so they're accurate even for trips you can't see.
 
 ### ⚙ Configuration — four tabs
-The ⚙ **Configuration** panel has a left‑hand tab rail; **Defaults is selected by default**:
+The ⚙ **Configuration** panel has a tab row across the top — **Settings · Users · Preferences · System** — with **Settings selected by default**. The **ⓘ** button drops a panel (under the tabs) with the author, build version, last‑updated date, and a link to the **GitHub repository**.
 
-**Defaults tab** — sets what the filters open to on each visit, via colour‑coded segmented toggles that match the filter colours:
+**Settings tab** — first, what the filters open to on each visit (colour‑coded segmented toggles that match the filter colours), then the editable reference lists (Trip types, Visit types, Statuses — see *Configuration data* below):
 - **Sort destinations** — Descending (newest first) / Ascending (oldest first)
 - **Year** — All years / Current year
 - **Trip type** — All / *(your trip types)*
@@ -97,7 +98,7 @@ The ⚙ **Configuration** panel has a left‑hand tab rail; **Defaults is select
 - Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
 - **Themes** — a grid of **10 looks** (Aurora · Cobalt · Violet · Orchid · Magenta · Crimson · Ember · Amber · Emerald · Mono). Picking one instantly retints the **whole app** — globe, tiles, cards, modals and all — and is saved with your settings. Aurora is the default cyan.
 
-**Settings tab** — editable reference data (see *Configuration data* below).
+**Users tab** — the unified **People** list (everyone you can tag on a trip). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative); a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
 
 **Preferences tab** — display options:
 - Toggle whether the **Trip details** section is open by default on the form.
@@ -107,7 +108,8 @@ The ⚙ **Configuration** panel has a left‑hand tab rail; **Defaults is select
 
 **System tab** — data, storage & app info:
 - **Data source** (Local browser / linked file, or Cloud), **Export / Restore**, and **Clear data** (see Storage & backup).
-- **Repository** — a link to the project's GitHub repo, [`Stripeman/TripTracker`](https://github.com/Stripeman/TripTracker).
+- **Access requests** and the **access list** of who's allowed in (admin only, Cloud mode).
+- *(The GitHub repository link now lives in the **ⓘ** dropdown.)*
 
 ### 🔔 Update notice
 The app knows its own build version and quietly checks the server for a newer deployed version (on load, whenever the tab regains focus, and every 10 minutes). When a newer build is live, an **UPDATE AVAILABLE** badge appears to the right of the title and a dismissible amber **notice bar** drops in at the top with a **Reload** button to pick up the new version. Detection is automatic from the version number — nothing to configure.
