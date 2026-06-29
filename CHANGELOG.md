@@ -4,6 +4,16 @@ All notable changes to **Trip Tracker** are recorded here. The newest release is
 
 ---
 
+## 0.9.5-beta
+
+### Added
+- **Mobile display refinement** — a responsive layout for screens ≤ 720px. The floating desktop panels reflow into phone‑friendly sheets: the destinations list becomes a full‑width sheet below the header, the selected‑trip card a bottom sheet, the metrics dashboard and configuration modal near‑full‑width scrollable sheets, and the Add/Edit form goes full‑screen. The globe re‑centers behind everything; the desktop layout is unchanged above 720px.
+
+### Changed
+- **App‑guide version badge** now tracks the live app version automatically (no more manual edits to the README badge).
+
+---
+
 ## 0.9.4-beta
 
 ### Added

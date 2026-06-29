@@ -40,6 +40,19 @@
   .vl-help img { max-width:100%; vertical-align:middle; }
   .vl-help table { border-collapse:collapse; width:100%; margin:10px 0; }
   .vl-help th,.vl-help td { border:1px solid rgba(255,255,255,0.12); padding:6px 9px; text-align:left; font-size:13px; }
+  /* ---- Responsive (phones / small tablets). The desktop layout uses fixed-width
+     floating panels positioned with inline styles; inline wins specificity, so each
+     override below carries !important. On small screens those panels collapse to
+     full-width sheets stacked over the globe. ---- */
+  @media (max-width: 720px) {
+    .tt-topbar { padding: 14px 14px !important; }
+    .tt-panetoggle { display: none !important; }
+    .tt-leftpanel { top: 104px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: auto !important; max-height: 40vh !important; }
+    .tt-detailcard { left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
+    .tt-metrics { top: 104px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
+    .tt-config { top: 68px !important; left: 10px !important; right: 10px !important; width: auto !important; max-height: calc(100vh - 84px) !important; }
+    .tt-form { width: 100vw !important; }
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
@@ -69,7 +82,7 @@
     </sc-if>
 
     <!-- top bar -->
-    <div style="position:absolute; top:0; left:0; right:0; display:flex; align-items:flex-start; justify-content:space-between; padding:26px 30px;">
+    <div class="tt-topbar" style="position:absolute; top:0; left:0; right:0; display:flex; align-items:flex-start; justify-content:space-between; padding:26px 30px;">
       <div>
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
           <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.32em; color:#e8f3ff; text-shadow:0 0 24px rgba(56,189,248,0.45);">TRIP&nbsp;&nbsp;TRACKER</div>
@@ -178,7 +191,7 @@
           </div>
         </div>
       </sc-if>
-      <div style="position:absolute; top:80px; right:30px; width:384px; max-height:calc(100vh - 150px); display:flex; flex-direction:column; pointer-events:auto; background:rgba(8,14,24,0.94); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid rgba(56,189,248,0.22); border-radius:14px; padding:18px; box-shadow:0 16px 50px rgba(0,0,0,0.55); animation:vl-fade 0.2s ease;">
+      <div class="tt-config" style="position:absolute; top:80px; right:30px; width:384px; max-height:calc(100vh - 150px); display:flex; flex-direction:column; pointer-events:auto; background:rgba(8,14,24,0.94); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid rgba(56,189,248,0.22); border-radius:14px; padding:18px; box-shadow:0 16px 50px rgba(0,0,0,0.55); animation:vl-fade 0.2s ease;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex:none;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">CONFIGURATION</div>
           <div style="display:flex; align-items:center; gap:8px;">
@@ -734,10 +747,10 @@
     </sc-if>
 
     <!-- pane toggle -->
-    <button onClick="{{ togglePane }}" style="position:absolute; top:104px; left:{{ toggleLeft }}; pointer-events:auto; width:30px; height:50px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(56,189,248,0.24); border-radius:11px; color:#7fd6f5; cursor:pointer; font-size:18px; line-height:1; box-shadow:0 4px 22px rgba(0,0,0,0.45); transition:left 0.42s cubic-bezier(0.16,1,0.3,1); z-index:11;">{{ paneArrow }}</button>
+    <button onClick="{{ togglePane }}" class="tt-panetoggle" style="position:absolute; top:104px; left:{{ toggleLeft }}; pointer-events:auto; width:30px; height:50px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(56,189,248,0.24); border-radius:11px; color:#7fd6f5; cursor:pointer; font-size:18px; line-height:1; box-shadow:0 4px 22px rgba(0,0,0,0.45); transition:left 0.42s cubic-bezier(0.16,1,0.3,1); z-index:11;">{{ paneArrow }}</button>
 
     <!-- left panel -->
-    <div style="position:absolute; top:96px; left:30px; bottom:30px; width:312px; pointer-events:auto; display:flex; flex-direction:column; background:rgba(8,14,24,0.74); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(56,189,248,0.16); border-radius:16px; overflow:hidden; transition:transform 0.42s cubic-bezier(0.16,1,0.3,1); transform:{{ paneTransform }};">
+    <div class="tt-leftpanel" style="position:absolute; top:96px; left:30px; bottom:30px; width:312px; pointer-events:auto; display:flex; flex-direction:column; background:rgba(8,14,24,0.74); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(56,189,248,0.16); border-radius:16px; overflow:hidden; transition:transform 0.42s cubic-bezier(0.16,1,0.3,1); transform:{{ paneTransform }};">
       <div style="padding:18px 18px 14px; border-bottom:1px solid rgba(56,189,248,0.12);">
         <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">DESTINATIONS</div>
@@ -854,7 +867,7 @@
 
     <!-- selected detail card -->
     <sc-if value="{{ selected }}" hint-placeholder-val="{{ null }}">
-      <div style="position:absolute; left:362px; bottom:30px; width:308px; pointer-events:auto; background:rgba(8,14,24,0.84); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(251,191,36,0.34); border-radius:16px; padding:18px; box-shadow:0 12px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(251,191,36,0.08); animation:vl-fade 0.22s ease;">
+      <div class="tt-detailcard" style="position:absolute; left:362px; bottom:30px; width:308px; pointer-events:auto; background:rgba(8,14,24,0.84); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(251,191,36,0.34); border-radius:16px; padding:18px; box-shadow:0 12px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(251,191,36,0.08); animation:vl-fade 0.22s ease;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
           <div>
             <sc-if value="{{ showStatusCard }}" hint-placeholder-val="{{ true }}">
@@ -1125,7 +1138,7 @@
 
     <!-- heat map panel -->
     <sc-if value="{{ heatOpen }}" hint-placeholder-val="{{ false }}">
-      <div style="position:absolute; top:96px; right:30px; bottom:30px; width:340px; pointer-events:auto; display:flex; flex-direction:column; background:rgba(8,14,24,0.82); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(56,189,248,0.18); border-radius:16px; overflow:hidden; animation:vl-fade 0.22s ease;">
+      <div class="tt-metrics" style="position:absolute; top:96px; right:30px; bottom:30px; width:340px; pointer-events:auto; display:flex; flex-direction:column; background:rgba(8,14,24,0.82); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(56,189,248,0.18); border-radius:16px; overflow:hidden; animation:vl-fade 0.22s ease;">
         <div style="padding:18px 18px 14px; border-bottom:1px solid rgba(56,189,248,0.12);">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">TRAVEL HEAT MAP</div>
@@ -1237,7 +1250,7 @@
     </sc-if>
 
     <!-- slide-in form -->
-    <div style="position:absolute; top:0; right:0; bottom:0; width:388px; pointer-events:auto; background:rgba(7,12,21,0.92); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-left:1px solid rgba(56,189,248,0.2); box-shadow:-20px 0 60px rgba(0,0,0,0.55); transition:transform 0.42s cubic-bezier(0.16,1,0.3,1); transform:{{ panelTransform }}; display:flex; flex-direction:column;">
+    <div class="tt-form" style="position:absolute; top:0; right:0; bottom:0; width:388px; pointer-events:auto; background:rgba(7,12,21,0.92); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-left:1px solid rgba(56,189,248,0.2); box-shadow:-20px 0 60px rgba(0,0,0,0.55); transition:transform 0.42s cubic-bezier(0.16,1,0.3,1); transform:{{ panelTransform }}; display:flex; flex-direction:column;">
       <div style="display:flex; justify-content:space-between; align-items:center; padding:24px 26px 18px; border-bottom:1px solid rgba(56,189,248,0.12);">
         <div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">{{ formMode }}</div>
@@ -1451,7 +1464,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.4-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.5-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
