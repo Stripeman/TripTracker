@@ -599,15 +599,19 @@
                       </select>
                     </div>
                   </sc-if>
-                  <sc-if value="{{ p.canSetActive }}" hint-placeholder-val="{{ false }}">
-                    <button onClick="{{ p.onToggleActive }}" style="width:100%; box-sizing:border-box; margin-top:7px; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#c2cfde; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px; cursor:pointer;">{{ p.activeBtnLabel }}</button>
-                  </sc-if>
                   <div style="display:flex; gap:7px; margin-top:9px;">
-                    <button onClick="{{ p.onDone }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">Done</button>
-                    <sc-if value="{{ p.canDelete }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ p.onRemove }}" title="Delete person" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#f0a6a6; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:7px 13px; cursor:pointer;">Delete</button>
+                    <button onClick="{{ p.onDone }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">Save</button>
+                    <button onClick="{{ p.onCancel }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px; cursor:pointer;">Cancel</button>
+                    <sc-if value="{{ p.canSetActive }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ p.onToggleActive }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#c2cfde; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px 13px; cursor:pointer;">{{ p.activeBtnLabel }}</button>
                     </sc-if>
                   </div>
+                  <sc-if value="{{ p.isLastAdmin }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a7a52; line-height:1.5;">This is the last active admin — can't be deactivated or deleted.</div>
+                  </sc-if>
+                  <sc-if value="{{ p.canDelete }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ p.onRemove }}" title="Delete person" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#f0a6a6; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:7px; cursor:pointer;">Delete person</button>
+                  </sc-if>
                   <sc-if value="{{ p.deleteBlockedMsg }}" hint-placeholder-val="{{ false }}">
                     <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a7a52; line-height:1.5;">{{ p.deleteBlockedMsg }}</div>
                   </sc-if>
@@ -999,9 +1003,15 @@
           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:18px;">
             <div>
               <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:17px; letter-spacing:0.18em; color:#e8f3ff;">TRIP METRICS</div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#5d7088; margin-top:4px;">EVERY TRIP · ALL TIME</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#5d7088; margin-top:4px;">{{ metricsSubtitle }}</div>
             </div>
-            <button onClick="{{ closeMetrics }}" style="flex:none; width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
+            <div style="display:flex; align-items:center; gap:8px; flex:none;">
+              <div style="display:flex; gap:4px;">
+                <button onClick="{{ setMetricsAll }}" style="{{ metricsSegAllStyle }}">ALL TRIPS</button>
+                <button onClick="{{ setMetricsFiltered }}" style="{{ metricsSegFilteredStyle }}">FILTERED</button>
+              </div>
+              <button onClick="{{ closeMetrics }}" style="flex:none; width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
+            </div>
           </div>
 
           <sc-if value="{{ metrics.isEmpty }}" hint-placeholder-val="{{ false }}">
@@ -1423,7 +1433,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.2-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.3-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1619,6 +1629,7 @@ class Component extends DCLogic {
       filtersOpen: false,
       heatOpen: false,
       metricsOpen: false,
+      metricsScope: 'all',
       toastMsg: '',
       bulk: { fields: { owner: false, notes: false, visit: false, travelers: false, trip: false, vis: false }, owner: '', notes: '', visit: [], travelers: [], trip: [], vis: 'private', shareKeys: [] },
       bulkConfirm: false,
@@ -2071,7 +2082,25 @@ class Component extends DCLogic {
       await fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, login: isLogin, sid: this._sid }) });
       this._loginSent = true;
       const res = await fetch('/api/presence', { cache: 'no-store' });
-      if (res.ok) { const data = await res.json(); this.setState({ presenceUsers: Array.isArray(data.users) ? data.users : [] }); }
+      if (res.ok) {
+        const data = await res.json();
+        const users = Array.isArray(data.users) ? data.users : [];
+        // Diff the online roster between polls → toast when someone NEW signs in.
+        const myEmail = (this.state.cloudUserEmail || '').toLowerCase();
+        const idOf = (u) => String((u && (u.email || u.name)) || '').toLowerCase();
+        const nowSet = new Set(users.map(idOf).filter(Boolean));
+        if (this._knownOnline) {
+          users.forEach(u => {
+            const id = idOf(u);
+            if (id && id !== myEmail && !this._knownOnline.has(id)) {
+              const nm = (u && (this.travelerNameByEmail(u.email) || u.name || u.email)) || 'Someone';
+              this.toast(nm + ' just signed in');
+            }
+          });
+        }
+        this._knownOnline = nowSet;   // seed silently on first poll (no toast on initial roster)
+        this.setState({ presenceUsers: users });
+      }
     } catch (e) { /* offline / no API — leave as-is */ }
   }
   // Admin-only: load per-user login analytics + trip counts for the access-list hover bubble.
@@ -3280,8 +3309,9 @@ class Component extends DCLogic {
   }
   toggleDup() { this.setState(s => ({ dupMode: !s.dupMode })); }
   // Build a full statistics snapshot over ALL trips (unfiltered) for the metrics panel.
-  computeMetrics() {
-    const locs = this.state.locations || [];
+  computeMetrics(scope) {
+    const all = this.state.locations || [];
+    const locs = scope === 'filtered' ? all.filter(l => this.passesFilter(l)) : all;
     const total = locs.length;
     const todayISO = new Date().toISOString().slice(0, 10);
     const dayCount = (l) => {
@@ -3368,6 +3398,7 @@ class Component extends DCLogic {
   }
   toggleMetrics() { this.setState(s => ({ metricsOpen: !s.metricsOpen })); }
   closeMetrics() { this.setState({ metricsOpen: false }); }
+  setMetricsScope(scope) { this.setState({ metricsScope: scope }); }
   // Inconspicuous auto-dismissing toast for save/edit/delete feedback across the app.
   toast(msg) {
     if (this._toastTimer) clearTimeout(this._toastTimer);
@@ -3681,8 +3712,26 @@ class Component extends DCLogic {
       return { ...this.persistConfig(s, { cfgTravelers: [...s.cfgTravelers, item] }), editingPersonKey: key };
     });
   }
-  editPerson(key) { this.hideStat(); this.setState({ editingPersonKey: key }); }
-  donePerson() { this.setState({ editingPersonKey: null }); }
+  editPerson(key) {
+    this.hideStat();
+    // Snapshot the editable fields so Cancel can revert (edits otherwise commit live).
+    const p = (this.state.cfgTravelers || []).find(o => o.key === key);
+    this._personSnapshot = p ? { key, label: p.label, color: p.color, email: p.email || '', createdBy: p.createdBy || '' } : null;
+    this.setState({ editingPersonKey: key });
+  }
+  donePerson() { this._personSnapshot = null; this.setState({ editingPersonKey: null }); this.toast('User saved'); }
+  cancelPerson() {
+    const snap = this._personSnapshot;
+    this._personSnapshot = null;
+    if (snap) {
+      this.setState(s => {
+        const list = (s.cfgTravelers || []).map(o => o.key === snap.key ? { ...o, label: snap.label, color: snap.color, email: snap.email, createdBy: snap.createdBy } : o);
+        return this.persistConfig(s, { cfgTravelers: list });
+      }, () => this.setState({ editingPersonKey: null }));
+    } else {
+      this.setState({ editingPersonKey: null });
+    }
+  }
   // Is this person tagged on any trip? (blocks deletion)
   personUsedOnTrip(key) { return (this.state.locations || []).some(l => Array.isArray(l.travelers) && l.travelers.includes(key)); }
   // Associate a name-only person with a parent user (admin, cloud) by setting createdBy
@@ -3745,9 +3794,22 @@ class Component extends DCLogic {
   }
   // Set a person's active flag (admin, cloud). Inactive keeps the record + role value but
   // grants no access until reactivated. No-op if they have no access-list entry yet.
+  // Count active admins in the access list (active !== false). Used to protect the last one.
+  activeAdminCount() {
+    return (this.state.accessList || []).filter(r => r.role === 'admin' && r.active !== false).length;
+  }
+  // True if this email is the ONLY remaining active admin (can't be deactivated/deleted).
+  isLastActiveAdmin(email) {
+    const em = String(email || '').toLowerCase().trim();
+    if (!em) return false;
+    const r = (this.state.accessList || []).find(x => String(x.email || '').toLowerCase().trim() === em);
+    if (!r || r.role !== 'admin' || r.active === false) return false;
+    return this.activeAdminCount() <= 1;
+  }
   personSetActive(email, active) {
     const em = String(email || '').toLowerCase().trim();
     if (!em) return;
+    if (!active && this.isLastActiveAdmin(em)) { this.toast('Can’t deactivate the last admin'); return; }
     this.setState(s => {
       const list = (s.accessList || []).slice();
       const idx = list.findIndex(r => String(r.email || '').toLowerCase().trim() === em);
@@ -3761,6 +3823,7 @@ class Component extends DCLogic {
     const p = (this.state.cfgTravelers || []).find(o => o.key === key);
     if (!p) return;
     const em = String(p.email || '').toLowerCase().trim();
+    if (this.isLastActiveAdmin(em)) { this.toast('Can’t delete the last admin'); return; }
     const owned = em ? (this.state.locations || []).filter(l => String(l.ownerEmail || '').toLowerCase().trim() === em).length : 0;
     const tagged = (this.state.locations || []).filter(l => Array.isArray(l.travelers) && l.travelers.includes(key)).length;
     this.setState({ pendingUserDelete: { key, email: em, name: p.label, owned, tagged } });
@@ -4276,7 +4339,15 @@ class Component extends DCLogic {
       toastMsg: this.state.toastMsg,
       hasToast: !!this.state.toastMsg,
       stop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
-      metrics: this.state.metricsOpen ? this.computeMetrics() : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], topCountries: [], topCities: [], byYear: [] },
+      metrics: this.state.metricsOpen ? this.computeMetrics(this.state.metricsScope) : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], topCountries: [], topCities: [], byYear: [] },
+      metricsScope: this.state.metricsScope,
+      metricsScopeAll: this.state.metricsScope !== 'filtered',
+      metricsScopeFiltered: this.state.metricsScope === 'filtered',
+      setMetricsAll: () => this.setMetricsScope('all'),
+      setMetricsFiltered: () => this.setMetricsScope('filtered'),
+      metricsSubtitle: this.state.metricsScope === 'filtered' ? (activeFilterCount > 0 ? ('FILTERED · ' + activeFilterCount + ' filter' + (activeFilterCount === 1 ? '' : 's') + ' active') : 'FILTERED · NO FILTERS SET') : 'EVERY TRIP · ALL TIME',
+      metricsSegAllStyle: 'font-family:\'IBM Plex Mono\',monospace; font-size:9px; letter-spacing:0.12em; padding:5px 11px; border-radius:7px; cursor:pointer; border:1px solid ' + (this.state.metricsScope !== 'filtered' ? 'rgba(56,189,248,0.5); background:rgba(56,189,248,0.16); color:#bfe9ff;' : 'rgba(255,255,255,0.1); background:transparent; color:#7c8ea6;'),
+      metricsSegFilteredStyle: 'font-family:\'IBM Plex Mono\',monospace; font-size:9px; letter-spacing:0.12em; padding:5px 11px; border-radius:7px; cursor:pointer; border:1px solid ' + (this.state.metricsScope === 'filtered' ? 'rgba(56,189,248,0.5); background:rgba(56,189,248,0.16); color:#bfe9ff;' : 'rgba(255,255,255,0.1); background:transparent; color:#7c8ea6;'),
       heatTiles,
       heatHasData: heatTiles.length > 0,
       heatEmpty: heatTiles.length === 0,
@@ -4475,10 +4546,11 @@ class Component extends DCLogic {
             isUser, active,
             statusLabel: isUser ? (active ? 'ACTIVE' : 'INACTIVE') : '',
             statusStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:8px; letter-spacing:0.12em; padding:2px 6px; border-radius:5px; ' + (active ? 'color:#7ee0a8; background:rgba(126,224,168,0.12); border:1px solid rgba(126,224,168,0.3);' : 'color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);'),
-            canSetActive: isCloud && isAdmin && isUser,
+            canSetActive: isCloud && isAdmin && isUser && !this.isLastActiveAdmin(o.email),
             activeBtnLabel: active ? 'Deactivate' : 'Activate',
             onToggleActive: () => this.personSetActive(o.email, !active),
-            canDeleteUser: isCloud && isAdmin && isUser,
+            canDeleteUser: isCloud && isAdmin && isUser && !this.isLastActiveAdmin(o.email),
+            isLastAdmin: isCloud && isAdmin && isUser && this.isLastActiveAdmin(o.email),
             onDeleteUser: () => this.askUserDelete(o.key),
             online: !!email && onlineEmails.has(email),
             canSetEmail: !isCloud || isAdmin,
@@ -4488,6 +4560,7 @@ class Component extends DCLogic {
             onEdit: () => this.editPerson(o.key),
             onHover: (e) => this.showStat(e, o.email),
             onDone: () => this.donePerson(),
+            onCancel: () => this.cancelPerson(),
             onLabel: (e) => this.dataItemLabel('traveler', o.key, e.target.value),
             onColor: (e) => this.dataItemColor('traveler', o.key, e.target.value),
             onEmail: (e) => this.dataItemEmail(o.key, e.target.value),
