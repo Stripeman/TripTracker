@@ -46,8 +46,9 @@
      full-width sheets stacked over the globe. ---- */
   @media (max-width: 720px) {
     .tt-topbar { padding: 14px 14px !important; }
-    .tt-panetoggle { display: none !important; }
+    .tt-panetoggle { top: 60px !important; left: 14px !important; right: auto !important; transition: none !important; }
     .tt-leftpanel { top: 104px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: auto !important; max-height: 40vh !important; }
+    .tt-leftpanel.tt-paneclosed { transform: translateY(-165%) !important; }
     .tt-detailcard { left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
     .tt-metrics { top: 104px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
     .tt-config { top: 68px !important; left: 10px !important; right: 10px !important; width: auto !important; max-height: calc(100vh - 84px) !important; }
@@ -750,7 +751,7 @@
     <button onClick="{{ togglePane }}" class="tt-panetoggle" style="position:absolute; top:104px; left:{{ toggleLeft }}; pointer-events:auto; width:30px; height:50px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.82); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(56,189,248,0.24); border-radius:11px; color:#7fd6f5; cursor:pointer; font-size:18px; line-height:1; box-shadow:0 4px 22px rgba(0,0,0,0.45); transition:left 0.42s cubic-bezier(0.16,1,0.3,1); z-index:11;">{{ paneArrow }}</button>
 
     <!-- left panel -->
-    <div class="tt-leftpanel" style="position:absolute; top:96px; left:30px; bottom:30px; width:312px; pointer-events:auto; display:flex; flex-direction:column; background:rgba(8,14,24,0.74); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(56,189,248,0.16); border-radius:16px; overflow:hidden; transition:transform 0.42s cubic-bezier(0.16,1,0.3,1); transform:{{ paneTransform }};">
+    <div class="tt-leftpanel {{ paneClass }}" style="position:absolute; top:96px; left:30px; bottom:30px; width:312px; pointer-events:auto; display:flex; flex-direction:column; background:rgba(8,14,24,0.74); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(56,189,248,0.16); border-radius:16px; overflow:hidden; transition:transform 0.42s cubic-bezier(0.16,1,0.3,1); transform:{{ paneTransform }};">
       <div style="padding:18px 18px 14px; border-bottom:1px solid rgba(56,189,248,0.12);">
         <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">DESTINATIONS</div>
@@ -3158,7 +3159,15 @@ class Component extends DCLogic {
   exportSelected() { const k = this.selKind(); if (!k) { this.setState({ storageMsg: 'Turn on Data and/or Settings first.' }); return; } this.exportKind(k); }
   importSelected() { const k = this.selKind(); if (!k) { this.setState({ storageMsg: 'Turn on Data and/or Settings first.' }); return; } this.importKind(k); }
 
-  toggleSettings() { this.setState(s => ({ settingsOpen: !s.settingsOpen, storageMsg: '', confirmClear: false, authorOpen: false })); }
+  toggleSettings() {
+    const onMobile = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
+    this.setState(s => ({
+      settingsOpen: !s.settingsOpen,
+      storageMsg: '', confirmClear: false, authorOpen: false,
+      // on phones the destinations sheet would cover the settings panel — tuck it away
+      paneOpen: (onMobile && !s.settingsOpen) ? false : s.paneOpen,
+    }));
+  }
 
   toggleProfile() { this.setState(s => ({ profileOpen: !s.profileOpen })); }
   closeProfile() { this.setState({ profileOpen: false }); }
@@ -4887,6 +4896,7 @@ class Component extends DCLogic {
       paneTransform: this.state.paneOpen ? 'translateX(0)' : 'translateX(-360px)',
       toggleLeft: this.state.paneOpen ? '350px' : '14px',
       paneArrow: this.state.paneOpen ? '‹' : '›',
+      paneClass: this.state.paneOpen ? '' : 'tt-paneclosed',
       togglePane: () => this.togglePane(),
       panelTransform: formOpen ? 'translateX(0)' : 'translateX(110%)',
       formMode: editingId != null ? 'EDIT DESTINATION' : 'NEW DESTINATION',
