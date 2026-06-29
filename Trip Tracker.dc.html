@@ -3126,7 +3126,14 @@ class Component extends DCLogic {
       const res = await fetch(file, { cache: 'no-store' });
       if (!res.ok) throw new Error('not found');
       const md = await res.text();
-      const html = (window.marked && window.marked.parse) ? window.marked.parse(md) : md;
+      let html = (window.marked && window.marked.parse) ? window.marked.parse(md) : md;
+      // Keep the README version badge in lock-step with the live APP_VERSION so the
+      // App guide can never drift from the ⓘ pane. shields.io encodes a literal "-"
+      // in the label as "--", so escape the same way when rewriting the version.
+      if (which === 'readme') {
+        const enc = this.APP_VERSION.replace(/-/g, '--');
+        html = html.replace(/(img\.shields\.io\/badge\/version-)[^-)\s"']+(?:--[^-)\s"']+)*(-[0-9a-fA-F]{3,8})/, '$1' + enc + '$2');
+      }
       this._docCache[which] = html;
       this.setState({ helpHtml: html, helpError: '' });
     } catch (e) {
