@@ -2635,10 +2635,15 @@ class Component extends DCLogic {
       ctx.beginPath(); path(this.borders);
       ctx.strokeStyle = 'rgba(56,189,248,0.18)'; ctx.lineWidth = 0.4; ctx.stroke();
     }
-    // state / province borders — only for large countries, only while the globe is still
-    if (this.state.cfgStateBorders && this.stateBorders && this._idle) {
-      ctx.beginPath(); path(this.stateBorders);
-      ctx.strokeStyle = 'rgba(120,200,240,0.14)'; ctx.lineWidth = 0.3; ctx.stroke();
+    // state / province borders — only for large countries, only while the globe is still.
+    // Lazy-load the line data the first time we see the flag on (covers reload / cloud /
+    // import paths, not just the toggle handler) so an already-enabled config actually draws.
+    if (this.state.cfgStateBorders) {
+      if (!this.stateBorders && !this._stateLoading) this.loadStateBorders();
+      if (this.stateBorders && this._idle) {
+        ctx.beginPath(); path(this.stateBorders);
+        ctx.strokeStyle = 'rgba(120,200,240,0.14)'; ctx.lineWidth = 0.3; ctx.stroke();
+      }
     }
 
     // rim
