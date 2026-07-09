@@ -288,6 +288,17 @@
             <button onClick="{{ toggleStateBorders }}" style="{{ cfgStateBordersStyle }}">{{ cfgStateBordersLabel }}</button>
           </div>
         </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">UPDATES</div>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px 13px; margin-bottom:4px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
+            <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Check for updates every</span>
+            <div style="display:flex; gap:6px;">
+              <sc-for list="{{ defUpdateFreqSeg }}" as="seg" hint-placeholder-count="3">
+                <button onClick="{{ seg.onSelect }}" style="{{ seg.style }}">{{ seg.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
         </sc-if>
 
         <sc-if value="{{ showFiltersTab }}" hint-placeholder-val="{{ true }}">
@@ -915,11 +926,11 @@
               </sc-if>
             </div>
           </sc-if>
-          <div style="display:flex; align-items:center; gap:7px; flex:none;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:7px; flex:none;">
+            <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
             <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
               <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
             </sc-if>
-            <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
           </div>
         </div>
         <sc-if value="{{ permOpen }}" hint-placeholder-val="{{ false }}">
@@ -1284,7 +1295,12 @@
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">{{ formMode }}</div>
           <div style="font-family:'Orbitron',sans-serif; font-weight:500; font-size:17px; letter-spacing:0.1em; color:#e8f3ff; margin-top:6px;">{{ formTitle }}</div>
         </div>
-        <button onClick="{{ closeForm }}" style="width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:17px; line-height:1;">×</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <sc-if value="{{ showQuickDup }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ quickDuplicate }}" title="Duplicate this trip (clears date)" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#9fd6f0; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center;">⧉</button>
+          </sc-if>
+          <button onClick="{{ closeForm }}" style="width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:17px; line-height:1;">×</button>
+        </div>
       </div>
 
       <div style="flex:1; overflow-y:auto; padding:22px 26px;">
@@ -1523,7 +1539,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.9-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.11-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1630,6 +1646,7 @@ class Component extends DCLogic {
       try { localStorage.setItem(this.CFG, JSON.stringify({ ...cfg, dataSource: 'cloud' })); } catch (e) {}
     }
     const cfgDetailsFormDefault = cfg.detailsFormDefault !== false;
+    const cfgUpdateFreqMin = [3, 5, 10].includes(cfg.updateFreqMin) ? cfg.updateFreqMin : 10;
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
     const cfgShowThumbs = cfg.showThumbs !== false;
@@ -1662,6 +1679,7 @@ class Component extends DCLogic {
       locations: saved,
       detailsOpen: cfgDetailsFormDefault,
       cfgDetailsFormDefault,
+      cfgUpdateFreqMin,
       cfgDetailsCard,
       cfgStatusCard,
       cfgShowThumbs,
@@ -2353,7 +2371,7 @@ class Component extends DCLogic {
     this.init();
     this.bootData();
     this.checkForUpdate();
-    this._updTimer = setInterval(() => this.checkForUpdate(), 600000);
+    this._updTimer = setInterval(() => this.checkForUpdate(), this.state.cfgUpdateFreqMin * 60000);
     this._onVis = () => { if (document.visibilityState === 'visible') { this.checkForUpdate(); this.presenceTick(); this.loadLoginStats(); } };
     document.addEventListener('visibilitychange', this._onVis);
     this._presTimer = setInterval(() => this.presenceTick(), 30000);
@@ -2998,7 +3016,7 @@ class Component extends DCLogic {
    * number; persistConfigNoBump is used mid-typing in the data editor so the
    * version only ticks once on blur. Any config change also schedules a cloud push. */
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, updateFreqMin: s.cfgUpdateFreqMin, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -3120,6 +3138,7 @@ class Component extends DCLogic {
     const patch = {
       cfgVersion: Number.isFinite(settings.version) ? settings.version : ((Number.isFinite(this.state && this.state.cfgVersion) ? this.state.cfgVersion : 1) + 1),
       cfgDetailsFormDefault: settings.detailsFormDefault !== false,
+      cfgUpdateFreqMin: [3, 5, 10].includes(settings.updateFreqMin) ? settings.updateFreqMin : 10,
       cfgDetailsCard: settings.detailsCard !== false,
       cfgStatusCard: settings.statusCard !== false,
       cfgShowThumbs: settings.showThumbs !== false,
@@ -3197,6 +3216,12 @@ class Component extends DCLogic {
     } catch (e) {}
   }
   reloadApp() { try { location.reload(); } catch (e) {} }
+  setUpdateFreq(min) {
+    this.setState(s => this.persistConfig(s, { cfgUpdateFreqMin: min }));
+    if (this._updTimer) clearInterval(this._updTimer);
+    this._updTimer = setInterval(() => this.checkForUpdate(), min * 60000);
+    this.toast('Checking for updates every ' + min + ' min');
+  }
   dismissUpdate() { this.setState({ updateDismissed: true }); }
   toggleAuthor() { this.setState(s => ({ authorOpen: !s.authorOpen })); }
   closeHelp() { this.setState({ helpOpen: false }); }
@@ -3381,7 +3406,20 @@ class Component extends DCLogic {
 
   openAdd() {
     const n = new Date();
-    this.setState({ formOpen: true, editingId: null, dateText: null, dateEndText: null, form: this.blankForm(), formError: '', selectedId: null, calOpen: false, calY: n.getFullYear(), calM: n.getMonth(), settingsOpen: false, detailsOpen: this.state.cfgDetailsFormDefault, photoSuggestion: null });
+    const todayISO = n.toISOString().slice(0, 10);
+    this.setState({ formOpen: true, editingId: null, dateText: null, dateEndText: null, form: { ...this.blankForm(), date: todayISO }, formError: '', selectedId: null, calOpen: false, calY: n.getFullYear(), calM: n.getMonth(), settingsOpen: false, detailsOpen: this.state.cfgDetailsFormDefault, photoSuggestion: null });
+  }
+  // Instant duplicate from the edit form: opens a fresh (unsaved) new-trip form
+  // pre-filled with everything from the trip currently being edited, except its
+  // date/dateEnd (left blank) and identity/timestamps. Does not touch the original.
+  quickDuplicate() {
+    this.setState(s => {
+      const f = s.form || {};
+      const dup = { ...f, date: '', dateEnd: '' };
+      delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
+      return { formOpen: true, editingId: null, dateText: null, dateEndText: null, formError: '', form: dup, selectedId: null, calOpen: false };
+    });
+    this.toast('Duplicated — pick a new date');
   }
   closeForm() { this.setState({ formOpen: false, editingId: null, formError: '' }); }
 
@@ -4851,6 +4889,7 @@ class Component extends DCLogic {
       cfgStatusStyle: cfgPill(this.state.cfgStatusCard),
       cfgStatusLabel: this.state.cfgStatusCard ? 'ON' : 'OFF',
       toggleDetailsFormDefault: () => this.toggleCfgKey('cfgDetailsFormDefault', 'detailsFormDefault'),
+      defUpdateFreqSeg: [3, 5, 10].map(min => ({ label: min + ' min', style: segStyle(this.state.cfgUpdateFreqMin === min, '#5fd3ff'), onSelect: () => this.setUpdateFreq(min) })),
       toggleDetailsCard: () => this.toggleCfgKey('cfgDetailsCard', 'detailsCard'),
       toggleStatusCard: () => this.toggleCfgKey('cfgStatusCard', 'statusCard'),
       cfgThumbsStyle: cfgPill(this.state.cfgShowThumbs),
@@ -5102,6 +5141,8 @@ class Component extends DCLogic {
       dupStyle: cfgPill(this.state.dupMode),
       dupLabel: this.state.dupMode ? 'ON' : 'OFF',
       toggleDup: () => this.toggleDup(),
+      showQuickDup: editingId != null,
+      quickDuplicate: () => this.quickDuplicate(),
       showCreated: editingId != null && !!form.createdAt,
       createdText: form.createdAt ? (() => { try { return new Date(form.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return form.createdAt; } })() : '',
       showModified: editingId != null && !!form.modifiedAt,
