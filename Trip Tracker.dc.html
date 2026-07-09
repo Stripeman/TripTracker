@@ -943,13 +943,13 @@
             <img ref="{{ setSelectedPhotoImg }}" style="width:100%; height:100%; object-fit:cover; display:block;">
             <div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(8,14,24,0) 38%,rgba(8,14,24,0.92) 100%);"></div>
             <div style="position:absolute; top:10px; right:10px; display:flex; align-items:center; gap:6px;">
-              <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:pointer; font-size:15px; line-height:1;">×</button>
-              <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
-              </sc-if>
               <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
                 <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
               </sc-if>
+              <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyleBanner }}">🔒</button>
+              </sc-if>
+              <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:pointer; font-size:15px; line-height:1;">×</button>
             </div>
             <div style="position:absolute; left:14px; bottom:9px; right:14px;">
               <sc-if value="{{ showStatusCard }}" hint-placeholder-val="{{ true }}">
@@ -5487,6 +5487,10 @@ class Component extends DCLogic {
       permOpen: this.state.permOpen,
       togglePerm: () => this.togglePermPanel(),
       permBtnStyle: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; ' + (this.state.permOpen ? 'background:rgba(56,189,248,0.22); border:1px solid rgba(56,189,248,0.6); color:#bfeaff;' : 'background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); color:#7fd6f5;'),
+      // Banner layout sits the button over a photo, so it uses the same neutral
+      // dark chip style as its sibling buttons there instead of the sky-blue tint
+      // (which read poorly against varied photo backgrounds).
+      permBtnStyleBanner: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; ' + (this.state.permOpen ? 'background:rgba(8,14,24,0.85); border:1px solid rgba(255,255,255,0.42); color:#eaf4fd;' : 'background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2;'),
       permVisPrivateStyle: visSeg(this.state.permVis === 'private', '#9fb0c6'),
       permVisAllStyle: visSeg(this.state.permVis === 'all', '#5fd3ff'),
       permVisSharedStyle: visSeg(this.state.permVis === 'shared', '#fbbf24'),
