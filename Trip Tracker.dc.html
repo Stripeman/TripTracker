@@ -1465,7 +1465,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.5-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.6-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2658,6 +2658,7 @@ class Component extends DCLogic {
     const _gated = this.state.cfgDataSource === 'cloud' && this.state.cloudState !== 'ok';
     for (const loc of (_gated ? [] : this.state.locations)) {
       if (!this.passesFilter(loc)) continue;
+      if (this.state.formOpen && this.state.editingId != null && loc.id === this.state.editingId) continue; // live preview dot replaces it below
       const co = this.resolveCoords(loc);
       if (!co) continue;
       if (d3.geoDistance(co, center) > Math.PI / 2) continue;
@@ -2705,8 +2706,9 @@ class Component extends DCLogic {
       }
     }
 
-    // live preview dot while adding a location — narrows as fields are filled
-    if (this.state.formOpen && this.state.editingId == null) {
+    // live preview dot while adding OR editing a location — narrows as fields are filled,
+    // and reflects auto-locate / typed coordinate changes immediately (no need to save first)
+    if (this.state.formOpen) {
       const pv = this.previewCandidates(this.state.form);
       if (pv) {
         const grow = (Math.sin(t * 0.005) + 1) / 2; // 0..1
@@ -3233,12 +3235,10 @@ class Component extends DCLogic {
             return ok;
           });
           if (m) return [m.longitude, m.latitude];
-          // No candidate matched the given country/state — try again with a region-level
-          // search (admin1/state names, e.g. "Normandie", aren't always indexed as cities).
-          if (loc.city) {
-            const fallback = await this.geocode({ city: '', state: loc.state, country: loc.country });
-            if (fallback) return fallback;
-          }
+          // No candidate matched the given country/state — don't fall back further.
+          // A country-only re-search would just return that country's geographic
+          // center (misleading — e.g. "France" centroid is nowhere near Normandy).
+          // Better to fail honestly than silently place the dot somewhere wrong.
           return null;
         }
         return [j.results[0].longitude, j.results[0].latitude];
