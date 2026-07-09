@@ -274,6 +274,10 @@
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Show photo thumbnail on card</span>
             <button onClick="{{ toggleShowThumbs }}" style="{{ cfgThumbsStyle }}">{{ cfgThumbsLabel }}</button>
           </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+            <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Debug info on trip cards</span>
+            <button onClick="{{ toggleDebugMode }}" style="{{ cfgDebugStyle }}">{{ cfgDebugLabel }}</button>
+          </div>
           <sc-if value="{{ cfgShowThumbs }}" hint-placeholder-val="{{ true }}">
             <div style="padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
               <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde; margin-bottom:9px;">Trip card photo layout</div>
@@ -515,25 +519,32 @@
           </div>
         </sc-if>
         <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">BACKUP — INCLUDE</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">SYSTEM BACKUP — INCLUDE</div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
               <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Data</span>
               <button onClick="{{ toggleSelData }}" style="{{ selDataStyle }}">{{ selDataLabel }}</button>
             </div>
+            <sc-if value="{{ selData }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 0 11px 14px; border-top:1px solid rgba(255,255,255,0.06);">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#8ea0b8;">↳ Include photos <span style="color:#586a82; font-size:10px;">· .zip</span></span>
+                <button onClick="{{ toggleSelImages }}" style="{{ selImagesStyle }}">{{ selImagesLabel }}</button>
+              </div>
+            </sc-if>
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
               <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Settings</span>
               <button onClick="{{ toggleSelSettings }}" style="{{ selSettingsStyle }}">{{ selSettingsLabel }}</button>
             </div>
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
-              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Images <span style="color:#586a82; font-size:10.5px;">· .zip</span></span>
-              <button onClick="{{ toggleSelImages }}" style="{{ selImagesStyle }}">{{ selImagesLabel }}</button>
-            </div>
           </div>
-          <sc-if value="{{ showImageScope }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex; gap:6px; margin-top:9px;">
-              <button onClick="{{ setScopeMine }}" style="{{ scopeMineStyle }}">My photos</button>
-              <button onClick="{{ setScopeEveryone }}" style="{{ scopeEveryoneStyle }}">Everyone <span style="opacity:0.75;">(zip per person)</span></button>
+          <sc-if value="{{ showBackupUsers }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:9px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:4px 13px;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.14em; color:#586a82; padding:8px 0 4px;">INCLUDE THESE USERS <span style="opacity:0.7;">· everyone on by default</span></div>
+              <sc-for list="{{ backupUserRows }}" as="u" hint-placeholder-count="2">
+                <button onClick="{{ u.onToggle }}" style="display:flex; align-items:center; gap:9px; width:100%; background:none; border:none; cursor:pointer; padding:7px 0; text-align:left;">
+                  <span style="width:14px; height:14px; flex:none; border-radius:4px; border:1px solid rgba(95,211,255,0.45); background:{{ u.boxBg }}; display:flex; align-items:center; justify-content:center; font-size:10px; color:#04111e;">{{ u.checkMark }}</span>
+                  <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c2cfde; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ u.label }}</span>
+                </button>
+              </sc-for>
             </div>
           </sc-if>
           <div style="display:flex; gap:8px; margin-top:13px;">
@@ -548,6 +559,58 @@
           <div style="margin-top:12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:#fcd34d; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:9px; padding:9px 11px;">{{ storageMsg }}</div>
         </sc-if>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#4b5d74; line-height:1.6; margin-top:14px;">A linked file auto-saves on every change. Export/Restore works anywhere.</div>
+
+        <sc-if value="{{ showMyBackup }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:6px;">MY BACKUP</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:11px;">Just your own trips, photos and settings — never touches anyone else's data.</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ exportMyBackup }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:9px; padding:9px; cursor:pointer; font-weight:600;">Export mine</button>
+              <button onClick="{{ restoreMyBackup }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.26); border-radius:9px; padding:9px; cursor:pointer;">Restore mine…</button>
+            </div>
+            <input ref="{{ setMyBackupInput }}" type="file" accept="application/json,.json" onChange="{{ onMyBackupFile }}" style="display:none;">
+
+            <sc-if value="{{ myBackupStepChoice }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:10px; background:rgba(56,189,248,0.07); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:12px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe6f5; line-height:1.55; margin-bottom:11px;">This backup has <b style="color:#9fe6ff;">{{ myBackupTotal }}</b> trip<span>{{ myBackupTotalPlural }}</span> — <b style="color:#7ee0a8;">{{ myBackupNewCount }}</b> new, <b style="color:#fcd34d;">{{ myBackupDupeCount }}</b> already here.<br><span style="font-size:11px; color:#9fb6cf;">Overwrite deletes all your current trips first, then restores from this file. Merge adds the new ones and asks about each duplicate.</span></div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <button onClick="{{ myBackupOverwriteAsk }}" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:#fbbf24; border:1px solid #fcd34d; border-radius:9px; padding:9px; cursor:pointer;">Overwrite mine (suggested)</button>
+                  <button onClick="{{ myBackupStartMerge }}" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:rgba(95,211,255,0.92); border:none; border-radius:9px; padding:9px; cursor:pointer;">Merge</button>
+                  <button onClick="{{ cancelMyBackup }}" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ myBackupStepOverwriteConfirm }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:10px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#f3c0c0; line-height:1.5; margin-bottom:11px;">This deletes <b>all {{ myBackupCurrentMineCount }} of your current trips</b> and replaces them with this backup's {{ myBackupTotal }}. Other users' trips are never touched. This can't be undone.</div>
+                <div style="display:flex; gap:8px;">
+                  <button onClick="{{ cancelMyBackup }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
+                  <button onClick="{{ myBackupOverwriteConfirm }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:9px; padding:9px; cursor:pointer;">Yes, delete &amp; restore</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ myBackupStepMerge }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:10px; background:rgba(56,189,248,0.07); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:12px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#cfe6f5; line-height:1.5; margin-bottom:10px;">{{ myBackupNewCount }} new trip<span>{{ myBackupTotalPlural }}</span> will be added. For each duplicate below, choose which version to keep:</div>
+                <div style="display:flex; flex-direction:column; gap:7px; max-height:220px; overflow-y:auto; margin-bottom:11px;">
+                  <sc-for list="{{ myBackupDupeRows }}" as="d" hint-placeholder-count="2">
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 10px;">
+                      <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#e6edf6; margin-bottom:6px;">{{ d.label }}</div>
+                      <button onClick="{{ d.onToggle }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; color:{{ d.btnColor }}; background:{{ d.btnBg }}; border:1px solid {{ d.btnBorder }}; border-radius:7px; padding:5px 9px; cursor:pointer;">{{ d.toggleLabel }}</button>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button onClick="{{ cancelMyBackup }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
+                  <button onClick="{{ myBackupMergeApply }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:rgba(95,211,255,0.92); border:none; border-radius:9px; padding:9px; cursor:pointer;">Apply merge</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
 
         <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
           <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
@@ -949,6 +1012,9 @@
               <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
                 <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyleBanner }}">🔒</button>
               </sc-if>
+              <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
+              </sc-if>
               <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:pointer; font-size:15px; line-height:1;">×</button>
             </div>
             <div style="position:absolute; left:14px; bottom:9px; right:14px;">
@@ -994,6 +1060,9 @@
               <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
                 <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
               </sc-if>
+              <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
+              </sc-if>
             </div>
           </div>
           <sc-if value="{{ selected.ownerBadge }}" hint-placeholder-val="{{ null }}">
@@ -1033,6 +1102,9 @@
               <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
                 <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
               </sc-if>
+              <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
+              </sc-if>
             </div>
           </div>
           <div style="margin-top:11px; border-radius:11px; overflow:hidden; border:1px solid rgba(251,191,36,0.28); height:112px;">
@@ -1066,6 +1138,9 @@
             </sc-if>
             <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
               <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
+            </sc-if>
+            <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
             </sc-if>
           </div>
         </div>
@@ -1122,6 +1197,55 @@
         <sc-if value="{{ selectedReadOnly }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:16px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5; text-align:center;">Shared with you · view only</div>
         </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- debug: raw trip JSON -->
+    <sc-if value="{{ debugJsonOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+        <div style="width:{{ debugJsonModalWidth }}; height:74vh; display:flex; flex-direction:column; background:rgba(12,18,28,0.98); border:1px solid rgba(126,224,168,0.3); border-radius:14px; padding:16px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; gap:10px; flex:none;">
+            <span style="display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; color:#7ee0a8; flex:none;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg>{{ debugJsonHeaderLabel }}</span>
+            <div style="display:flex; align-items:center; gap:6px; flex:none;">
+              <sc-if value="{{ debugJsonConfirming }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ backToDebugJsonEdit }}" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#dbe6f2; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Back</button>
+                <button onClick="{{ confirmDebugJsonSave }}" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(126,224,168,0.16); border:1px solid rgba(126,224,168,0.4); color:#7ee0a8; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Confirm &amp; save</button>
+              </sc-if>
+              <sc-if value="{{ debugJsonEditing }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ cancelDebugJsonEdit }}" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#dbe6f2; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Cancel</button>
+                <button onClick="{{ reviewDebugJsonEdit }}" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.4); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Review changes</button>
+              </sc-if>
+              <sc-if value="{{ debugJsonViewing }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ copyDebugJson }}" title="Copy JSON" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">{{ debugJsonCopyLabel }}</button>
+                <button onClick="{{ startDebugJsonEdit }}" title="Edit raw JSON" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Edit</button>
+              </sc-if>
+              <button onClick="{{ closeDebugJson }}" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#dbe6f2; cursor:pointer; font-size:13px; line-height:1;">×</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ debugJsonConfirming }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7d90a8; margin-bottom:8px; flex:none;">Review before saving — removed lines in red, added lines in green.</div>
+            <div style="flex:1; min-height:0; overflow:auto; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:10px; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5;">
+              <sc-for list="{{ debugJsonDiff }}" as="d" hint-placeholder-count="10">
+                <div style="{{ d.style }}">{{ d.prefix }}{{ d.text }}</div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ debugJsonEditing }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1; min-height:0; display:flex; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.14); border-radius:8px; overflow:hidden;">
+              <div ref="{{ debugGutterRef }}" style="flex:none; overflow:hidden; padding:10px 8px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; color:#516075; background:rgba(255,255,255,0.03); user-select:none; white-space:pre;">{{ debugJsonLineNumbers }}</div>
+              <textarea ref="{{ debugTaRef }}" value="{{ debugJsonDraft }}" onChange="{{ onDebugJsonDraftChange }}" onScroll="{{ onDebugJsonTaScroll }}" spellCheck="{{ false }}" style="flex:1; min-height:0; resize:none; margin:0; overflow:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; color:#c2cfde; background:transparent; border:none; outline:none; padding:10px; white-space:pre; word-break:break-all;"></textarea>
+            </div>
+            <sc-if value="{{ debugJsonError }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:8px; flex:none; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#f38b8b;">{{ debugJsonError }}</div>
+            </sc-if>
+          </sc-if>
+
+          <sc-if value="{{ debugJsonViewing }}" hint-placeholder-val="{{ true }}">
+            <pre style="flex:1; min-height:0; margin:0; overflow:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; color:#c2cfde; white-space:pre-wrap; word-break:break-all;">{{ debugJsonText }}</pre>
+          </sc-if>
+        </div>
       </div>
     </sc-if>
 
@@ -1655,11 +1779,11 @@
         </sc-if>
         <div style="display:flex; gap:10px; align-items:center;">
           <sc-if value="{{ showFormDelete }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ askDeleteFromForm }}" title="Delete this trip" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:11px; padding:12px 16px; cursor:pointer;">Delete</button>
+            <button onClick="{{ askDeleteFromForm }}" title="Delete this trip" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:11px; padding:12px 16px; cursor:pointer; white-space:nowrap;">Delete</button>
             <div style="flex:1;"></div>
           </sc-if>
-          <button onClick="{{ closeForm }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:14px; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:11px; padding:12px 18px; cursor:pointer;">Cancel</button>
-          <button onClick="{{ saveForm }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:11px; padding:12px; cursor:pointer; transition:all .15s; box-shadow:0 0 16px rgba(95,211,255,0.28);">{{ saveLabel }}</button>
+          <button onClick="{{ closeForm }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:14px; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:11px; padding:12px 18px; cursor:pointer; white-space:nowrap;">Cancel</button>
+          <button onClick="{{ saveForm }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:11px; padding:12px; cursor:pointer; transition:all .15s; box-shadow:0 0 16px rgba(95,211,255,0.28); white-space:nowrap;">{{ saveLabel }}</button>
         </div>
       </div>
     </div>
@@ -1706,10 +1830,12 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
+    this._debugTaRef = React.createRef();
+    this._debugGutterRef = React.createRef();
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.16-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.18-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1803,6 +1929,7 @@ class Component extends DCLogic {
     let saved = null;
     try { saved = JSON.parse(localStorage.getItem(this.STORE) || 'null'); } catch (e) {}
     if (!saved || !Array.isArray(saved)) saved = [];
+    saved = this.ensureIds(saved);
 
     // cfg = the saved config/preferences object (data lists, default filters,
     // display toggles, cloud-vs-local choice, etc.). The const lines below pull
@@ -1822,6 +1949,7 @@ class Component extends DCLogic {
     const cfgShowThumbs = cfg.showThumbs !== false;
     const cfgCardLayout = ['banner','thumbnail','framed'].includes(cfg.cardLayout) ? cfg.cardLayout : 'banner';
     const cfgSpin = cfg.spin !== false;
+    const cfgDebugMode = cfg.debugMode === true;
     const cfgStateBorders = cfg.stateBorders === true;
     const cfgAutoClaim = cfg.autoClaim === true;
     const cfgAccessEmail = (typeof cfg.accessEmail === 'string' && cfg.accessEmail.trim()) ? cfg.accessEmail.trim() : 'Terry.Remsik@gmail.com';
@@ -1856,6 +1984,7 @@ class Component extends DCLogic {
       cfgShowThumbs,
       cfgCardLayout,
       cfgSpin,
+      cfgDebugMode,
       cfgStateBorders,
       cfgAutoClaim,
       cfgAccessEmail,
@@ -2162,8 +2291,9 @@ class Component extends DCLogic {
         const res = await fetch(f, { cache: 'no-store' });
         if (!res.ok) continue;
         const data = await res.json();
-        const locs = Array.isArray(data) ? data : (data && Array.isArray(data.locations) ? data.locations : null);
+        let locs = Array.isArray(data) ? data : (data && Array.isArray(data.locations) ? data.locations : null);
         if (locs && locs.length) {
+          locs = this.ensureIds(locs);
           this.persistLocal(locs);
           const ns = { locations: locs };
           const settings = (data && data.settings) || null;
@@ -2219,7 +2349,7 @@ class Component extends DCLogic {
       let cloudLocs = [];
       if (res.status === 200) {
         const data = await res.json();
-        cloudLocs = Array.isArray(data) ? data : (data.locations || []);
+        cloudLocs = this.ensureIds(Array.isArray(data) ? data : (data.locations || []));
         const settings = data && data.settings;
         if (data && data.me) { ns.cloudUserId = data.me.id || ''; ns.cloudUserEmail = (data.me.email || '').toLowerCase(); if (Array.isArray(data.me.roles)) ns.cloudRoles = data.me.roles; }
         if (cloudLocs.length && settings) {
@@ -2461,6 +2591,7 @@ class Component extends DCLogic {
   }
   // Like persist(), but uses replace mode for cloud (whole-dataset overwrite).
   persistReplace(list) {
+    list = this.ensureIds(list);
     this.persistLocal(list);
     if (this._fileHandle && this.state.dataMode === 'file' && !this.state.needsReconnect) this.writeFile(list);
     if (this.state.dataMode === 'cloud' && this._cloud && this._cloudSynced) this.cloudReplace(list);
@@ -3111,7 +3242,101 @@ class Component extends DCLogic {
 
   // ---- data storage (browser + optional linked JSON file) ----
   persistLocal(list) { try { localStorage.setItem(this.STORE, JSON.stringify(list)); } catch (e) {} }
+  copyDebugJson() {
+    const text = JSON.stringify(this.state.locations.find(l => l.id === this.state.selectedId) || {}, null, 2);
+    this.setState({ debugJsonCopied: true });
+    clearTimeout(this._debugCopyTimer);
+    this._debugCopyTimer = setTimeout(() => this.setState({ debugJsonCopied: false }), 1600);
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(() => this.fallbackCopy(text)); }
+    else this.fallbackCopy(text);
+  }
+  fallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    } catch (e) {}
+  }
+  // Parses the debug modal's edited draft (validating JSON formatting) and stages
+  // a diff against the original for the user to confirm before anything is saved.
+  reviewDebugJsonEdit() {
+    const id = this.state.selectedId;
+    let parsed;
+    try { parsed = JSON.parse(this.state.debugJsonDraft); }
+    catch (e) { this.setState({ debugJsonError: 'Invalid JSON: ' + e.message }); return; }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) { this.setState({ debugJsonError: 'Must be a single JSON object.' }); return; }
+    if (!parsed.id) parsed.id = id;
+    if (parsed.id !== id) { this.setState({ debugJsonError: "Can't change a trip's id here." }); return; }
+    const before = this.state.debugJsonOriginal || '';
+    const after = JSON.stringify(parsed, null, 2);
+    this.setState({ debugJsonError: '', debugJsonConfirming: true, debugJsonPending: parsed, debugJsonDiff: this.diffLines(before, after) });
+  }
+  backToDebugJsonEdit() { this.setState({ debugJsonConfirming: false, debugJsonPending: null, debugJsonDiff: [] }); }
+  // Actually persists the staged edit via the normal persist() path (local +
+  // linked file + cloud, whichever is active) — only reached after the user has
+  // seen the diff and explicitly confirmed it.
+  confirmDebugJsonSave() {
+    const id = this.state.selectedId;
+    const parsed = this.state.debugJsonPending;
+    if (!parsed) return;
+    const list = this.state.locations.map(l => l.id === id ? parsed : l);
+    this.persist(list);
+    this.setState({ debugJsonEditing: false, debugJsonConfirming: false, debugJsonDraft: '', debugJsonError: '', debugJsonPending: null, debugJsonDiff: [] });
+    this.toast('Trip JSON saved');
+  }
+  // Simple LCS-based line diff (fine for single-trip-object-sized JSON).
+  diffLines(a, b) {
+    const la = a.split('\n'), lb = b.split('\n');
+    const n = la.length, m = lb.length;
+    const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) dp[i][j] = la[i] === lb[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    let i = 0, j = 0; const out = [];
+    const sameStyle = 'color:#c2cfde; white-space:pre;';
+    const addStyle = 'color:#7ee0a8; background:rgba(126,224,168,0.1); white-space:pre;';
+    const delStyle = 'color:#f38b8b; background:rgba(243,139,139,0.1); white-space:pre;';
+    while (i < n && j < m) {
+      if (la[i] === lb[j]) { out.push({ style: sameStyle, prefix: '  ', text: la[i] }); i++; j++; }
+      else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push({ style: delStyle, prefix: '− ', text: la[i] }); i++; }
+      else { out.push({ style: addStyle, prefix: '+ ', text: lb[j] }); j++; }
+    }
+    while (i < n) { out.push({ style: delStyle, prefix: '− ', text: la[i] }); i++; }
+    while (j < m) { out.push({ style: addStyle, prefix: '+ ', text: lb[j] }); j++; }
+    return out;
+  }
+  // Every trip needs a stable id for backup/restore duplicate-matching (per-user
+  // merge relies on it). Older/imported data that predates ids gets one stamped
+  // on here, the first time it passes through save/load.
+  // GUID-style id — robust against collisions across devices/imports/merges (old
+  // numeric Date.now() ids could collide when two people added a trip in the same
+  // millisecond, or when merging backups). Falls back to a manual v4-shaped string
+  // if crypto.randomUUID isn't available.
+  genId() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+  // A real id looks like a GUID. Anything else — missing, or a legacy numeric
+  // Date.now() id from before this app used GUIDs — gets migrated in place here,
+  // once, on load.
+  isGuid(id) { return typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id); }
+  ensureIds(list) {
+    if (!Array.isArray(list) || !list.length) return list;
+    const seen = new Set(list.filter(l => l && this.isGuid(l.id)).map(l => l.id));
+    let changed = false;
+    const out = list.map(l => {
+      if (l && this.isGuid(l.id)) return l;
+      changed = true;
+      let id = this.genId();
+      while (seen.has(id)) id = this.genId();
+      seen.add(id);
+      return { ...l, id };
+    });
+    return changed ? out : list;
+  }
   persist(list) {
+    list = this.ensureIds(list);
     this.setState({ locations: list });
     this.persistLocal(list);
     if (this._fileHandle && this.state.dataMode === 'file' && !this.state.needsReconnect) this.writeFile(list);
@@ -3215,7 +3440,7 @@ class Component extends DCLogic {
    * number; persistConfigNoBump is used mid-typing in the data editor so the
    * version only ticks once on blur. Any config change also schedules a cloud push. */
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, cardLayout: s.cfgCardLayout, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, updateFreqMin: s.cfgUpdateFreqMin, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, cardLayout: s.cfgCardLayout, spin: s.cfgSpin, debugMode: s.cfgDebugMode, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, updateFreqMin: s.cfgUpdateFreqMin, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -3363,21 +3588,21 @@ class Component extends DCLogic {
   // photos, flat. scope 'everyone' → every trip you can see, grouped by owner — the
   // outer zip contains one inner .zip per person (a zip of zips), plus any unassigned
   // photos flat at the top level.
-  exportImages(scope) {
-    const withPhoto = (this.state.locations || []).filter(l => l.photo);
+  exportImages() {
+    const allowed = this.backupFilteredLocations();
+    const withPhoto = allowed.filter(l => l.photo);
     if (!withPhoto.length) { this.setState({ storageMsg: 'No trip photos to export.' }); return; }
     const stamp = new Date().toISOString().slice(0, 10);
-    if (scope === 'mine') {
-      const mine = withPhoto.filter(l => this.state.cfgDataSource !== 'cloud' || this.tripIsMine(l));
-      if (!mine.length) { this.setState({ storageMsg: 'None of your trips have a photo.' }); return; }
+    const distinctOwners = new Set(withPhoto.map(l => (l.ownerEmail || '').toLowerCase().trim() || 'unassigned'));
+    if (this.state.cfgDataSource !== 'cloud' || distinctOwners.size <= 1) {
       const used = new Set();
-      const entries = mine.map(l => ({ name: this._photoFileName(l, used), bytes: Component._dataUrlToBytes(l.photo) }));
+      const entries = withPhoto.map(l => ({ name: this._photoFileName(l, used), bytes: Component._dataUrlToBytes(l.photo) }));
       const zip = Component._buildZip(entries);
-      this._downloadBytes(zip, 'trip-photos-mine-' + stamp + '.zip');
+      this._downloadBytes(zip, 'trip-photos-' + stamp + '.zip');
       this.toast('Exported ' + entries.length + ' photo' + (entries.length === 1 ? '' : 's'));
       return;
     }
-    // everyone: group by owner email (or 'Unassigned'), one inner zip per group
+    // multiple owners still selected: group by owner email (or 'Unassigned'), one inner zip per group
     const groups = {};
     withPhoto.forEach(l => {
       const email = (l.ownerEmail || '').toLowerCase().trim();
@@ -3409,10 +3634,139 @@ class Component extends DCLogic {
   // 'data' | 'settings' | 'both' — driven by the Export switches in the panel.
   exportKind(kind) {
     const o = { app: 'vacation-location', version: 1, exportedAt: new Date().toISOString() };
-    if (kind === 'data' || kind === 'both') o.locations = this.state.locations;
+    if (kind === 'data' || kind === 'both') o.locations = this.backupFilteredLocations();
     if (kind === 'settings' || kind === 'both') o.settings = this.appSettings();
     const names = { data: 'trip-locations.json', settings: 'trip-settings.json', both: 'trip-tracker.json' };
     this.downloadJson(o, names[kind]);
+  }
+
+  // ---- SYSTEM BACKUP: which users' trips get included -----------------------
+  // backupUsers is a sparse map of email (or 'unassigned') -> boolean. A missing
+  // entry defaults to checked/included — so "everyone on by default" needs no
+  // seeding step, and adding a brand-new person just shows up already included.
+  backupUserRows() {
+    const map = this.state.backupUsers || {};
+    const mkRow = (key, label) => {
+      const checked = map[key] !== false;
+      return {
+        key, label, checked,
+        onToggle: () => this.toggleBackupUser(key),
+        boxBg: checked ? 'rgba(95,211,255,0.32)' : 'transparent',
+        checkMark: checked ? '✓' : '',
+      };
+    };
+    const rows = [mkRow('unassigned', 'Unassigned')];
+    const seen = new Set();
+    (this.state.cfgTravelers || []).forEach(t => {
+      if (!t.email) return;
+      const email = String(t.email).toLowerCase().trim();
+      if (seen.has(email)) return;
+      seen.add(email);
+      rows.push(mkRow(email, t.label || email));
+    });
+    (this.state.locations || []).forEach(l => {
+      const email = l.ownerEmail ? String(l.ownerEmail).toLowerCase().trim() : '';
+      if (email && !seen.has(email)) { seen.add(email); rows.push(mkRow(email, email)); }
+    });
+    return rows;
+  }
+  toggleBackupUser(key) {
+    this.setState(s => {
+      const cur = (s.backupUsers && s.backupUsers[key] !== false);
+      return { backupUsers: { ...(s.backupUsers || {}), [key]: !cur } };
+    });
+  }
+  backupAllChecked() { return this.backupUserRows().every(r => r.checked); }
+  backupFilteredLocations() {
+    const all = this.state.locations || [];
+    if (this.state.cfgDataSource !== 'cloud' || this.backupAllChecked()) return all;
+    const map = this.state.backupUsers || {};
+    return all.filter(l => {
+      const key = l.ownerEmail ? String(l.ownerEmail).toLowerCase().trim() : 'unassigned';
+      return map[key] !== false;
+    });
+  }
+
+  // ---- MY BACKUP: per-user export + restore (mine only, never touches other
+  // people's trips or photos). Restore reviews the file first (choice screen),
+  // then either Overwrite (wipe-and-replace, my trips only) or Merge (add new,
+  // ask per-duplicate whether to keep mine or use the backup's version). ----
+  setMyBackupInput = (el) => { this.myBackupInput = el; };
+  exportMyBackup() {
+    const mine = (this.state.locations || []).filter(l => this.tripIsMine(l));
+    if (!mine.length) { this.setState({ storageMsg: 'You have no trips of your own to back up yet.' }); return; }
+    const o = { app: 'vacation-location', version: 1, exportedAt: new Date().toISOString(), scope: 'my-backup', owner: (this.state.cloudUserEmail || ''), locations: mine, settings: this.appSettings() };
+    this.downloadJson(o, 'my-trip-backup-' + new Date().toISOString().slice(0, 10) + '.json');
+    this.toast('Exported ' + mine.length + ' of your trips');
+  }
+  restoreMyBackup() {
+    if (this.myBackupInput) { this.myBackupInput.value = ''; this.myBackupInput.click(); }
+  }
+  onMyBackupFile(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const rdr = new FileReader();
+    rdr.onload = () => {
+      try {
+        const data = JSON.parse(rdr.result);
+        let locs = Array.isArray(data) ? data : (data && Array.isArray(data.locations) ? data.locations : null);
+        if (!locs) { this.setState({ storageMsg: 'That file has no trips in it.' }); return; }
+        locs = this.ensureIds(locs);
+        const currentIds = new Set((this.state.locations || []).map(l => l.id));
+        const dupes = [];
+        let newCount = 0;
+        locs.forEach(l => {
+          if (l.id != null && currentIds.has(l.id)) {
+            const existing = (this.state.locations || []).find(x => x.id === l.id);
+            dupes.push({ id: l.id, incoming: l, existing, useBackup: false });
+          } else newCount++;
+        });
+        this._myBackupLocs = locs;
+        this.setState({ myBackupReview: { total: locs.length, newCount, dupeCount: dupes.length }, myBackupDupes: dupes, myBackupStep: 'choice' });
+      } catch (er) { this.setState({ storageMsg: 'Could not read that backup file.' }); }
+    };
+    rdr.readAsText(file);
+    e.target.value = '';
+  }
+  cancelMyBackup() { this.setState({ myBackupReview: null, myBackupStep: null, myBackupDupes: null }); this._myBackupLocs = null; }
+  myBackupOverwriteAsk() { this.setState({ myBackupStep: 'overwriteConfirm' }); }
+  myBackupOverwriteConfirm() {
+    const meId = this.state.cloudUserId || '';
+    const meEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    const others = (this.state.locations || []).filter(l => !this.tripIsMine(l));
+    const mine = (this._myBackupLocs || []).map(l => ({ ...l, owner: l.owner || meId, ownerEmail: l.ownerEmail || meEmail }));
+    this.persist([...others, ...mine]);
+    this.toast('Restored ' + mine.length + ' of your trips (overwrite)');
+    this.cancelMyBackup();
+  }
+  myBackupStartMerge() {
+    if ((this.state.myBackupDupes || []).length) this.setState({ myBackupStep: 'merge' });
+    else this.myBackupMergeApply();
+  }
+  toggleMyBackupDupe(id) {
+    this.setState(s => ({ myBackupDupes: (s.myBackupDupes || []).map(d => d.id === id ? { ...d, useBackup: !d.useBackup } : d) }));
+  }
+  myBackupMergeApply() {
+    const meId = this.state.cloudUserId || '';
+    const meEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    const dupeMap = {};
+    (this.state.myBackupDupes || []).forEach(d => { dupeMap[d.id] = d; });
+    let list = (this.state.locations || []).slice();
+    let replaced = 0, added = 0;
+    (this._myBackupLocs || []).forEach(l => {
+      const d = dupeMap[l.id];
+      if (d) {
+        if (d.useBackup) { list = list.map(x => x.id === l.id ? { ...l, owner: l.owner || meId, ownerEmail: l.ownerEmail || meEmail } : x); replaced++; }
+      } else {
+        let id = l.id;
+        if (id == null || list.some(x => x.id === id)) id = this.genId();
+        list.push({ ...l, id, owner: l.owner || meId, ownerEmail: l.ownerEmail || meEmail });
+        added++;
+      }
+    });
+    this.persist(list);
+    this.toast('Merged: ' + added + ' added' + (replaced ? (', ' + replaced + ' overwritten') : ''));
+    this.cancelMyBackup();
   }
 
   // Restore from a JSON file. Opens the file picker; the chosen file is read in
@@ -3438,6 +3792,7 @@ class Component extends DCLogic {
       cfgShowThumbs: settings.showThumbs !== false,
       cfgCardLayout: ['banner','thumbnail','framed'].includes(settings.cardLayout) ? settings.cardLayout : 'banner',
       cfgSpin: settings.spin !== false,
+      cfgDebugMode: settings.debugMode === true,
       cfgStateBorders: settings.stateBorders === true,
       cfgAutoClaim: settings.autoClaim === true,
       cfgAccessEmail: (typeof settings.accessEmail === 'string' && settings.accessEmail.trim()) ? settings.accessEmail.trim() : ((this.state && this.state.cfgAccessEmail) || 'Terry.Remsik@gmail.com'),
@@ -3469,6 +3824,7 @@ class Component extends DCLogic {
         let locs = null, settings = null;
         if (Array.isArray(data)) locs = data;
         else if (data && typeof data === 'object') { if (Array.isArray(data.locations)) locs = data.locations; if (data.settings) settings = data.settings; }
+        if (locs) locs = this.ensureIds(locs);
 
         const next = {};
         const done = [];
@@ -3551,13 +3907,12 @@ class Component extends DCLogic {
     }
   }
   toggleSel(key) { this.setState(s => ({ [key]: !s[key] })); }
-  setImageExportScope(scope) { this.setState({ imageExportScope: scope }); }
   selKind() { const d = this.state.selData, s = this.state.selSettings; if (d && s) return 'both'; if (d) return 'data'; if (s) return 'settings'; return null; }
   exportSelected() {
     const k = this.selKind();
     if (!k && !this.state.selImages) { this.setState({ storageMsg: 'Turn on Data, Settings, and/or Images first.' }); return; }
     if (k) this.exportKind(k);
-    if (this.state.selImages) this.exportImages(this.state.imageExportScope);
+    if (this.state.selImages) this.exportImages();
   }
   importSelected() { const k = this.selKind(); if (!k) { this.setState({ storageMsg: 'Turn on Data and/or Settings first.' }); return; } this.importKind(k); }
 
@@ -4787,7 +5142,7 @@ class Component extends DCLogic {
       savedId = this.state.editingId;
       list = this.state.locations.map(l => l.id === savedId ? { ...l, ...f, owner: l.owner || meId, ownerEmail: l.ownerEmail || meEmail, modifiedAt: new Date().toISOString() } : l);
     } else {
-      savedId = Date.now();
+      savedId = this.genId();
       list = [...this.state.locations, { ...f, id: savedId, owner: meId, ownerEmail: meEmail, createdAt: new Date().toISOString() }];
     }
     this.persist(list);
@@ -5391,6 +5746,34 @@ class Component extends DCLogic {
       cfgThumbsLabel: this.state.cfgShowThumbs ? 'ON' : 'OFF',
       toggleShowThumbs: () => this.toggleCfgKey('cfgShowThumbs', 'showThumbs'),
       cfgShowThumbs: this.state.cfgShowThumbs,
+      cfgDebugStyle: cfgPill(this.state.cfgDebugMode),
+      cfgDebugLabel: this.state.cfgDebugMode ? 'ON' : 'OFF',
+      toggleDebugMode: () => this.toggleCfgKey('cfgDebugMode', 'debugMode'),
+      showDebugBtn: this.state.cfgDebugMode,
+      debugJsonOpen: this.state.debugJsonOpen,
+      debugJsonText: this.state.debugJsonOpen ? JSON.stringify(this.state.locations.find(l => l.id === this.state.selectedId) || {}, null, 2) : '',
+      debugJsonEditing: this.state.debugJsonEditing && !this.state.debugJsonConfirming,
+      debugJsonViewing: !this.state.debugJsonEditing && !this.state.debugJsonConfirming,
+      debugJsonConfirming: this.state.debugJsonConfirming,
+      debugJsonDiff: this.state.debugJsonDiff || [],
+      debugJsonHeaderLabel: this.state.debugJsonConfirming ? 'CONFIRM CHANGES' : (this.state.debugJsonEditing ? 'EDIT TRIP JSON' : 'TRIP JSON'),
+      debugJsonModalWidth: this.state.debugJsonConfirming ? '560px' : '480px',
+      debugJsonDraft: this.state.debugJsonDraft,
+      debugJsonLineNumbers: (this.state.debugJsonDraft || '').split('\n').map((_, i) => i + 1).join('\n'),
+      debugTaRef: this._debugTaRef,
+      debugGutterRef: this._debugGutterRef,
+      onDebugJsonTaScroll: () => { if (this._debugGutterRef.current && this._debugTaRef.current) this._debugGutterRef.current.scrollTop = this._debugTaRef.current.scrollTop; },
+      debugJsonError: this.state.debugJsonError,
+      debugJsonCopyLabel: this.state.debugJsonCopied ? 'Copied ✓' : 'Copy',
+      onDebugJsonDraftChange: (e) => this.setState({ debugJsonDraft: e.target.value, debugJsonError: '' }),
+      openDebugJson: () => this.setState(s => ({ debugJsonOpen: true, debugJsonEditing: false, debugJsonConfirming: false, debugJsonDraft: '', debugJsonError: '', debugJsonCopied: false, debugJsonOriginal: JSON.stringify(s.locations.find(l => l.id === s.selectedId) || {}, null, 2) })),
+      closeDebugJson: () => this.setState({ debugJsonOpen: false, debugJsonEditing: false, debugJsonConfirming: false, debugJsonDraft: '', debugJsonError: '', debugJsonPending: null, debugJsonDiff: [] }),
+      copyDebugJson: () => this.copyDebugJson(),
+      startDebugJsonEdit: () => this.setState(s => ({ debugJsonEditing: true, debugJsonDraft: s.debugJsonOriginal, debugJsonError: '' })),
+      cancelDebugJsonEdit: () => this.setState({ debugJsonEditing: false, debugJsonDraft: '', debugJsonError: '' }),
+      reviewDebugJsonEdit: () => this.reviewDebugJsonEdit(),
+      backToDebugJsonEdit: () => this.backToDebugJsonEdit(),
+      confirmDebugJsonSave: () => this.confirmDebugJsonSave(),
       cardLayoutSeg: [
         { key: 'banner', label: 'Banner' },
         { key: 'thumbnail', label: 'Compact' },
@@ -5618,6 +6001,7 @@ class Component extends DCLogic {
       openExistingFile: () => this.openExistingFile(),
       reconnectFile: () => this.reconnectFile(),
       useBrowserStorage: () => this.useBrowserStorage(),
+      selData: this.state.selData,
       selDataStyle: cfgPill(this.state.selData),
       selDataLabel: this.state.selData ? 'ON' : 'OFF',
       selSettingsStyle: cfgPill(this.state.selSettings),
@@ -5625,17 +6009,41 @@ class Component extends DCLogic {
       selImagesStyle: cfgPill(this.state.selImages),
       selImagesLabel: this.state.selImages ? 'ON' : 'OFF',
       toggleSelImages: () => this.toggleSel('selImages'),
-      showImageScope: this.state.selImages && this.state.cfgDataSource === 'cloud',
-      scopeMineStyle: segStyle(this.state.imageExportScope === 'mine', '#5fd3ff'),
-      scopeEveryoneStyle: segStyle(this.state.imageExportScope === 'everyone', '#5fd3ff'),
-      setScopeMine: () => this.setImageExportScope('mine'),
-      setScopeEveryone: () => this.setImageExportScope('everyone'),
+      showBackupUsers: this.state.selData && this.state.cfgDataSource === 'cloud',
+      backupUserRows: this.backupUserRows(),
       toggleSelData: () => this.toggleSel('selData'),
       toggleSelSettings: () => this.toggleSel('selSettings'),
       exportSelected: () => this.exportSelected(),
       importSelected: () => this.importSelected(),
       setImportInput: this.setImportInput,
       importJson: (e) => this.importJson(e),
+      showMyBackup: this.state.cfgDataSource === 'cloud' && this.state.cloudAuth,
+      setMyBackupInput: this.setMyBackupInput,
+      onMyBackupFile: (e) => this.onMyBackupFile(e),
+      exportMyBackup: () => this.exportMyBackup(),
+      restoreMyBackup: () => this.restoreMyBackup(),
+      cancelMyBackup: () => this.cancelMyBackup(),
+      myBackupStepChoice: this.state.myBackupStep === 'choice',
+      myBackupStepOverwriteConfirm: this.state.myBackupStep === 'overwriteConfirm',
+      myBackupStepMerge: this.state.myBackupStep === 'merge',
+      myBackupTotal: this.state.myBackupReview ? this.state.myBackupReview.total : 0,
+      myBackupTotalPlural: (this.state.myBackupReview && this.state.myBackupReview.total === 1) ? '' : 's',
+      myBackupNewCount: this.state.myBackupReview ? this.state.myBackupReview.newCount : 0,
+      myBackupDupeCount: this.state.myBackupReview ? this.state.myBackupReview.dupeCount : 0,
+      myBackupCurrentMineCount: (this.state.locations || []).filter(l => this.tripIsMine(l)).length,
+      myBackupOverwriteAsk: () => this.myBackupOverwriteAsk(),
+      myBackupOverwriteConfirm: () => this.myBackupOverwriteConfirm(),
+      myBackupStartMerge: () => this.myBackupStartMerge(),
+      myBackupMergeApply: () => this.myBackupMergeApply(),
+      myBackupDupeRows: (this.state.myBackupDupes || []).map(d => ({
+        id: d.id,
+        label: (d.existing ? (d.existing.city || 'Trip') + (d.existing.country ? (', ' + d.existing.country) : '') : 'Trip'),
+        toggleLabel: d.useBackup ? '✓ Will use backup version' : 'Keeping your current version',
+        btnColor: d.useBackup ? '#04111e' : '#9fd6f0',
+        btnBg: d.useBackup ? '#5fd3ff' : 'rgba(56,189,248,0.08)',
+        btnBorder: d.useBackup ? '#5fd3ff' : 'rgba(56,189,248,0.28)',
+        onToggle: () => this.toggleMyBackupDupe(d.id),
+      })),
       formOpen,
       formError: this.state.formError,
       cityHint: (form.city && form.city.trim()) ? '' : '·required',

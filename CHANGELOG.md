@@ -4,6 +4,25 @@ All notable changes to **Trip Tracker** are recorded here. The newest release is
 
 ---
 
+## 0.9.18-beta
+
+### Added
+- **Edit the debug JSON panel, safely.** The trip JSON panel's **Edit** button now opens a real editor with line numbers. Saving is a two-step confirmation: **Review changes** validates the JSON (a malformed edit shows the parse error inline and won't proceed), then shows a **line-by-line diff** — removed lines in red, added lines in green — before you hit **Confirm & save**. A **Copy** button copies the current JSON to your clipboard.
+
+### Changed
+- The JSON panel no longer resizes between view and edit modes — it's a fixed height now.
+
+## 0.9.17-beta
+
+### Added
+- **Debug mode** (Preferences tab → Form & cards) — when on, every trip card gets a small bug‑icon button, matching the styling and tint of the card's other icon buttons, that opens a read‑only panel with that trip's raw JSON (including its `id`) — handy for troubleshooting.
+
+### Changed
+- **Trip ids are now GUIDs** instead of a plain timestamp number, so two people adding a trip in the same millisecond — or merging backups — can no longer collide. Old‑style numeric ids (and any trip missing an id) are migrated to a GUID automatically, once, the next time the app loads.
+
+### Fixed
+- The System‑Backup card's nested **"↳ Include photos"** toggle (under Data) never rendered — the template referenced a value that wasn't wired up. It's back and working.
+
 ## 0.9.16-beta
 
 ### Added

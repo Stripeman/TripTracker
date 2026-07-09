@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-0.9.4--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-0.9.18--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -117,6 +117,7 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 - Toggle whether **trip details** and the **status** appear on the detail card.
 - **Spin the globe** — turn the idle auto‑rotation on or off (you can always drag to spin manually).
 - **State / province borders** — overlay internal admin‑1 borders on large countries (USA, Canada, Brazil, Australia, China, India, Russia, Indonesia, South Africa). Off by default; the data (~880 KB) is fetched lazily only the first time you enable it, and the lines are drawn only while the globe is still, so spin performance is unaffected. Countries smaller than South Korea are never drawn.
+- **Debug info on trip cards** — off by default; when on, every trip card gets a small bug‑icon button (matching the tint of the card's other icon buttons) that opens a panel with that trip's raw JSON. From there you can **copy** the JSON, or **Edit** it in a line‑numbered editor — saving requires reviewing a line‑by‑line diff and confirming; malformed JSON is caught and blocked before you can proceed. trip's raw JSON, including its `id`. Meant for troubleshooting, not everyday use.
 
 **System tab** — data, storage & app info:
 - **Data source** (Local browser / linked file, or Cloud), **Export / Restore**, and **Clear data** (see Storage & backup).
@@ -188,6 +189,8 @@ Inside the app, the **↗ Open / PDF** link in the Help &amp; Guide header opens
 
 On a **fresh visit** (when the browser has no saved data yet), the app fetches **`demo-data.json`** from its own folder and loads it as the starting dataset — handy for demos and for shipping a curated set to whoever opens the app. Once data exists in the browser, that local copy is used and the file is no longer read (so a viewer's edits stick). Replace `demo-data.json` to change the demo set.
 
+Each trip's **`id`** is a GUID (e.g. `03a315ce-93d4-4020-89e4-38f8d2f1f71f`), assigned the moment it's created. A trip loaded without one — or with an old‑style numeric id from before this app used GUIDs — gets a fresh GUID assigned automatically on load, so ids stay unique across devices, imports, and merges.
+
 Exporting **everything** produces a file named **`trip-tracker.json`** — deliberately different from `demo-data.json` so dropping an export into the app folder never silently overwrites the bundled demo. The file uses the same shape:
 
 ```json
@@ -222,7 +225,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
   },
   "locations": [
     {
-      "id": 1,
+      "id": "03a315ce-93d4-4020-89e4-38f8d2f1f71f",
       "city": "Paris",
       "state": "",
       "country": "France",
