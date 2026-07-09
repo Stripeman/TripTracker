@@ -3219,10 +3219,12 @@ class Component extends DCLogic {
       const j = await (await fetch(url, { signal: ctrl.signal })).json();
       clearTimeout(to);
       if (j && j.results && j.results.length) {
-        let best = j.results[0];
         const country = (loc.country || '').trim().toLowerCase();
         const state = (loc.state || '').trim().toLowerCase();
         if (country || state) {
+          // A country/state was given — only accept a result that actually matches it.
+          // Never silently fall back to an unmatched result in the wrong country
+          // (e.g. "Normandie" also naming an unrelated town in the US).
           const m = j.results.find(x => {
             const c = (x.country || '').toLowerCase(), cc = (x.country_code || '').toLowerCase(), a1 = (x.admin1 || '').toLowerCase();
             let ok = true;
@@ -3230,9 +3232,16 @@ class Component extends DCLogic {
             if (state) ok = ok && (a1.includes(state) || state.includes(a1));
             return ok;
           });
-          if (m) best = m;
+          if (m) return [m.longitude, m.latitude];
+          // No candidate matched the given country/state — try again with a region-level
+          // search (admin1/state names, e.g. "Normandie", aren't always indexed as cities).
+          if (loc.city) {
+            const fallback = await this.geocode({ city: '', state: loc.state, country: loc.country });
+            if (fallback) return fallback;
+          }
+          return null;
         }
-        return [best.longitude, best.latitude];
+        return [j.results[0].longitude, j.results[0].latitude];
       }
     } catch (e) { clearTimeout(to); }
     return null;
@@ -3243,7 +3252,7 @@ class Component extends DCLogic {
     this.setState({ geocoding: true, formError: '' });
     const c = await this.geocode(this.state.form);
     if (c) this.setState(s => ({ form: { ...s.form, lat: c[1].toFixed(4), lon: c[0].toFixed(4) }, geocoding: false }));
-    else this.setState({ geocoding: false, formError: 'Could not find coordinates — enter them manually.' });
+    else this.setState({ geocoding: false, formError: 'No confident match for that place — enter coordinates manually.' });
   }
 
   dayCount(loc) {
