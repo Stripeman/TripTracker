@@ -596,6 +596,16 @@
                   <sc-if value="{{ p.canSetEmail }}" hint-placeholder-val="{{ false }}">
                     <input defaultValue="{{ p.email }}" onChange="{{ p.onEmail }}" onBlur="{{ p.onCommit }}" type="email" placeholder="email — lets them sign in (optional)" style="width:100%; box-sizing:border-box; margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:7px 9px; outline:none;">
                   </sc-if>
+                  <sc-if value="{{ p.showStats }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:9px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 10px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9fb3c8; display:flex; flex-direction:column; gap:3px;">
+                      <div style="display:flex; justify-content:space-between;"><span>Trips owned</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsOwned }}</span></div>
+                      <div style="display:flex; justify-content:space-between;"><span>Thumbnails</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsPhotos }}</span></div>
+                      <div style="display:flex; justify-content:space-between;"><span>Tagged in other trips</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsTagged }}</span></div>
+                      <sc-if value="{{ p.statsTaggedText }}" hint-placeholder-val="{{ false }}">
+                        <div style="color:#7c8ea6; font-size:9.5px; line-height:1.4; margin-top:1px;">{{ p.statsTaggedText }}</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
                   <sc-if value="{{ p.canSetRole }}" hint-placeholder-val="{{ false }}">
                     <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
                       <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">ROLE</span>
@@ -997,8 +1007,13 @@
             <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
             <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px; color:#f3d2d2;">Delete this trip?</div>
           </div>
-          <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#cdd9e6; line-height:1.55; margin-bottom:10px;">You're about to delete <b style="color:#fff;">{{ pendingTripDelete.place }}</b> from your trips.</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:#e9c46a; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:9px; padding:10px 11px; margin-bottom:16px;">This removes the trip and its marker from the globe. This can't be undone.</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#cdd9e6; line-height:1.55; margin-bottom:10px;">You're about to delete this trip to <b style="color:#fff;">{{ pendingTripDelete.place }}</b><sc-if value="{{ pendingTripDelete.dateText }}" hint-placeholder-val="{{ false }}"> ({{ pendingTripDelete.dateText }})</sc-if> from your trips.</div>
+          <sc-if value="{{ pendingTripDelete.photo }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; justify-content:center; margin-bottom:12px;">
+              <img ref="{{ setDeletePhotoImg }}" style="width:96px; height:96px; object-fit:cover; border-radius:12px; border:1px solid rgba(239,68,68,0.34); box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+            </div>
+          </sc-if>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:#e9c46a; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:9px; padding:10px 11px; margin-bottom:16px;">This removes the trip, its marker from the globe and the associated thumbnail. This can't be undone.</div>
           <div style="display:flex; gap:9px;">
             <button onClick="{{ cancelTripDelete }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:10px; padding:10px; cursor:pointer;">Keep it</button>
             <button onClick="{{ confirmTripDelete }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 16px rgba(220,38,38,0.4);">Delete</button>
@@ -1135,6 +1150,12 @@
               <div>
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#5d7088; margin-bottom:10px;">BY VISIT TYPE</div>
                 <sc-for list="{{ metrics.byVisit }}" as="r" hint-placeholder-count="4">
+                  <div style="margin-bottom:9px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;"><span style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#c8d6e6;">{{ r.label }}</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6;">{{ r.sub }}</span></div><div style="height:7px; border-radius:4px; background:rgba(255,255,255,0.06); overflow:hidden;"><div style="{{ r.barStyle }}"></div></div></div>
+                </sc-for>
+              </div>
+              <div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#5d7088; margin-bottom:10px;">TRAVELERS · BY TRIPS</div>
+                <sc-for list="{{ metrics.byTraveler }}" as="r" hint-placeholder-count="3">
                   <div style="margin-bottom:9px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;"><span style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#c8d6e6;">{{ r.label }}</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6;">{{ r.sub }}</span></div><div style="height:7px; border-radius:4px; background:rgba(255,255,255,0.06); overflow:hidden;"><div style="{{ r.barStyle }}"></div></div></div>
                 </sc-for>
               </div>
@@ -1539,7 +1560,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.11-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.12-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3843,6 +3864,28 @@ class Component extends DCLogic {
     }
     const trav = (this.state.cfgTravelers || []).find(o => o.email && String(o.email).toLowerCase() === em);
     const owner = trav && trav.createdBy ? trav.createdBy : '';
+    if (em) {
+      const locs = this.state.locations || [];
+      const owned = locs.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === em);
+      const photoCount = owned.filter(l => l.photo).length;
+      rows += '<div style="color:#9fb3c8; margin-top:3px;">Thumbnails on their trips: <span style="color:#eaf4fd;">' + photoCount + '</span></div>';
+      if (trav) {
+        const taggedIn = locs.filter(l => Array.isArray(l.travelers) && l.travelers.includes(trav.key) && String(l.ownerEmail || '').toLowerCase().trim() !== em);
+        if (taggedIn.length) {
+          const byOwner = {};
+          taggedIn.forEach(l => {
+            const oe = String(l.ownerEmail || '').toLowerCase().trim();
+            const oname = this.travelerNameByEmail(oe) || oe || 'Unassigned';
+            byOwner[oname] = (byOwner[oname] || 0) + 1;
+          });
+          const list = Object.keys(byOwner).sort().map(n => n + ' (' + byOwner[n] + ')').join(', ');
+          rows += '<div style="color:#9fb3c8; margin-top:3px;">Tagged in <span style="color:#eaf4fd;">' + taggedIn.length + '</span> other trip' + (taggedIn.length === 1 ? '' : 's') + ':</div>'
+            + '<div style="color:#eaf4fd; font-size:9.5px; line-height:1.4;">' + list + '</div>';
+        } else {
+          rows += '<div style="color:#9fb3c8; margin-top:3px;">Tagged in 0 other trips</div>';
+        }
+      }
+    }
     if (em && owner) rows += '<div style="color:#9fb3c8; margin-top:4px; padding-top:4px; border-top:1px solid rgba(255,255,255,0.1);">Added by: <span style="color:#eaf4fd;">' + owner + '</span></div>';
     t.innerHTML = rows;
     t.style.display = 'block';
@@ -4096,7 +4139,11 @@ class Component extends DCLogic {
     const loc = this.state.locations.find(l => l.id === id);
     if (!loc) return;
     const place = [loc.city, loc.state, loc.country].filter(Boolean).join(', ') || 'this trip';
-    this.setState({ pendingTripDelete: { id, place } });
+    const fmt = (d) => { try { return new Date(d + 'T00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return d; } };
+    let dateText = '';
+    if (loc.date && loc.dateEnd && loc.dateEnd !== loc.date) dateText = fmt(loc.date) + ' – ' + fmt(loc.dateEnd);
+    else if (loc.date) dateText = fmt(loc.date);
+    this.setState({ pendingTripDelete: { id, place, dateText, photo: loc.photo || '' } });
   }
   cancelTripDelete() { this.setState({ pendingTripDelete: null }); }
   confirmTripDelete() {
@@ -4233,6 +4280,7 @@ class Component extends DCLogic {
   // browser eagerly fetches the raw string as a URL before React corrects it).
   setFormPhotoImg = (el) => { this._formPhotoImg = el; this.syncPhotoImgs(); };
   setSelectedPhotoImg = (el) => { this._selPhotoImg = el; this.syncPhotoImgs(); };
+  setDeletePhotoImg = (el) => { this._deletePhotoImg = el; this.syncPhotoImgs(); };
   syncPhotoImgs() {
     if (this._formPhotoImg) {
       const src = this.state.form.photo || '';
@@ -4242,6 +4290,10 @@ class Component extends DCLogic {
       const sl = this.state.locations.find(l => l.id === this.state.selectedId);
       const src = (sl && this.state.cfgShowThumbs && sl.photo) ? sl.photo : '';
       if (this._selPhotoImg.src !== src) this._selPhotoImg.src = src;
+    }
+    if (this._deletePhotoImg) {
+      const src = (this.state.pendingTripDelete && this.state.pendingTripDelete.photo) || '';
+      if (this._deletePhotoImg.src !== src) this._deletePhotoImg.src = src;
     }
   }
   onPhotoPick = (e) => {
@@ -4829,6 +4881,22 @@ class Component extends DCLogic {
           const active = isUser ? (activeByEmail[email] !== false) : true;
           const used = this.personUsedOnTrip(o.key);
           const mine = !o.createdBy || String(o.createdBy).toLowerCase().trim() === meEmail;
+          const locsAll = this.state.locations || [];
+          const ownedLocs = email ? locsAll.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === email) : [];
+          const statsOwned = ownedLocs.length;
+          const statsPhotos = ownedLocs.filter(l => l.photo).length;
+          const taggedLocs = locsAll.filter(l => Array.isArray(l.travelers) && l.travelers.includes(o.key) && String(l.ownerEmail || '').toLowerCase().trim() !== email);
+          const statsTagged = taggedLocs.length;
+          let statsTaggedText = '';
+          if (statsTagged) {
+            const byOwner = {};
+            taggedLocs.forEach(l => {
+              const oe = String(l.ownerEmail || '').toLowerCase().trim();
+              const oname = this.travelerNameByEmail(oe) || oe || 'Unassigned';
+              byOwner[oname] = (byOwner[oname] || 0) + 1;
+            });
+            statsTaggedText = Object.keys(byOwner).sort().map(n => n + ' (' + byOwner[n] + ')').join(', ');
+          }
           const isAddingThis = o.key === this.state.addingPersonKey;
           const canDelete = !isAddingThis && !used && (!isCloud || isAdmin || mine);
           let blocked = '';
@@ -4873,6 +4941,8 @@ class Component extends DCLogic {
             parentOptions: (this.state.cfgTravelers || []).filter(t => t.email && t.key !== o.key).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
             onParent: (e) => this.personSetParent(o.key, e.target.value),
             onRemove: () => this.personRemove(o.key),
+            statsOwned, statsPhotos, statsTagged, statsTaggedText,
+            showStats: isCloud,
           };
         }).filter(r => uf === 'all' ? true : (r.isUser && (uf === 'active' ? r.active : !r.active)));
       })(),
@@ -4903,6 +4973,7 @@ class Component extends DCLogic {
       deleteSelectedPhoto: this.deleteSelectedPhoto,
       setFormPhotoImg: this.setFormPhotoImg,
       setSelectedPhotoImg: this.setSelectedPhotoImg,
+      setDeletePhotoImg: this.setDeletePhotoImg,
       setPhotoInputRef: this.setPhotoInputRef,
       triggerPhotoPick: this.triggerPhotoPick,
       onPhotoPick: this.onPhotoPick,

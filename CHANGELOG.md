@@ -4,6 +4,17 @@ All notable changes to **Trip Tracker** are recorded here. The newest release is
 
 ---
 
+## 0.9.12-beta
+
+### Changed
+- **Trip delete confirmation** now reads "This removes the trip, its marker from the globe and the associated thumbnail" and "You're about to delete this trip to [Place] ([dates]) from your trips" — and shows the trip's thumbnail (if it has one) right in the dialog.
+
+### Added
+- **Per-person stats in Users tab.** Editing a person (cloud mode) now shows trips owned, thumbnail count, and how many other trips they're tagged in — broken down by whose trip. The admin hover tooltip on the access list shows the same breakdown.
+- **Metrics: TRAVELERS · BY TRIPS.** A new leaderboard showing trip counts per person, alongside the existing by-days leaderboard.
+
+---
+
 ## 0.9.11-beta
 
 ### Added
