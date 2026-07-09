@@ -25,7 +25,12 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **Required fields:** every destination needs a **city**, a **date**, and a **status** (State is also required for U.S. cities). The `·required` hint clears automatically once a field has a value.
 - **Duplicate guard:** if a trip with the same place and the same date already exists, a *“This trip already exists — add anyway?”* notice appears next to the Dates field. It's informational — you can still add it.
 - **Audit stamps:** the Edit form shows a read-only **Added** timestamp (set when the destination is first created) and a **Last modified** timestamp (updated each time you save changes).
-- **Duplicate this Trip:** a sticky toggle in the form (labelled *“Duplicate this Trip · clears date”*) — when on, saving keeps the form open with the same details but the **date cleared**, so you can quickly log repeat visits to the same place. Stays on until you turn it off.
+- **Duplicate this Trip:** a sticky toggle in the form (labelled *“Duplicate this Trip · clears date”*) — when on, saving keeps the form open with the same details but the **date cleared**, so you can quickly log repeat visits to the same place. Stays on until you turn it off. A **quick duplicate button (⧉)** on the edit form does the same instantly from an existing trip.
+
+### 🖼 Trip photos
+- Add a **photo thumbnail** to any trip from the Add/Edit form — it shows on the trip's detail card (toggle this off in **Preferences** if you'd rather keep cards text‑only).
+- **Smart reuse suggestion:** typing a city/country that matches a trip of yours which already has a photo offers *“Reuse your photo from [place]”* — accept or dismiss it; it's never applied automatically.
+- Remove a single trip's photo from the form or right off the detail card, or use **Remove all my photos** in the profile bubble to strip photos from every trip you own in one step (with a confirmation first).
 
 ### 🗓 Dates
 - Pick a **single day**, **drag across the calendar**, or **click a start day then an end day** to select a date range.
@@ -114,22 +119,25 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 
 **System tab** — data, storage & app info:
 - **Data source** (Local browser / linked file, or Cloud), **Export / Restore**, and **Clear data** (see Storage & backup).
-- **Access requests** and the **access list** of who's allowed in (admin only, Cloud mode).
+- **Access requests** and the **access list** of who's allowed in (admin only, Cloud mode), with a per‑user hover tooltip (online status, login count, last login, trips logged) and an **Export login stats (CSV)** button on the Users tab.
 - *(The GitHub repository link now lives in the **ⓘ** dropdown.)*
 
 ### 📊 Trip metrics
 A **bar‑graph icon** sits just left of the **?** in the Configuration header. It opens a **metrics pane** covering **every trip, all time** (independent of the active filters):
 - **Headline tiles** — total trips, total days away, countries, cities, average trip length, longest trip, busiest year, years active, upcoming trips, and dream‑list count.
 - **Highlights** — most‑visited country, most‑visited city, and the top traveler (by days away).
-- **Distributions** (mini bar charts) — by status, by trip type, by visit type, travelers by days, top countries, and top cities.
+- **Distributions** (mini bar charts) — by status, by trip type, by visit type, travelers by trips, travelers by days, **countries by traveler**, top countries, and top cities.
 - **Trips by year** — a small column chart of trips per year.
+- **Export** — a button opens **CSV, JSON, or PDF** (PDF opens a printable report in a new tab; save it from the browser's print dialog). Exports respect the metrics pane's own filters.
+
+Each trip's detail card also has a small **stats button** (same bar‑graph icon, next to 🔒/×) — hover it for a per‑traveler summary of that one trip, and hovering a traveler chip in the TRAVELERS row shows that person's trips owned, countries visited, and other trips they're tagged in.
 
 ### 🔔 Update notice
 The app knows its own build version and quietly checks the server for a newer deployed version (on load, whenever the tab regains focus, and every 10 minutes). When a newer build is live, an **UPDATE AVAILABLE** badge appears to the right of the title and a dismissible amber **notice bar** drops in at the top with a **Reload** button to pick up the new version. Detection is automatic from the version number — nothing to configure.
 
 ### 🧩 Configuration data (editable lists)
 The **Settings** tab turns what used to be fixed lists into editable data. For each category you can **rename**, **recolour** (colour swatch), **add**, and **remove** items; changes flow live into the Add/Edit form, the filters, the detail card, and the globe colours:
-- **Travelers** (e.g. Terry · [others])
+- **Travelers** (e.g. Terry · [others]) — editing a person (Cloud mode) shows their **trips owned, countries visited, trips‑by‑year breakdown**, and how many other trips they're tagged in.
 - **Trip types** (e.g. Personal · Work)
 - **Visit types** (e.g. National park · City · Family · Beach · Food & wine · Adventure · Road trip · Cultural)
 - **Statuses** (defaults: Planned · Visited · Dream) — fully editable: rename, recolour, **add**, and **remove**. The date‑driven auto‑select looks for `planned` / `visited` and simply skips if you've removed them; existing trips keep their stored status even if you delete it from the list.

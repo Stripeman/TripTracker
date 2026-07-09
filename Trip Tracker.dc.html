@@ -129,6 +129,7 @@
     <div ref="{{ setTipRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; background:rgba(10,16,26,0.96); border:1px solid rgba(95,211,255,0.4); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:5px 9px; border-radius:7px; box-shadow:0 6px 18px rgba(0,0,0,0.45); white-space:nowrap;"></div>
     <!-- admin login-stats bubble — positioned to the BOTTOM-LEFT of the cursor so it never covers the row you're editing -->
     <div ref="{{ setStatRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; min-width:170px; background:rgba(9,15,25,0.97); border:1px solid rgba(95,211,255,0.38); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.55; padding:9px 11px; border-radius:9px; box-shadow:0 8px 22px rgba(0,0,0,0.5);"></div>
+    <div ref="{{ setCardStatRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; min-width:170px; background:rgba(9,15,25,0.97); border:1px solid rgba(95,211,255,0.38); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.55; padding:9px 11px; border-radius:9px; box-shadow:0 8px 22px rgba(0,0,0,0.5);"></div>
     <!-- profile dialog -->
     <sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeProfile }}" style="position:fixed; inset:0; z-index:70; display:flex; align-items:flex-start; justify-content:flex-end; padding:78px 30px 30px; background:rgba(4,8,15,0.45); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); pointer-events:auto;">
@@ -214,7 +215,7 @@
             <button onClick="{{ toggleMetrics }}" title="Trip metrics" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
             <button onClick="{{ openHelp }}" title="Help &amp; guide" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center; font-weight:700;">?</button>
             <button onClick="{{ toggleAuthor }}" title="About the author" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center;">ⓘ</button>
-            <button onClick="{{ toggleSettings }}" style="width:24px; height:24px; border-radius:7px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:14px; line-height:1;">×</button>
+            <button onClick="{{ toggleSettings }}" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:14px; line-height:1;">×</button>
           </div>
         </div>
         <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;">
@@ -552,6 +553,10 @@
 
           <button onClick="{{ addPerson }}" style="width:100%; box-sizing:border-box; margin-bottom:12px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:10px; padding:9px; cursor:pointer;">+ Add person</button>
 
+          <sc-if value="{{ showAccessAdmin }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ exportLoginStats }}" style="width:100%; box-sizing:border-box; margin-bottom:12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:7px; cursor:pointer;">↓ Export login stats (CSV)</button>
+          </sc-if>
+
           <sc-if value="{{ showUsersFilter }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; gap:6px; margin-bottom:12px;">
               <sc-for list="{{ usersFilterSeg }}" as="s" hint-placeholder-count="3"><button onClick="{{ s.onSelect }}" style="{{ s.style }}">{{ s.label }}</button></sc-for>
@@ -599,10 +604,14 @@
                   <sc-if value="{{ p.showStats }}" hint-placeholder-val="{{ false }}">
                     <div style="margin-top:9px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 10px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9fb3c8; display:flex; flex-direction:column; gap:3px;">
                       <div style="display:flex; justify-content:space-between;"><span>Trips owned</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsOwned }}</span></div>
+                      <div style="display:flex; justify-content:space-between;"><span>Countries visited</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsCountries }}</span></div>
                       <div style="display:flex; justify-content:space-between;"><span>Thumbnails</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsPhotos }}</span></div>
                       <div style="display:flex; justify-content:space-between;"><span>Tagged in other trips</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsTagged }}</span></div>
                       <sc-if value="{{ p.statsTaggedText }}" hint-placeholder-val="{{ false }}">
                         <div style="color:#7c8ea6; font-size:9.5px; line-height:1.4; margin-top:1px;">{{ p.statsTaggedText }}</div>
+                      </sc-if>
+                      <sc-if value="{{ p.showByYear }}" hint-placeholder-val="{{ false }}">
+                        <div style="border-top:1px solid rgba(255,255,255,0.06); margin-top:4px; padding-top:4px; color:#7c8ea6; font-size:9.5px; line-height:1.4;">By year: {{ p.statsByYearText }}</div>
                       </sc-if>
                     </div>
                   </sc-if>
@@ -937,9 +946,12 @@
             </div>
           </sc-if>
           <div style="display:flex; flex-direction:column; align-items:center; gap:7px; flex:none;">
-            <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
+            <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
             <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
               <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
+            </sc-if>
+            <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
+              <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
             </sc-if>
           </div>
         </div>
@@ -979,7 +991,7 @@
             <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.16em; color:#586a82; margin-bottom:6px;">TRAVELERS</div>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">
               <sc-for list="{{ selected.cardTravelers }}" as="chip" hint-placeholder-count="2">
-                <span style="{{ chip.style }}">{{ chip.label }}</span>
+                <span style="{{ chip.style }}" onMouseEnter="{{ chip.onHover }}" onMouseLeave="{{ chip.onLeave }}">{{ chip.label }}</span>
               </sc-for>
             </div>
           </div>
@@ -1064,7 +1076,20 @@
               <sc-if value="{{ metricsFiltersOpen }}" hint-placeholder-val="{{ false }}">
                 <button onClick="{{ clearMetricsFilters }}" title="Clear all filters" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; color:#f0b4b4; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear</button>
               </sc-if>
-              <button onClick="{{ closeMetrics }}" style="flex:none; width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
+              <div style="position:relative;">
+                <button onClick="{{ toggleMetricsExport }}" title="Export metrics" style="flex:none; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; color:#9fd8ff; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Export
+                </button>
+                <sc-if value="{{ metricsExportOpen }}" hint-placeholder-val="{{ false }}">
+                  <div onClick="{{ stop }}" style="position:absolute; right:0; top:32px; z-index:5; min-width:130px; background:rgba(10,16,26,0.98); border:1px solid rgba(56,189,248,0.28); border-radius:10px; padding:6px; box-shadow:0 12px 30px rgba(0,0,0,0.5); display:flex; flex-direction:column; gap:2px;">
+                    <button onClick="{{ exportMetricsCsv }}" style="text-align:left; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#cfe6f5; background:transparent; border:none; border-radius:6px; padding:7px 9px; cursor:pointer;">CSV</button>
+                    <button onClick="{{ exportMetricsJson }}" style="text-align:left; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#cfe6f5; background:transparent; border:none; border-radius:6px; padding:7px 9px; cursor:pointer;">JSON</button>
+                    <button onClick="{{ exportMetricsPdf }}" style="text-align:left; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#cfe6f5; background:transparent; border:none; border-radius:6px; padding:7px 9px; cursor:pointer;">PDF</button>
+                  </div>
+                </sc-if>
+              </div>
+              <button onClick="{{ closeMetrics }}" style="flex:none; width:28px; height:28px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
             </div>
           </div>
 
@@ -1166,6 +1191,12 @@
                 </sc-for>
               </div>
               <div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#5d7088; margin-bottom:10px;">COUNTRIES · BY TRAVELER</div>
+                <sc-for list="{{ metrics.countriesByTraveler }}" as="r" hint-placeholder-count="3">
+                  <div style="margin-bottom:9px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;"><span style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#c8d6e6;">{{ r.label }}</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6;">{{ r.sub }}</span></div><div style="height:7px; border-radius:4px; background:rgba(255,255,255,0.06); overflow:hidden;"><div style="{{ r.barStyle }}"></div></div></div>
+                </sc-for>
+              </div>
+              <div>
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.2em; color:#5d7088; margin-bottom:10px;">TOP COUNTRIES</div>
                 <sc-for list="{{ metrics.topCountries }}" as="r" hint-placeholder-count="5">
                   <div style="margin-bottom:9px;"><div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px;"><span style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#c8d6e6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.label }}</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6;">{{ r.sub }}</span></div><div style="height:7px; border-radius:4px; background:rgba(255,255,255,0.06); overflow:hidden;"><div style="{{ r.barStyle }}"></div></div></div>
@@ -1202,7 +1233,7 @@
         <div style="padding:18px 18px 14px; border-bottom:1px solid rgba(56,189,248,0.12);">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">TRAVEL HEAT MAP</div>
-            <button onClick="{{ toggleHeat }}" style="width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:15px; line-height:1;">×</button>
+            <button onClick="{{ toggleHeat }}" style="width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
           </div>
           <div style="display:flex; gap:6px; margin-top:11px;">
             <button onClick="{{ setHeatCountry }}" style="{{ heatModeCountryStyle }}">By country</button>
@@ -1296,7 +1327,7 @@
                 <button onClick="{{ showChangelog }}" style="{{ changelogTabStyle }}">Changelog</button>
               </div>
               <a href="{{ helpPageHref }}" target="_blank" rel="noopener" title="Open this guide in its own page — shareable by link, and printable to PDF" style="display:flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; color:#cfe6f5; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:6px 10px; cursor:pointer; text-decoration:none;">↗ Open / PDF</a>
-              <button onClick="{{ closeHelp }}" style="width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:16px; line-height:1;">×</button>
+              <button onClick="{{ closeHelp }}" style="width:28px; height:28px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:16px; line-height:1;">×</button>
             </div>
           </div>
           <div style="flex:1; overflow-y:auto; padding:22px 26px;">
@@ -1320,7 +1351,7 @@
           <sc-if value="{{ showQuickDup }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ quickDuplicate }}" title="Duplicate this trip (clears date)" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#9fd6f0; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center;">⧉</button>
           </sc-if>
-          <button onClick="{{ closeForm }}" style="width:30px; height:30px; border-radius:9px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:17px; line-height:1;">×</button>
+          <button onClick="{{ closeForm }}" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:17px; line-height:1;">×</button>
         </div>
       </div>
 
@@ -1465,7 +1496,7 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7fd4f5" stroke-width="1.8" style="flex:none;"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="12" cy="12" r="3.2"></circle></svg>
             <div style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#9fb3c8; line-height:1.4;">Reuse your photo from <span style="color:#cfe6f5;">{{ photoSuggestionLabel }}</span>?</div>
             <button onClick="{{ useSuggestedPhoto }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11px; font-weight:600; color:#04111e; background:#7fd4f5; border:none; border-radius:7px; padding:6px 10px; cursor:pointer;">Use it</button>
-            <button onClick="{{ dismissPhotoSuggestion }}" style="flex:none; width:22px; height:22px; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8093aa; cursor:pointer; font-size:12px; line-height:1;">×</button>
+            <button onClick="{{ dismissPhotoSuggestion }}" style="flex:none; width:22px; height:22px; border-radius:6px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:12px; line-height:1;">×</button>
           </div>
         </sc-if>
 
@@ -1560,7 +1591,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.12-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.13-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1762,6 +1793,7 @@ class Component extends DCLogic {
       heatOpen: false,
       metricsOpen: false,
       metricsFiltersOpen: false,
+      metricsExportOpen: false,
       metricsFilter: { year: 'all', statuses: [], visit: [], trip: [], travelers: [] },
       toastMsg: '',
       bulk: { fields: { owner: false, notes: false, visit: false, travelers: false, trip: false, vis: false }, owner: '', notes: '', visit: [], travelers: [], trip: [], vis: 'private', shareKeys: [] },
@@ -2236,6 +2268,26 @@ class Component extends DCLogic {
         this.setState({ presenceUsers: users });
       }
     } catch (e) { /* offline / no API — leave as-is */ }
+  }
+  // Admin-only: export the per-user login analytics (online/logins/last login/trips) as CSV.
+  async exportLoginStats() {
+    await this.loadLoginStats();
+    const stats = this.state.loginStats || {};
+    const people = (this.state.cfgTravelers || []).filter(p => p.email);
+    const headers = ['Name', 'Email', 'Logins', 'Last Login', 'Trips Logged'];
+    const rows = people.map(p => {
+      const s = stats[String(p.email).toLowerCase()] || {};
+      return [p.label || '', p.email || '', s.logins || 0, s.lastLogin ? new Date(s.lastLogin).toISOString() : '', s.trips || 0];
+    });
+    const esc = (v) => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    const csv = [headers, ...rows].map(r => r.map(esc).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'login-stats-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    this.toast('Exported login stats for ' + rows.length + ' user' + (rows.length === 1 ? '' : 's'));
   }
   // Admin-only: load per-user login analytics + trip counts for the access-list hover bubble.
   async loadLoginStats() {
@@ -3556,6 +3608,15 @@ class Component extends DCLogic {
     const daysByTraveler = byTravelerTrips.map(x => ({ ...x })).sort((a, b) => b.days - a.days);
     const maxTD = Math.max(1, ...daysByTraveler.map(x => x.days));
     daysByTraveler.forEach(x => { x.sub = x.days + (x.days === 1 ? ' day' : ' days'); x.barStyle = bar(Math.round(x.days / maxTD * 100), x.color); });
+    // countries visited per traveler (distinct countries across their trips)
+    const countriesByTraveler = (this.state.cfgTravelers || []).map(o => {
+      const own = new Set();
+      locs.forEach(l => { if ((l.travelers || []).includes(o.key) && (l.country || '').trim()) own.add(l.country.trim()); });
+      const pct = 0;
+      return { key: o.key, label: o.label, color: o.color || '#5fd3ff', count: own.size, sub: own.size + (own.size === 1 ? ' country' : ' countries'), pct };
+    }).filter(x => x.count > 0).sort((a, b) => b.count - a.count);
+    const maxCBT = Math.max(1, ...countriesByTraveler.map(x => x.count));
+    countriesByTraveler.forEach(x => { x.barStyle = bar(Math.round(x.count / maxCBT * 100), x.color); });
     // top countries / cities
     const tally = (keyFn) => { const m = {}; locs.forEach(l => { const k = keyFn(l); if (k) m[k] = (m[k] || 0) + 1; }); return m; };
     const cc = tally(l => (l.country || '').trim());
@@ -3603,11 +3664,12 @@ class Component extends DCLogic {
       mostCity: topCities[0] ? topCities[0].label : '—', mostCityCount: topCities[0] ? topCities[0].count : 0,
       topTraveler: daysByTraveler[0] ? daysByTraveler[0].label : '—', topTravelerDays: daysByTraveler[0] ? daysByTraveler[0].days : 0,
       tiles,
-      byStatus, byVisit, byTrip, byTraveler: byTravelerTrips, daysByTraveler, topCountries, topCities, byYear,
+      byStatus, byVisit, byTrip, byTraveler: byTravelerTrips, daysByTraveler, countriesByTraveler, topCountries, topCities, byYear,
     };
   }
   toggleMetrics() { this.setState(s => ({ metricsOpen: !s.metricsOpen })); }
-  closeMetrics() { this.setState({ metricsOpen: false }); }
+  closeMetrics() { this.setState({ metricsOpen: false, metricsExportOpen: false }); }
+  toggleMetricsExport() { this.setState(s => ({ metricsExportOpen: !s.metricsExportOpen })); }
   toggleMetricsFilters() { this.setState(s => ({ metricsFiltersOpen: !s.metricsFiltersOpen })); }
   // Metrics dashboard has its OWN filter set (independent of the left search filters).
   // Empty = all trips in the system. Mirrors the same dimensions you filter trips by.
@@ -3633,6 +3695,71 @@ class Component extends DCLogic {
     });
   }
   clearMetricsFilters() { this.setState({ metricsFilter: { year: 'all', statuses: [], visit: [], trip: [], travelers: [] } }); }
+  // CSV export of the filtered trip list currently backing the metrics dashboard.
+  exportMetricsCsv() {
+    const locs = (this.state.locations || []).filter(l => this.metricsPassesFilter(l));
+    const nameOf = (id) => { const t = (this.state.cfgTravelers || []).find(x => x.key === id); return t ? t.label : id; };
+    const labelOf = (list, id) => { const o = (list || []).find(x => x.key === id); return o ? o.label : id; };
+    const headers = ['Place', 'City', 'Country', 'Date', 'End Date', 'Status', 'Trip Type', 'Visit Type', 'Travelers', 'Owner'];
+    const rows = locs.map(l => [
+      l.place || '', l.city || '', l.country || '', l.date || '', l.dateEnd || '',
+      labelOf(this.state.cfgStatuses, l.status),
+      (l.tripTypes || []).map(k => labelOf(this.state.cfgTripTypes, k)).join('; '),
+      (l.visitTypes || []).map(k => labelOf(this.state.cfgVisitTypes, k)).join('; '),
+      (l.travelers || []).map(nameOf).join('; '),
+      this.travelerNameByEmail(l.ownerEmail) || l.ownerEmail || '',
+    ]);
+    const esc = (v) => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    const csv = [headers, ...rows].map(r => r.map(esc).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'trip-metrics-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    this.toast('Exported ' + rows.length + ' trip' + (rows.length === 1 ? '' : 's') + ' to CSV');
+    this.setState({ metricsExportOpen: false });
+  }
+  // JSON export — the filtered trip list plus the computed metrics summary.
+  exportMetricsJson() {
+    const locs = (this.state.locations || []).filter(l => this.metricsPassesFilter(l));
+    const metrics = this.computeMetrics();
+    const o = { app: 'vacation-location', exportedAt: new Date().toISOString(), tripCount: locs.length, trips: locs, metrics };
+    const blob = new Blob([JSON.stringify(o, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'trip-metrics-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    this.toast('Exported ' + locs.length + ' trip' + (locs.length === 1 ? '' : 's') + ' to JSON');
+    this.setState({ metricsExportOpen: false });
+  }
+  // PDF export — opens a printable report in a new tab; the user saves it as PDF from there
+  // (no PDF library on board, and this avoids fighting the live dashboard's own layout/scroll).
+  exportMetricsPdf() {
+    const m = this.computeMetrics();
+    const esc = (s) => String(s == null ? '' : s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    const section = (title, rows) => rows.length ? `<h3>${esc(title)}</h3><table>${rows.map(r => `<tr><td>${esc(r.label)}</td><td>${esc(r.sub)}</td></tr>`).join('')}</table>` : '';
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Trip Metrics</title><style>
+      body{font-family:'Helvetica Neue',Arial,sans-serif; color:#1a2230; padding:36px; max-width:720px; margin:0 auto;}
+      h1{font-size:22px; margin-bottom:2px;} .sub{color:#667; font-size:12px; margin-bottom:26px;}
+      h3{font-size:13px; text-transform:uppercase; letter-spacing:0.08em; color:#445; border-bottom:1px solid #ddd; padding-bottom:6px; margin-top:26px;}
+      table{width:100%; border-collapse:collapse; font-size:13px;} td{padding:5px 0; border-bottom:1px solid #eee;} td:last-child{text-align:right; color:#556;}
+      .tiles{display:flex; flex-wrap:wrap; gap:14px; margin-top:16px;} .tile{flex:1 1 140px; background:#f4f6f9; border-radius:8px; padding:12px 14px;} .tile b{display:block; font-size:20px;} .tile span{font-size:11px; color:#667;}
+      @media print { body{padding:0 24px;} }
+      </style></head><body>
+      <h1>Trip Metrics</h1><div class="sub">${esc(this.metricsFilterCount() > 0 ? (this.metricsFilterCount() + ' filter' + (this.metricsFilterCount() === 1 ? '' : 's') + ' active') : 'Every trip · all time')} · Generated ${new Date().toLocaleDateString()}</div>
+      <div class="tiles">${(m.tiles || []).map(t => `<div class="tile"><b>${esc(t.value)}</b><span>${esc(t.label)}</span></div>`).join('')}</div>
+      ${section('Status', m.byStatus)}${section('Visit type', m.byVisit)}${section('Trip type', m.byTrip)}
+      ${section('Travelers · by trips', m.byTraveler)}${section('Travelers · by days', m.daysByTraveler)}${section('Countries · by traveler', m.countriesByTraveler)}
+      ${section('Top countries', m.topCountries)}${section('Top cities', m.topCities)}${section('By year', m.byYear)}
+      </body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) { this.toast('Pop-up blocked — allow pop-ups to export PDF'); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+    w.onload = () => w.print();
+    this.setState({ metricsExportOpen: false });
+  }
   // Inconspicuous auto-dismissing toast for save/edit/delete feedback across the app.
   toast(msg) {
     if (this._toastTimer) clearTimeout(this._toastTimer);
@@ -3896,6 +4023,58 @@ class Component extends DCLogic {
     t.style.top = (e.clientY + 18) + 'px';
   }
   hideStat() { const t = this._statEl; if (t) t.style.display = 'none'; }
+  // Local-only (no server fetch) per-traveler stat bubble for the trip detail card —
+  // used for both the individual traveler chips and the aggregate "stats" button.
+  setCardStatRef(el) { this._cardStatEl = el; }
+  personStatsHtml(key) {
+    const trav = (this.state.cfgTravelers || []).find(o => o.key === key);
+    const name = trav ? trav.label : key;
+    const email = trav && trav.email ? String(trav.email).toLowerCase().trim() : '';
+    const locs = this.state.locations || [];
+    const owned = email ? locs.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === email) : [];
+    const countries = new Set(owned.map(l => (l.country || '').trim()).filter(Boolean)).size;
+    const taggedIn = locs.filter(l => Array.isArray(l.travelers) && l.travelers.includes(key) && (!email || String(l.ownerEmail || '').toLowerCase().trim() !== email));
+    let html = '<div style="font-weight:600; color:#eaf4fd; margin-bottom:5px;">' + name + '</div>';
+    if (email) {
+      html += '<div style="color:#9fb3c8;">Trips owned: <span style="color:#eaf4fd;">' + owned.length + '</span></div>'
+        + '<div style="color:#9fb3c8;">Countries visited: <span style="color:#eaf4fd;">' + countries + '</span></div>';
+    }
+    if (taggedIn.length) {
+      const byOwner = {};
+      taggedIn.forEach(l => {
+        const oe = String(l.ownerEmail || '').toLowerCase().trim();
+        const oname = this.travelerNameByEmail(oe) || oe || 'Unassigned';
+        byOwner[oname] = (byOwner[oname] || 0) + 1;
+      });
+      const list = Object.keys(byOwner).sort().map(n => n + ' (' + byOwner[n] + ')').join(', ');
+      html += '<div style="color:#9fb3c8; margin-top:3px;">Tagged in <span style="color:#eaf4fd;">' + taggedIn.length + '</span> other trip' + (taggedIn.length === 1 ? '' : 's') + ':</div>'
+        + '<div style="color:#eaf4fd; font-size:9.5px; line-height:1.4;">' + list + '</div>';
+    } else {
+      html += '<div style="color:#9fb3c8; margin-top:3px;">Tagged in 0 other trips</div>';
+    }
+    return html;
+  }
+  showCardStat(e, key) {
+    const t = this._cardStatEl; if (!t) return;
+    let html;
+    if (String(key).indexOf('trip:') === 0) {
+      const tripId = key.slice(5);
+      const loc = (this.state.locations || []).find(l => l.id === tripId);
+      const keys = loc ? (loc.travelers || []) : [];
+      html = '<div style="font-weight:600; color:#eaf4fd; margin-bottom:6px;">Traveler stats</div>' + keys.map(k => this.personStatsHtml(k)).join('<div style="height:1px; background:rgba(255,255,255,0.1); margin:7px 0;"></div>');
+      if (!keys.length) html += '<div style="color:#8a9ab2;">No travelers tagged</div>';
+    } else {
+      html = this.personStatsHtml(key);
+    }
+    t.innerHTML = html;
+    t.style.display = 'block';
+    const w = t.offsetWidth || 180;
+    let left = e.clientX - 14 - w;
+    if (left < 8) left = 8;
+    t.style.left = left + 'px';
+    t.style.top = (e.clientY + 18) + 'px';
+  }
+  hideCardStat() { const t = this._cardStatEl; if (t) t.style.display = 'none'; }
   // Admin bulk action: stamp the signed-in admin's ownership on every unowned/legacy trip
   // at once. The server reconciliation then claims them (they become editable + counted).
   askClaimAll() { this.setState({ confirmClaim: true }); }
@@ -4517,7 +4696,7 @@ class Component extends DCLogic {
       const addr = [sl.city, sl.state, sl.country].filter(Boolean).join(', ');
       const cardPill = (txt, color) => ({ label: txt, style: `font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase; padding:4px 8px; border-radius:6px; color:${color}; background:${color}1f; border:1px solid ${color}66;` });
       const typeChips = [...(sl.visitTypes || []).map(k => cardPill(this.VTL[k] || k, this.VTC[k] || '#9fd6f0')), ...(sl.tripTypes || []).map(k => cardPill(this.TTL[k] || k, this.TTC[k] || '#c4b5fd'))];
-      const cardTravelers = (sl.travelers || []).map(k => cardPill(this.TRL[k] || k, this.TRC[k] || '#fb7185'));
+      const cardTravelers = (sl.travelers || []).map(k => ({ ...cardPill(this.TRL[k] || k, this.TRC[k] || '#fb7185'), key: k, onHover: (e) => this.showCardStat(e, k), onLeave: () => this.hideCardStat() }));
       selected = {
         typeChips, hasTypes: typeChips.length > 0,
         cardTravelers, hasTravelers: cardTravelers.length > 0,
@@ -4529,6 +4708,9 @@ class Component extends DCLogic {
         ownerBadge: this.ownerBadge(sl),
         visBadge: this.visBadge(sl),
         hasPhoto: !!(this.state.cfgShowThumbs && sl.photo),
+        travelerKeys: sl.travelers || [],
+        onStatsHover: (e) => this.showCardStat(e, 'trip:' + sl.id),
+        onStatsLeave: () => this.hideCardStat(),
       };
     }
     const meId = this.state.cloudUserId || '';
@@ -4682,12 +4864,17 @@ class Component extends DCLogic {
       toastMsg: this.state.toastMsg,
       hasToast: !!this.state.toastMsg,
       stop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
-      metrics: this.state.metricsOpen ? this.computeMetrics(this.state.metricsScope) : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], topCountries: [], topCities: [], byYear: [] },
+      metrics: this.state.metricsOpen ? this.computeMetrics(this.state.metricsScope) : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], countriesByTraveler: [], topCountries: [], topCities: [], byYear: [] },
       metricsFiltersOpen: this.state.metricsFiltersOpen,
       toggleMetricsFilters: () => this.toggleMetricsFilters(),
       metricsFilterCount: this.metricsFilterCount(),
       metricsHasFilters: this.metricsFilterCount() > 0,
       clearMetricsFilters: () => this.clearMetricsFilters(),
+      exportMetricsCsv: () => this.exportMetricsCsv(),
+      exportMetricsJson: () => this.exportMetricsJson(),
+      exportMetricsPdf: () => this.exportMetricsPdf(),
+      metricsExportOpen: this.state.metricsExportOpen,
+      toggleMetricsExport: () => this.toggleMetricsExport(),
       metricsFilterBtnStyle: 'display:flex; align-items:center; gap:6px; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.08em; border-radius:8px; padding:6px 11px; cursor:pointer; ' + (this.state.metricsFiltersOpen ? 'color:#fbd87a; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.5);' : 'color:#bcd2e6; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28);'),
       metricsSubtitle: this.metricsFilterCount() > 0 ? (this.metricsFilterCount() + ' filter' + (this.metricsFilterCount() === 1 ? '' : 's') + ' active') : 'EVERY TRIP · ALL TIME',
       metricsYearValue: String((this.state.metricsFilter && this.state.metricsFilter.year) || 'all'),
@@ -4885,6 +5072,10 @@ class Component extends DCLogic {
           const ownedLocs = email ? locsAll.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === email) : [];
           const statsOwned = ownedLocs.length;
           const statsPhotos = ownedLocs.filter(l => l.photo).length;
+          const statsCountries = new Set(ownedLocs.map(l => (l.country || '').trim()).filter(Boolean)).size;
+          const yearCounts = {};
+          ownedLocs.forEach(l => { const y = (l.date || '').slice(0, 4); if (y) yearCounts[y] = (yearCounts[y] || 0) + 1; });
+          const statsByYearText = Object.keys(yearCounts).sort((a, b) => b.localeCompare(a)).map(y => y + ' (' + yearCounts[y] + ')').join(', ');
           const taggedLocs = locsAll.filter(l => Array.isArray(l.travelers) && l.travelers.includes(o.key) && String(l.ownerEmail || '').toLowerCase().trim() !== email);
           const statsTagged = taggedLocs.length;
           let statsTaggedText = '';
@@ -4942,6 +5133,7 @@ class Component extends DCLogic {
             onParent: (e) => this.personSetParent(o.key, e.target.value),
             onRemove: () => this.personRemove(o.key),
             statsOwned, statsPhotos, statsTagged, statsTaggedText,
+            statsCountries, statsByYearText, showByYear: !!statsByYearText,
             showStats: isCloud,
           };
         }).filter(r => uf === 'all' ? true : (r.isUser && (uf === 'active' ? r.active : !r.active)));
@@ -5078,6 +5270,7 @@ class Component extends DCLogic {
       selectedReadOnly: !!selected && !canEditSelected && (this.state.cloudRoles || []).includes('editor'),
       canAdmin: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin'),
       showAccessAdmin: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('admin'),
+      exportLoginStats: () => this.exportLoginStats(),
       accessRows: (this.state.accessList || []).map((r, i) => ({
         email: r.email, role: r.role,
         onEmail: (e) => this.accessSetEmail(i, e.target.value),
@@ -5087,6 +5280,7 @@ class Component extends DCLogic {
       })),
       setStatRef: (el) => this.setStatRef(el),
       hideStat: () => this.hideStat(),
+      setCardStatRef: (el) => this.setCardStatRef(el),
       accessAddRow: () => this.accessAddRow(),
       saveAccess: () => this.saveAccess(),
       pendingUserDelete: this.state.pendingUserDelete,
