@@ -254,6 +254,10 @@
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Show status on card</span>
             <button onClick="{{ toggleStatusCard }}" style="{{ cfgStatusStyle }}">{{ cfgStatusLabel }}</button>
           </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+            <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Show photo thumbnail on card</span>
+            <button onClick="{{ toggleShowThumbs }}" style="{{ cfgThumbsStyle }}">{{ cfgThumbsLabel }}</button>
+          </div>
         </div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">GLOBE</div>
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:4px;">
@@ -870,7 +874,10 @@
     <sc-if value="{{ selected }}" hint-placeholder-val="{{ null }}">
       <div class="tt-detailcard" style="position:absolute; left:362px; bottom:30px; width:308px; pointer-events:auto; background:rgba(8,14,24,0.84); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(251,191,36,0.34); border-radius:16px; padding:18px; box-shadow:0 12px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(251,191,36,0.08); animation:vl-fade 0.22s ease;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
-          <div>
+          <sc-if value="{{ selected.hasPhoto }}" hint-placeholder-val="{{ false }}">
+            <img ref="{{ setSelectedPhotoImg }}" style="width:56px; height:56px; object-fit:cover; border-radius:10px; border:1px solid rgba(255,255,255,0.14); flex:none;">
+          </sc-if>
+          <div style="flex:1; min-width:0;">
             <sc-if value="{{ showStatusCard }}" hint-placeholder-val="{{ true }}">
               <div style="display:flex; align-items:center; gap:9px;">
                 <span style="width:9px;height:9px;border-radius:50%;background:#fbbf24;box-shadow:0 0 12px #fbbf24;"></span>
@@ -1374,6 +1381,29 @@
         <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">NOTES <span style="color:#445;">·opt</span></label>
         <textarea name="notes" value="{{ form.notes }}" onChange="{{ onField }}" placeholder="Anything to remember — hotels, highlights, who you went with…" rows="3" style="width:100%; resize:vertical; min-height:74px; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.5; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;"></textarea>
 
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:18px 0 7px;">PHOTO <span style="color:#445;">·opt</span></label>
+        <input ref="{{ setPhotoInputRef }}" type="file" accept="image/*" onChange="{{ onPhotoPick }}" style="display:none;">
+        <div style="display:flex; align-items:center; gap:13px;">
+          <sc-if value="{{ form.photo }}" hint-placeholder-val="{{ false }}">
+            <div style="position:relative; width:72px; height:72px; flex:none;">
+              <img ref="{{ setFormPhotoImg }}" style="width:72px; height:72px; object-fit:cover; border-radius:11px; border:1px solid rgba(125,200,245,0.42); display:block;">
+              <button onClick="{{ removePhoto }}" title="Remove photo" style="position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%; background:#161f2e; border:1px solid rgba(255,255,255,0.18); color:#c2cfde; font-size:11px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ photoEmpty }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ triggerPhotoPick }}" style="width:72px; height:72px; flex:none; border-radius:11px; border:1px dashed rgba(125,200,245,0.4); background:rgba(255,255,255,0.02); color:#7fb4d8; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="12" cy="12" r="3.2"></circle><path d="M8 5l1.5-2h5L16 5"></path></svg>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.04em;">ADD</span>
+            </button>
+          </sc-if>
+          <div style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5;">
+            <sc-if value="{{ form.photo }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ triggerPhotoPick }}" style="font-family:inherit; font-size:inherit; color:#9fd6f0; background:none; border:none; cursor:pointer; text-decoration:underline; padding:0;">Change photo</button>
+            </sc-if>
+            <sc-if value="{{ photoEmpty }}" hint-placeholder-val="{{ true }}">A small thumbnail shown on the trip card. Resized automatically — nothing huge gets stored.</sc-if>
+          </div>
+        </div>
+
         <sc-if value="{{ showVisibility }}" hint-placeholder-val="{{ false }}">
           <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 8px;">WHO CAN SEE THIS</label>
           <div style="display:flex; gap:7px;">
@@ -1465,7 +1495,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.6-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.7-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1574,6 +1604,7 @@ class Component extends DCLogic {
     const cfgDetailsFormDefault = cfg.detailsFormDefault !== false;
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
+    const cfgShowThumbs = cfg.showThumbs !== false;
     const cfgSpin = cfg.spin !== false;
     const cfgStateBorders = cfg.stateBorders === true;
     const cfgAutoClaim = cfg.autoClaim === true;
@@ -1605,6 +1636,7 @@ class Component extends DCLogic {
       cfgDetailsFormDefault,
       cfgDetailsCard,
       cfgStatusCard,
+      cfgShowThumbs,
       cfgSpin,
       cfgStateBorders,
       cfgAutoClaim,
@@ -1738,7 +1770,7 @@ class Component extends DCLogic {
     const d = this._permDefault || {};
     const vis = ['private','shared','all'].indexOf(d.vis) >= 0 ? d.vis : 'private';
     const shareTravelers = Array.isArray(d.keys) ? d.keys.slice() : [];
-    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers }; }
+    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', photo:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -2311,6 +2343,7 @@ class Component extends DCLogic {
   }
 
   componentDidUpdate() {
+    this.syncPhotoImgs();
     // Host calls this with no prevState — track the form's geo signature ourselves.
     const adding = this.state.formOpen && this.state.editingId == null;
     if (!adding) { this._geoSig = null; this._pvKey = null; return; }
@@ -2933,7 +2966,7 @@ class Component extends DCLogic {
    * number; persistConfigNoBump is used mid-typing in the data editor so the
    * version only ticks once on blur. Any config change also schedules a cloud push. */
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -3057,6 +3090,7 @@ class Component extends DCLogic {
       cfgDetailsFormDefault: settings.detailsFormDefault !== false,
       cfgDetailsCard: settings.detailsCard !== false,
       cfgStatusCard: settings.statusCard !== false,
+      cfgShowThumbs: settings.showThumbs !== false,
       cfgSpin: settings.spin !== false,
       cfgStateBorders: settings.stateBorders === true,
       cfgAutoClaim: settings.autoClaim === true,
@@ -4068,6 +4102,52 @@ class Component extends DCLogic {
       return { calOpen: open, calY, calM };
     });
   }
+  // --- trip photo thumbnail: downscale + center-crop client-side so we never persist
+  // a multi-MB upload. 160px square (2x for retina at the 80px display size), JPEG,
+  // quality stepped down until under ~24KB — keeps localStorage/cloud JSON light. ---
+  setPhotoInputRef = (el) => { this._photoInput = el; };
+  triggerPhotoPick = () => { if (this._photoInput) { this._photoInput.value = ''; this._photoInput.click(); } };
+  removePhoto = () => { this.setState(s => ({ form: { ...s.form, photo: '' } })); };
+
+  // Imperative <img> src assignment — never a templated src="{{ hole }}" (that hole
+  // leaks as literal unresolved text during the pre-hydration streaming pass, and the
+  // browser eagerly fetches the raw string as a URL before React corrects it).
+  setFormPhotoImg = (el) => { this._formPhotoImg = el; this.syncPhotoImgs(); };
+  setSelectedPhotoImg = (el) => { this._selPhotoImg = el; this.syncPhotoImgs(); };
+  syncPhotoImgs() {
+    if (this._formPhotoImg) {
+      const src = this.state.form.photo || '';
+      if (this._formPhotoImg.src !== src) this._formPhotoImg.src = src;
+    }
+    if (this._selPhotoImg) {
+      const sl = this.state.locations.find(l => l.id === this.state.selectedId);
+      const src = (sl && this.state.cfgShowThumbs && sl.photo) ? sl.photo : '';
+      if (this._selPhotoImg.src !== src) this._selPhotoImg.src = src;
+    }
+  }
+  onPhotoPick = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const SIZE = 160;
+        const canvas = document.createElement('canvas');
+        canvas.width = SIZE; canvas.height = SIZE;
+        const ctx = canvas.getContext('2d');
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+        let q = 0.82, dataUrl = canvas.toDataURL('image/jpeg', q);
+        while (dataUrl.length > 32000 && q > 0.35) { q -= 0.12; dataUrl = canvas.toDataURL('image/jpeg', q); }
+        this.setState(s => ({ form: { ...s.form, photo: dataUrl } }));
+      };
+      img.onerror = () => this.setState({ formError: 'Could not read that image.' });
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
   setCalScrollRef = (el) => { this._calScroll = el; this.scrollCalToAnchor(); };
   setCalAnchorRef = (el) => { this._calAnchor = el; this.scrollCalToAnchor(); };
   scrollCalToAnchor() {
@@ -4277,6 +4357,7 @@ class Component extends DCLogic {
         dateText,
         ownerBadge: this.ownerBadge(sl),
         visBadge: this.visBadge(sl),
+        hasPhoto: !!(this.state.cfgShowThumbs && sl.photo),
       };
     }
     const meId = this.state.cloudUserId || '';
@@ -4691,6 +4772,16 @@ class Component extends DCLogic {
       toggleDetailsFormDefault: () => this.toggleCfgKey('cfgDetailsFormDefault', 'detailsFormDefault'),
       toggleDetailsCard: () => this.toggleCfgKey('cfgDetailsCard', 'detailsCard'),
       toggleStatusCard: () => this.toggleCfgKey('cfgStatusCard', 'statusCard'),
+      cfgThumbsStyle: cfgPill(this.state.cfgShowThumbs),
+      cfgThumbsLabel: this.state.cfgShowThumbs ? 'ON' : 'OFF',
+      toggleShowThumbs: () => this.toggleCfgKey('cfgShowThumbs', 'showThumbs'),
+      photoEmpty: !this.state.form.photo,
+      setFormPhotoImg: this.setFormPhotoImg,
+      setSelectedPhotoImg: this.setSelectedPhotoImg,
+      setPhotoInputRef: this.setPhotoInputRef,
+      triggerPhotoPick: this.triggerPhotoPick,
+      onPhotoPick: this.onPhotoPick,
+      removePhoto: this.removePhoto,
       autoLocate: () => this.autoLocate(),
       geocoding: this.state.geocoding,
       autoLocateLabel: this.state.geocoding ? 'Locating…' : '⌖  Auto-locate from city / country',

@@ -4,6 +4,14 @@ All notable changes to **Trip Tracker** are recorded here. The newest release is
 
 ---
 
+## 0.9.7-beta
+
+### Added
+- **Trip photo thumbnail.** Add/Edit location now has an optional Photo field — pick an image and it's automatically center-cropped and downscaled client-side to a small square (well under 32KB) before it's ever stored, so a 20MB phone photo never bloats your data. Shows on the selected-trip card to the left of the "who can see this" lock.
+- **Preference: "Show photo thumbnail on card"** (Preferences tab, on by default) — turn off if you'd rather skip rendering thumbnails.
+
+---
+
 ## 0.9.6-beta
 
 ### Fixed
