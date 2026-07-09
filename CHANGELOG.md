@@ -4,6 +4,15 @@ All notable changes to **Trip Tracker** are recorded here. The newest release is
 
 ---
 
+## 0.9.16-beta
+
+### Added
+- **Trip card photo layout** preference (Preferences → Form & cards, shown once thumbnails are on): choose **Banner** (full-bleed photo, current default), **Compact** (small square thumbnail beside the title), or **Framed** (header on top, photo inset below) for the trip detail card.
+
+### Fixed
+- README's example export JSON was missing `photo` on the location and `showThumbs` / `cardLayout` / `autoClaim` / `updateFreqMin` / `theme` / `accessEmail` on settings — schema doc now matches the real shape.
+- Settings pushed to the cloud (any Preferences toggle, not just card layout) used a fixed 1.5s debounce before syncing — reloading right after a change could catch the sync mid-flight and revert to the previous cloud value. Discrete changes (toggles, segmented pickers) now push after 150ms; only in-progress text edits (list labels/colors) keep the longer debounce.
+
 ## 0.9.15-beta
 
 ### Changed

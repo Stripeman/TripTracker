@@ -29,7 +29,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - Opening **Add** pre-selects **today** in the calendar (duplicated trips still open with a blank date, so you can pick the right day).
 
 ### 🖼 Trip photos
-- Add a **photo thumbnail** to any trip from the Add/Edit form — it shows on the trip's detail card (toggle this off in **Preferences** if you'd rather keep cards text‑only).
+- Add a **photo thumbnail** to any trip from the Add/Edit form — it shows on the trip's detail card (toggle this off in **Preferences** if you'd rather keep cards text‑only). Pick the card's **photo layout** in Preferences: **Banner** (full-bleed), **Compact** (small thumbnail beside the title), or **Framed** (inset photo below the header).
 - **Smart reuse suggestion:** typing a city/country that matches a trip of yours which already has a photo offers *“Reuse your photo from [place]”* — accept or dismiss it; it's never applied automatically.
 - Remove a single trip's photo from the form or right off the detail card, or use **Remove all my photos** in the profile bubble to strip photos from every trip you own in one step (with a confirmation first).
 
@@ -200,14 +200,21 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
     "detailsFormDefault": true,
     "detailsCard": true,
     "statusCard": true,
+    "showThumbs": true,
+    "cardLayout": "banner",
     "spin": true,
     "stateBorders": false,
+    "autoClaim": false,
+    "updateFreqMin": 10,
+    "theme": "aurora",
     "defaultYear": "current",
     "defaultTrip": "vacation",
     "defaultStatus": "visited",
     "defaultTraveler": "all",
+    "defaultVisit": "all",
     "sortDir": "desc",
     "dataSource": "cloud",
+    "accessEmail": "terry.remsik@gmail.com",
     "travelers": [{ "key": "terry", "label": "Terry", "color": "#fb7185" }],
     "tripTypes": [{ "key": "vacation", "label": "Personal", "color": "#2dd4bf" }],
     "visitTypes": [{ "key": "city", "label": "City", "color": "#38bdf8" }],
@@ -228,6 +235,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
       "visitTypes": ["city", "family"],
       "tripTypes": ["vacation"],
       "travelers": ["terry"],
+      "photo": "data:image/jpeg;base64,…",
       "createdAt": "2026-06-19T13:48:07.884Z",
       "modifiedAt": "2026-06-19T13:48:07.884Z"
     }
@@ -242,7 +250,8 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 - `travelers` (any number): keys from your editable **Travelers** list (defaults: `terry` · *[others]*)
 - `lat` / `lon` are optional strings — leave blank to geocode from city/state/country on save.
 - `dateEnd` is optional (single‑day trips omit it). `createdAt` / `modifiedAt` are set automatically.
-- `settings`: `version` is a number that auto‑increments on every settings change; `defaultYear` is `current` or `all`; `defaultTrip` is `all` or any trip‑type key; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` or any traveler key; `defaultVisit` is `all` or any visit‑type key; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`.
+- `photo` is optional — a data‑URL string for the trip's thumbnail (shown per **Preferences → Show photo thumbnail on card**, in the **Banner / Compact / Framed** layout you've picked). Omit it for a text‑only card.
+- `settings`: `version` is a number that auto‑increments on every settings change; `showThumbs` toggles trip photos on cards; `cardLayout` is `banner` / `thumbnail` / `framed`; `autoClaim` auto‑assigns unclaimed trips you create; `updateFreqMin` is `3` / `5` / `10`; `theme` is one of the 10 named looks; `accessEmail` is the admin contact shown in the access list; `defaultYear` is `current` or `all`; `defaultTrip` is `all` or any trip‑type key; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` or any traveler key; `defaultVisit` is `all` or any visit‑type key; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`.
 - `settings.travelers` / `tripTypes` / `visitTypes` / `statuses` are the **editable reference lists** — each item is `{ key, label, color }` (statuses also carry a `short` label). Omit them to fall back to the built‑in defaults.
 
 Data‑only and settings‑only exports contain just the `locations` or `settings` key respectively. Imports accept any of these shapes (a bare array of locations is also supported for backward compatibility).

@@ -274,6 +274,16 @@
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Show photo thumbnail on card</span>
             <button onClick="{{ toggleShowThumbs }}" style="{{ cfgThumbsStyle }}">{{ cfgThumbsLabel }}</button>
           </div>
+          <sc-if value="{{ cfgShowThumbs }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde; margin-bottom:9px;">Trip card photo layout</div>
+              <div style="display:flex; gap:6px;">
+                <sc-for list="{{ cardLayoutSeg }}" as="opt" hint-placeholder-count="3">
+                  <button onClick="{{ opt.onSelect }}" style="{{ opt.style }}">{{ opt.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
         </div>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">GLOBE</div>
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:4px;">
@@ -928,7 +938,7 @@
     <!-- selected detail card -->
     <sc-if value="{{ selected }}" hint-placeholder-val="{{ null }}">
       <div class="tt-detailcard" style="position:absolute; left:362px; bottom:30px; width:308px; pointer-events:auto; background:rgba(8,14,24,0.84); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(251,191,36,0.34); border-radius:16px; padding:18px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(251,191,36,0.08); animation:vl-fade 0.22s ease;">
-        <sc-if value="{{ selected.hasPhoto }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ selected.layoutBanner }}" hint-placeholder-val="{{ false }}">
           <div style="position:relative; margin:-18px -18px 13px; height:126px;">
             <img ref="{{ setSelectedPhotoImg }}" style="width:100%; height:100%; object-fit:cover; display:block;">
             <div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(8,14,24,0) 38%,rgba(8,14,24,0.92) 100%);"></div>
@@ -961,6 +971,72 @@
                 </sc-if>
               </div>
             </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ selected.layoutThumb }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:flex-start; gap:6px; margin-bottom:2px;">
+            <div style="flex:none;"><img ref="{{ setSelectedPhotoImg }}" style="width:62px; height:62px; object-fit:cover; border-radius:11px; border:1px solid rgba(251,191,36,0.3); display:block;"></div>
+            <div style="flex:1; min-width:0;">
+              <sc-if value="{{ showStatusCard }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:{{ selected.color }};box-shadow:0 0 10px {{ selected.color }};"></span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:{{ selected.color }};">{{ selected.statusLabel }}</span>
+                </div>
+              </sc-if>
+              <div style="font-size:18px; font-weight:600; color:#f1f6fc; margin-top:5px; line-height:1.2;">{{ selected.city }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#8093aa; margin-top:2px;">{{ selected.sub }}</div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:6px; flex:none;">
+              <button onClick="{{ deselect }}" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:14px; line-height:1;">×</button>
+              <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
+              </sc-if>
+              <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
+                <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
+              </sc-if>
+            </div>
+          </div>
+          <sc-if value="{{ selected.ownerBadge }}" hint-placeholder-val="{{ null }}">
+            <div style="display:flex; align-items:center; gap:7px; margin-top:2px;">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:{{ selected.ownerBadge.color }}; border:1px solid {{ selected.ownerBadge.color }}44; border-radius:6px; padding:2px 7px;">{{ selected.ownerBadge.label }}</span>
+              <sc-if value="{{ selected.visBadge }}" hint-placeholder-val="{{ null }}">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
+              </sc-if>
+            </div>
+          </sc-if>
+        </sc-if>
+        <sc-if value="{{ selected.layoutFramed }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+            <div style="flex:1; min-width:0;">
+              <sc-if value="{{ showStatusCard }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; align-items:center; gap:9px;">
+                  <span style="width:9px;height:9px;border-radius:50%;background:#fbbf24;box-shadow:0 0 12px #fbbf24;"></span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.16em; text-transform:uppercase; color:{{ selected.color }};">{{ selected.statusLabel }}</span>
+                </div>
+              </sc-if>
+              <div style="font-size:19px; font-weight:600; color:#f1f6fc; margin-top:9px;">{{ selected.city }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8093aa; margin-top:3px;">{{ selected.sub }}</div>
+              <sc-if value="{{ selected.ownerBadge }}" hint-placeholder-val="{{ null }}">
+                <div style="display:flex; align-items:center; gap:7px; margin-top:8px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:{{ selected.ownerBadge.color }}; border:1px solid {{ selected.ownerBadge.color }}44; border-radius:6px; padding:2px 7px;">{{ selected.ownerBadge.label }}</span>
+                  <sc-if value="{{ selected.visBadge }}" hint-placeholder-val="{{ null }}">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:7px; flex:none;">
+              <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
+              <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
+              </sc-if>
+              <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
+                <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
+              </sc-if>
+            </div>
+          </div>
+          <div style="margin-top:11px; border-radius:11px; overflow:hidden; border:1px solid rgba(251,191,36,0.28); height:112px;">
+            <img ref="{{ setSelectedPhotoImg }}" style="width:100%; height:100%; object-fit:cover; display:block;">
           </div>
         </sc-if>
         <sc-if value="{{ selected.noPhoto }}" hint-placeholder-val="{{ true }}">
@@ -1633,7 +1709,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.15-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.16-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1744,6 +1820,7 @@ class Component extends DCLogic {
     const cfgDetailsCard = cfg.detailsCard !== false;
     const cfgStatusCard = cfg.statusCard !== false;
     const cfgShowThumbs = cfg.showThumbs !== false;
+    const cfgCardLayout = ['banner','thumbnail','framed'].includes(cfg.cardLayout) ? cfg.cardLayout : 'banner';
     const cfgSpin = cfg.spin !== false;
     const cfgStateBorders = cfg.stateBorders === true;
     const cfgAutoClaim = cfg.autoClaim === true;
@@ -1777,6 +1854,7 @@ class Component extends DCLogic {
       cfgDetailsCard,
       cfgStatusCard,
       cfgShowThumbs,
+      cfgCardLayout,
       cfgSpin,
       cfgStateBorders,
       cfgAutoClaim,
@@ -2359,12 +2437,16 @@ class Component extends DCLogic {
 
   // Push config/settings (travelers + their emails, visit types, etc.) to the cloud so
   // they're saved AND shared with other users. Debounced so typing doesn't spam the API.
-  scheduleCloudSettingsPush() {
+  // delayMs: how long to debounce before pushing. Discrete one-shot changes (toggles,
+  // segmented pickers) use a short delay so a quick reload can't race ahead of the push
+  // and revert the setting; only rapid keystroke edits (typed list labels/colors) need
+  // the long debounce so they don't spam the API on every character.
+  scheduleCloudSettingsPush(delayMs) {
     if (this.state.dataMode !== 'cloud' || !this._cloud || !this._cloudSynced) return;
     clearTimeout(this._cfgPushT);
     this._cfgPushT = setTimeout(() => {
       if (this.state.dataMode === 'cloud' && this._cloud && this._cloudSynced) this.cloudSave(this.state.locations || []);
-    }, 1500);
+    }, Number.isFinite(delayMs) ? delayMs : 1500);
   }
 
   // Admin-only full overwrite of the entire cloud dataset (Import / Clear).
@@ -3133,7 +3215,7 @@ class Component extends DCLogic {
    * number; persistConfigNoBump is used mid-typing in the data editor so the
    * version only ticks once on blur. Any config change also schedules a cloud push. */
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, updateFreqMin: s.cfgUpdateFreqMin, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, cardLayout: s.cfgCardLayout, spin: s.cfgSpin, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, updateFreqMin: s.cfgUpdateFreqMin, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -3143,7 +3225,7 @@ class Component extends DCLogic {
       this.rebuildLookups(merged);
     }
     try { localStorage.setItem(this.CFG, JSON.stringify(this.cfgObject(merged))); } catch (e) {}
-    this.scheduleCloudSettingsPush();
+    this.scheduleCloudSettingsPush(150);
     return { ...ns, cfgVersion: ver };
   }
 
@@ -3155,7 +3237,7 @@ class Component extends DCLogic {
       this.rebuildLookups(merged);
     }
     try { localStorage.setItem(this.CFG, JSON.stringify(this.cfgObject(merged))); } catch (e) {}
-    this.scheduleCloudSettingsPush();
+    this.scheduleCloudSettingsPush(1500);
     return ns;
   }
 
@@ -3354,6 +3436,7 @@ class Component extends DCLogic {
       cfgDetailsCard: settings.detailsCard !== false,
       cfgStatusCard: settings.statusCard !== false,
       cfgShowThumbs: settings.showThumbs !== false,
+      cfgCardLayout: ['banner','thumbnail','framed'].includes(settings.cardLayout) ? settings.cardLayout : 'banner',
       cfgSpin: settings.spin !== false,
       cfgStateBorders: settings.stateBorders === true,
       cfgAutoClaim: settings.autoClaim === true,
@@ -3435,6 +3518,9 @@ class Component extends DCLogic {
     this.toast('Checking for updates every ' + min + ' min');
   }
   dismissUpdate() { this.setState({ updateDismissed: true }); }
+  setCardLayout(key) {
+    this.setState(s => this.persistConfig(s, { cfgCardLayout: key }));
+  }
   toggleAuthor() { this.setState(s => ({ authorOpen: !s.authorOpen })); }
   closeHelp() { this.setState({ helpOpen: false }); }
   openHelp() { this.setState({ helpOpen: true }); this.loadHelpDoc('readme'); }
@@ -4849,6 +4935,9 @@ class Component extends DCLogic {
         visBadge: this.visBadge(sl),
         hasPhoto: !!(this.state.cfgShowThumbs && sl.photo),
         noPhoto: !(this.state.cfgShowThumbs && sl.photo),
+        layoutBanner: !!(this.state.cfgShowThumbs && sl.photo) && this.state.cfgCardLayout === 'banner',
+        layoutThumb: !!(this.state.cfgShowThumbs && sl.photo) && this.state.cfgCardLayout === 'thumbnail',
+        layoutFramed: !!(this.state.cfgShowThumbs && sl.photo) && this.state.cfgCardLayout === 'framed',
         travelerKeys: sl.travelers || [],
         onStatsHover: (e) => this.showCardStat(e, 'trip:' + sl.id),
         onStatsLeave: () => this.hideCardStat(),
@@ -5301,6 +5390,12 @@ class Component extends DCLogic {
       cfgThumbsStyle: cfgPill(this.state.cfgShowThumbs),
       cfgThumbsLabel: this.state.cfgShowThumbs ? 'ON' : 'OFF',
       toggleShowThumbs: () => this.toggleCfgKey('cfgShowThumbs', 'showThumbs'),
+      cfgShowThumbs: this.state.cfgShowThumbs,
+      cardLayoutSeg: [
+        { key: 'banner', label: 'Banner' },
+        { key: 'thumbnail', label: 'Compact' },
+        { key: 'framed', label: 'Framed' },
+      ].map(o => ({ label: o.label, style: segStyle(this.state.cfgCardLayout === o.key, '#fbbf24'), onSelect: () => this.setCardLayout(o.key) })),
       photoEmpty: !this.state.form.photo,
       hasPhotoSuggestion: !!this.state.photoSuggestion,
       photoSuggestionLabel: this.state.photoSuggestion ? this.state.photoSuggestion.label : '',
