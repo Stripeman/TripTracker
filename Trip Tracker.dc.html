@@ -101,6 +101,8 @@
             <span style="font-size:16px; line-height:1;">+</span> Add location
           </button>
         </sc-if>
+        <button onClick="{{ toggleMetrics }}" title="Trip metrics" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
+        <button onClick="{{ openHelp }}" title="Help &amp; guide" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; font-size:15px; font-weight:700;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">?</button>
         <sc-if value="{{ showProfileBtn }}" hint-placeholder-val="{{ false }}">
           <button onClick="{{ toggleProfile }}" title="Your profile" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg>
@@ -212,8 +214,6 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex:none;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">CONFIGURATION</div>
           <div style="display:flex; align-items:center; gap:8px;">
-            <button onClick="{{ toggleMetrics }}" title="Trip metrics" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
-            <button onClick="{{ openHelp }}" title="Help &amp; guide" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center; font-weight:700;">?</button>
             <button onClick="{{ toggleAuthor }}" title="About the author" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center;">ⓘ</button>
             <button onClick="{{ toggleSettings }}" style="width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:14px; line-height:1;">×</button>
           </div>
@@ -927,7 +927,43 @@
 
     <!-- selected detail card -->
     <sc-if value="{{ selected }}" hint-placeholder-val="{{ null }}">
-      <div class="tt-detailcard" style="position:absolute; left:362px; bottom:30px; width:308px; pointer-events:auto; background:rgba(8,14,24,0.84); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(251,191,36,0.34); border-radius:16px; padding:18px; box-shadow:0 12px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(251,191,36,0.08); animation:vl-fade 0.22s ease;">
+      <div class="tt-detailcard" style="position:absolute; left:362px; bottom:30px; width:308px; pointer-events:auto; background:rgba(8,14,24,0.84); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(251,191,36,0.34); border-radius:16px; padding:18px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.5),0 0 0 1px rgba(251,191,36,0.08); animation:vl-fade 0.22s ease;">
+        <sc-if value="{{ selected.hasPhoto }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative; margin:-18px -18px 13px; height:126px;">
+            <img ref="{{ setSelectedPhotoImg }}" style="width:100%; height:100%; object-fit:cover; display:block;">
+            <div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(8,14,24,0) 38%,rgba(8,14,24,0.92) 100%);"></div>
+            <div style="position:absolute; top:10px; right:10px; display:flex; align-items:center; gap:6px;">
+              <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:pointer; font-size:15px; line-height:1;">×</button>
+              <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
+              </sc-if>
+              <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
+                <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
+              </sc-if>
+            </div>
+            <div style="position:absolute; left:14px; bottom:9px; right:14px;">
+              <sc-if value="{{ showStatusCard }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:{{ selected.color }};box-shadow:0 0 10px {{ selected.color }};"></span>
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:{{ selected.color }};">{{ selected.statusLabel }}</span>
+                </div>
+              </sc-if>
+              <div style="font-size:19px; font-weight:600; color:#fff; margin-top:5px; text-shadow:0 2px 10px rgba(0,0,0,0.65);">{{ selected.city }}</div>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8093aa;">{{ selected.sub }}</div>
+            <sc-if value="{{ selected.ownerBadge }}" hint-placeholder-val="{{ null }}">
+              <div style="display:flex; align-items:center; gap:7px; flex:none;">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:{{ selected.ownerBadge.color }}; border:1px solid {{ selected.ownerBadge.color }}44; border-radius:6px; padding:2px 7px;">{{ selected.ownerBadge.label }}</span>
+                <sc-if value="{{ selected.visBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ selected.noPhoto }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
           <div style="flex:1; min-width:0;">
             <sc-if value="{{ showStatusCard }}" hint-placeholder-val="{{ true }}">
@@ -947,14 +983,6 @@
               </div>
             </sc-if>
           </div>
-          <sc-if value="{{ selected.hasPhoto }}" hint-placeholder-val="{{ false }}">
-            <div style="position:relative; flex:none;">
-              <img ref="{{ setSelectedPhotoImg }}" style="width:56px; height:56px; object-fit:cover; border-radius:10px; border:1px solid rgba(255,255,255,0.14); display:block;">
-              <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
-                <button onClick="{{ deleteSelectedPhoto }}" title="Remove photo" style="position:absolute; top:-6px; left:-6px; width:17px; height:17px; border-radius:50%; background:#2a1518; border:1px solid rgba(239,68,68,0.55); color:#f0a8a8; font-size:10px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">×</button>
-              </sc-if>
-            </div>
-          </sc-if>
           <div style="display:flex; flex-direction:column; align-items:center; gap:7px; flex:none;">
             <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
             <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
@@ -965,6 +993,7 @@
             </sc-if>
           </div>
         </div>
+        </sc-if>
         <sc-if value="{{ permOpen }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:13px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.22); border-radius:11px; padding:11px 12px;">
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; color:#7fb4d8; margin-bottom:8px;">WHO CAN SEE THIS</div>
@@ -1012,7 +1041,6 @@
         <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex; gap:9px; margin-top:16px;">
             <button onClick="{{ editSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 18px rgba(251,191,36,0.35);">Edit</button>
-            <button onClick="{{ deleteSelected }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:10px 14px; cursor:pointer;">Delete</button>
           </div>
         </sc-if>
         <sc-if value="{{ selectedReadOnly }}" hint-placeholder-val="{{ false }}">
@@ -1549,7 +1577,11 @@
         <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:9px; padding:9px 11px; margin-bottom:12px;">{{ formError }}</div>
         </sc-if>
-        <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <sc-if value="{{ showFormDelete }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ askDeleteFromForm }}" title="Delete this trip" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13px; color:#f0a6a6; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:11px; padding:12px 16px; cursor:pointer;">Delete</button>
+            <div style="flex:1;"></div>
+          </sc-if>
           <button onClick="{{ closeForm }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:14px; color:#9fb0c6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:11px; padding:12px 18px; cursor:pointer;">Cancel</button>
           <button onClick="{{ saveForm }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:11px; padding:12px; cursor:pointer; transition:all .15s; box-shadow:0 0 16px rgba(95,211,255,0.28);">{{ saveLabel }}</button>
         </div>
@@ -1601,7 +1633,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.14-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.15-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4172,7 +4204,7 @@ class Component extends DCLogic {
     let html;
     if (String(key).indexOf('trip:') === 0) {
       const tripId = key.slice(5);
-      const loc = (this.state.locations || []).find(l => l.id === tripId);
+      const loc = (this.state.locations || []).find(l => String(l.id) === tripId);
       const keys = loc ? (loc.travelers || []) : [];
       html = '<div style="font-weight:600; color:#eaf4fd; margin-bottom:6px;">Traveler stats</div>' + keys.map(k => this.personStatsHtml(k)).join('<div style="height:1px; background:rgba(255,255,255,0.1); margin:7px 0;"></div>');
       if (!keys.length) html += '<div style="color:#8a9ab2;">No travelers tagged</div>';
@@ -4426,8 +4458,8 @@ class Component extends DCLogic {
     if (isAdmin && p.email) this.personSetRole(p.email, '');
   }
 
-  deleteSelected() {
-    const id = this.state.selectedId;
+  deleteSelected(idArg, fromForm) {
+    const id = idArg != null ? idArg : this.state.selectedId;
     const loc = this.state.locations.find(l => l.id === id);
     if (!loc) return;
     const place = [loc.city, loc.state, loc.country].filter(Boolean).join(', ') || 'this trip';
@@ -4435,15 +4467,18 @@ class Component extends DCLogic {
     let dateText = '';
     if (loc.date && loc.dateEnd && loc.dateEnd !== loc.date) dateText = fmt(loc.date) + ' – ' + fmt(loc.dateEnd);
     else if (loc.date) dateText = fmt(loc.date);
-    this.setState({ pendingTripDelete: { id, place, dateText, photo: loc.photo || '' } });
+    this.setState({ pendingTripDelete: { id, place, dateText, photo: loc.photo || '', fromForm: !!fromForm } });
   }
+  askDeleteFromForm() { this.deleteSelected(this.state.editingId, true); }
   cancelTripDelete() { this.setState({ pendingTripDelete: null }); }
   confirmTripDelete() {
     const pd = this.state.pendingTripDelete;
     if (!pd) return;
     const list = this.state.locations.filter(l => l.id !== pd.id);
     this.persist(list);
-    this.setState({ locations: list, selectedId: null, pendingTripDelete: null });
+    this.setState(pd.fromForm
+      ? { locations: list, selectedId: null, pendingTripDelete: null, formOpen: false, editingId: null, formError: '' }
+      : { locations: list, selectedId: null, pendingTripDelete: null });
     this.toast('Trip deleted');
   }
 
@@ -4548,14 +4583,6 @@ class Component extends DCLogic {
   setPhotoInputRef = (el) => { this._photoInput = el; };
   triggerPhotoPick = () => { if (this._photoInput) { this._photoInput.value = ''; this._photoInput.click(); } };
   removePhoto = () => { this.setState(s => ({ form: { ...s.form, photo: '' } })); };
-  // Remove the photo from the currently-selected trip card (not the edit form).
-  deleteSelectedPhoto = () => {
-    const id = this.state.selectedId;
-    if (id == null) return;
-    const list = this.state.locations.map(l => l.id === id ? { ...l, photo: '', modifiedAt: new Date().toISOString() } : l);
-    this.persist(list);
-    this.toast('Photo removed');
-  };
   // Profile bubble bulk action: strip the photo from every trip THIS user owns.
   askRemoveAllPhotos = () => { this.setState({ confirmRemovePhotos: true }); };
   cancelRemoveAllPhotos = () => { this.setState({ confirmRemovePhotos: false }); };
@@ -4821,6 +4848,7 @@ class Component extends DCLogic {
         ownerBadge: this.ownerBadge(sl),
         visBadge: this.visBadge(sl),
         hasPhoto: !!(this.state.cfgShowThumbs && sl.photo),
+        noPhoto: !(this.state.cfgShowThumbs && sl.photo),
         travelerKeys: sl.travelers || [],
         onStatsHover: (e) => this.showCardStat(e, 'trip:' + sl.id),
         onStatsLeave: () => this.hideCardStat(),
@@ -4829,6 +4857,9 @@ class Component extends DCLogic {
     const meId = this.state.cloudUserId || '';
     const selOwnedByMe = !sl || this.tripUnassigned(sl) || this.tripIsMine(sl);
     const canEditSelected = (this.state.cfgDataSource !== 'cloud') || ((this.state.cloudRoles || []).includes('editor') && selOwnedByMe);
+    const editingLoc = locations.find(l => l.id === this.state.editingId);
+    const editOwnedByMe = !editingLoc || this.tripUnassigned(editingLoc) || this.tripIsMine(editingLoc);
+    const showFormDelete = this.state.editingId != null && ((this.state.cfgDataSource !== 'cloud') || ((this.state.cloudRoles || []).includes('editor') && editOwnedByMe));
 
     const segBase = "display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13.5px; text-align:left; padding:12px 14px; border-radius:11px; cursor:pointer; transition:all 0.16s; width:100%;";
     const seg = (key) => {
@@ -5275,7 +5306,6 @@ class Component extends DCLogic {
       photoSuggestionLabel: this.state.photoSuggestion ? this.state.photoSuggestion.label : '',
       useSuggestedPhoto: () => this.useSuggestedPhoto(),
       dismissPhotoSuggestion: () => this.dismissPhotoSuggestion(),
-      deleteSelectedPhoto: this.deleteSelectedPhoto,
       setFormPhotoImg: this.setFormPhotoImg,
       setSelectedPhotoImg: this.setSelectedPhotoImg,
       setDeletePhotoImg: this.setDeletePhotoImg,
@@ -5540,6 +5570,8 @@ class Component extends DCLogic {
       saveForm: this.saveForm,
       editSelected: this.editSelected,
       deleteSelected: this.deleteSelected,
+      askDeleteFromForm: () => this.askDeleteFromForm(),
+      showFormDelete,
       pendingTripDelete: this.state.pendingTripDelete,
       cancelTripDelete: this.cancelTripDelete,
       confirmTripDelete: this.confirmTripDelete,

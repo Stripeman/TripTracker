@@ -4,6 +4,15 @@ All notable changes to **Trip Tracker** are recorded here. The newest release is
 
 ---
 
+## 0.9.15-beta
+
+### Changed
+- **Top bar** — Metrics and Help icons moved up next to the Profile/Settings icons.
+- **Trip detail card** — when a trip has a photo, the card now shows it as a full-bleed banner behind the header instead of a small square thumbnail; trips without a photo keep the original layout unchanged. The card's photo-delete control was removed (still available from the edit form).
+- **Delete trip** — moved from the detail card into the edit form's footer (Delete · Cancel · Save), using the same confirmation dialog.
+
+---
+
 ## 0.9.14-beta
 
 ### Added
