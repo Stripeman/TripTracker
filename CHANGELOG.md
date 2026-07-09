@@ -4,6 +4,24 @@ All notable changes to **Trip Tracker** are recorded here. The newest release is
 
 ---
 
+## 0.9.9-beta
+
+### Added
+- **Delete your own photos.** A small × now sits on the corner of the trip-card thumbnail to remove that trip's photo (owner only). Your profile bubble also shows how many of your trips have a photo, with a "Remove all" bulk action (with confirm).
+- **Reuse a photo across trips.** Typing a city/country that matches another trip you own with a photo now offers "Reuse your photo from X?" instead of requiring a fresh upload — accept or dismiss, never auto-applied.
+
+### Fixed
+- **Detail card layout.** The trip photo now sits to the right of the title/city text (left of the lock icon), instead of shifting the whole card's content over.
+
+---
+
+## 0.9.8-beta
+
+### Fixed
+- **Stale login stats on hover.** The Users tab hover bubble (online dot, login count, last login) only ever loaded once, when you opened the tab — it never showed someone logging in/out until you refreshed the page. It now refreshes automatically every 30s and on hover.
+
+---
+
 ## 0.9.7-beta
 
 ### Added
