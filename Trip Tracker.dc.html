@@ -515,7 +515,17 @@
               <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Settings</span>
               <button onClick="{{ toggleSelSettings }}" style="{{ selSettingsStyle }}">{{ selSettingsLabel }}</button>
             </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Images <span style="color:#586a82; font-size:10.5px;">· .zip</span></span>
+              <button onClick="{{ toggleSelImages }}" style="{{ selImagesStyle }}">{{ selImagesLabel }}</button>
+            </div>
           </div>
+          <sc-if value="{{ showImageScope }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; gap:6px; margin-top:9px;">
+              <button onClick="{{ setScopeMine }}" style="{{ scopeMineStyle }}">My photos</button>
+              <button onClick="{{ setScopeEveryone }}" style="{{ scopeEveryoneStyle }}">Everyone <span style="opacity:0.75;">(zip per person)</span></button>
+            </div>
+          </sc-if>
           <div style="display:flex; gap:8px; margin-top:13px;">
             <button onClick="{{ exportSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:9px; padding:9px; cursor:pointer; font-weight:600; transition:all .15s; box-shadow:0 0 9px rgba(95,211,255,0.26);">Export</button>
             <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
@@ -1591,7 +1601,7 @@ class Component extends DCLogic {
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.13-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.14-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1828,6 +1838,8 @@ class Component extends DCLogic {
       includeSettings: true,
       selData: true,
       selSettings: true,
+      selImages: false,
+      imageExportScope: 'mine',
       authorOpen: false,
       updateAvailable: false,
       latestVersion: '',
@@ -3184,6 +3196,101 @@ class Component extends DCLogic {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  // ---- minimal ZIP writer (STORE method, no compression — photos are already JPEGs) ----
+  static _crcTable() {
+    if (Component._crcTbl) return Component._crcTbl;
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
+    Component._crcTbl = t; return t;
+  }
+  static _crc32(bytes) {
+    const t = Component._crcTable(); let c = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) c = t[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  // entries: [{ name, bytes: Uint8Array }] → Uint8Array of a valid .zip (no directories, flat/paths in names)
+  static _buildZip(entries) {
+    const chunks = []; const central = []; let offset = 0;
+    const dosDT = () => { const d = new Date(); const dt = (((d.getFullYear() - 1980) & 0x7f) << 9) | ((d.getMonth() + 1) << 5) | d.getDate(); const tm = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1); return { dt, tm }; };
+    const u16 = (n) => new Uint8Array([n & 0xFF, (n >> 8) & 0xFF]);
+    const u32 = (n) => new Uint8Array([n & 0xFF, (n >> 8) & 0xFF, (n >> 16) & 0xFF, (n >>> 24) & 0xFF]);
+    const cat = (...arrs) => { const out = new Uint8Array(arrs.reduce((n, a) => n + a.length, 0)); let o = 0; arrs.forEach(a => { out.set(a, o); o += a.length; }); return out; };
+    entries.forEach(({ name, bytes }) => {
+      const nameBytes = new TextEncoder().encode(name);
+      const crc = Component._crc32(bytes);
+      const { dt, tm } = dosDT();
+      const localHeader = cat(u32(0x04034b50), u16(20), u16(0), u16(0), u16(tm), u16(dt), u32(crc), u32(bytes.length), u32(bytes.length), u16(nameBytes.length), u16(0), nameBytes);
+      chunks.push(localHeader, bytes);
+      const centralHeader = cat(u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(tm), u16(dt), u32(crc), u32(bytes.length), u32(bytes.length), u16(nameBytes.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset), nameBytes);
+      central.push(centralHeader);
+      offset += localHeader.length + bytes.length;
+    });
+    const centralStart = offset;
+    const centralBytes = cat(...central);
+    const end = cat(u32(0x06054b50), u16(0), u16(0), u16(entries.length), u16(entries.length), u32(centralBytes.length), u32(centralStart), u16(0));
+    return cat(...chunks, centralBytes, end);
+  }
+  static _dataUrlToBytes(dataUrl) {
+    const b64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+    const bin = atob(b64); const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+  // Filename-safe label for a trip: "City, Country — 2026-05-10"
+  _photoFileName(l, used) {
+    const place = [l.city, l.country].filter(Boolean).join(', ') || l.place || 'trip';
+    let base = (place + (l.date ? ' — ' + l.date : '')).replace(/[\\/:*?"<>|]/g, '-').trim();
+    let name = base + '.jpg', n = 2;
+    while (used.has(name)) { name = base + ' (' + n + ').jpg'; n++; }
+    used.add(name);
+    return name;
+  }
+  // Admin/editor: export trip photos as a .zip. scope 'mine' → just your own trips'
+  // photos, flat. scope 'everyone' → every trip you can see, grouped by owner — the
+  // outer zip contains one inner .zip per person (a zip of zips), plus any unassigned
+  // photos flat at the top level.
+  exportImages(scope) {
+    const withPhoto = (this.state.locations || []).filter(l => l.photo);
+    if (!withPhoto.length) { this.setState({ storageMsg: 'No trip photos to export.' }); return; }
+    const stamp = new Date().toISOString().slice(0, 10);
+    if (scope === 'mine') {
+      const mine = withPhoto.filter(l => this.state.cfgDataSource !== 'cloud' || this.tripIsMine(l));
+      if (!mine.length) { this.setState({ storageMsg: 'None of your trips have a photo.' }); return; }
+      const used = new Set();
+      const entries = mine.map(l => ({ name: this._photoFileName(l, used), bytes: Component._dataUrlToBytes(l.photo) }));
+      const zip = Component._buildZip(entries);
+      this._downloadBytes(zip, 'trip-photos-mine-' + stamp + '.zip');
+      this.toast('Exported ' + entries.length + ' photo' + (entries.length === 1 ? '' : 's'));
+      return;
+    }
+    // everyone: group by owner email (or 'Unassigned'), one inner zip per group
+    const groups = {};
+    withPhoto.forEach(l => {
+      const email = (l.ownerEmail || '').toLowerCase().trim();
+      const label = email ? (this.travelerNameByEmail(email) || email) : 'Unassigned';
+      (groups[label] = groups[label] || []).push(l);
+    });
+    const outerUsed = new Set();
+    const outerEntries = Object.keys(groups).sort().map(label => {
+      const used = new Set();
+      const inner = groups[label].map(l => ({ name: this._photoFileName(l, used), bytes: Component._dataUrlToBytes(l.photo) }));
+      const innerZip = Component._buildZip(inner);
+      let base = label.replace(/[\\/:*?"<>|]/g, '-').trim() || 'user', name = base + '.zip', n = 2;
+      while (outerUsed.has(name)) { name = base + ' (' + n + ').zip'; n++; }
+      outerUsed.add(name);
+      return { name, bytes: innerZip };
+    });
+    const outerZip = Component._buildZip(outerEntries);
+    this._downloadBytes(outerZip, 'trip-photos-everyone-' + stamp + '.zip');
+    this.toast('Exported photos for ' + outerEntries.length + ' ' + (outerEntries.length === 1 ? 'person' : 'people'));
+  }
+  _downloadBytes(bytes, filename) {
+    const blob = new Blob([bytes], { type: 'application/zip' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
   // Export trips and/or settings to a downloaded JSON file. kind is
   // 'data' | 'settings' | 'both' — driven by the Export switches in the panel.
   exportKind(kind) {
@@ -3326,8 +3433,14 @@ class Component extends DCLogic {
     }
   }
   toggleSel(key) { this.setState(s => ({ [key]: !s[key] })); }
+  setImageExportScope(scope) { this.setState({ imageExportScope: scope }); }
   selKind() { const d = this.state.selData, s = this.state.selSettings; if (d && s) return 'both'; if (d) return 'data'; if (s) return 'settings'; return null; }
-  exportSelected() { const k = this.selKind(); if (!k) { this.setState({ storageMsg: 'Turn on Data and/or Settings first.' }); return; } this.exportKind(k); }
+  exportSelected() {
+    const k = this.selKind();
+    if (!k && !this.state.selImages) { this.setState({ storageMsg: 'Turn on Data, Settings, and/or Images first.' }); return; }
+    if (k) this.exportKind(k);
+    if (this.state.selImages) this.exportImages(this.state.imageExportScope);
+  }
   importSelected() { const k = this.selKind(); if (!k) { this.setState({ storageMsg: 'Turn on Data and/or Settings first.' }); return; } this.importKind(k); }
 
   toggleSettings() {
@@ -5348,7 +5461,7 @@ class Component extends DCLogic {
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
-      appUpdated: 'June 28, 2026',
+      appUpdated: 'July 9, 2026',
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
       latestVersion: this.state.latestVersion,
@@ -5380,6 +5493,14 @@ class Component extends DCLogic {
       selDataLabel: this.state.selData ? 'ON' : 'OFF',
       selSettingsStyle: cfgPill(this.state.selSettings),
       selSettingsLabel: this.state.selSettings ? 'ON' : 'OFF',
+      selImagesStyle: cfgPill(this.state.selImages),
+      selImagesLabel: this.state.selImages ? 'ON' : 'OFF',
+      toggleSelImages: () => this.toggleSel('selImages'),
+      showImageScope: this.state.selImages && this.state.cfgDataSource === 'cloud',
+      scopeMineStyle: segStyle(this.state.imageExportScope === 'mine', '#5fd3ff'),
+      scopeEveryoneStyle: segStyle(this.state.imageExportScope === 'everyone', '#5fd3ff'),
+      setScopeMine: () => this.setImageExportScope('mine'),
+      setScopeEveryone: () => this.setImageExportScope('everyone'),
       toggleSelData: () => this.toggleSel('selData'),
       toggleSelSettings: () => this.toggleSel('selSettings'),
       exportSelected: () => this.exportSelected(),
