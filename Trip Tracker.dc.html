@@ -416,6 +416,7 @@
             </div>
           </sc-for>
         </sc-if>
+
         </sc-if>
 
         <sc-if value="{{ showStorageTab }}" hint-placeholder-val="{{ false }}">
@@ -428,6 +429,21 @@
         </div>
         </sc-if>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:12px;">DATA &amp; STORAGE</div>
+
+        <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">DEBUG</div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:14px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">App settings JSON</span>
+              <button onClick="{{ openDebugSettingsJson }}" title="Debug: view raw settings JSON" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">All trips data JSON</span>
+              <button onClick="{{ openDebugDataJson }}" title="Debug: view/edit raw all-trips JSON" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
+            </div>
+          </div>
+        </sc-if>
+
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">DATA SOURCE</div>
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <button onClick="{{ setLocalSource }}" style="{{ dsLocalStyle }}">Local</button>
@@ -1217,7 +1233,11 @@
               </sc-if>
               <sc-if value="{{ debugJsonViewing }}" hint-placeholder-val="{{ true }}">
                 <button onClick="{{ copyDebugJson }}" title="Copy JSON" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">{{ debugJsonCopyLabel }}</button>
+                <button onClick="{{ openDebugHistory }}" title="Revert to a previous version" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">History</button>
                 <button onClick="{{ startDebugJsonEdit }}" title="Edit raw JSON" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Edit</button>
+              </sc-if>
+              <sc-if value="{{ debugJsonHistoryOpen }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ closeDebugHistory }}" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#dbe6f2; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Back</button>
               </sc-if>
               <button onClick="{{ closeDebugJson }}" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#dbe6f2; cursor:pointer; font-size:13px; line-height:1;">×</button>
             </div>
@@ -1228,6 +1248,32 @@
             <div style="flex:1; min-height:0; overflow:auto; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:10px; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5;">
               <sc-for list="{{ debugJsonDiff }}" as="d" hint-placeholder-count="10">
                 <div style="{{ d.style }}">{{ d.prefix }}{{ d.text }}</div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ debugJsonHistoryOpen }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ debugHistoryEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7d90a8;">No saved versions yet — edits you confirm will appear here.</div>
+            </sc-if>
+            <div style="flex:1; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:6px;">
+              <sc-for list="{{ debugJsonHistoryList }}" as="h" hint-placeholder-count="3">
+                <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px 12px; flex:none;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#c2cfde;">{{ h.label }}</span>
+                    <div style="display:flex; align-items:center; gap:6px; flex:none;">
+                      <button onClick="{{ h.togglePreview }}" style="flex:none; height:22px; padding:0 9px; border-radius:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#9fb3c8; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:9.5px;">{{ h.previewLabel }}</button>
+                      <button onClick="{{ h.revert }}" style="flex:none; height:22px; padding:0 9px; border-radius:6px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.4); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:9.5px;">Revert</button>
+                    </div>
+                  </div>
+                  <sc-if value="{{ h.expanded }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:8px; max-height:180px; overflow:auto; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:8px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.5;">
+                      <sc-for list="{{ h.diff }}" as="d" hint-placeholder-count="6">
+                        <div style="{{ d.style }}">{{ d.prefix }}{{ d.text }}</div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
               </sc-for>
             </div>
           </sc-if>
@@ -1834,8 +1880,9 @@ class Component extends DCLogic {
     this._debugGutterRef = React.createRef();
     // --- storage keys + app version ---
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
+    this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.18-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.20-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3243,7 +3290,9 @@ class Component extends DCLogic {
   // ---- data storage (browser + optional linked JSON file) ----
   persistLocal(list) { try { localStorage.setItem(this.STORE, JSON.stringify(list)); } catch (e) {} }
   copyDebugJson() {
-    const text = JSON.stringify(this.state.locations.find(l => l.id === this.state.selectedId) || {}, null, 2);
+    const t = this.state.debugJsonTarget || 'trip';
+    const data = t === 'settings' ? this.cfgObject(this.state) : t === 'data' ? (this.state.locations || []) : (this.state.locations.find(l => l.id === this.state.selectedId) || {});
+    const text = JSON.stringify(data, null, 2);
     this.setState({ debugJsonCopied: true });
     clearTimeout(this._debugCopyTimer);
     this._debugCopyTimer = setTimeout(() => this.setState({ debugJsonCopied: false }), 1600);
@@ -3257,32 +3306,123 @@ class Component extends DCLogic {
       document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     } catch (e) {}
   }
+  // Which localStorage/history "slot" a debug target uses: a trip's own id, or a
+  // fixed key for the whole-settings / whole-dataset debug views.
+  debugHistKey(target, state) {
+    if (target === 'settings') return 'settings';
+    if (target === 'data') return 'alldata';
+    return state.selectedId;
+  }
+  // Opens the debug JSON modal for a given target: 'trip' (the selected trip,
+  // default), 'settings' (app config/preferences), or 'data' (every trip at once).
+  // Settings/data are admin-only, surfaced from the System and Storage tabs.
+  openDebugJsonFor(target) {
+    this.setState(s => {
+      const data = target === 'settings' ? this.cfgObject(s)
+        : target === 'data' ? (s.locations || [])
+        : (s.locations.find(l => l.id === s.selectedId) || {});
+      return { debugJsonOpen: true, debugJsonTarget: target, debugJsonEditing: false, debugJsonConfirming: false, debugJsonHistoryOpen: false, debugJsonHistoryExpanded: {}, debugJsonDraft: '', debugJsonError: '', debugJsonCopied: false, debugJsonOriginal: JSON.stringify(data, null, 2) };
+    });
+  }
   // Parses the debug modal's edited draft (validating JSON formatting) and stages
   // a diff against the original for the user to confirm before anything is saved.
   reviewDebugJsonEdit() {
-    const id = this.state.selectedId;
+    const target = this.state.debugJsonTarget || 'trip';
     let parsed;
     try { parsed = JSON.parse(this.state.debugJsonDraft); }
     catch (e) { this.setState({ debugJsonError: 'Invalid JSON: ' + e.message }); return; }
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) { this.setState({ debugJsonError: 'Must be a single JSON object.' }); return; }
-    if (!parsed.id) parsed.id = id;
-    if (parsed.id !== id) { this.setState({ debugJsonError: "Can't change a trip's id here." }); return; }
+    if (target === 'data') {
+      if (!Array.isArray(parsed)) { this.setState({ debugJsonError: 'Must be a JSON array of trips.' }); return; }
+    } else {
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) { this.setState({ debugJsonError: 'Must be a single JSON object.' }); return; }
+      if (target === 'trip') {
+        const id = this.state.selectedId;
+        if (!parsed.id) parsed.id = id;
+        if (parsed.id !== id) { this.setState({ debugJsonError: "Can't change a trip's id here." }); return; }
+      }
+    }
     const before = this.state.debugJsonOriginal || '';
     const after = JSON.stringify(parsed, null, 2);
     this.setState({ debugJsonError: '', debugJsonConfirming: true, debugJsonPending: parsed, debugJsonDiff: this.diffLines(before, after) });
   }
-  backToDebugJsonEdit() { this.setState({ debugJsonConfirming: false, debugJsonPending: null, debugJsonDiff: [] }); }
+  backToDebugJsonEdit() {
+    if (this.state.debugJsonConfirmFrom === 'history') {
+      this.setState({ debugJsonConfirming: false, debugJsonPending: null, debugJsonDiff: [], debugJsonHistoryOpen: true });
+    } else {
+      this.setState({ debugJsonConfirming: false, debugJsonPending: null, debugJsonDiff: [] });
+    }
+  }
   // Actually persists the staged edit via the normal persist() path (local +
   // linked file + cloud, whichever is active) — only reached after the user has
-  // seen the diff and explicitly confirmed it.
+  // seen the diff and explicitly confirmed it. Snapshots the pre-edit JSON into
+  // this trip's version history first, so any save (including a revert) can
+  // itself be undone later.
+  // Maps the friendly key names shown in the settings debug JSON back onto the
+  // cfg* state fields cfgObject() reads them from.
+  settingsKeyMap() {
+    return { version: 'cfgVersion', detailsFormDefault: 'cfgDetailsFormDefault', detailsCard: 'cfgDetailsCard', statusCard: 'cfgStatusCard', showThumbs: 'cfgShowThumbs', cardLayout: 'cfgCardLayout', spin: 'cfgSpin', debugMode: 'cfgDebugMode', stateBorders: 'cfgStateBorders', autoClaim: 'cfgAutoClaim', updateFreqMin: 'cfgUpdateFreqMin', theme: 'cfgTheme', defaultYear: 'cfgDefaultYear', defaultTrip: 'cfgDefaultTrip', defaultStatus: 'cfgDefaultStatus', defaultTraveler: 'cfgDefaultTraveler', defaultVisit: 'cfgDefaultVisit', sortDir: 'sortDir', dataSource: 'cfgDataSource', accessEmail: 'cfgAccessEmail', visitTypes: 'cfgVisitTypes', tripTypes: 'cfgTripTypes', travelers: 'cfgTravelers', statuses: 'cfgStatuses' };
+  }
   confirmDebugJsonSave() {
-    const id = this.state.selectedId;
+    const target = this.state.debugJsonTarget || 'trip';
     const parsed = this.state.debugJsonPending;
-    if (!parsed) return;
-    const list = this.state.locations.map(l => l.id === id ? parsed : l);
-    this.persist(list);
-    this.setState({ debugJsonEditing: false, debugJsonConfirming: false, debugJsonDraft: '', debugJsonError: '', debugJsonPending: null, debugJsonDiff: [] });
-    this.toast('Trip JSON saved');
+    if (parsed == null) return;
+    const key = this.debugHistKey(target, this.state);
+    this.pushDebugHistory(key, this.state.debugJsonOriginal || '');
+    if (target === 'trip') {
+      const id = this.state.selectedId;
+      const list = this.state.locations.map(l => l.id === id ? parsed : l);
+      this.persist(list);
+    } else if (target === 'settings') {
+      const map = this.settingsKeyMap();
+      const ns = {};
+      Object.keys(map).forEach(k => { if (Object.prototype.hasOwnProperty.call(parsed, k)) ns[map[k]] = parsed[k]; });
+      this.setState(s => this.persistConfig(s, ns));
+    } else if (target === 'data') {
+      this.persist(parsed);
+    }
+    const label = target === 'trip' ? 'Trip' : target === 'settings' ? 'Settings' : 'Data';
+    this.setState({ debugJsonEditing: false, debugJsonConfirming: false, debugJsonHistoryOpen: false, debugJsonDraft: '', debugJsonError: '', debugJsonPending: null, debugJsonDiff: [], debugJsonConfirmFrom: null, debugJsonOriginal: JSON.stringify(parsed, null, 2) });
+    this.toast(label + ' JSON saved');
+  }
+  // ---- debug JSON version history (per trip, capped, newest first) ----
+  loadDebugHistoryMap() { try { return JSON.parse(localStorage.getItem(this.HIST_KEY)) || {}; } catch (e) { return {}; } }
+  saveDebugHistoryMap(map) { try { localStorage.setItem(this.HIST_KEY, JSON.stringify(map)); } catch (e) {} }
+  pushDebugHistory(id, json) {
+    if (!id || !json) return;
+    const map = this.loadDebugHistoryMap();
+    const arr = map[id] || [];
+    arr.unshift({ ts: Date.now(), json });
+    map[id] = arr.slice(0, 10);
+    this.saveDebugHistoryMap(map);
+  }
+  getDebugHistory(id) { return (this.loadDebugHistoryMap()[id] || []); }
+  formatHistoryTs(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return sameDay ? `Today, ${time}` : `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}, ${time}`;
+  }
+  // Stages a chosen history entry as a pending edit and jumps straight to the
+  // diff-confirm screen (against the trip's *current* JSON) — reverting is just
+  // an edit whose source is a past version instead of the textarea.
+  revertToHistoryVersion(entry) {
+    const target = this.state.debugJsonTarget || 'trip';
+    let parsed;
+    try { parsed = JSON.parse(entry.json); } catch (e) { return; }
+    if (target === 'trip') parsed.id = this.state.selectedId;
+    const before = this.state.debugJsonOriginal || '';
+    const after = JSON.stringify(parsed, null, 2);
+    this.setState({ debugJsonHistoryOpen: false, debugJsonConfirming: true, debugJsonConfirmFrom: 'history', debugJsonPending: parsed, debugJsonDiff: this.diffLines(before, after) });
+  }
+  // Expand/collapse a diff-only preview of a history entry vs. the current JSON,
+  // inline in the history list — no need to start a revert to see what changed.
+  toggleHistoryPreview(ts) {
+    this.setState(s => {
+      const exp = { ...(s.debugJsonHistoryExpanded || {}) };
+      exp[ts] = !exp[ts];
+      return { debugJsonHistoryExpanded: exp };
+    });
   }
   // Simple LCS-based line diff (fine for single-trip-object-sized JSON).
   diffLines(a, b) {
@@ -5751,13 +5891,36 @@ class Component extends DCLogic {
       toggleDebugMode: () => this.toggleCfgKey('cfgDebugMode', 'debugMode'),
       showDebugBtn: this.state.cfgDebugMode,
       debugJsonOpen: this.state.debugJsonOpen,
-      debugJsonText: this.state.debugJsonOpen ? JSON.stringify(this.state.locations.find(l => l.id === this.state.selectedId) || {}, null, 2) : '',
+      debugJsonText: this.state.debugJsonOpen ? JSON.stringify(
+        this.state.debugJsonTarget === 'settings' ? this.cfgObject(this.state)
+        : this.state.debugJsonTarget === 'data' ? (this.state.locations || [])
+        : (this.state.locations.find(l => l.id === this.state.selectedId) || {}), null, 2) : '',
       debugJsonEditing: this.state.debugJsonEditing && !this.state.debugJsonConfirming,
-      debugJsonViewing: !this.state.debugJsonEditing && !this.state.debugJsonConfirming,
+      debugJsonViewing: !this.state.debugJsonEditing && !this.state.debugJsonConfirming && !this.state.debugJsonHistoryOpen,
+      debugJsonHistoryOpen: this.state.debugJsonHistoryOpen,
+      debugJsonHistoryList: (this.state.debugJsonHistoryList || []).map((h) => {
+        const expanded = !!(this.state.debugJsonHistoryExpanded || {})[h.ts];
+        return {
+          label: this.formatHistoryTs(h.ts),
+          revert: () => this.revertToHistoryVersion(h),
+          togglePreview: () => this.toggleHistoryPreview(h.ts),
+          previewLabel: expanded ? 'Hide diff' : 'Preview diff',
+          expanded,
+          diff: expanded ? this.diffLines(h.json, this.state.debugJsonOriginal || '') : [],
+        };
+      }),
+      debugHistoryEmpty: this.state.debugJsonHistoryOpen && !(this.state.debugJsonHistoryList || []).length,
       debugJsonConfirming: this.state.debugJsonConfirming,
       debugJsonDiff: this.state.debugJsonDiff || [],
-      debugJsonHeaderLabel: this.state.debugJsonConfirming ? 'CONFIRM CHANGES' : (this.state.debugJsonEditing ? 'EDIT TRIP JSON' : 'TRIP JSON'),
-      debugJsonModalWidth: this.state.debugJsonConfirming ? '560px' : '480px',
+      debugJsonHeaderLabel: (() => {
+        const t = this.state.debugJsonTarget || 'trip';
+        const noun = t === 'settings' ? 'SETTINGS' : t === 'data' ? 'ALL TRIPS DATA' : 'TRIP';
+        if (this.state.debugJsonConfirming) return 'CONFIRM CHANGES';
+        if (this.state.debugJsonHistoryOpen) return 'VERSION HISTORY';
+        if (this.state.debugJsonEditing) return 'EDIT ' + noun + ' JSON';
+        return noun + ' JSON';
+      })(),
+      debugJsonModalWidth: (this.state.debugJsonConfirming || this.state.debugJsonHistoryOpen) ? '560px' : '480px',
       debugJsonDraft: this.state.debugJsonDraft,
       debugJsonLineNumbers: (this.state.debugJsonDraft || '').split('\n').map((_, i) => i + 1).join('\n'),
       debugTaRef: this._debugTaRef,
@@ -5766,13 +5929,17 @@ class Component extends DCLogic {
       debugJsonError: this.state.debugJsonError,
       debugJsonCopyLabel: this.state.debugJsonCopied ? 'Copied ✓' : 'Copy',
       onDebugJsonDraftChange: (e) => this.setState({ debugJsonDraft: e.target.value, debugJsonError: '' }),
-      openDebugJson: () => this.setState(s => ({ debugJsonOpen: true, debugJsonEditing: false, debugJsonConfirming: false, debugJsonDraft: '', debugJsonError: '', debugJsonCopied: false, debugJsonOriginal: JSON.stringify(s.locations.find(l => l.id === s.selectedId) || {}, null, 2) })),
-      closeDebugJson: () => this.setState({ debugJsonOpen: false, debugJsonEditing: false, debugJsonConfirming: false, debugJsonDraft: '', debugJsonError: '', debugJsonPending: null, debugJsonDiff: [] }),
+      openDebugJson: () => this.openDebugJsonFor('trip'),
+      openDebugSettingsJson: () => this.openDebugJsonFor('settings'),
+      openDebugDataJson: () => this.openDebugJsonFor('data'),
+      closeDebugJson: () => this.setState({ debugJsonOpen: false, debugJsonEditing: false, debugJsonConfirming: false, debugJsonHistoryOpen: false, debugJsonHistoryExpanded: {}, debugJsonDraft: '', debugJsonError: '', debugJsonPending: null, debugJsonDiff: [] }),
       copyDebugJson: () => this.copyDebugJson(),
       startDebugJsonEdit: () => this.setState(s => ({ debugJsonEditing: true, debugJsonDraft: s.debugJsonOriginal, debugJsonError: '' })),
       cancelDebugJsonEdit: () => this.setState({ debugJsonEditing: false, debugJsonDraft: '', debugJsonError: '' }),
       reviewDebugJsonEdit: () => this.reviewDebugJsonEdit(),
       backToDebugJsonEdit: () => this.backToDebugJsonEdit(),
+      openDebugHistory: () => this.setState(s => ({ debugJsonHistoryOpen: true, debugJsonHistoryExpanded: {}, debugJsonHistoryList: this.getDebugHistory(this.debugHistKey(s.debugJsonTarget || 'trip', s)) })),
+      closeDebugHistory: () => this.setState({ debugJsonHistoryOpen: false }),
       confirmDebugJsonSave: () => this.confirmDebugJsonSave(),
       cardLayoutSeg: [
         { key: 'banner', label: 'Banner' },

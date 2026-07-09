@@ -4,6 +4,17 @@ All notable changes to **Trip Tracker** are recorded here. The newest release is
 
 ---
 
+## 0.9.20-beta
+
+### Added
+- **Debug JSON for settings and all-trips data, not just a single trip.** In System → Data & Storage, a new **Debug** section (admin only) has bug-icon buttons for **App settings JSON** and **All trips data JSON** — same view / edit / diff-confirm / version-history flow as a trip's debug JSON, just scoped to your whole config or your whole dataset instead of one trip.
+- **Diff-only history preview.** Each entry in a debug JSON's version history now has a **Preview diff** toggle that shows what changed against the current JSON inline, without needing to start a revert first.
+
+## 0.9.19-beta
+
+### Added
+- **Revert to a previous JSON version.** The trip JSON panel now has a **History** button that lists every version you've confirmed for that trip (newest first, up to 10), each timestamped. Reverting shows the usual line-by-line diff against the trip's current data before you confirm — a revert is just another reviewable edit, so it can itself be undone later.
+
 ## 0.9.18-beta
 
 ### Added

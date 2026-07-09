@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
 
-![Version](https://img.shields.io/badge/version-0.9.18--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-0.9.19--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -117,10 +117,11 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 - Toggle whether **trip details** and the **status** appear on the detail card.
 - **Spin the globe** — turn the idle auto‑rotation on or off (you can always drag to spin manually).
 - **State / province borders** — overlay internal admin‑1 borders on large countries (USA, Canada, Brazil, Australia, China, India, Russia, Indonesia, South Africa). Off by default; the data (~880 KB) is fetched lazily only the first time you enable it, and the lines are drawn only while the globe is still, so spin performance is unaffected. Countries smaller than South Korea are never drawn.
-- **Debug info on trip cards** — off by default; when on, every trip card gets a small bug‑icon button (matching the tint of the card's other icon buttons) that opens a panel with that trip's raw JSON. From there you can **copy** the JSON, or **Edit** it in a line‑numbered editor — saving requires reviewing a line‑by‑line diff and confirming; malformed JSON is caught and blocked before you can proceed. trip's raw JSON, including its `id`. Meant for troubleshooting, not everyday use.
+- **Debug info on trip cards** — off by default; when on, every trip card gets a small bug‑icon button (matching the tint of the card's other icon buttons) that opens a panel with that trip's raw JSON (including its `id`). From there you can **copy** the JSON, or **Edit** it in a line‑numbered editor — saving requires reviewing a line‑by‑line diff and confirming; malformed JSON is caught and blocked before you can proceed. A **History** button lists every version you've confirmed for that trip so you can revert to one (also via a reviewable diff, plus a **Preview diff** toggle to see what changed without starting a revert). Meant for troubleshooting, not everyday use.
 
 **System tab** — data, storage & app info:
 - **Data source** (Local browser / linked file, or Cloud), **Export / Restore**, and **Clear data** (see Storage & backup).
+- **Debug** (admin only) — the same view / edit / diff‑confirm / version‑history flow as a trip's debug JSON, scoped instead to your **whole app settings** or your **entire trips dataset** at once.
 - **Access requests** and the **access list** of who's allowed in (admin only, Cloud mode), with a per‑user hover tooltip (online status, login count, last login, trips logged) and an **Export login stats (CSV)** button on the Users tab.
 - *(The GitHub repository link now lives in the **ⓘ** dropdown.)*
 
