@@ -528,10 +528,23 @@ module.exports = async function (context, req) {
     if (action === "approveAccess") {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
       const email = String(body.email || "").toLowerCase().trim();
-      const familyId = body.familyId;
+      let familyId = body.familyId;
       let role = String(body.role || "reader").toLowerCase();
-      if (!email || !familyId) { json(400, { error: "Email and family are required." }); return; }
+      if (!email) { json(400, { error: "Email is required." }); return; }
       if (VALID_ROLES.indexOf(role) === -1) role = "reader";
+      let newFam = null;
+      if (!familyId || familyId === "__new__") {
+        // No family picked: create a brand-new family for this person (same effect
+        // as them using "create family" themselves) and make them its admin.
+        const local = email.split("@")[0] || "New";
+        const label = local.charAt(0).toUpperCase() + local.slice(1);
+        const color = FAMILY_COLORS[families.length % FAMILY_COLORS.length];
+        newFam = { id: genId("fam"), name: label + "'s Family", color, createdBy: email, createdAt: new Date().toISOString(), approved: true, autoApproved: true };
+        families.push(newFam);
+        await writeJsonBlob(container, FAMILIES_BLOB, families);
+        familyId = newFam.id;
+        role = "admin"; // sole member of their own new family
+      }
       const idx = members.findIndex((m) => m.email === email && m.familyId === familyId);
       if (idx >= 0) members[idx] = { ...members[idx], role, active: true };
       else members.push({ email, familyId, role, active: true, createdAt: new Date().toISOString() });
@@ -540,7 +553,7 @@ module.exports = async function (context, req) {
       if (!Array.isArray(requests)) requests = [];
       requests = requests.filter((r) => r && String(r.email || "").toLowerCase() !== email);
       await writeJsonBlob(container, ACCESS_REQUESTS_BLOB, requests);
-      const fam = families.find((f) => f.id === familyId);
+      const fam = newFam || families.find((f) => f.id === familyId);
       notifyApproved(email, fam ? fam.name : "", role); // fire-and-forget, best-effort
       json(200, { ok: true });
       return;

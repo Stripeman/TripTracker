@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.3.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.4.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -189,7 +189,7 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 **System tab** — data, storage & app info:
 - **Data source** (Local browser / linked file, or Cloud), **Export / Restore**, and **Clear data** (see Storage & backup).
 - **Debug** (admin only) — the same view / edit / diff‑confirm / version‑history flow as a trip's debug JSON, scoped instead to your **whole app settings** or your **entire trips dataset** at once.
-- **Access requests and approvals** now live in **People & Family Management → Pending Actions** (site admins) — approving a request grants the chosen role in the chosen family and emails the person that they're in; declining just clears the request. A badge on the person‑icon button shows the pending count.
+- **Access requests and approvals** live in **People & Family Management → Pending Actions** (site admins) — approve into an existing family and role, or leave it on the default **"+ New family for them"** to auto-create a solo family with that person as its admin; either way it emails the person that they're in; declining just clears the request. A badge on the person‑icon button shows the pending count.
 - *(The GitHub repository link now lives in the **help guide**, opened from the **help icon**.)*
 
 ### 📊 Trip metrics

@@ -4,6 +4,23 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.4.0-beta
+
+### Added
+- **Create family → popup.** "Create a new family" moved off the inline panel onto a
+  button in People & Family Management, opening a small focused popup.
+- **Rename a family.** Family admins can click the family name in the detail panel to
+  rename it inline (Enter to save, Escape to cancel).
+- **Approve access without picking a family.** Approving a pending access request now
+  defaults to **"+ New family for them"** — it auto-creates a solo family and makes
+  that person its admin, instead of requiring an admin to choose an existing family
+  first. Picking an existing family from the dropdown still works as before.
+- **First-login onboarding.** A signed-in user with no family memberships yet is taken
+  straight to People & Family Management with the "Create a new family" popup open,
+  welcoming them and prompting them to create one. They're made its admin automatically,
+  then it's auto-approved or pending per the site's approval setting — same as creating
+  a family any other way.
+
 ## 1.0.0-beta — Multi-Family
 
 This is the big one: the app now supports multiple independent **Families**, each owning

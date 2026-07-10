@@ -1309,18 +1309,16 @@
                             <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7c8ea6;">{{ r.whenText }}</span>
                           </div>
                           <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
-                            <select value="{{ r.role }}" onChange="{{ r.onRole }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                            <select value="{{ r.role }}" onChange="{{ r.onRole }}" disabled="{{ r.isNewFamily }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none; opacity:{{ r.roleOpacity }};">
                               <option value="reader" style="background:#0a1422;">Reader</option>
                               <option value="editor" style="background:#0a1422;">Editor</option>
                               <option value="admin" style="background:#0a1422;">Admin</option>
                             </select>
-                            <sc-if value="{{ r.showFamilyPicker }}" hint-placeholder-val="{{ false }}">
-                              <select value="{{ r.familyId }}" onChange="{{ r.onFamily }}" style="flex:1; min-width:120px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                                <sc-for list="{{ r.familyOptions }}" as="fo" hint-placeholder-count="1">
-                                  <option value="{{ fo.value }}" style="background:#0a1422;">{{ fo.label }}</option>
-                                </sc-for>
-                              </select>
-                            </sc-if>
+                            <select value="{{ r.familyId }}" onChange="{{ r.onFamily }}" style="flex:1; min-width:150px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                              <sc-for list="{{ r.familyOptions }}" as="fo" hint-placeholder-count="1">
+                                <option value="{{ fo.value }}" style="background:#0a1422;">{{ fo.label }}</option>
+                              </sc-for>
+                            </select>
                             <button onClick="{{ r.onApprove }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:6px 12px; cursor:pointer;">Approve</button>
                             <button onClick="{{ r.onDecline }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 10px; cursor:pointer;">Decline</button>
                           </div>
@@ -1360,7 +1358,12 @@
                 <sc-if value="{{ noActiveFamilyLogo }}" hint-placeholder-val="{{ true }}">
                   <span style="flex:none; width:12px; height:12px; border-radius:50%; background:{{ activeFamilyColor }}; box-shadow:0 0 10px {{ activeFamilyColor }};"></span>
                 </sc-if>
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#f1f6fc;">{{ activeFamilyName }}</div>
+                <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
+                  <input key="{{ activeFamilyId }}" defaultValue="{{ activeFamilyName }}" onBlur="{{ onRenameFamilyBlur }}" onKeyDown="{{ onRenameFamilyKeyDown }}" title="Click to rename" style="font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#f1f6fc; background:none; border:1px solid transparent; border-radius:6px; padding:2px 6px; margin:-2px -6px; outline:none; min-width:0;" style-hover="border-color:rgba(255,255,255,0.14);" style-focus="border-color:rgba(56,189,248,0.5); background:rgba(255,255,255,0.04);"/>
+                </sc-if>
+                <sc-if value="{{ notActiveFamilyAdmin }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#f1f6fc;">{{ activeFamilyName }}</div>
+                </sc-if>
               </div>
               <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; margin-bottom:14px;">A family owns its own trips and travelers. Members share access at reader, editor or admin level.</div>
               <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
@@ -1492,19 +1495,7 @@
                 </sc-for>
               </div>
 
-              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:13px 14px;">
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">CREATE A NEW FAMILY</div>
-                <div style="display:flex; gap:8px;">
-                  <input value="{{ newFamilyName }}" onChange="{{ setNewFamilyName }}" placeholder="e.g. The Andersons" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:8px 10px; outline:none;"/>
-                  <button onClick="{{ createFamily }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Create</button>
-                </div>
-                <sc-if value="{{ autoApproveFamilies }}" hint-placeholder-val="{{ false }}">
-                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7ee0a8; margin-top:7px;">New families are auto-approved right now.</div>
-                </sc-if>
-                <sc-if value="{{ notAutoApproveFamilies }}" hint-placeholder-val="{{ true }}">
-                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; margin-top:7px;">New families need site-admin approval before they can be used.</div>
-                </sc-if>
-              </div>
+              <button onClick="{{ openNewFamilyModal }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.08); border:1px dashed rgba(95,211,255,0.4); border-radius:10px; padding:10px 14px; cursor:pointer;">+ Create a new family</button>
             </sc-if>
 
             <sc-if value="{{ famMgmtViewSiteFam }}" hint-placeholder-val="{{ false }}">
@@ -1554,6 +1545,30 @@
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:7px; line-height:1.5;">Exports every family, membership, share, invite link, and additional site admin as one JSON file. Importing <b style="color:#e9c46a;">replaces</b> all of it — you'll be asked to confirm first.</div>
               </div>
             </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- new-family popup -->
+    <sc-if value="{{ newFamilyModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeNewFamilyModal }}" style="position:fixed; inset:0; z-index:92; background:rgba(2,6,14,0.7); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; pointer-events:auto;">
+        <div onClick="{{ stop }}" style="width:360px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(56,189,248,0.3); border-radius:14px; padding:22px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <sc-if value="{{ newFamilyIsOnboarding }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#5fd3ff; margin-bottom:6px;">WELCOME — LET'S GET YOU SET UP</div>
+          </sc-if>
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; color:#f1f6fc; margin-bottom:4px;">Create a new family</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; line-height:1.5; margin-bottom:14px;">A family owns its own trips and travelers. You'll be made its admin automatically, and can invite others in after.</div>
+          <input value="{{ newFamilyName }}" onChange="{{ setNewFamilyName }}" placeholder="e.g. The Andersons" autoFocus="{{ true }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:10px 11px; outline:none;"/>
+          <sc-if value="{{ autoApproveFamilies }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7ee0a8; margin-top:9px;">New families are auto-approved right now.</div>
+          </sc-if>
+          <sc-if value="{{ notAutoApproveFamilies }}" hint-placeholder-val="{{ true }}">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; margin-top:9px;">New families need site-admin approval before they can be used.</div>
+          </sc-if>
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <button onClick="{{ closeNewFamilyModal }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px; cursor:pointer;">{{ newFamilyCancelLabel }}</button>
+            <button onClick="{{ createFamily }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:700; color:#04111e; background:linear-gradient(180deg,#7fe3ff,#5fd3ff); border:none; border-radius:8px; padding:9px; cursor:pointer;">Create</button>
           </div>
         </div>
       </div>
@@ -2751,7 +2766,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.3.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.4.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2988,6 +3003,9 @@ class Component extends DCLogic {
       mySiteAdmin: false,
       autoApproveFamilies: false,
       newFamilyName: '',
+      newFamilyModalOpen: false,
+      newFamilyIsOnboarding: false,
+      onboardPromptShown: false,
       shareTargetFamilyId: '',
       shareTargetRole: 'reader',
       activeFamilyId: '',
@@ -3371,8 +3389,7 @@ class Component extends DCLogic {
     this.setState(s => ({ reqDraftFamily: { ...s.reqDraftFamily, [email]: e.target.value } }));
   }
   async approveAccessRequest(email, role, familyId) {
-    if (!familyId) { this.toast('Pick a family first.'); return; }
-    const j = await this.familiesAction('approveAccess', { email, role, familyId });
+    const j = await this.familiesAction('approveAccess', { email, role, familyId: familyId || '__new__' });
     if (j) { this.toast('Access granted to ' + email + ' — they\u2019ve been emailed'); this.loadFamilies(); }
   }
   async declineAccessRequest(email) {
@@ -3458,6 +3475,11 @@ class Component extends DCLogic {
         pendingFamiliesList: j.pendingFamilies || [],
         activeFamilyId: active,
       });
+      // First-ever login with no family memberships yet: take them straight to
+      // People & Family, prompted to create one (they become its admin automatically).
+      if (mine.length === 0 && !this.state.onboardPromptShown) {
+        this.setState({ onboardPromptShown: true, familyMgmtOpen: true, famMgmtView: 'families', newFamilyModalOpen: true, newFamilyIsOnboarding: true });
+      }
     } catch (e) {}
   }
   async familiesActionSilent(action, extra) {
@@ -3478,13 +3500,15 @@ class Component extends DCLogic {
     } catch (e) { this.toast('Request failed.'); return null; }
   }
   setNewFamilyName(e) { this.setState({ newFamilyName: e.target.value }); }
+  openNewFamilyModal() { this.setState({ newFamilyModalOpen: true }); }
+  closeNewFamilyModal() { this.setState({ newFamilyModalOpen: false }); }
   async createFamily() {
     const name = (this.state.newFamilyName || '').trim();
     if (!name) return;
     const j = await this.familiesAction('create', { name });
     if (j && j.family) {
-      this.setState({ newFamilyName: '', activeFamilyId: j.family.id });
-      this.toast(j.family.approved ? ('Created "' + name + '"') : ('Created "' + name + '" — awaiting approval'));
+      this.setState({ newFamilyName: '', activeFamilyId: j.family.id, newFamilyModalOpen: false, newFamilyIsOnboarding: false });
+      this.toast(j.family.approved ? ('Created "' + name + '" — you\'re its admin') : ('Created "' + name + '" — you\'re its admin, awaiting approval'));
     }
   }
   famColor(familyId) {
@@ -3553,6 +3577,18 @@ class Component extends DCLogic {
   async setFamilyColorClick(color) {
     if (!this.state.activeFamilyId) return;
     await this.familiesAction('setFamilyColor', { familyId: this.state.activeFamilyId, color });
+  }
+  async renameFamily(name) {
+    const familyId = this.state.activeFamilyId;
+    const clean = (name || '').trim();
+    if (!familyId || !clean) return;
+    const j = await this.familiesAction('rename', { familyId, name: clean });
+    if (j) this.toast('Renamed to "' + clean + '"');
+  }
+  onRenameFamilyBlur(e) { this.renameFamily(e.target.value); }
+  onRenameFamilyKeyDown(e) {
+    if (e.key === 'Enter') { e.target.blur(); }
+    else if (e.key === 'Escape') { e.target.value = this.state.cfgFamilies && (this.state.cfgFamilies.find(f => f.id === this.state.activeFamilyId) || {}).name || ''; e.target.blur(); }
   }
   setShareTargetFamilyId(e) { this.setState({ shareTargetFamilyId: e.target.value }); }
   setShareTargetRole(e) { this.setState({ shareTargetRole: e.target.value }); }
@@ -3816,6 +3852,11 @@ class Component extends DCLogic {
       newFamilyName: s.newFamilyName,
       setNewFamilyName: (e) => this.setNewFamilyName(e),
       createFamily: () => this.createFamily(),
+      newFamilyModalOpen: !!s.newFamilyModalOpen,
+      newFamilyIsOnboarding: !!s.newFamilyIsOnboarding,
+      newFamilyCancelLabel: s.newFamilyIsOnboarding ? 'Skip for now' : 'Cancel',
+      openNewFamilyModal: () => this.openNewFamilyModal(),
+      closeNewFamilyModal: () => this.closeNewFamilyModal(),
       autoApproveFamilies: !!s.autoApproveFamilies,
       notAutoApproveFamilies: !s.autoApproveFamilies,
       myFamilyRows,
@@ -3842,7 +3883,7 @@ class Component extends DCLogic {
       accessRequestRows: (s.cfgAccessRequests || []).map((r) => {
         const email = r.email;
         const role = (s.reqDraftRole || {})[email] || 'reader';
-        const familyId = (s.reqDraftFamily || {})[email] || s.activeFamilyId || (families[0] || {}).id || '';
+        const familyId = (s.reqDraftFamily || {})[email] || '__new__';
         let whenText = '';
         if (r.ts) {
           const d = new Date(r.ts);
@@ -3850,8 +3891,10 @@ class Component extends DCLogic {
         }
         return {
           email, whenText, role, familyId,
-          showFamilyPicker: families.length > 1,
-          familyOptions: families.map((f) => ({ value: f.id, label: f.name })),
+          isNewFamily: familyId === '__new__',
+          roleOpacity: familyId === '__new__' ? 0.45 : 1,
+          showFamilyPicker: true,
+          familyOptions: [{ value: '__new__', label: '+ New family for them' }, ...families.map((f) => ({ value: f.id, label: f.name }))],
           onRole: (e) => this.setReqDraftRole(email, e),
           onFamily: (e) => this.setReqDraftFamily(email, e),
           onApprove: () => this.approveAccessRequest(email, role, familyId),
@@ -3874,6 +3917,9 @@ class Component extends DCLogic {
       familyViewMode: s.familyViewMode || 'active',
       setFamilyViewModeEv: (e) => this.setFamilyViewMode(e.target.value),
       activeFamilyName: (activeFam && activeFam.name) || '',
+      notActiveFamilyAdmin: !isActiveFamilyAdmin,
+      onRenameFamilyBlur: (e) => this.onRenameFamilyBlur(e),
+      onRenameFamilyKeyDown: (e) => this.onRenameFamilyKeyDown(e),
       activeFamilyColor: (activeFam && activeFam.color) || '#5fd3ff',
       activeFamilyLogo: (activeFam && activeFam.logo) || '',
       activeFamilyLogoRef: (el) => { if (el && activeFam && activeFam.logo) el.src = activeFam.logo; },
@@ -7778,7 +7824,7 @@ class Component extends DCLogic {
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
-      appUpdated: 'July 11, 2026',
+      appUpdated: 'July 10, 2026',
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
       latestVersion: this.state.latestVersion,
