@@ -4,6 +4,28 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.5.0-beta
+
+### Fixed
+- **Users tab was showing everyone in the system, not just your family.** The People
+  roster was pulling from a global, unscoped list gated only by a legacy global admin
+  role — any signed-in person could see (and, if they had that legacy role, edit or
+  rename) users outside their own family. It's now scoped so you only see people who
+  share a family with you or yourself; editing/renaming a role, activating/deactivating,
+  or deleting someone now requires being a site admin or an admin of *that person's*
+  family.
+
+### Added
+- **Users tab grouped by family (site admins).** Site admins still see every user, now
+  grouped under each family's name, with a "No family" group for anyone unassigned.
+- **Family name is read-only with a Rename button**, replacing the previous
+  click-to-edit field, in the People & Family Management detail panel.
+- **Onboarding after an admin-created family.** When a site admin approves an access
+  request without picking an existing family (a solo family gets auto-created for that
+  person), their first login now takes them straight to People & Family Management with
+  renaming already in progress and a tip about adding the rest of their family. The
+  approval email includes the same instructions.
+
 ## 1.4.0-beta
 
 ### Added

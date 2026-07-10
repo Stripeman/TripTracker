@@ -107,11 +107,19 @@ function genId(prefix) {
 // Best-effort courtesy email when a site admin approves a pending access request.
 // Uses the same Resend env vars as /api/request-access; silently no-ops if unset
 // or if the send fails — approval itself already succeeded via the membership write.
-async function notifyApproved(email, familyName, role) {
+async function notifyApproved(email, familyName, role, isNewFamily) {
   const key = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM;
   if (!key || !from) return;
   const roleLabel = role === "admin" ? "Admin" : role === "editor" ? "Editor" : "Reader";
+  const site = process.env.SITE_URL || "";
+  let body = "Your access request was approved.\n\nFamily: " + (familyName || "\u2014") + "\nRole: " + roleLabel + "\n\nSign in with this email address to get started.";
+  if (isNewFamily) {
+    body += "\n\nA new family, \"" + (familyName || "") + "\", was created for you and you're its admin. A couple of things to do first:\n"
+      + "  1. Rename your family \u2014 open People & Family Management and click Rename next to the family name.\n"
+      + "  2. Add the rest of your family \u2014 from the same screen, invite people by email (or generate a shareable invite link) and set their role.";
+  }
+  if (site) body += "\n\n" + site;
   try {
     await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -120,7 +128,7 @@ async function notifyApproved(email, familyName, role) {
         from,
         to: [email],
         subject: "You now have access to Trip Tracker",
-        text: "Your access request was approved.\n\nFamily: " + (familyName || "—") + "\nRole: " + roleLabel + "\n\nSign in with this email address to get started.",
+        text: body,
       }),
     });
   } catch (e) {
@@ -201,7 +209,7 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
       const name = String((body.name || "")).trim();
       if (!name) { json(400, { error: "Name required." }); return; }
-      families = families.map((f) => f.id === body.familyId ? { ...f, name } : f);
+      families = families.map((f) => f.id === body.familyId ? { ...f, name, autoNamed: false } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       json(200, { ok: true });
       return;
@@ -539,7 +547,7 @@ module.exports = async function (context, req) {
         const local = email.split("@")[0] || "New";
         const label = local.charAt(0).toUpperCase() + local.slice(1);
         const color = FAMILY_COLORS[families.length % FAMILY_COLORS.length];
-        newFam = { id: genId("fam"), name: label + "'s Family", color, createdBy: email, createdAt: new Date().toISOString(), approved: true, autoApproved: true };
+        newFam = { id: genId("fam"), name: label + "'s Family", color, createdBy: email, createdAt: new Date().toISOString(), approved: true, autoApproved: true, autoNamed: true };
         families.push(newFam);
         await writeJsonBlob(container, FAMILIES_BLOB, families);
         familyId = newFam.id;
@@ -554,7 +562,7 @@ module.exports = async function (context, req) {
       requests = requests.filter((r) => r && String(r.email || "").toLowerCase() !== email);
       await writeJsonBlob(container, ACCESS_REQUESTS_BLOB, requests);
       const fam = newFam || families.find((f) => f.id === familyId);
-      notifyApproved(email, fam ? fam.name : "", role); // fire-and-forget, best-effort
+      notifyApproved(email, fam ? fam.name : "", role, !!newFam); // fire-and-forget, best-effort
       json(200, { ok: true });
       return;
     }

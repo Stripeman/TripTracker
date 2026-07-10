@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.4.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.5.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -10,9 +10,16 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 
 In Cloud mode, every trip and traveler belongs to a **Family**, not to an individual:
 
-- **Anyone signed in can create a family** (the family icon in the header opens
-  **Family Management**). New families need site-admin approval before their trips
-  become usable, unless the site admin has turned on auto-approve.
+- **Anyone signed in can create a family** — a "Create a new family" button on the
+  People & Family Management → Families detail panel opens a small popup. New families
+  need site-admin approval before their trips become usable, unless the site admin has
+  turned on auto-approve.
+- **First-login onboarding** — a brand-new user with no family yet is taken straight to
+  People & Family Management and prompted to create one; if a site admin instead
+  approved their access request without picking an existing family, a solo family is
+  auto-created for them (they're its admin) and they're walked straight to **renaming**
+  it (family name is otherwise read-only, with a **Rename** button) and adding the rest
+  of their family.
 - **Roles are scoped per family** — admin / editor / reader. The same person can be
   admin of their own family and just a reader in a family that invited them in.
   A separate **site admin** role sits above every family: create/approve/delete
@@ -171,7 +178,7 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 - Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
 - **Themes** — a grid of **10 looks** (Aurora · Cobalt · Violet · Orchid · Magenta · Crimson · Ember · Amber · Emerald · Mono). Picking one instantly retints the **whole app** — globe, tiles, cards, modals and all — and is saved with your settings. Aurora is the default cyan.
 
-**Users tab** (People & Family Management → Users) — the unified **People** list (everyone you can tag on a trip). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative) and, for a name‑only person, an **Owned by** parent user; a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
+**Users tab** (People & Family Management → Users) — the unified **People** list, scoped to your own family: you only see people who share a family with you (or yourself); everyone else is invisible, and only a site admin or an admin of that person's family can edit their role, activate/deactivate, or delete them. Site admins see everyone, **grouped by family** (with a "No family" group for anyone unassigned). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative) and, for a name‑only person, an **Owned by** parent user; a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
 - **Active / Inactive** — an admin can mark a user **Inactive** (keeps the record and role but revokes access until reactivated), shown as a coloured badge, and filter the list by **All / Active / Inactive**. The last remaining active admin can't be deactivated or deleted (buttons hidden, with a notice) — there's always at least one admin.nactive**.
 - **Delete user…** — an admin can remove a user; a confirmation first warns how many trips they **own** (deletable, or kept and unassigned) and how many they're **tagged on** (disassociated).
 
@@ -189,7 +196,7 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 **System tab** — data, storage & app info:
 - **Data source** (Local browser / linked file, or Cloud), **Export / Restore**, and **Clear data** (see Storage & backup).
 - **Debug** (admin only) — the same view / edit / diff‑confirm / version‑history flow as a trip's debug JSON, scoped instead to your **whole app settings** or your **entire trips dataset** at once.
-- **Access requests and approvals** live in **People & Family Management → Pending Actions** (site admins) — approve into an existing family and role, or leave it on the default **"+ New family for them"** to auto-create a solo family with that person as its admin; either way it emails the person that they're in; declining just clears the request. A badge on the person‑icon button shows the pending count.
+- **Access requests and approvals** live in **People & Family Management → Pending Actions** (site admins) — approve into an existing family and role, or leave it on the default **"+ New family for them"** to auto-create a solo family with that person as its admin; either way it emails the person that they're in (when a family was auto-created, the email also points them to renaming it and adding members). Declining just clears the request. A badge on the person‑icon button shows the pending count.
 - *(The GitHub repository link now lives in the **help guide**, opened from the **help icon**.)*
 
 ### 📊 Trip metrics
