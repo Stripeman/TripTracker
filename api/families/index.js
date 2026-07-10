@@ -52,6 +52,10 @@ function isSiteAdmin(email) {
     .split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
   return !!email && list.includes(email);
 }
+function siteAdminEmailList() {
+  return String(process.env.SITE_ADMIN_EMAIL || process.env.BOOTSTRAP_ADMIN_EMAIL || "")
+    .split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+}
 
 async function streamToString(readable) {
   const chunks = [];
@@ -115,6 +119,7 @@ module.exports = async function (context, req) {
         shares: visibleShares,
         myMemberships,
         siteAdmin: meIsSiteAdmin,
+        siteAdminEmails: meIsSiteAdmin ? siteAdminEmailList() : undefined,
         autoApproveFamilies: !!settings.autoApproveFamilies,
         pendingFamilies: meIsSiteAdmin ? families.filter((f) => !f.approved) : undefined,
       });

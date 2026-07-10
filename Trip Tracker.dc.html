@@ -210,7 +210,7 @@
           </div>
         </div>
       </sc-if>
-      <div class="tt-config" style="position:absolute; top:80px; right:30px; width:460px; max-height:calc(100vh - 150px); display:flex; flex-direction:column; pointer-events:auto; background:rgba(8,14,24,0.94); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid rgba(56,189,248,0.22); border-radius:14px; padding:18px; box-shadow:0 16px 50px rgba(0,0,0,0.55); animation:vl-fade 0.2s ease;">
+      <div class="tt-config" style="position:absolute; top:80px; right:30px; width:500px; max-height:calc(100vh - 150px); display:flex; flex-direction:column; pointer-events:auto; background:rgba(8,14,24,0.94); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid rgba(56,189,248,0.22); border-radius:14px; padding:18px; box-shadow:0 16px 50px rgba(0,0,0,0.55); animation:vl-fade 0.2s ease;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex:none;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">CONFIGURATION</div>
           <div style="display:flex; align-items:center; gap:8px;">
@@ -909,6 +909,33 @@
             </sc-for>
           </div>
 
+          <sc-if value="{{ hasActiveFamily }}" hint-placeholder-val="{{ false }}">
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:13px 14px; margin-bottom:16px;">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">MEMBERS OF {{ activeFamilyName }}</div>
+              <div style="display:flex; flex-direction:column; gap:7px;">
+                <sc-for list="{{ activeFamilyMemberRows }}" as="m" hint-placeholder-count="1">
+                  <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 9px;">
+                    <span style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#dbe6f2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.email }}</span>
+                    <sc-if value="{{ m.inactive }}" hint-placeholder-val="{{ false }}">
+                      <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.1em; color:#e9a3a3;">INACTIVE</span>
+                    </sc-if>
+                    <sc-if value="{{ m.canManage }}" hint-placeholder-val="{{ false }}">
+                      <select value="{{ m.role }}" onChange="{{ m.onRoleChange }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:6px; padding:4px 6px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                        <option value="reader" style="background:#0a1422;">Reader</option>
+                        <option value="editor" style="background:#0a1422;">Editor</option>
+                        <option value="admin" style="background:#0a1422;">Admin</option>
+                      </select>
+                      <button onClick="{{ m.onRemove }}" title="Remove from family" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
+                    </sc-if>
+                    <sc-if value="{{ m.cantManage }}" hint-placeholder-val="{{ true }}">
+                      <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6;">{{ m.roleLabel }}</span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:13px 14px; margin-bottom:16px;">
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">CREATE A NEW FAMILY</div>
             <div style="display:flex; gap:8px;">
@@ -951,6 +978,7 @@
           <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
             <div style="margin-top:6px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
               <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:8px;">SITE ADMIN</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; line-height:1.5; margin-bottom:12px;">Site admins are set via the <span style="color:#c8d2e0;">SITE_ADMIN_EMAIL</span> environment variable (comma-separated), not through this UI. Currently: <span style="color:#eaf4fd;">{{ siteAdminEmailsText }}</span></div>
 
               <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
                 <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c8d2e0;">Auto-approve new families</div>
@@ -1190,8 +1218,7 @@
               <div style="font-size:18px; font-weight:600; color:#f1f6fc; margin-top:5px; line-height:1.2;">{{ selected.city }}</div>
               <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#8093aa; margin-top:2px;">{{ selected.sub }}</div>
             </div>
-            <div style="display:flex; flex-direction:column; align-items:center; gap:6px; flex:none;">
-              <button onClick="{{ deselect }}" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:14px; line-height:1;">×</button>
+            <div style="display:flex; flex-direction:row; align-items:center; gap:6px; flex:none;">
               <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
                 <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
               </sc-if>
@@ -1201,6 +1228,7 @@
               <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
                 <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
               </sc-if>
+              <button onClick="{{ deselect }}" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:14px; line-height:1;">×</button>
             </div>
           </div>
           <sc-if value="{{ selected.ownerBadge }}" hint-placeholder-val="{{ null }}">
@@ -1238,8 +1266,7 @@
                 </div>
               </sc-if>
             </div>
-            <div style="display:flex; flex-direction:column; align-items:center; gap:7px; flex:none;">
-              <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
+            <div style="display:flex; flex-direction:row; align-items:center; gap:7px; flex:none;">
               <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
                 <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
               </sc-if>
@@ -1249,6 +1276,7 @@
               <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
                 <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
               </sc-if>
+              <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
             </div>
           </div>
           <div style="margin-top:11px; border-radius:11px; overflow:hidden; border:1px solid rgba(251,191,36,0.28); height:112px;">
@@ -1278,8 +1306,7 @@
               </div>
             </sc-if>
           </div>
-          <div style="display:flex; flex-direction:column; align-items:center; gap:7px; flex:none;">
-            <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
+          <div style="display:flex; flex-direction:row; align-items:center; gap:7px; flex:none;">
             <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
               <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
             </sc-if>
@@ -1289,6 +1316,7 @@
             <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
               <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
             </sc-if>
+            <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
           </div>
         </div>
         </sc-if>
@@ -2687,6 +2715,7 @@ class Component extends DCLogic {
         cfgMemberships: j.memberships || [],
         cfgShares: j.shares || [],
         mySiteAdmin: !!j.siteAdmin,
+        cfgSiteAdminEmails: j.siteAdminEmails || [],
         autoApproveFamilies: !!j.autoApproveFamilies,
         pendingFamiliesList: j.pendingFamilies || [],
         activeFamilyId: active,
@@ -2788,6 +2817,19 @@ class Component extends DCLogic {
       familyViewOptions.push({ value: 'all', label: 'Every family (site admin)' });
       families.filter(fm => fm.id !== s.activeFamilyId).forEach(fm => familyViewOptions.push({ value: fm.id, label: fm.name + ' (view as admin)' }));
     }
+    const activeMembers = (s.cfgMemberships || []).filter(m => m.familyId === s.activeFamilyId);
+    const myActiveMembership = activeMembers.find(m => m.email === s.cloudUserEmail);
+    const isActiveFamilyAdmin = !!s.mySiteAdmin || (myActiveMembership && myActiveMembership.role === 'admin');
+    const activeFamilyMemberRows = activeMembers.map(m => ({
+      email: m.email,
+      role: m.role,
+      roleLabel: roleLabel(m.role),
+      inactive: m.active === false,
+      canManage: isActiveFamilyAdmin,
+      cantManage: !isActiveFamilyAdmin,
+      onRoleChange: (e) => this.familiesAction('invitePerson', { familyId: s.activeFamilyId, email: m.email, role: e.target.value, active: m.active !== false }),
+      onRemove: () => { if (confirm('Remove ' + m.email + ' from this family?')) this.familiesAction('removeMember', { familyId: s.activeFamilyId, email: m.email }); },
+    }));
     return {
       newFamilyName: s.newFamilyName,
       setNewFamilyName: (e) => this.setNewFamilyName(e),
@@ -2823,6 +2865,11 @@ class Component extends DCLogic {
       familyViewOptions,
       familyViewMode: s.familyViewMode || 'active',
       setFamilyViewModeEv: (e) => this.setFamilyViewMode(e.target.value),
+      activeFamilyName: (activeFam && activeFam.name) || '',
+      hasActiveFamily: !!activeFam,
+      activeFamilyMemberRows,
+      isActiveFamilyAdmin,
+      siteAdminEmailsText: (s.cfgSiteAdminEmails || []).length ? (s.cfgSiteAdminEmails || []).join(', ') : 'none configured',
     };
   }
   // ---- presence ("who's online") — heartbeat + poll, Cloud mode only ----
@@ -3764,14 +3811,22 @@ class Component extends DCLogic {
     const seen = new Set(list.filter(l => l && this.isGuid(l.id)).map(l => l.id));
     let changed = false;
     const out = list.map(l => {
-      if (l && this.isGuid(l.id)) return l;
+      if (l && this.isGuid(l.id)) return this.reorderTripKeys(l);
       changed = true;
       let id = this.genId();
       while (seen.has(id)) id = this.genId();
       seen.add(id);
-      return { ...l, id };
+      return this.reorderTripKeys({ ...l, id });
     });
-    return changed ? out : list;
+    return changed ? out : out;
+  }
+  // Rebuild a trip object with id + familyId as the FIRST two keys, so they're easy to
+  // spot at the top of the raw JSON (debug viewer, exports) instead of buried at the end.
+  // Pure key-order cosmetics — same data either way.
+  reorderTripKeys(l) {
+    if (!l || typeof l !== 'object') return l;
+    const { id, familyId, ...rest } = l;
+    return { id, familyId: familyId || '', ...rest };
   }
   persist(list) {
     list = this.ensureIds(list);

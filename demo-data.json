@@ -5,11 +5,15 @@
   "settings": {
     "detailsFormDefault": true,
     "detailsCard": true,
-    "statusCard": true
+    "statusCard": true,
+    "cardLayout": "banner",
+    "showThumbs": true,
+    "spin": true
   },
   "locations": [
     {
-      "id": 1,
+      "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+      "familyId": "",
       "city": "Paris",
       "state": "",
       "country": "France",
@@ -22,11 +26,16 @@
       "visitTypes": ["city", "family"],
       "tripTypes": ["vacation"],
       "travelers": ["terry"],
+      "visibility": "private",
+      "sharedWith": [],
+      "owner": "",
+      "ownerEmail": "",
       "createdAt": "2026-06-19T13:48:07.884Z",
       "modifiedAt": "2026-06-19T13:48:07.884Z"
     },
     {
-      "id": 2,
+      "id": "0c4a6f2a-8e2b-4b6a-9a3d-2b7f9c1d6e42",
+      "familyId": "",
       "city": "Kyoto",
       "state": "",
       "country": "Japan",
@@ -39,6 +48,10 @@
       "visitTypes": ["city", "cultural"],
       "tripTypes": ["vacation"],
       "travelers": ["terry"],
+      "visibility": "private",
+      "sharedWith": [],
+      "owner": "",
+      "ownerEmail": "",
       "createdAt": "2026-06-19T13:48:07.884Z",
       "modifiedAt": "2026-06-19T13:48:07.884Z"
     }
