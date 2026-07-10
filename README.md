@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.2.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.3.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -133,7 +133,7 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
 - **Role-aware UI:** in Cloud mode the **Add / Edit / Delete** controls are hidden unless your account has the `editor` role, and **Import / Clear data** require the `admin` role (read-only `reader` accounts see neither). The **Users** tab and the data-list editors in **Settings** (trip/visit types, statuses) and the **Access requests** email are **admin-only** in Cloud mode too; non-admins don't see those controls at all. Local mode always allows editing.
 - **Sign in or request access:** when an unauthorized visitor opens the site in Cloud mode they get a clean **Sign in required / No access** screen (no data is shown) with two paths — **Sign in** with an authorized account, or **Request access** by entering their email. If the optional Resend email backend is configured (see deploy guide), the request is emailed straight to the owner ("Request sent ✓"); otherwise it falls back to opening the visitor's own mail app. The destination address is set in **⚙ → System → "Access requests go to"** and is shown on the sign-in screen so people can also email it directly.
 - **Multi-provider sign-in:** the Sign in screen offers **Microsoft, Google, and Yahoo** — people use whatever account they already have.
-- **App-managed access (no Azure invitations):** roles now live per-family in **⚙ → Families** (each family's admin manages who's in their family, at reader/editor/admin) — site admins can additionally assign anyone to any family from **⚙ → Families → Site Admin**. After someone signs in, the server's custom-roles function matches their email (across any provider) against their family memberships and grants a role — so you let people in or out from inside the app, never the Azure portal. A `BOOTSTRAP_ADMIN_EMAIL` / `SITE_ADMIN_EMAIL` env var is the lock-out safety net. **Inactive users:** an admin can mark a user **Inactive** (⚙ → Users) — the record and role are kept but access is revoked until reactivated.
+- **App-managed access (no Azure invitations):** roles live per-family in **People & Family Management** (each family's admin manages who's in their family, at reader/editor/admin) — site admins can additionally approve pending access requests and families, and assign anyone to any family. assign anyone to any family from **⚙ → Families → Site Admin**. After someone signs in, the server's custom-roles function matches their email (across any provider) against their family memberships and grants a role — so you let people in or out from inside the app, never the Azure portal. A `BOOTSTRAP_ADMIN_EMAIL` / `SITE_ADMIN_EMAIL` env var is the lock-out safety net. **Inactive users:** an admin can mark a user **Inactive** (⚙ → Users) — the record and role are kept but access is revoked until reactivated.
 - **Export / Import** with independent **Data** and **Settings** switches: back up or restore destinations, display settings, or both. Import only applies what you've switched on *and* what the file contains.
 - **Clear data** always downloads a dated backup first.
 
@@ -157,9 +157,9 @@ In Cloud mode every trip belongs to whoever created it — ownership is resolved
 - **Login analytics (admin):** in **⚙ → System → Access list**, an admin can **hover any person's row** to see a stat bubble — whether they've actually signed in, their **total login count**, **last login**, and **how many trips they've logged**. The bubble appears to the *bottom-left* of the cursor so it never blocks the email field. Login counts are recorded server-side (one count per page-load); trip totals are read from the dataset, so they're accurate even for trips you can't see.
 
 ### ⚙ Configuration — tabs
-The ⚙ **Configuration** panel has a tab row across the top — **Settings · Preferences · Users · Families · Trips · System** — with **Settings selected by default**. (**Families** and **Trips** show in Cloud mode / for any editor.) The **ⓘ** button drops a panel (under the tabs) with the author, build version, last‑updated date, and a link to the **GitHub repository**.
+The ⚙ **Configuration** panel has a tab row across the top — **Settings · Preferences · Trips · System** — with **Settings selected by default**. (**Trips** shows in Cloud mode / for any editor.)
 
-The **Families** tab covers the same ground as the dedicated **Family Management** view (see above) in a simpler single-column layout — use whichever you prefer; both read and write the same data.
+**People & Family Management** — the person‑icon button (top‑right) opens a single pane covering everyone and every family: **Users** (the People roster — editors/admins), **Families** (your memberships, family detail/members/sharing — everyone in Cloud mode), and, for site admins, **Pending Actions** (access requests + family approvals, badge‑counted on the button itself) and **Site Family Mgmt** (auto‑approve, all‑families list, assign a person to a family, migrate legacy data, families backup). If you're not in a family yet, the sidebar tells you so and points you at creating one or asking for an invite.
 
 **Settings tab** — first, what the filters open to on each visit (colour‑coded segmented toggles that match the filter colours), then the editable reference lists (Trip types, Visit types, Statuses — see *Configuration data* below):
 - **Sort destinations** — Descending (newest first) / Ascending (oldest first)
@@ -171,7 +171,7 @@ The **Families** tab covers the same ground as the dedicated **Family Management
 - Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
 - **Themes** — a grid of **10 looks** (Aurora · Cobalt · Violet · Orchid · Magenta · Crimson · Ember · Amber · Emerald · Mono). Picking one instantly retints the **whole app** — globe, tiles, cards, modals and all — and is saved with your settings. Aurora is the default cyan.
 
-**Users tab** — the unified **People** list (everyone you can tag on a trip). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative) and, for a name‑only person, an **Owned by** parent user; a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
+**Users tab** (People & Family Management → Users) — the unified **People** list (everyone you can tag on a trip). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative) and, for a name‑only person, an **Owned by** parent user; a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
 - **Active / Inactive** — an admin can mark a user **Inactive** (keeps the record and role but revokes access until reactivated), shown as a coloured badge, and filter the list by **All / Active / Inactive**. The last remaining active admin can't be deactivated or deleted (buttons hidden, with a notice) — there's always at least one admin.nactive**.
 - **Delete user…** — an admin can remove a user; a confirmation first warns how many trips they **own** (deletable, or kept and unassigned) and how many they're **tagged on** (disassociated).
 
@@ -189,11 +189,11 @@ The **Families** tab covers the same ground as the dedicated **Family Management
 **System tab** — data, storage & app info:
 - **Data source** (Local browser / linked file, or Cloud), **Export / Restore**, and **Clear data** (see Storage & backup).
 - **Debug** (admin only) — the same view / edit / diff‑confirm / version‑history flow as a trip's debug JSON, scoped instead to your **whole app settings** or your **entire trips dataset** at once.
-- **Access requests** and the **access list** of who's allowed in (admin only, Cloud mode), with a per‑user hover tooltip (online status, login count, last login, trips logged) and an **Export login stats (CSV)** button on the Users tab.
-- *(The GitHub repository link now lives in the **ⓘ** dropdown.)*
+- **Access requests and approvals** now live in **People & Family Management → Pending Actions** (site admins) — approving a request grants the chosen role in the chosen family and emails the person that they're in; declining just clears the request. A badge on the person‑icon button shows the pending count.
+- *(The GitHub repository link now lives in the **help guide**, opened from the **help icon**.)*
 
 ### 📊 Trip metrics
-A **bar‑graph icon** sits just left of the **?** in the Configuration header. It opens a **metrics pane** covering **every trip, all time** (independent of the active filters):
+A **bar‑graph icon** sits in the header, next to the help icon. It opens a **metrics pane** covering **every trip, all time** (independent of the active filters):
 - **Family scope** (Cloud mode) — a dropdown in the pane header: **My family** (default) / **All my families** / **Every family** (site admins only). Drives the whole dashboard and every export.
 - **Headline tiles** — total trips, total days away, countries, cities, average trip length, longest trip, busiest year, years active, upcoming trips, and dream‑list count.
 - **Highlights** — most‑visited country, most‑visited city, and the top traveler (by days away).
@@ -244,7 +244,7 @@ Because the app fetches map data and (optionally) links files, open it over **ht
 
 ### In‑app help
 
-This very document is the app's help screen. The **?** button (top of the ⚙ settings panel, left of ⓘ) opens a guide rendered live from `README.md` — so there's only ever one file to maintain. Keep `README.md` next to the app and serve over http for it to load.
+This very document is the app's help screen. The **help icon** (top‑right header) opens a guide rendered live from `README.md` — so there's only ever one file to maintain. Its footer has the build version, last‑updated date, author, and a link to the **GitHub repository**. Keep `README.md` next to the app and serve over http for it to load.
 
 A matching **standalone page** lives at **`help.html`** — it renders these same guides (App guide + Deploy guide) with identical styling. Use it to:
 - **Share a link** to the guide without opening the app — e.g. `https://your-site/help.html` (or `help.html?doc=deploy` for the deploy guide; the chosen tab is kept in the URL).

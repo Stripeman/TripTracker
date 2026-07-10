@@ -30,11 +30,15 @@ const { BlobServiceClient } = require("@azure/storage-blob");
 //   inviteFamily  { fromFamilyId, toFamilyId, role } → family admin: grant another whole family
 //                                                       access to ours (creates a FamilyShare)
 //   assignUser    { email, familyId, role }     → site admin only: put a user into any family at any role
+//   approveAccess { email, role, familyId }     → site admin only: grants a pending access request (from
+//                                                  /api/request-access) and clears it
+//   declineAccess { email }                     → site admin only: clears a pending access request
 
 const CONTAINER = process.env.TRIPS_CONTAINER || "data";
 const FAMILIES_BLOB = process.env.FAMILIES_BLOB || "families.json";
 const MEMBERS_BLOB = process.env.MEMBERSHIPS_BLOB || "memberships.json";
 const SHARES_BLOB = process.env.FAMILY_SHARES_BLOB || "family-shares.json";
+const ACCESS_REQUESTS_BLOB = process.env.ACCESS_REQUESTS_BLOB || "access-requests.json";
 const VALID_ROLES = ["reader", "editor", "admin"];
 const SHARE_ROLES = ["reader", "editor", "admin-no-delete"];
 const FAMILY_COLORS = ["#38bdf8", "#fb7185", "#fbbf24", "#4ade80", "#a78bfa", "#fb923c", "#22d3ee", "#e879f9", "#f87171", "#34d399"];
@@ -100,6 +104,30 @@ function genId(prefix) {
   return prefix + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
+// Best-effort courtesy email when a site admin approves a pending access request.
+// Uses the same Resend env vars as /api/request-access; silently no-ops if unset
+// or if the send fails — approval itself already succeeded via the membership write.
+async function notifyApproved(email, familyName, role) {
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM;
+  if (!key || !from) return;
+  const roleLabel = role === "admin" ? "Admin" : role === "editor" ? "Editor" : "Reader";
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: [email],
+        subject: "You now have access to Trip Tracker",
+        text: "Your access request was approved.\n\nFamily: " + (familyName || "—") + "\nRole: " + roleLabel + "\n\nSign in with this email address to get started.",
+      }),
+    });
+  } catch (e) {
+    // best-effort only
+  }
+}
+
 module.exports = async function (context, req) {
   const json = (status, body) => {
     context.res = { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }, body: JSON.stringify(body) };
@@ -139,6 +167,7 @@ module.exports = async function (context, req) {
         extraSiteAdmins: meIsSiteAdmin ? extraSiteAdmins : undefined,
         autoApproveFamilies: !!settings.autoApproveFamilies,
         pendingFamilies: meIsSiteAdmin ? families.filter((f) => !f.approved) : undefined,
+        accessRequests: meIsSiteAdmin ? (await readJsonBlob(container, ACCESS_REQUESTS_BLOB, [])) : undefined,
       });
       return;
     }
@@ -490,6 +519,40 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(fromFamilyId)) { json(403, { error: "Family admin required." }); return; }
       shares = shares.filter((s) => !(s.fromFamilyId === fromFamilyId && s.toFamilyId === toFamilyId));
       await writeJsonBlob(container, SHARES_BLOB, shares);
+      json(200, { ok: true });
+      return;
+    }
+
+    // Site-admin approves a pending access request: creates/updates a membership
+    // row (same effect as invitePerson) and clears the request.
+    if (action === "approveAccess") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const email = String(body.email || "").toLowerCase().trim();
+      const familyId = body.familyId;
+      let role = String(body.role || "reader").toLowerCase();
+      if (!email || !familyId) { json(400, { error: "Email and family are required." }); return; }
+      if (VALID_ROLES.indexOf(role) === -1) role = "reader";
+      const idx = members.findIndex((m) => m.email === email && m.familyId === familyId);
+      if (idx >= 0) members[idx] = { ...members[idx], role, active: true };
+      else members.push({ email, familyId, role, active: true, createdAt: new Date().toISOString() });
+      await writeJsonBlob(container, MEMBERS_BLOB, members);
+      let requests = await readJsonBlob(container, ACCESS_REQUESTS_BLOB, []);
+      if (!Array.isArray(requests)) requests = [];
+      requests = requests.filter((r) => r && String(r.email || "").toLowerCase() !== email);
+      await writeJsonBlob(container, ACCESS_REQUESTS_BLOB, requests);
+      const fam = families.find((f) => f.id === familyId);
+      notifyApproved(email, fam ? fam.name : "", role); // fire-and-forget, best-effort
+      json(200, { ok: true });
+      return;
+    }
+
+    if (action === "declineAccess") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const email = String(body.email || "").toLowerCase().trim();
+      let requests = await readJsonBlob(container, ACCESS_REQUESTS_BLOB, []);
+      if (!Array.isArray(requests)) requests = [];
+      requests = requests.filter((r) => r && String(r.email || "").toLowerCase() !== email);
+      await writeJsonBlob(container, ACCESS_REQUESTS_BLOB, requests);
       json(200, { ok: true });
       return;
     }
