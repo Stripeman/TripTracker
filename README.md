@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.5.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.6.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -181,6 +181,7 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 **Users tab** (People & Family Management → Users) — the unified **People** list, scoped to your own family: you only see people who share a family with you (or yourself); everyone else is invisible, and only a site admin or an admin of that person's family can edit their role, activate/deactivate, or delete them. Site admins see everyone, **grouped by family** (with a "No family" group for anyone unassigned). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative) and, for a name‑only person, an **Owned by** parent user; a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
 - **Active / Inactive** — an admin can mark a user **Inactive** (keeps the record and role but revokes access until reactivated), shown as a coloured badge, and filter the list by **All / Active / Inactive**. The last remaining active admin can't be deactivated or deleted (buttons hidden, with a notice) — there's always at least one admin.nactive**.
 - **Delete user…** — an admin can remove a user; a confirmation first warns how many trips they **own** (deletable, or kept and unassigned) and how many they're **tagged on** (disassociated).
+- **FAMILY picker** — a family admin (or site admin) can assign/move a person into any family they administer (site admins: any family). New people default to your active family and you as owner. "Owned by" (for name-only people) is scoped to the same family.
 
 **Trips tab** (editors, Cloud — also Local mode) — **Trip Management**, two sections:
 - **Bulk edit** — change many trips at once. The target set is chosen by the **filters on the left** (no duplicate filter UI here); a live count shows how many of *your* trips match. Tick only the fields to change — **Who‑can‑see**, **Visit type**, **Travelers**, **Trip type**, **Notes**, and (admin) **Owner** — then confirm. It only touches trips you own (admins, all).

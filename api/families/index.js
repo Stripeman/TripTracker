@@ -593,6 +593,24 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Family admin (of the TARGET family) or site admin moves/adds a person into a
+    // family — used by the Users tab's family picker. Additive: does not remove any
+    // existing membership the person has in other families.
+    if (action === "assignFamily") {
+      const email = String(body.email || "").toLowerCase().trim();
+      const familyId = body.familyId;
+      let role = String(body.role || "reader").toLowerCase();
+      if (!email || email.indexOf("@") === -1 || !familyId) { json(400, { error: "email + familyId required." }); return; }
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Admin of that family required." }); return; }
+      if (VALID_ROLES.indexOf(role) === -1) role = "reader";
+      const idx = members.findIndex((m) => m.email === email && m.familyId === familyId);
+      if (idx >= 0) members[idx] = { ...members[idx], role, active: true };
+      else members.push({ email, familyId, role, active: true, createdAt: new Date().toISOString() });
+      await writeJsonBlob(container, MEMBERS_BLOB, members);
+      json(200, { ok: true });
+      return;
+    }
+
     // One-time / idempotent migration: put all pre-existing trips/travelers/access-list
     // rows that have no familyId into a single default family (site admin only).
     if (action === "migrateLegacy") {

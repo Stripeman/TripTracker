@@ -4,6 +4,26 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.6.0-beta
+
+### Fixed
+- **Site admins couldn't see the Users tab at all, in some cases.** Its nav item was
+  gated on a legacy global `editor` role claim instead of site-admin/family-role
+  status — a site admin without that old claim was locked out of the tab entirely.
+
+### Added
+- **New person defaults to your family.** Adding a person now stamps your active
+  family (and you as owner) automatically.
+- **FAMILY picker on add/edit.** Choose which family a person belongs to from any
+  family you administer (or any family, for site admins) — both when adding someone
+  and when editing an existing person. Changing it moves their membership via a new
+  gated `assignFamily` action (requires admin of the target family).
+- **"Owned by" (non-account people) is now scoped** to the same family instead of
+  listing every account-holder in the system.
+- Wrote `TRAVELER-STORAGE-PLAN.md` scoping the follow-up work to move traveler storage
+  fully server-side per family (closes the remaining gap where family assignment is
+  UI-enforced but not yet API-enforced against raw calls).
+
 ## 1.5.0-beta
 
 ### Fixed

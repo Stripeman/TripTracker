@@ -775,6 +775,16 @@
                       </select>
                     </div>
                   </sc-if>
+                  <sc-if value="{{ p.showFamilyPicker }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">FAMILY</span>
+                      <select value="{{ p.familyValue }}" onChange="{{ p.onFamily }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                        <sc-for list="{{ p.familyPickOptions }}" as="fo" hint-placeholder-count="2">
+                          <option value="{{ fo.value }}" style="background:#0a1422;">{{ fo.label }}</option>
+                        </sc-for>
+                      </select>
+                    </div>
+                  </sc-if>
                   <sc-if value="{{ p.canSetParent }}" hint-placeholder-val="{{ false }}">
                     <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
                       <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">OWNED BY</span>
@@ -1259,6 +1269,16 @@
                             <option value="reader" style="background:#0a1422;">Reader</option>
                             <option value="editor" style="background:#0a1422;">Editor</option>
                             <option value="admin" style="background:#0a1422;">Admin</option>
+                          </select>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ p.showFamilyPicker }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
+                          <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">FAMILY</span>
+                          <select value="{{ p.familyValue }}" onChange="{{ p.onFamily }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                            <sc-for list="{{ p.familyPickOptions }}" as="fo" hint-placeholder-count="2">
+                              <option value="{{ fo.value }}" style="background:#0a1422;">{{ fo.label }}</option>
+                            </sc-for>
                           </select>
                         </div>
                       </sc-if>
@@ -2790,7 +2810,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.5.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.6.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4031,7 +4051,7 @@ class Component extends DCLogic {
       famMgmtNavFamiliesStyle: famMgmtNavStyle((s.famMgmtView || 'families') === 'families'),
       famMgmtNavSiteFamStyle: famMgmtNavStyle(s.famMgmtView === 'sitefam'),
       famMgmtNavPendingStyle: famMgmtNavStyle(s.famMgmtView === 'pending'),
-      showFamMgmtUsersNav: s.cfgDataSource !== 'cloud' || (s.cloudRoles || []).includes('editor'),
+      showFamMgmtUsersNav: s.cfgDataSource !== 'cloud' || s.mySiteAdmin || (s.cfgMemberships || []).some(m => m.email === s.cloudUserEmail && m.active !== false && (m.role === 'editor' || m.role === 'admin')),
       showFamMgmtPendingNav: s.mySiteAdmin,
       showFamMgmtSiteFamNav: s.mySiteAdmin,
       showFamMgmtSiteAdminSection: s.mySiteAdmin,
@@ -6535,7 +6555,7 @@ class Component extends DCLogic {
       const palette = ['#5fd3ff', '#fb7185', '#c084fc', '#22d3ee', '#fbbf24', '#fb923c', '#a78bfa', '#4ade80', '#e879f9'];
       const color = palette[s.cfgTravelers.length % palette.length];
       const createdBy = (s.cloudUserEmail || '').toLowerCase().trim();
-      const item = { key, label: 'New person', color, email: '', createdBy };
+      const item = { key, label: 'New person', color, email: '', createdBy, familyId: s.activeFamilyId || '' };
       return { ...this.persistConfig(s, { cfgTravelers: [...s.cfgTravelers, item] }), editingPersonKey: key, addingPersonKey: key };
     });
   }
@@ -6547,7 +6567,7 @@ class Component extends DCLogic {
     this.hideStat();
     // Snapshot the editable fields so Cancel can revert (edits otherwise commit live).
     const p = (this.state.cfgTravelers || []).find(o => o.key === key);
-    this._personSnapshot = p ? { key, label: p.label, color: p.color, email: p.email || '', createdBy: p.createdBy || '' } : null;
+    this._personSnapshot = p ? { key, label: p.label, color: p.color, email: p.email || '', createdBy: p.createdBy || '', familyId: p.familyId || '' } : null;
     this.setState({ editingPersonKey: key });
   }
   donePerson() { this._personSnapshot = null; this.setState({ editingPersonKey: null, addingPersonKey: null }); this.toast('User saved'); }
@@ -6556,7 +6576,7 @@ class Component extends DCLogic {
     this._personSnapshot = null;
     if (snap) {
       this.setState(s => {
-        const list = (s.cfgTravelers || []).map(o => o.key === snap.key ? { ...o, label: snap.label, color: snap.color, email: snap.email, createdBy: snap.createdBy } : o);
+        const list = (s.cfgTravelers || []).map(o => o.key === snap.key ? { ...o, label: snap.label, color: snap.color, email: snap.email, createdBy: snap.createdBy, familyId: snap.familyId } : o);
         return this.persistConfig(s, { cfgTravelers: list });
       }, () => this.setState({ editingPersonKey: null }));
     } else {
@@ -6573,6 +6593,24 @@ class Component extends DCLogic {
       const list = s.cfgTravelers.map(o => o.key === key ? { ...o, createdBy: pe } : o);
       return this.persistConfig(s, { cfgTravelers: list });
     });
+  }
+  // Assign/move a person to a different family (must be a family the current user
+  // administers, or any family for a site admin — enforced server-side too). For an
+  // account-holding person this also creates/updates their membership row in that family
+  // so their role/access follows them; a name-only person just gets re-tagged locally.
+  personSetFamily(key, familyId) {
+    if (!familyId) return;
+    const trav = (this.state.cfgTravelers || []).find(o => o.key === key);
+    if (!trav) return;
+    this.setState(s => {
+      const list = (s.cfgTravelers || []).map(o => o.key === key ? { ...o, familyId } : o);
+      return this.persistConfig(s, { cfgTravelers: list });
+    });
+    const email = String(trav.email || '').trim().toLowerCase();
+    if (!email) return;
+    const existing = (this.state.cfgMemberships || []).find(m => m.email === email && m.active !== false);
+    const role = (existing && existing.role) || 'reader';
+    this.familiesAction('assignFamily', { email, familyId, role }).then(j => { if (j) this.toast('Moved to that family.'); });
   }
   // Admin toggle: auto-claim ownership of unowned trips. Turning it on claims immediately.
   toggleAutoClaim() {
@@ -7533,6 +7571,11 @@ class Component extends DCLogic {
         const myAdminFamilyIds = new Set((this.state.cfgMemberships || []).filter(m => m.email === meEmail && m.active !== false && m.role === 'admin').map(m => m.familyId));
         const sharesFamilyWithMe = (ids) => [...ids].some(fid => myFamilyIds.has(fid));
         const iAdminAnyOf = (ids) => [...ids].some(fid => myAdminFamilyIds.has(fid));
+        const familyNameById = {};
+        (this.state.cfgFamilies || []).forEach(f => { familyNameById[f.id] = f.name; });
+        // Families I can move/assign a person INTO — every family I administer, or every
+        // family in the system for a site admin.
+        const pickableFamilies = mySiteAdmin ? (this.state.cfgFamilies || []) : (this.state.cfgFamilies || []).filter(f => myAdminFamilyIds.has(f.id));
         const uf = this.state.usersFilter || 'all';
         const editingKey = this.state.editingPersonKey;
         const rows = (this.state.cfgTravelers || []).filter(o => {
@@ -7554,6 +7597,14 @@ class Component extends DCLogic {
           // family admin of a family this person (or their creator) also belongs to.
           const theirFamilyIds = email ? (familiesByEmail[email] || new Set()) : (o.createdBy ? (familiesByEmail[String(o.createdBy).toLowerCase().trim()] || new Set()) : new Set());
           const isAdmin = mySiteAdmin || iAdminAnyOf(theirFamilyIds);
+          const resolvedFamilyId = o.familyId || (theirFamilyIds.size ? [...theirFamilyIds][0] : '');
+          // Family picker options: families I can move this person into, plus their
+          // current family (if any) so the select always shows the right value even if
+          // I don't administer it myself.
+          let familyPickOptions = pickableFamilies.map(f => ({ value: f.id, label: f.name }));
+          if (resolvedFamilyId && !familyPickOptions.some(fo => fo.value === resolvedFamilyId)) {
+            familyPickOptions = [{ value: resolvedFamilyId, label: familyNameById[resolvedFamilyId] || 'Current family' }, ...familyPickOptions];
+          }
           const locsAll = this.state.locations || [];
           const ownedLocs = email ? locsAll.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === email) : [];
           const statsOwned = ownedLocs.length;
@@ -7617,8 +7668,13 @@ class Component extends DCLogic {
             onRole: (e) => this.personSetRole(o.email, e.target.value),
             canSetParent: isCloud && isAdmin && !o.email,
             parentValue: o.createdBy ? String(o.createdBy).toLowerCase().trim() : '',
-            parentOptions: (this.state.cfgTravelers || []).filter(t => t.email && t.key !== o.key).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
+            parentOptions: (this.state.cfgTravelers || []).filter(t => t.email && t.key !== o.key && (t.familyId || '') === (resolvedFamilyId || '')).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
             onParent: (e) => this.personSetParent(o.key, e.target.value),
+            showFamilyPicker: isCloud && isAdmin && familyPickOptions.length > 0,
+            familyValue: resolvedFamilyId,
+            familyName: familyNameById[resolvedFamilyId] || '',
+            familyPickOptions,
+            onFamily: (e) => this.personSetFamily(o.key, e.target.value),
             onRemove: () => this.personRemove(o.key),
             statsOwned, statsPhotos, statsTagged, statsTaggedText,
             statsCountries, statsByYearText, showByYear: !!statsByYearText,
@@ -7627,8 +7683,6 @@ class Component extends DCLogic {
         }).filter(r => uf === 'all' ? true : (r.isUser && (uf === 'active' ? r.active : !r.active)));
         if (!isCloud || !mySiteAdmin) return rows;
         // Site admin: group everyone by family, with an "Unassigned" group last.
-        const familyNameById = {};
-        (this.state.cfgFamilies || []).forEach(f => { familyNameById[f.id] = f.name; });
         const groups = {};
         rows.forEach(r => { (groups[r.groupFamilyId] = groups[r.groupFamilyId] || []).push(r); });
         const ids = Object.keys(groups).filter(id => id !== '__unassigned__').sort((a, b) => (familyNameById[a] || '').localeCompare(familyNameById[b] || ''));
