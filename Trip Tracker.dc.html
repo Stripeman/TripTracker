@@ -210,7 +210,7 @@
           </div>
         </div>
       </sc-if>
-      <div class="tt-config" style="position:absolute; top:80px; right:30px; width:384px; max-height:calc(100vh - 150px); display:flex; flex-direction:column; pointer-events:auto; background:rgba(8,14,24,0.94); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid rgba(56,189,248,0.22); border-radius:14px; padding:18px; box-shadow:0 16px 50px rgba(0,0,0,0.55); animation:vl-fade 0.2s ease;">
+      <div class="tt-config" style="position:absolute; top:80px; right:30px; width:460px; max-height:calc(100vh - 150px); display:flex; flex-direction:column; pointer-events:auto; background:rgba(8,14,24,0.94); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border:1px solid rgba(56,189,248,0.22); border-radius:14px; padding:18px; box-shadow:0 16px 50px rgba(0,0,0,0.55); animation:vl-fade 0.2s ease;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex:none;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">CONFIGURATION</div>
           <div style="display:flex; align-items:center; gap:8px;">
@@ -1169,6 +1169,9 @@
                 <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:{{ selected.ownerBadge.color }}; border:1px solid {{ selected.ownerBadge.color }}44; border-radius:6px; padding:2px 7px;">{{ selected.ownerBadge.label }}</span>
                 <sc-if value="{{ selected.visBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
+                <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;">{{ selected.familyBadge.label }}</span>
+                </sc-if>
                 </sc-if>
               </div>
             </sc-if>
@@ -1205,6 +1208,9 @@
               <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:{{ selected.ownerBadge.color }}; border:1px solid {{ selected.ownerBadge.color }}44; border-radius:6px; padding:2px 7px;">{{ selected.ownerBadge.label }}</span>
               <sc-if value="{{ selected.visBadge }}" hint-placeholder-val="{{ null }}">
                 <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
+                <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;">{{ selected.familyBadge.label }}</span>
+                </sc-if>
               </sc-if>
             </div>
           </sc-if>
@@ -1225,6 +1231,9 @@
                   <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:{{ selected.ownerBadge.color }}; border:1px solid {{ selected.ownerBadge.color }}44; border-radius:6px; padding:2px 7px;">{{ selected.ownerBadge.label }}</span>
                   <sc-if value="{{ selected.visBadge }}" hint-placeholder-val="{{ null }}">
                     <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
+                <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;">{{ selected.familyBadge.label }}</span>
+                </sc-if>
                   </sc-if>
                 </div>
               </sc-if>
@@ -1262,6 +1271,9 @@
                 <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.08em; color:{{ selected.ownerBadge.color }}; border:1px solid {{ selected.ownerBadge.color }}44; border-radius:6px; padding:2px 7px;">{{ selected.ownerBadge.label }}</span>
                 <sc-if value="{{ selected.visBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
+                <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;">{{ selected.familyBadge.label }}</span>
+                </sc-if>
                 </sc-if>
               </div>
             </sc-if>
@@ -4575,6 +4587,15 @@ class Component extends DCLogic {
     const nm = this.travelerNameByEmail(l.ownerEmail) || l.ownerEmail || 'Another user';
     return { label: l.owner ? nm : (nm + ' · pending'), color: '#9fb6cf' };
   }
+  // Shown when a trip belongs to a DIFFERENT family than the one you're currently
+  // viewing (e.g. you're looking at "all my families" or a trip a partner family
+  // shared with yours) — a quick visual cue for whose family this trip is from.
+  familyBadge(l) {
+    if (this.state.cfgDataSource !== 'cloud' || !l || !l.familyId) return null;
+    if (l.familyId === this.state.activeFamilyId) return null;
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === l.familyId);
+    return { label: (fam ? fam.name : 'Another family') };
+  }
   visBadge(l) {
     if (this.state.cfgDataSource !== 'cloud' || !l || (!l.owner && !l.ownerEmail)) return null;
     if (l.visibility === 'all') return { label: '👥 All users', color: '#5fd3ff' };
@@ -5261,11 +5282,17 @@ class Component extends DCLogic {
       else this.toast('Trip assigned');
     } catch (e2) { this.setState({ storageMsg: 'Assign failed — cloud unreachable.' }); }
   }
-  // Set a person's access role (admin, cloud only) — writes the email→role into the
-  // server access list and saves it.
+  // Set a person's access role. Post-migration, roles live per-family in memberships.json —
+  // this updates the ACTIVE family's membership for them. It also mirrors into the legacy
+  // accessList/saveAccess path so un-migrated deployments (memberships.json not created yet)
+  // keep working until an admin runs the migration.
   personSetRole(email, role) {
     const em = String(email || '').toLowerCase().trim();
     if (!em) return;
+    if (this.state.activeFamilyId) {
+      if (role) this.familiesAction('invitePerson', { familyId: this.state.activeFamilyId, email: em, role });
+      else this.familiesAction('removeMember', { familyId: this.state.activeFamilyId, email: em });
+    }
     this.setState(s => {
       let list = (s.accessList || []).slice();
       const idx = list.findIndex(r => String(r.email || '').toLowerCase().trim() === em);
@@ -5277,8 +5304,11 @@ class Component extends DCLogic {
   }
   // Set a person's active flag (admin, cloud). Inactive keeps the record + role value but
   // grants no access until reactivated. No-op if they have no access-list entry yet.
-  // Count active admins in the access list (active !== false). Used to protect the last one.
+  // Count active admins for the currently-active family (falls back to the legacy
+  // access list for un-migrated deployments where memberships.json doesn't exist yet).
   activeAdminCount() {
+    const forFamily = (this.state.cfgMemberships || []).filter(m => m.familyId === this.state.activeFamilyId);
+    if (forFamily.length) return forFamily.filter(m => m.role === 'admin' && m.active !== false).length;
     return (this.state.accessList || []).filter(r => r.role === 'admin' && r.active !== false).length;
   }
   // True if this email is the ONLY remaining active admin (can't be deactivated/deleted).
@@ -5293,6 +5323,10 @@ class Component extends DCLogic {
     const em = String(email || '').toLowerCase().trim();
     if (!em) return;
     if (!active && this.isLastActiveAdmin(em)) { this.toast('Can’t deactivate the last admin'); return; }
+    if (this.state.activeFamilyId) {
+      const cur = (this.state.cfgMemberships || []).find(m => m.email === em && m.familyId === this.state.activeFamilyId);
+      this.familiesAction('invitePerson', { familyId: this.state.activeFamilyId, email: em, role: (cur && cur.role) || 'reader', active: !!active });
+    }
     this.setState(s => {
       const list = (s.accessList || []).slice();
       const idx = list.findIndex(r => String(r.email || '').toLowerCase().trim() === em);
@@ -5738,6 +5772,7 @@ class Component extends DCLogic {
         dateText,
         ownerBadge: this.ownerBadge(sl),
         visBadge: this.visBadge(sl),
+        familyBadge: this.familyBadge(sl),
         hasPhoto: !!(this.state.cfgShowThumbs && sl.photo),
         noPhoto: !(this.state.cfgShowThumbs && sl.photo),
         layoutBanner: !!(this.state.cfgShowThumbs && sl.photo) && this.state.cfgCardLayout === 'banner',
@@ -6099,9 +6134,15 @@ class Component extends DCLogic {
         const meEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
         const roleByEmail = {};
         (this.state.accessList || []).forEach(r => { const e = String(r.email || '').toLowerCase().trim(); if (e) roleByEmail[e] = r.role; });
+        // Post-migration, the ACTIVE family's membership is the real source of truth for
+        // role — override any legacy access-list value with it where one exists.
+        (this.state.cfgMemberships || []).filter(m => m.familyId === this.state.activeFamilyId && m.active !== false)
+          .forEach(m => { const e = String(m.email || '').toLowerCase().trim(); if (e) roleByEmail[e] = m.role; });
         const onlineEmails = new Set((this.state.presenceUsers || []).map(u => String(u.email || '').toLowerCase().trim()).filter(Boolean));
         const activeByEmail = {};
         (this.state.accessList || []).forEach(r => { const e = String(r.email || '').toLowerCase().trim(); if (e) activeByEmail[e] = r.active !== false; });
+        (this.state.cfgMemberships || []).filter(m => m.familyId === this.state.activeFamilyId)
+          .forEach(m => { const e = String(m.email || '').toLowerCase().trim(); if (e) activeByEmail[e] = m.active !== false; });
         const uf = this.state.usersFilter || 'all';
         const editingKey = this.state.editingPersonKey;
         return (this.state.cfgTravelers || []).map(o => {
