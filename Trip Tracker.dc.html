@@ -3449,7 +3449,7 @@ class Component extends DCLogic {
         };
       });
     const myFamilyIds = new Set((s.cfgMemberships || []).filter((m) => m.email === s.cloudUserEmail && m.active !== false).map((m) => m.familyId));
-    const otherFamilyOptions = families.filter((f) => !myFamilyIds.has(f.id)).map((f) => ({ value: f.id, label: f.name }));
+    const otherFamilyOptions = families.filter((f) => f.id !== s.activeFamilyId).map((f) => ({ value: f.id, label: f.name }));
     const shareRoleLabel = (r) => r === 'admin-no-delete' ? 'Admin (no delete)' : r === 'editor' ? 'Editor' : 'Reader';
     const myOutgoingShares = (s.cfgShares || []).filter((sh) => sh.fromFamilyId === s.activeFamilyId).map((sh) => ({
       label: (byId[sh.toFamilyId] ? byId[sh.toFamilyId].name : sh.toFamilyId) + ' — ' + shareRoleLabel(sh.role),
