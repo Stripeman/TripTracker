@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.0.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.1.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -10,22 +10,57 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 
 In Cloud mode, every trip and traveler belongs to a **Family**, not to an individual:
 
-- **Anyone signed in can create a family** (Settings → Families). New families need
-  site-admin approval before their trips become usable, unless the site admin has
-  turned on auto-approve.
+- **Anyone signed in can create a family** (the family icon in the header opens
+  **Family Management**). New families need site-admin approval before their trips
+  become usable, unless the site admin has turned on auto-approve.
 - **Roles are scoped per family** — admin / editor / reader. The same person can be
   admin of their own family and just a reader in a family that invited them in.
   A separate **site admin** role sits above every family: create/approve/delete
   families, assign anyone to any family at any role, and view all data.
+- **Family Management** — a dedicated top-level view (icon in the header, next to
+  Metrics/Help/Profile/⚙) with a **sidebar of your families** and a detail panel for
+  whichever one is selected: members and roles, invites, branding, sharing, and a
+  guarded delete. Site admins get an additional "Site administration" sidebar entry
+  covering every family, approvals, and the site-admin roster.
+- **Inviting people** — a family admin can add someone **by email** (grants access the
+  moment they next sign in — no email is actually sent) or generate a **shareable
+  invite link** (7-day expiry, single use, role baked in) that anyone can open to join
+  at that role. **Non-account members** — a name with no email (a kid, a pet, whoever)
+  can be added too; they show up as a family member and can be tagged on trips, but can
+  never sign in.
+- **Family branding** — each family gets an auto-assigned **accent color** (10-color
+  palette; a family admin can change it via swatches) and an optional **logo/photo**
+  upload (cropped to a square thumbnail client-side before upload). The color/logo show
+  in the family switcher, the Family Management sidebar, and the left panel's
+  per-family group headers; on the globe, markers get a thin **family-color ring**
+  whenever more than one family's trips are visible at once (single-family views are
+  unaffected).
 - **Cross-family sharing** — a family admin can invite a whole other family to view
-  (or edit) their trips at reader / editor / "admin (no delete)", from the Families tab.
+  (or edit) their trips at reader / editor / "admin (no delete)", from Family Management.
+  "Admin (no delete)" can edit but can never delete another family's trips — only that
+  family's own admin (or site admin) can delete its data.
+- **Guarded family delete** — deleting a family opens a confirmation with **live counts**
+  (trip photos, trips, non-account members, user accounts) and independent checkboxes
+  for each category. Checking "Trips" requires "Images" to be checked first (since
+  deleting a trip deletes its photo too). "Delete checked items" removes only what's
+  ticked; "Delete family" only lights up once all four are checked, and only then does
+  the family record itself get removed.
+- **Site admin roster** — the `SITE_ADMIN_EMAIL` env var is now just the **primary**
+  admin (a bootstrap failsafe, not editable in-app). A primary admin can add or remove
+  additional site admins from Family Management → Site administration; everyone else
+  sees the list read-only.
 - **Family switcher** — the destinations panel gets a small switcher (only shown once
   you can see more than one family) to jump between your active family, all families
   you belong to, or — for site admins — any single family or every family at once.
-  The metrics dashboard respects the same scope.
+  Options are tinted with each family's color. The **destinations list groups trips by
+  family** into collapsible sections (your active family expanded by default) whenever
+  more than one family is in view; with a single family it stays a flat list.
+- **Metrics scope** — the Trip Metrics header gets a scope dropdown (My family / All my
+  families / Every family for site admins) that drives the dashboard and every export
+  format (CSV/JSON/PDF).
 - **Upgrading existing data** — a site admin runs "Migrate legacy data → default
-  family" once (Families tab); it folds any pre-existing trips/travelers/access-list
-  entries into a single family so nothing is lost.
+  family" once (Family Management → Site administration); it folds any pre-existing
+  trips/travelers/access-list entries into a single family so nothing is lost.
 
 ---
 
@@ -115,7 +150,9 @@ In Cloud mode every trip belongs to whoever created it — ownership is resolved
 - **Login analytics (admin):** in **⚙ → System → Access list**, an admin can **hover any person's row** to see a stat bubble — whether they've actually signed in, their **total login count**, **last login**, and **how many trips they've logged**. The bubble appears to the *bottom-left* of the cursor so it never blocks the email field. Login counts are recorded server-side (one count per page-load); trip totals are read from the dataset, so they're accurate even for trips you can't see.
 
 ### ⚙ Configuration — tabs
-The ⚙ **Configuration** panel has a tab row across the top — **Settings · Preferences · Users · Trips · System** — with **Settings selected by default**. (**Trips** shows for any editor in Cloud mode, and in Local mode.) The **ⓘ** button drops a panel (under the tabs) with the author, build version, last‑updated date, and a link to the **GitHub repository**.
+The ⚙ **Configuration** panel has a tab row across the top — **Settings · Preferences · Users · Families · Trips · System** — with **Settings selected by default**. (**Families** and **Trips** show in Cloud mode / for any editor.) The **ⓘ** button drops a panel (under the tabs) with the author, build version, last‑updated date, and a link to the **GitHub repository**.
+
+The **Families** tab covers the same ground as the dedicated **Family Management** view (see above) in a simpler single-column layout — use whichever you prefer; both read and write the same data.
 
 **Settings tab** — first, what the filters open to on each visit (colour‑coded segmented toggles that match the filter colours), then the editable reference lists (Trip types, Visit types, Statuses — see *Configuration data* below):
 - **Sort destinations** — Descending (newest first) / Ascending (oldest first)
@@ -150,6 +187,7 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 
 ### 📊 Trip metrics
 A **bar‑graph icon** sits just left of the **?** in the Configuration header. It opens a **metrics pane** covering **every trip, all time** (independent of the active filters):
+- **Family scope** (Cloud mode) — a dropdown in the pane header: **My family** (default) / **All my families** / **Every family** (site admins only). Drives the whole dashboard and every export.
 - **Headline tiles** — total trips, total days away, countries, cities, average trip length, longest trip, busiest year, years active, upcoming trips, and dream‑list count.
 - **Highlights** — most‑visited country, most‑visited city, and the top traveler (by days away).
 - **Distributions** (mini bar charts) — by status, by trip type, by visit type, travelers by trips, travelers by days, **countries by traveler**, top countries, and top cities.

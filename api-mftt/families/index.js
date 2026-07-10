@@ -37,6 +37,7 @@ const MEMBERS_BLOB = process.env.MEMBERSHIPS_BLOB || "memberships.json";
 const SHARES_BLOB = process.env.FAMILY_SHARES_BLOB || "family-shares.json";
 const VALID_ROLES = ["reader", "editor", "admin"];
 const SHARE_ROLES = ["reader", "editor", "admin-no-delete"];
+const FAMILY_COLORS = ["#38bdf8", "#fb7185", "#fbbf24", "#4ade80", "#a78bfa", "#fb923c", "#22d3ee", "#e879f9", "#f87171", "#34d399"];
 
 function principal(req) {
   const header = req.headers["x-ms-client-principal"];
@@ -130,6 +131,7 @@ module.exports = async function (context, req) {
         memberships: visibleMembers,
         shares: visibleShares,
         myMemberships,
+        familyColors: FAMILY_COLORS,
         siteAdmin: meIsSiteAdmin,
         isPrimaryAdmin: meIsPrimaryAdmin,
         siteAdminEmails: meIsSiteAdmin ? siteAdminEmailList(extraSiteAdmins) : undefined,
@@ -148,7 +150,8 @@ module.exports = async function (context, req) {
     if (action === "create") {
       const name = String((body.name || "")).trim();
       if (!name) { json(400, { error: "Family name required." }); return; }
-      const fam = { id: genId("fam"), name, createdBy: me.email, createdAt: new Date().toISOString(), approved: !!settings.autoApproveFamilies, autoApproved: !!settings.autoApproveFamilies };
+      const color = FAMILY_COLORS.includes(body.color) ? body.color : FAMILY_COLORS[families.length % FAMILY_COLORS.length];
+      const fam = { id: genId("fam"), name, color, createdBy: me.email, createdAt: new Date().toISOString(), approved: !!settings.autoApproveFamilies, autoApproved: !!settings.autoApproveFamilies };
       families.push(fam);
       members.push({ email: me.email, familyId: fam.id, role: "admin", active: true, createdAt: fam.createdAt });
       await writeJsonBlob(container, FAMILIES_BLOB, families);
@@ -172,6 +175,16 @@ module.exports = async function (context, req) {
       families = families.map((f) => f.id === body.familyId ? { ...f, name } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       json(200, { ok: true });
+      return;
+    }
+
+    if (action === "setFamilyColor") {
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const color = FAMILY_COLORS.includes(body.color) ? body.color : null;
+      if (!color) { json(400, { error: "Invalid color." }); return; }
+      families = families.map((f) => f.id === body.familyId ? { ...f, color } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      json(200, { ok: true, color });
       return;
     }
 
@@ -317,7 +330,46 @@ module.exports = async function (context, req) {
       return;
     }
 
-    // Site-admin roster management — primary (env-var) admins only, so nobody can grant
+    // Shareable invite link: a family admin generates a one-time code for a role;
+    // anyone signed in who opens it is added to the family at that role. Expires in 7 days.
+    if (action === "createInviteLink") {
+      const familyId = body.familyId;
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      let role = String(body.role || "reader").toLowerCase();
+      if (VALID_ROLES.indexOf(role) === -1) role = "reader";
+      let invites = await readJsonBlob(container, "invite-links.json", []);
+      if (!Array.isArray(invites)) invites = [];
+      const code = genId("inv").replace(/[^a-z0-9]/gi, "");
+      const row = { code, familyId, role, createdBy: me.email, createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(), usedBy: null };
+      invites.push(row);
+      await writeJsonBlob(container, "invite-links.json", invites);
+      json(200, { ok: true, code });
+      return;
+    }
+
+    if (action === "resolveInvite") {
+      const code = String(body.code || "").trim();
+      if (!code) { json(400, { error: "Missing invite code." }); return; }
+      let invites = await readJsonBlob(container, "invite-links.json", []);
+      if (!Array.isArray(invites)) invites = [];
+      const row = invites.find((i) => i.code === code);
+      if (!row) { json(404, { error: "Invite not found or already used." }); return; }
+      if (row.usedBy) { json(410, { error: "This invite link has already been used." }); return; }
+      if (new Date(row.expiresAt).getTime() < Date.now()) { json(410, { error: "This invite link has expired." }); return; }
+      const fam = families.find((f) => f.id === row.familyId);
+      if (!fam) { json(404, { error: "That family no longer exists." }); return; }
+      const idx = members.findIndex((m) => m.email === me.email && m.familyId === row.familyId);
+      if (idx >= 0) members[idx] = { ...members[idx], role: row.role, active: true };
+      else members.push({ email: me.email, familyId: row.familyId, role: row.role, active: true, createdAt: new Date().toISOString() });
+      await writeJsonBlob(container, MEMBERS_BLOB, members);
+      row.usedBy = me.email;
+      row.usedAt = new Date().toISOString();
+      await writeJsonBlob(container, "invite-links.json", invites);
+      json(200, { ok: true, familyId: row.familyId, familyName: fam.name, role: row.role });
+      return;
+    }
+
+ — primary (env-var) admins only, so nobody can grant
     // themselves admin rights or lock out the account that actually controls the app.
     if (action === "addSiteAdmin") {
       if (!meIsPrimaryAdmin) { json(403, { error: "Primary site admin required." }); return; }
