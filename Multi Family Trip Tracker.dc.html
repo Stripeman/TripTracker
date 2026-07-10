@@ -1459,7 +1459,9 @@
                       <sc-for list="{{ grp.trips }}" as="loc" hint-placeholder-count="2">
                         <div onClick="{{ loc.onSelect }}" style="cursor:pointer; padding:12px 13px; border-radius:12px; background:{{ loc.bg }}; border:1px solid {{ loc.borderColor }}; transition:background 0.18s,border-color 0.18s;">
                           <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="flex:none; width:9px; height:9px; border-radius:50%; background:{{ loc.color }}; box-shadow:0 0 10px {{ loc.color }};"></span>
+                            <span style="flex:none; width:13px; height:13px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-sizing:border-box; border:{{ loc.famRing }};">
+                              <span style="width:9px; height:9px; border-radius:50%; background:{{ loc.color }}; box-shadow:0 0 10px {{ loc.color }};"></span>
+                            </span>
                             <div style="flex:1; min-width:0;">
                               <div style="font-size:14px; font-weight:600; color:#e6edf6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ loc.city }}</div>
                               <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:2px;">
@@ -1482,7 +1484,9 @@
               <sc-for list="{{ locations }}" as="loc" hint-placeholder-count="4">
                 <div onClick="{{ loc.onSelect }}" style="cursor:pointer; padding:12px 13px; border-radius:12px; background:{{ loc.bg }}; border:1px solid {{ loc.borderColor }}; transition:background 0.18s,border-color 0.18s;">
                   <div style="display:flex; align-items:center; gap:10px;">
-                    <span style="flex:none; width:9px; height:9px; border-radius:50%; background:{{ loc.color }}; box-shadow:0 0 10px {{ loc.color }};"></span>
+                    <span style="flex:none; width:13px; height:13px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-sizing:border-box; border:{{ loc.famRing }};">
+                      <span style="width:9px; height:9px; border-radius:50%; background:{{ loc.color }}; box-shadow:0 0 10px {{ loc.color }};"></span>
+                    </span>
                     <div style="flex:1; min-width:0;">
                       <div style="font-size:14px; font-weight:600; color:#e6edf6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ loc.city }}</div>
                       <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:2px;">
@@ -4192,7 +4196,7 @@ class Component extends DCLogic {
     const pulse = (Math.sin(t * 0.005) + 1) / 2;
     const groups = {};
     const _gated = this.state.cfgDataSource === 'cloud' && this.state.cloudState !== 'ok';
-    this._multiFamily = new Set((_gated ? [] : this.state.locations).map(l => l.familyId || '__none')).size > 1;
+    this._multiFamily = (this.state.cfgFamilies || []).length > 1;
     for (const loc of (_gated ? [] : this.state.locations)) {
       if (!this.passesFilter(loc)) continue;
       if (this.state.formOpen && this.state.editingId != null && loc.id === this.state.editingId) continue; // live preview dot replaces it below
@@ -6497,6 +6501,7 @@ class Component extends DCLogic {
       }
       return {
         ...l, sub, dateRange, color: m.color, statusLabel: m.label, statusShort: m.short,
+        famRing: (this._multiFamily && l.familyId) ? ('1.5px solid ' + this.famColor(l.familyId)) : '1.5px solid transparent',
         bg: sel ? 'rgba(251,191,36,0.10)' : 'rgba(255,255,255,0.03)',
         borderColor: sel ? 'rgba(251,191,36,0.45)' : 'rgba(255,255,255,0.07)',
         onSelect: () => this.selectLocation(l.id),
