@@ -4,6 +4,11 @@ All notable changes to **Trip Tracker** are recorded here. The newest release is
 
 ---
 
+## 0.9.21-beta
+
+### Changed
+- **Default traveler seed is now just you.** The built-in sample traveler list (used to seed a brand-new install) no longer ships with placeholder family names — new installs start with a single default traveler, and the demo trip / random-data generators no longer reference the old names either.
+
 ## 0.9.20-beta
 
 ### Added

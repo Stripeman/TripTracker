@@ -800,9 +800,6 @@ class Component extends DCLogic {
     ];
     this.DEF_TRAVELERS = [
       { key:'terry', label:'Terry', color:'#fb7185' },
-      { key:'karen', label:'Karen', color:'#c084fc' },
-      { key:'nikki', label:'Nikki', color:'#22d3ee' },
-      { key:'amanda', label:'Amanda', color:'#fb923c' },
     ];
     this.DEF_STATUSES = [
       { key:'planned', label:'Planned', short:'Planned', color:'#38bdf8' },
@@ -1346,7 +1343,7 @@ class Component extends DCLogic {
       const date = `${year}-${pad(month)}-${pad(day)}`;
       const dateEnd = (i % 2 === 0) ? addDays(date, 3 + (i % 7)) : '';
       const tripTypes = (i % 9 === 0) ? ['work'] : ['vacation'];
-      const travelers = [['terry'], ['karen'], ['terry','karen'], ['nikki'], ['terry','karen','nikki','amanda'], ['amanda'], ['karen','nikki']][i % 7];
+      const travelers = [['terry']][i % 1];
       return { id: 100001 + i, city, state: '', country, lon: String(lon), lat: String(lat), date, dateEnd, status, notes: '', visitTypes: [vtype], tripTypes, travelers };
     });
   }

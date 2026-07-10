@@ -1882,7 +1882,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.20-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '0.9.21-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -1919,9 +1919,6 @@ class Component extends DCLogic {
     ];
     this.DEF_TRAVELERS = [
       { key:'terry', label:'Terry', color:'#fb7185' },
-      { key:'karen', label:'Karen', color:'#c084fc' },
-      { key:'nikki', label:'Nikki', color:'#22d3ee' },
-      { key:'amanda', label:'Amanda', color:'#fb923c' },
     ];
     this.DEF_STATUSES = [
       { key:'planned', label:'Planned', short:'Planned', color:'#38bdf8' },
@@ -2738,7 +2735,7 @@ class Component extends DCLogic {
       const date = `${year}-${pad(month)}-${pad(day)}`;
       const dateEnd = (i % 2 === 0) ? addDays(date, 3 + (i % 7)) : '';
       const tripTypes = (i % 9 === 0) ? ['work'] : ['vacation'];
-      const travelers = [['terry'], ['karen'], ['terry','karen'], ['nikki'], ['terry','karen','nikki','amanda'], ['amanda'], ['karen','nikki']][i % 7];
+      const travelers = [['terry']][i % 1];
       return { id: 100001 + i, city, state: '', country, lon: String(lon), lat: String(lat), date, dateEnd, status, notes: '', visitTypes: [vtype], tripTypes, travelers };
     });
   }
