@@ -60,7 +60,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </helmet>
 <!-- ===========================================================================
-     TRIP TRACKER — template (the markup).  This half is the VIEW: every {{ name }}
+     MULTI FAMILY TRIP TRACKER — template (the markup).  This half is the VIEW: every {{ name }}
      hole is filled by a value of the same name returned from renderVals() in the
      <script> logic block below. The full-screen <canvas> is the globe (painted by
      draw() in the logic, not by this markup). The overlay div sits on top and holds
@@ -86,7 +86,7 @@
     <div class="tt-topbar" style="position:absolute; top:0; left:0; right:0; display:flex; align-items:flex-start; justify-content:space-between; padding:26px 30px;">
       <div>
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-          <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.32em; color:#e8f3ff; text-shadow:0 0 24px rgba(56,189,248,0.45);">TRIP&nbsp;&nbsp;TRACKER</div>
+          <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.32em; color:#e8f3ff; text-shadow:0 0 24px rgba(56,189,248,0.45);">MULTI&nbsp;FAMILY&nbsp;TRIP&nbsp;TRACKER</div>
           <sc-if value="{{ updateAvailable }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ reloadApp }}" title="Reload to update" style="pointer-events:auto; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:9px; font-weight:600; letter-spacing:0.14em; color:#1a1304; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:999px; padding:4px 10px; cursor:pointer; animation:vl-upulse 2.4s ease-in-out infinite;">
               <span style="width:5px; height:5px; border-radius:50%; background:#7a4d00;"></span>UPDATE AVAILABLE
@@ -227,6 +227,9 @@
             </sc-if>
             <sc-if value="{{ canTripsTab }}" hint-placeholder-val="{{ false }}">
               <button onClick="{{ setTabTrips }}" style="{{ tabTripsStyle }}">Trips</button>
+            </sc-if>
+            <sc-if value="{{ showFamiliesTabBtn }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ setTabFamilies }}" style="{{ tabFamiliesStyle }}">Families</button>
             </sc-if>
             <button onClick="{{ setTabStorage }}" style="{{ tabStorageStyle }}">System</button>
           </div>
@@ -890,6 +893,115 @@
           </sc-if>
         </sc-if>
 
+        <sc-if value="{{ showFamiliesTab }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:6px;">MY FAMILIES</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:14px;">A family owns its own trips and travelers. You can belong to more than one — your own, plus any that have invited you in.</div>
+
+          <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+            <sc-for list="{{ myFamilyRows }}" as="f" hint-placeholder-count="1">
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:11px 13px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; font-weight:600; color:#eaf4fd;">{{ f.name }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; margin-top:2px;">{{ f.roleLabel }}<sc-if value="{{ f.pending }}" hint-placeholder-val="{{ false }}"> · awaiting site-admin approval</sc-if></div>
+                </div>
+                <button onClick="{{ f.onMakeActive }}" style="{{ f.activeBtnStyle }}">{{ f.activeBtnLabel }}</button>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:13px 14px; margin-bottom:16px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">CREATE A NEW FAMILY</div>
+            <div style="display:flex; gap:8px;">
+              <input value="{{ newFamilyName }}" onChange="{{ setNewFamilyName }}" placeholder="e.g. The Andersons" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:8px 10px; outline:none;"/>
+              <button onClick="{{ createFamily }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Create</button>
+            </div>
+            <sc-if value="{{ autoApproveFamilies }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7ee0a8; margin-top:7px;">New families are auto-approved right now.</div>
+            </sc-if>
+            <sc-if value="{{ notAutoApproveFamilies }}" hint-placeholder-val="{{ true }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; margin-top:7px;">New families need site-admin approval before they can be used.</div>
+            </sc-if>
+          </div>
+
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:6px;">FAMILIES THAT CAN SEE OURS</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:10px;">Invite a whole family to view (or edit) your active family's trips. Admin-no-delete lets them edit but never delete.</div>
+          <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <select value="{{ shareTargetFamilyId }}" onChange="{{ setShareTargetFamilyId }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:8px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+              <option value="" style="background:#0a1422;">Choose a family…</option>
+              <sc-for list="{{ otherFamilyOptions }}" as="o" hint-placeholder-count="1">
+                <option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option>
+              </sc-for>
+            </select>
+            <select value="{{ shareTargetRole }}" onChange="{{ setShareTargetRole }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:8px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+              <option value="reader" style="background:#0a1422;">Reader</option>
+              <option value="editor" style="background:#0a1422;">Editor</option>
+              <option value="admin-no-delete" style="background:#0a1422;">Admin (no delete)</option>
+            </select>
+            <button onClick="{{ inviteFamilyShare }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Invite</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:18px;">
+            <sc-for list="{{ myOutgoingShares }}" as="sh" hint-placeholder-count="1">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 10px;">
+                <span>{{ sh.label }}</span>
+                <button onClick="{{ sh.onRemove }}" title="Remove access" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:6px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:8px;">SITE ADMIN</div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c8d2e0;">Auto-approve new families</div>
+                <button onClick="{{ toggleAutoApproveFamilies }}" style="{{ autoApproveToggleStyle }}">{{ autoApproveToggleLabel }}</button>
+              </div>
+
+              <sc-if value="{{ hasPendingFamilies }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PENDING APPROVAL</div>
+                <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:14px;">
+                  <sc-for list="{{ pendingFamilyRows }}" as="pf" hint-placeholder-count="1">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(251,191,36,0.05); border:1px solid rgba(251,191,36,0.22); border-radius:8px; padding:8px 10px;">
+                      <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd;">{{ pf.name }}</span>
+                      <button onClick="{{ pf.onApprove }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:999px; padding:5px 11px; cursor:pointer;">Approve</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ASSIGN A PERSON TO A FAMILY</div>
+              <div style="display:flex; gap:8px; margin-bottom:14px;">
+                <input value="{{ assignEmail }}" onChange="{{ setAssignEmail }}" placeholder="person@example.com" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
+                <select value="{{ assignFamilyId }}" onChange="{{ setAssignFamilyId }}" style="flex:none; width:150px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:7px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                  <option value="" style="background:#0a1422;">Family…</option>
+                  <sc-for list="{{ allFamilyOptions }}" as="o" hint-placeholder-count="1">
+                    <option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option>
+                  </sc-for>
+                </select>
+                <select value="{{ assignRole }}" onChange="{{ setAssignRole }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:7px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                  <option value="reader" style="background:#0a1422;">Reader</option>
+                  <option value="editor" style="background:#0a1422;">Editor</option>
+                  <option value="admin" style="background:#0a1422;">Admin</option>
+                </select>
+                <button onClick="{{ assignUserToFamily }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Assign</button>
+              </div>
+
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ALL FAMILIES</div>
+              <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
+                <sc-for list="{{ allFamilyRows }}" as="af" hint-placeholder-count="1">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 10px;">
+                    <span>{{ af.label }}</span>
+                    <button onClick="{{ af.onDelete }}" title="Delete family" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
+                  </div>
+                </sc-for>
+              </div>
+
+              <button onClick="{{ migrateLegacyFamilies }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Migrate legacy data → default family</button>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:6px; line-height:1.5;">One-time, safe to click more than once. Moves the old flat access-list into a "The Remsiks" family so existing trips/roles keep working under the new model.</div>
+            </div>
+          </sc-if>
+        </sc-if>
+
           </div>
         </div>
       </div>
@@ -905,6 +1017,13 @@
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">DESTINATIONS</div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fbbf24;">{{ totalsText }}</div>
         </div>
+        <sc-if value="{{ showFamilySwitcher }}" hint-placeholder-val="{{ false }}">
+          <select value="{{ familyViewMode }}" onChange="{{ setFamilyViewModeEv }}" style="width:100%; margin-top:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.24); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+            <sc-for list="{{ familyViewOptions }}" as="fo" hint-placeholder-count="1">
+              <option value="{{ fo.value }}" style="background:#0a1422;">{{ fo.label }}</option>
+            </sc-for>
+          </select>
+        </sc-if>
         <div style="display:flex; gap:8px; margin-top:12px;">
           <select value="{{ filterYearValue }}" onChange="{{ onFilterYear }}" style="flex:1; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:8px 9px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
             <sc-for list="{{ yearOptions }}" as="opt" hint-placeholder-count="3">
@@ -1839,7 +1958,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 /* ============================================================================
- * TRIP TRACKER — application logic
+ * MULTI FAMILY TRIP TRACKER — application logic
  * ============================================================================
  * This single class drives the whole app. It is a DCLogic component (a thin
  * React-class wrapper): `this.state` holds all live data, `setState` re-renders,
@@ -1882,7 +2001,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '0.9.21-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.0.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2107,6 +2226,19 @@ class Component extends DCLogic {
       cloudUserEmail: '',
       cloudRoles: [],
       presenceUsers: [],
+      cfgFamilies: [],
+      cfgMemberships: [],
+      cfgShares: [],
+      mySiteAdmin: false,
+      autoApproveFamilies: false,
+      newFamilyName: '',
+      shareTargetFamilyId: '',
+      shareTargetRole: 'reader',
+      activeFamilyId: '',
+      familyViewMode: 'active',
+      assignEmail: '',
+      assignFamilyId: '',
+      assignRole: 'reader',
       cloudMsg: '',
       cloudDiag: '',
       dataFileName: '',
@@ -2521,8 +2653,165 @@ class Component extends DCLogic {
       const j = await r.json();
       const p = j && (j.clientPrincipal || (j[0] && j[0].clientPrincipal));
       this.setState({ cloudAuth: !!p, cloudUser: (p && (p.userDetails || '')) || '', cloudUserId: (p && p.userId) || '', cloudUserEmail: (p && (p.userDetails || '')).toLowerCase() || '', cloudRoles: (p && p.userRoles) || [] });
-      if (p) { this.presenceTick(); this.applyAutoTravelerFilter(); }
+      if (p) { this.presenceTick(); this.applyAutoTravelerFilter(); this.loadFamilies(); }
     } catch (e) {}
+  }
+  // ---- FAMILIES: fetch mine (+ everyone's, if I'm a site admin) ----
+  async loadFamilies() {
+    if (this.state.cfgDataSource !== 'cloud') return;
+    try {
+      const r = await fetch('/api/families', { cache: 'no-store' });
+      if (!r.ok) return;
+      const j = await r.json();
+      const mine = j.myMemberships || [];
+      // default active family = the one I'm admin of (my own family), else my first membership
+      let active = this.state.activeFamilyId;
+      if (!active || !mine.some((m) => m.familyId === active)) {
+        const adminRow = mine.find((m) => m.role === 'admin');
+        active = (adminRow || mine[0] || {}).familyId || '';
+      }
+      this.setState({
+        cfgFamilies: j.families || [],
+        cfgMemberships: j.memberships || [],
+        cfgShares: j.shares || [],
+        mySiteAdmin: !!j.siteAdmin,
+        autoApproveFamilies: !!j.autoApproveFamilies,
+        pendingFamiliesList: j.pendingFamilies || [],
+        activeFamilyId: active,
+      });
+    } catch (e) {}
+  }
+  async familiesAction(action, extra) {
+    try {
+      const r = await fetch('/api/families', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...extra }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { this.toast((j && j.error) || ('Request failed (HTTP ' + r.status + ')')); return null; }
+      await this.loadFamilies();
+      return j;
+    } catch (e) { this.toast('Request failed.'); return null; }
+  }
+  setNewFamilyName(e) { this.setState({ newFamilyName: e.target.value }); }
+  async createFamily() {
+    const name = (this.state.newFamilyName || '').trim();
+    if (!name) return;
+    const j = await this.familiesAction('create', { name });
+    if (j && j.family) {
+      this.setState({ newFamilyName: '', activeFamilyId: j.family.id });
+      this.toast(j.family.approved ? ('Created "' + name + '"') : ('Created "' + name + '" — awaiting approval'));
+    }
+  }
+  setActiveFamily(id) { this.setState({ activeFamilyId: id }); }
+  setShareTargetFamilyId(e) { this.setState({ shareTargetFamilyId: e.target.value }); }
+  setShareTargetRole(e) { this.setState({ shareTargetRole: e.target.value }); }
+  async inviteFamilyShare() {
+    const toFamilyId = this.state.shareTargetFamilyId;
+    if (!toFamilyId || !this.state.activeFamilyId) return;
+    const j = await this.familiesAction('inviteFamily', { fromFamilyId: this.state.activeFamilyId, toFamilyId, role: this.state.shareTargetRole });
+    if (j) { this.toast('Invited.'); this.setState({ shareTargetFamilyId: '' }); }
+  }
+  async removeFamilyShare(fromFamilyId, toFamilyId) {
+    const j = await this.familiesAction('removeFamilyShare', { fromFamilyId, toFamilyId });
+    if (j) this.toast('Removed.');
+  }
+  async approveFamily(familyId) {
+    const j = await this.familiesAction('approve', { familyId });
+    if (j) this.toast('Family approved.');
+  }
+  async deleteFamilyAdmin(familyId) {
+    const j = await this.familiesAction('delete', { familyId });
+    if (j) this.toast('Family deleted.');
+  }
+  async toggleAutoApproveFamilies() {
+    const j = await this.familiesAction('setAutoApprove', { value: !this.state.autoApproveFamilies });
+    if (j) this.toast(j.autoApproveFamilies ? 'Auto-approve is ON' : 'Auto-approve is OFF');
+  }
+  setAssignEmail(e) { this.setState({ assignEmail: e.target.value }); }
+  setAssignFamilyId(e) { this.setState({ assignFamilyId: e.target.value }); }
+  setAssignRole(e) { this.setState({ assignRole: e.target.value }); }
+  async assignUserToFamily() {
+    const email = (this.state.assignEmail || '').trim();
+    if (!email || !this.state.assignFamilyId) { this.toast('Enter an email and pick a family.'); return; }
+    const j = await this.familiesAction('assignUser', { email, familyId: this.state.assignFamilyId, role: this.state.assignRole });
+    if (j) { this.toast('Assigned ' + email + '.'); this.setState({ assignEmail: '' }); }
+  }
+  async migrateLegacyFamilies() {
+    const j = await this.familiesAction('migrateLegacy', {});
+    if (j) { this.toast('Migrated ' + (j.migratedMembers || 0) + ' member(s) + ' + (j.migratedTrips || 0) + ' trip(s) into "The Remsiks".'); this.cloudLoad(); }
+  }
+  // Everything the Families tab template needs, computed fresh each render.
+  familiesRenderVals() {
+    const s = this.state;
+    const families = s.cfgFamilies || [];
+    const byId = {}; families.forEach((f) => byId[f.id] = f);
+    const roleLabel = (r) => r === 'admin' ? 'Admin' : r === 'editor' ? 'Editor' : 'Reader';
+    const myFamilyRows = (s.cfgMemberships || [])
+      .filter((m) => m.email === s.cloudUserEmail && m.active !== false)
+      .map((m) => {
+        const fam = byId[m.familyId];
+        const active = m.familyId === s.activeFamilyId;
+        return {
+          name: (fam && fam.name) || '(unknown family)',
+          roleLabel: roleLabel(m.role),
+          pending: !!(fam && !fam.approved),
+          onMakeActive: () => this.setActiveFamily(m.familyId),
+          activeBtnLabel: active ? 'Active' : 'Use this',
+          activeBtnStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:9.5px; font-weight:600; border-radius:999px; padding:5px 11px; cursor:pointer; ' +
+            (active ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3);'),
+        };
+      });
+    const myFamilyIds = new Set((s.cfgMemberships || []).filter((m) => m.email === s.cloudUserEmail && m.active !== false).map((m) => m.familyId));
+    const otherFamilyOptions = families.filter((f) => !myFamilyIds.has(f.id)).map((f) => ({ value: f.id, label: f.name }));
+    const shareRoleLabel = (r) => r === 'admin-no-delete' ? 'Admin (no delete)' : r === 'editor' ? 'Editor' : 'Reader';
+    const myOutgoingShares = (s.cfgShares || []).filter((sh) => sh.fromFamilyId === s.activeFamilyId).map((sh) => ({
+      label: (byId[sh.toFamilyId] ? byId[sh.toFamilyId].name : sh.toFamilyId) + ' — ' + shareRoleLabel(sh.role),
+      onRemove: () => this.removeFamilyShare(sh.fromFamilyId, sh.toFamilyId),
+    }));
+    const pendingList = s.pendingFamiliesList || [];
+    const myFamilyIdsArr = [...myFamilyIds];
+    const familyViewOptions = [];
+    const activeFam = byId[s.activeFamilyId];
+    if (activeFam) familyViewOptions.push({ value: s.activeFamilyId, label: activeFam.name + ' (active family)' });
+    if (myFamilyIdsArr.length > 1) familyViewOptions.push({ value: 'allMine', label: 'All my families' });
+    if (s.mySiteAdmin) {
+      familyViewOptions.push({ value: 'all', label: 'Every family (site admin)' });
+      families.filter(fm => fm.id !== s.activeFamilyId).forEach(fm => familyViewOptions.push({ value: fm.id, label: fm.name + ' (view as admin)' }));
+    }
+    return {
+      newFamilyName: s.newFamilyName,
+      setNewFamilyName: (e) => this.setNewFamilyName(e),
+      createFamily: () => this.createFamily(),
+      autoApproveFamilies: !!s.autoApproveFamilies,
+      notAutoApproveFamilies: !s.autoApproveFamilies,
+      myFamilyRows,
+      shareTargetFamilyId: s.shareTargetFamilyId,
+      setShareTargetFamilyId: (e) => this.setShareTargetFamilyId(e),
+      shareTargetRole: s.shareTargetRole,
+      setShareTargetRole: (e) => this.setShareTargetRole(e),
+      otherFamilyOptions,
+      inviteFamilyShare: () => this.inviteFamilyShare(),
+      myOutgoingShares,
+      mySiteAdmin: !!s.mySiteAdmin,
+      autoApproveToggleLabel: s.autoApproveFamilies ? 'ON' : 'OFF',
+      autoApproveToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
+        (s.autoApproveFamilies ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
+      toggleAutoApproveFamilies: () => this.toggleAutoApproveFamilies(),
+      hasPendingFamilies: pendingList.length > 0,
+      pendingFamilyRows: pendingList.map((f) => ({ name: f.name, onApprove: () => this.approveFamily(f.id) })),
+      allFamilyRows: families.map((f) => ({ label: f.name + (f.approved ? '' : ' (pending)'), onDelete: () => this.deleteFamilyAdmin(f.id) })),
+      allFamilyOptions: families.map((f) => ({ value: f.id, label: f.name })),
+      assignEmail: s.assignEmail,
+      setAssignEmail: (e) => this.setAssignEmail(e),
+      assignFamilyId: s.assignFamilyId,
+      setAssignFamilyId: (e) => this.setAssignFamilyId(e),
+      assignRole: s.assignRole,
+      setAssignRole: (e) => this.setAssignRole(e),
+      assignUserToFamily: () => this.assignUserToFamily(),
+      migrateLegacyFamilies: () => this.migrateLegacyFamilies(),
+      showFamilySwitcher: s.cfgDataSource === 'cloud' && familyViewOptions.length > 1,
+      familyViewOptions,
+      familyViewMode: s.familyViewMode || 'active',
+      setFamilyViewModeEv: (e) => this.setFamilyViewMode(e.target.value),
+    };
   }
   // ---- presence ("who's online") — heartbeat + poll, Cloud mode only ----
   async presenceTick() {
@@ -4398,6 +4687,15 @@ class Component extends DCLogic {
   // Empty = all trips in the system. Mirrors the same dimensions you filter trips by.
   metricsPassesFilter(l) {
     const f = this.state.metricsFilter || {};
+    const s = this.state;
+    if (s.cfgDataSource === 'cloud' && l.familyId) {
+      const mode = s.familyViewMode || 'active';
+      if (mode === 'all') { /* site admin: every family */ }
+      else if (mode === 'allMine') {
+        const mine = new Set((s.cfgMemberships || []).filter(m => m.email === s.cloudUserEmail && m.active !== false).map(m => m.familyId));
+        if (!mine.has(l.familyId)) return false;
+      } else if (l.familyId !== mode) return false;
+    }
     if (f.year && f.year !== 'all') { if ((l.date || '').slice(0, 4) !== String(f.year)) return false; }
     if (f.statuses && f.statuses.length && !f.statuses.includes(l.status)) return false;
     if (f.visit && f.visit.length && !(l.visitTypes || []).some(k => f.visit.includes(k))) return false;
@@ -4559,6 +4857,17 @@ class Component extends DCLogic {
       if (s.ownerFilter === 'mine' && !mine) return false;
       if (s.ownerFilter === 'shared' && mine) return false;
     }
+    // family filter (cloud only) — legacy trips with no familyId always pass (backward compat)
+    if (s.cfgDataSource === 'cloud' && l.familyId) {
+      const mode = s.familyViewMode || 'active';
+      if (mode === 'all') { /* site admin: see every family — no filter */ }
+      else if (mode === 'allMine') {
+        const mine = new Set((s.cfgMemberships || []).filter(m => m.email === s.cloudUserEmail && m.active !== false).map(m => m.familyId));
+        if (!mine.has(l.familyId)) return false;
+      } else {
+        if (l.familyId !== mode) return false;
+      }
+    }
     const q = (s.filterText || '').trim().toLowerCase();
     if (q) {
       const hay = [l.city, l.state, l.country, l.notes].filter(Boolean).join(' ').toLowerCase();
@@ -4577,6 +4886,7 @@ class Component extends DCLogic {
   toggleHeat() { this.setState(s => ({ heatOpen: !s.heatOpen })); }
   setHeatMode(m) { this.setState({ heatMode: m }); }
   clearFilters() { this.setState({ filterYear: 'all', filterStatuses: [], filterVisit: [], filterTrip: [], filterTravelers: [], filterText: '', filterCountries: [], filterCities: [], ownerFilter: 'everyone' }); }
+  setFamilyViewMode(v) { this.setState({ familyViewMode: v }); }
   setOwnerFilter(v) { this.setState({ ownerFilter: v }); }
   toggleCountry(c) { this.setState(s => { const cur = s.filterCountries; return { filterCountries: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
   toggleCity(c) { this.setState(s => { const cur = s.filterCities; return { filterCities: cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c] }; }); }
@@ -4603,6 +4913,7 @@ class Component extends DCLogic {
         && (this.state.cloudRoles || []).includes('admin')) {
       this.loadLoginStats();
     }
+    if (tab === 'families' && this.state.cfgDataSource === 'cloud') this.loadFamilies();
   }
 
   // ACCESS LIST (admin): the email→role allowlist that /api/roles reads to grant access.
@@ -5280,7 +5591,7 @@ class Component extends DCLogic {
       list = this.state.locations.map(l => l.id === savedId ? { ...l, ...f, owner: l.owner || meId, ownerEmail: l.ownerEmail || meEmail, modifiedAt: new Date().toISOString() } : l);
     } else {
       savedId = this.genId();
-      list = [...this.state.locations, { ...f, id: savedId, owner: meId, ownerEmail: meEmail, createdAt: new Date().toISOString() }];
+      list = [...this.state.locations, { ...f, id: savedId, owner: meId, ownerEmail: meEmail, familyId: f.familyId || this.state.activeFamilyId || '', createdAt: new Date().toISOString() }];
     }
     this.persist(list);
     this.toast(this.state.editingId != null ? 'Changes saved' : 'Trip added');
@@ -5704,6 +6015,7 @@ class Component extends DCLogic {
       tabSystemStyle: tabBtnStyle(this.state.settingsTab === 'system'),
       tabConfigStyle: tabBtnStyle(this.state.settingsTab === 'config'),
       tabTripsStyle: tabBtnStyle(this.state.settingsTab === 'trips'),
+      tabFamiliesStyle: tabBtnStyle(this.state.settingsTab === 'families'),
       tabStorageStyle: tabBtnStyle(this.state.settingsTab === 'storage'),
       showFiltersTab: this.state.settingsTab === 'filters',
       showSystemTab: this.state.settingsTab === 'system',
@@ -5713,6 +6025,10 @@ class Component extends DCLogic {
       canTripsTab: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('editor'),
       showTripsTab: this.state.settingsTab === 'trips' && (this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('editor')),
       setTabTrips: () => this.setSettingsTab('trips'),
+      showFamiliesTabBtn: this.state.cfgDataSource === 'cloud',
+      showFamiliesTab: this.state.settingsTab === 'families' && this.state.cfgDataSource === 'cloud',
+      setTabFamilies: () => this.setSettingsTab('families'),
+      ...this.familiesRenderVals(),
       showStorageTab: this.state.settingsTab === 'storage',
       setTabFilters: () => this.setSettingsTab('filters'),
       setTabSystem: () => this.setSettingsTab('system'),

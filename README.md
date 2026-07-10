@@ -1,8 +1,31 @@
-# Trip Tracker
+# Multi Family Trip Tracker
 
-A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering.
+A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-0.9.19--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.0.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+
+---
+
+## Families (multi-tenant model)
+
+In Cloud mode, every trip and traveler belongs to a **Family**, not to an individual:
+
+- **Anyone signed in can create a family** (Settings → Families). New families need
+  site-admin approval before their trips become usable, unless the site admin has
+  turned on auto-approve.
+- **Roles are scoped per family** — admin / editor / reader. The same person can be
+  admin of their own family and just a reader in a family that invited them in.
+  A separate **site admin** role sits above every family: create/approve/delete
+  families, assign anyone to any family at any role, and view all data.
+- **Cross-family sharing** — a family admin can invite a whole other family to view
+  (or edit) their trips at reader / editor / "admin (no delete)", from the Families tab.
+- **Family switcher** — the destinations panel gets a small switcher (only shown once
+  you can see more than one family) to jump between your active family, all families
+  you belong to, or — for site admins — any single family or every family at once.
+  The metrics dashboard respects the same scope.
+- **Upgrading existing data** — a site admin runs "Migrate legacy data → default
+  family" once (Families tab); it folds any pre-existing trips/travelers/access-list
+  entries into a single family so nothing is lost.
 
 ---
 
@@ -68,7 +91,7 @@ A dark, futuristic travel tracker built around a geographically accurate, rotati
 - **Role-aware UI:** in Cloud mode the **Add / Edit / Delete** controls are hidden unless your account has the `editor` role, and **Import / Clear data** require the `admin` role (read-only `reader` accounts see neither). The **Users** tab and the data-list editors in **Settings** (trip/visit types, statuses) and the **Access requests** email are **admin-only** in Cloud mode too; non-admins don't see those controls at all. Local mode always allows editing.
 - **Sign in or request access:** when an unauthorized visitor opens the site in Cloud mode they get a clean **Sign in required / No access** screen (no data is shown) with two paths — **Sign in** with an authorized account, or **Request access** by entering their email. If the optional Resend email backend is configured (see deploy guide), the request is emailed straight to the owner ("Request sent ✓"); otherwise it falls back to opening the visitor's own mail app. The destination address is set in **⚙ → System → "Access requests go to"** and is shown on the sign-in screen so people can also email it directly.
 - **Multi-provider sign-in:** the Sign in screen offers **Microsoft, Google, and Yahoo** — people use whatever account they already have.
-- **App-managed access (no Azure invitations):** an admin manages a **dedicated email→role allowlist** right in **⚙ → System → Access list** (add/remove rows of email + `reader`/`editor`/`admin`, then Save). After someone signs in, the server's custom-roles function matches their email (across any provider) against that list and grants the role — so you let people in or out from inside the app, never the Azure portal. A `BOOTSTRAP_ADMIN_EMAIL` env var is the lock-out safety net. **Inactive users:** an admin can mark a user **Inactive** (⚙ → Users) — the record and role are kept but access is revoked until reactivated.
+- **App-managed access (no Azure invitations):** roles now live per-family in **⚙ → Families** (each family's admin manages who's in their family, at reader/editor/admin) — site admins can additionally assign anyone to any family from **⚙ → Families → Site Admin**. After someone signs in, the server's custom-roles function matches their email (across any provider) against their family memberships and grants a role — so you let people in or out from inside the app, never the Azure portal. A `BOOTSTRAP_ADMIN_EMAIL` / `SITE_ADMIN_EMAIL` env var is the lock-out safety net. **Inactive users:** an admin can mark a user **Inactive** (⚙ → Users) — the record and role are kept but access is revoked until reactivated.
 - **Export / Import** with independent **Data** and **Settings** switches: back up or restore destinations, display settings, or both. Import only applies what you've switched on *and* what the file contains.
 - **Clear data** always downloads a dated backup first.
 

@@ -1,8 +1,38 @@
 # Changelog
 
-All notable changes to **Trip Tracker** are recorded here. The newest release is at the top.
+All notable changes to **Multi Family Trip Tracker** are recorded here. The newest release is at the top.
 
 ---
+
+## 1.0.0-beta — Multi-Family
+
+This is the big one: the app now supports multiple independent **Families**, each owning
+its own trips, travelers, and roles, with opt-in sharing between them.
+
+### Added
+- **Families.** A family owns its trips and travelers. Anyone signed in can create their
+  own family (Settings → Families); new families need site-admin approval before use,
+  unless the site admin has turned on auto-approve.
+- **Per-family roles.** Admin / editor / reader is now scoped per family — the same
+  person can be an admin of their own family and just a reader in one that invited them.
+  A separate **site admin** role sits above all families (create/approve/delete any
+  family, assign anyone to any family+role, view every family's data).
+- **Cross-family sharing.** A family admin can invite a whole other family to see their
+  trips, at reader / editor / "admin (no delete)". Shared-with families show up as an
+  option in the left-panel family switcher.
+- **Family switcher** in the destinations panel (only appears once you belong to or can
+  view more than one family) — jump between "my active family", "all my families", or
+  (site admin) any family in the system or all of them at once. Metrics respect the same
+  scope.
+- **One-time migration.** Site admins get a "Migrate legacy data → default family" button
+  that folds all pre-multi-family trips, travelers, and the old flat access list into a
+  single default family ("The Remsiks"), so nothing is lost on upgrade.
+
+### Changed
+- App renamed **Trip Tracker → Multi Family Trip Tracker**.
+- `/api/roles` and `/api/trips` now resolve access through family memberships and shares
+  instead of one global access list (the old list still works as a fallback until you
+  migrate).
 
 ## 0.9.21-beta
 

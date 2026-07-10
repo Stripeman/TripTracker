@@ -2,25 +2,27 @@ const { BlobServiceClient } = require("@azure/storage-blob");
 
 // CUSTOM ROLES function (Azure Static Web Apps `rolesSource`).
 //
-// After ANY user signs in (Microsoft / Google / Yahoo / …), Azure SWA POSTs their
-// identity here and expects back the list of roles to grant them. This is what lets
-// the APP own access control instead of Azure portal invitations: we look the user's
-// email up in an admin-managed allowlist (access-list.json in Blob Storage) and return
-// the matching role. Unknown email → no roles → the app shows its "no access" message.
+// After ANY user signs in, Azure SWA POSTs their identity here and expects back the
+// list of roles to grant them (used for static route gating in staticwebapp.config.json,
+// e.g. /api/trips requires "reader"/"editor"). Per-FAMILY authorization is enforced
+// separately inside /api/trips and /api/families — this function only answers "does
+// this person have ANY membership anywhere, and at what ceiling role".
+//
+// Roles are read from memberships.json (family-scoped: { email, familyId, role, active }),
+// which replaces the old flat access-list.json. A user's SWA role = the highest role
+// across all of their ACTIVE memberships (any family). Site admins (SITE_ADMIN_EMAIL /
+// BOOTSTRAP_ADMIN_EMAIL) always get admin.
 //
 // App settings:
-//   AZURE_STORAGE_CONNECTION_STRING  (required) — storage account holding the allowlist
-//   BOOTSTRAP_ADMIN_EMAIL            (recommended) — comma-separated emails that ALWAYS
-//                                     get admin, so you can never lock yourself out and
-//                                     can seed the very first allowlist entry.
+//   AZURE_STORAGE_CONNECTION_STRING  (required)
+//   BOOTSTRAP_ADMIN_EMAIL / SITE_ADMIN_EMAIL — comma-separated emails that always get admin
 // Optional:
-//   TRIPS_CONTAINER (default "data")   ACCESS_BLOB (default "access-list.json")
+//   TRIPS_CONTAINER (default "data")   MEMBERSHIPS_BLOB (default "memberships.json")
 
 const CONTAINER = process.env.TRIPS_CONTAINER || "data";
-const ACCESS_BLOB = process.env.ACCESS_BLOB || "access-list.json";
+const MEMBERS_BLOB = process.env.MEMBERSHIPS_BLOB || "memberships.json";
+const LEGACY_ACCESS_BLOB = process.env.ACCESS_BLOB || "access-list.json";
 
-// Roles are cumulative: admin can do everything an editor/reader can, etc. The SWA
-// route rules check for "reader"/"editor"/"admin", so we expand to the full set.
 function rolesFor(role) {
   switch (String(role || "").toLowerCase()) {
     case "admin":  return ["admin", "editor", "reader"];
@@ -36,37 +38,45 @@ async function streamToString(readable) {
   return Buffer.concat(chunks).toString("utf8");
 }
 
-async function readAccessList() {
-  const conn = process.env.AZURE_STORAGE_CONNECTION_STRING;
-  if (!conn) return [];
-  const svc = BlobServiceClient.fromConnectionString(conn);
-  const container = svc.getContainerClient(CONTAINER);
-  await container.createIfNotExists();
-  const blob = container.getBlockBlobClient(ACCESS_BLOB);
-  if (!(await blob.exists())) return [];
+async function readJsonBlob(container, name, fallback) {
+  const blob = container.getBlockBlobClient(name);
+  if (!(await blob.exists())) return fallback;
   const dl = await blob.download();
   const text = await streamToString(dl.readableStreamBody);
-  try {
-    const data = JSON.parse(text);
-    return Array.isArray(data) ? data : (Array.isArray(data.list) ? data.list : []);
-  } catch (e) { return []; }
+  try { return JSON.parse(text); } catch (e) { return fallback; }
 }
 
 module.exports = async function (context, req) {
   const email = String((req.body && req.body.userDetails) || "").toLowerCase().trim();
   const roles = new Set();
 
-  // 1) bootstrap admin(s) — always granted, regardless of the allowlist
-  const boot = String(process.env.BOOTSTRAP_ADMIN_EMAIL || "")
+  const boot = String(process.env.SITE_ADMIN_EMAIL || process.env.BOOTSTRAP_ADMIN_EMAIL || "")
     .split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
   if (email && boot.includes(email)) rolesFor("admin").forEach((r) => roles.add(r));
 
-  // 2) the admin-managed allowlist
   try {
-    const list = await readAccessList();
-    const hit = list.find((e) => e && String(e.email || "").toLowerCase().trim() === email);
-    // An entry marked active:false is suspended — keep the record but grant no roles.
-    if (hit && hit.active !== false) rolesFor(hit.role).forEach((r) => roles.add(r));
+    const conn = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    if (conn) {
+      const svc = BlobServiceClient.fromConnectionString(conn);
+      const container = svc.getContainerClient(CONTAINER);
+      await container.createIfNotExists();
+
+      const members = await readJsonBlob(container, MEMBERS_BLOB, null);
+      if (Array.isArray(members)) {
+        const mine = members.filter((m) => m && String(m.email || "").toLowerCase().trim() === email && m.active !== false);
+        // ceiling role across all of this person's family memberships
+        let best = "";
+        mine.forEach((m) => { if (m.role === "admin") best = "admin"; else if (m.role === "editor" && best !== "admin") best = "editor"; else if (!best) best = m.role || "reader"; });
+        if (best) rolesFor(best).forEach((r) => roles.add(r));
+      } else {
+        // memberships.json doesn't exist yet (pre-migration) — fall back to the old
+        // flat access-list.json so existing deployments keep working unmigrated.
+        const legacy = await readJsonBlob(container, LEGACY_ACCESS_BLOB, []);
+        const legacyList = Array.isArray(legacy) ? legacy : (legacy.list || []);
+        const hit = legacyList.find((e) => e && String(e.email || "").toLowerCase().trim() === email);
+        if (hit && hit.active !== false) rolesFor(hit.role).forEach((r) => roles.add(r));
+      }
+    }
   } catch (e) {
     context.log.error(e);
   }

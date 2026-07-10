@@ -17,6 +17,8 @@ const { BlobServiceClient } = require("@azure/storage-blob");
 
 const CONTAINER = process.env.TRIPS_CONTAINER || "data";
 const BLOB = process.env.TRIPS_BLOB || "trip-tracker.json";
+const MEMBERS_BLOB = process.env.MEMBERSHIPS_BLOB || "memberships.json";
+const SHARES_BLOB = process.env.FAMILY_SHARES_BLOB || "family-shares.json";
 
 function principal(req) {
   const header = req.headers["x-ms-client-principal"];
@@ -44,21 +46,58 @@ function isMine(trip, me) {
   return !!(trip && ((trip.owner && trip.owner === me.id) || sameEmail(trip.ownerEmail, me.email)));
 }
 
+// FAMILY-AWARE view/edit rules. `me.familyRoles` is a Map<familyId, 'admin'|'editor'|'reader'>
+// built from that person's active memberships; `me.siteAdmin` is a bool; `me.sharesIn` is
+// an array of { fromFamilyId, role } describing families that have shared THEIR trips
+// with one of me's families ('reader' | 'editor' | 'admin-no-delete').
+//
+// Trips created before the family model has no `familyId` — those are treated exactly
+// as before (visible to any signed-in user, editable only by their owner) so existing
+// unmigrated deployments keep working until an admin runs the migration.
 function canView(trip, me) {
-  if (!trip || (!trip.owner && !trip.ownerEmail)) return true; // legacy / unassigned → visible to all
-  if (isMine(trip, me)) return true;                // your own / assigned to you
-  if (trip.visibility === "all") return true;       // shared with all users
+  if (!trip) return false;
+  if (me.siteAdmin) return true;
+  if (!trip.familyId) {
+    // legacy trip (pre-family) — old rules
+    if (!trip.owner && !trip.ownerEmail) return true;
+    if (isMine(trip, me)) return true;
+    if (trip.visibility === "all") return true;
+    if (trip.visibility === "shared" && Array.isArray(trip.sharedWith)) {
+      if (trip.sharedWith.map((s) => String(s).toLowerCase()).includes(me.email)) return true;
+    }
+    return false;
+  }
+  if (me.familyRoles.has(trip.familyId)) return true; // any role in the owning family sees it
+  const shareRole = me.sharesIn.get(trip.familyId);
+  if (shareRole) return true; // another family shared their whole family's trips with mine
+  if (trip.visibility === "all") return true;
   if (trip.visibility === "shared" && Array.isArray(trip.sharedWith)) {
     if (trip.sharedWith.map((s) => String(s).toLowerCase()).includes(me.email)) return true;
   }
   return false;
 }
 
-// Normal saves may only create/modify/delete trips the caller OWNS (by id or assigned
-// email). Legacy/unassigned and other people's trips are never touched by a normal save
-// (admins use ?mode=replace or ?mode=assign).
+// Normal saves may create/modify/delete trips in a family where I'm editor/admin, or
+// trips I personally own (legacy path). Read-only family shares never grant edit.
 function canEdit(trip, me) {
-  return isMine(trip, me);
+  if (me.siteAdmin) return true;
+  if (!trip.familyId) return isMine(trip, me); // legacy path unchanged
+  const myRole = me.familyRoles.get(trip.familyId);
+  if (myRole === "editor" || myRole === "admin") return true;
+  const shareRole = me.sharesIn.get(trip.familyId);
+  if (shareRole === "editor" || shareRole === "admin-no-delete") return true;
+  return false;
+}
+
+// Delete is stricter than edit: only a family admin (not a shared "admin-no-delete"
+// role, and not a plain editor) or the trip's own owner may delete it.
+function canDelete(trip, me) {
+  if (me.siteAdmin) return true;
+  if (!trip.familyId) return isMine(trip, me);
+  const myRole = me.familyRoles.get(trip.familyId);
+  if (myRole === "admin") return true;
+  if (isMine(trip, me) && (myRole === "editor")) return true;
+  return false;
 }
 
 async function getContainer() {
@@ -68,6 +107,45 @@ async function getContainer() {
   const container = svc.getContainerClient(CONTAINER);
   await container.createIfNotExists();
   return container;
+}
+
+function isSiteAdmin(email) {
+  const list = String(process.env.SITE_ADMIN_EMAIL || process.env.BOOTSTRAP_ADMIN_EMAIL || "")
+    .split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  return !!email && list.includes(email);
+}
+
+// Enriches `me` (from the SWA principal) with family-scoped info read fresh from
+// memberships.json / family-shares.json: familyRoles (Map<familyId, role> for MY active
+// memberships) and sharesIn (Map<familyId, role> — families that shared THEIR trips with
+// one of my families). Cheap at this scale (two small JSON blobs).
+async function enrichMe(container, me) {
+  me.siteAdmin = isSiteAdmin(me.email);
+  me.familyRoles = new Map();
+  me.sharesIn = new Map();
+  try {
+    const membersBlob = container.getBlockBlobClient(MEMBERS_BLOB);
+    if (await membersBlob.exists()) {
+      const dl = await membersBlob.download();
+      const text = await streamToString(dl.readableStreamBody);
+      const members = JSON.parse(text);
+      if (Array.isArray(members)) {
+        members.filter((m) => m && String(m.email || "").toLowerCase().trim() === me.email && m.active !== false)
+          .forEach((m) => me.familyRoles.set(m.familyId, m.role));
+      }
+    }
+    const sharesBlob = container.getBlockBlobClient(SHARES_BLOB);
+    if (await sharesBlob.exists()) {
+      const dl = await sharesBlob.download();
+      const text = await streamToString(dl.readableStreamBody);
+      const shares = JSON.parse(text);
+      const myFamilyIds = new Set(me.familyRoles.keys());
+      if (Array.isArray(shares)) {
+        shares.filter((s) => s && myFamilyIds.has(s.toFamilyId)).forEach((s) => me.sharesIn.set(s.fromFamilyId, s.role));
+      }
+    }
+  } catch (e) { /* best-effort — missing blobs just mean no family scoping yet */ }
+  return me;
 }
 
 async function streamToString(readable) {
@@ -110,6 +188,7 @@ module.exports = async function (context, req) {
     if (!me) { json(401, { error: "Sign in required." }); return; }
 
     const container = await getContainer();
+    await enrichMe(container, me);
     const blob = container.getBlockBlobClient(BLOB);
 
     if (req.method === "GET") {
@@ -120,7 +199,7 @@ module.exports = async function (context, req) {
         version: 1,
         locations: visible,
         settings: settings || undefined,
-        me: { id: me.id, email: me.email, roles: me.roles },
+        me: { id: me.id, email: me.email, roles: me.roles, siteAdmin: me.siteAdmin, familyRoles: Object.fromEntries(me.familyRoles) },
         total: locations.length,
         visible: visible.length,
       });
@@ -212,12 +291,15 @@ module.exports = async function (context, req) {
 
     for (const s of stored.locations) {
       const incoming = incomingById.get(s.id);
-      if (s.owner || s.ownerEmail) {
-        if (isMine(s, me)) {
+      const editable = s.familyId ? canEdit(s, me) : isMine(s, me);
+      const deletable = s.familyId ? canDelete(s, me) : isMine(s, me);
+      if (s.familyId || s.owner || s.ownerEmail) {
+        if (editable) {
           if (incoming) result.push(normalize(incoming, s.owner || me.id, s.ownerEmail || me.email));
-          // omitted by an owner → deleted
+          else if (!deletable) result.push(s); // editor without delete rights can't drop it by omission
+          // else: omitted by someone with delete rights → deleted
         } else {
-          result.push(s);                                  // someone else's — untouchable
+          result.push(s);                                  // no edit rights — untouchable
         }
       } else {
         // legacy / unassigned
@@ -228,10 +310,13 @@ module.exports = async function (context, req) {
         }
       }
     }
-    // brand-new trips the caller created this session
+    // brand-new trips the caller created this session — stamp their active family
+    // (first family where they're editor/admin) if the client didn't already set one.
+    const myEditableFamilyId = [...me.familyRoles.entries()].find(([, r]) => r === "admin" || r === "editor");
     for (const t of payload.locations) {
       if (storedById.has(t.id)) continue;
-      result.push(normalize(t, t.owner || me.id, t.ownerEmail || me.email));
+      const withFamily = t.familyId ? t : (myEditableFamilyId ? { ...t, familyId: myEditableFamilyId[0] } : t);
+      result.push(normalize(withFamily, t.owner || me.id, t.ownerEmail || me.email));
     }
 
     const settings = payload.settings || stored.settings || null;
