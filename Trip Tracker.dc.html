@@ -4689,7 +4689,8 @@ class Component extends DCLogic {
     const f = this.state.metricsFilter || {};
     const s = this.state;
     if (s.cfgDataSource === 'cloud' && l.familyId) {
-      const mode = s.familyViewMode || 'active';
+      let mode = s.familyViewMode || 'active';
+      if (mode === 'active') mode = s.activeFamilyId || 'active';
       if (mode === 'all') { /* site admin: every family */ }
       else if (mode === 'allMine') {
         const mine = new Set((s.cfgMemberships || []).filter(m => m.email === s.cloudUserEmail && m.active !== false).map(m => m.familyId));
@@ -4859,7 +4860,8 @@ class Component extends DCLogic {
     }
     // family filter (cloud only) — legacy trips with no familyId always pass (backward compat)
     if (s.cfgDataSource === 'cloud' && l.familyId) {
-      const mode = s.familyViewMode || 'active';
+      let mode = s.familyViewMode || 'active';
+      if (mode === 'active') mode = s.activeFamilyId || 'active';
       if (mode === 'all') { /* site admin: see every family — no filter */ }
       else if (mode === 'allMine') {
         const mine = new Set((s.cfgMemberships || []).filter(m => m.email === s.cloudUserEmail && m.active !== false).map(m => m.familyId));
