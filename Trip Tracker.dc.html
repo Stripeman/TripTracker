@@ -1513,7 +1513,7 @@
           <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap; justify-content:flex-end;">
             <sc-for list="{{ presenceChips }}" as="u" hint-placeholder-count="2">
               <span title="{{ u.title }}" style="display:flex; align-items:center; gap:6px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:{{ u.color }}; cursor:default; white-space:nowrap;">
-                <span style="width:7px; height:7px; border-radius:50%; background:#34d399; box-shadow:0 0 8px #34d399; flex:none;"></span>{{ u.name }}
+                <span style="width:7px; height:7px; border-radius:50%; background:{{ u.dotColor }}; box-shadow:0 0 8px {{ u.dotColor }}; flex:none;"></span>{{ u.name }}
               </span>
             </sc-for>
           </div>
@@ -2205,6 +2205,17 @@
         </div>
       </div>
 
+      <sc-if value="{{ showFormFamilyPicker }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:14px 26px 0;">
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">FAMILY</label>
+          <select name="familyId" value="{{ form.familyId }}" onChange="{{ onField }}" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;">
+            <sc-for list="{{ formFamilyOptions }}" as="fo" hint-placeholder-count="2">
+              <option value="{{ fo.id }}">{{ fo.name }}</option>
+            </sc-for>
+          </select>
+        </div>
+      </sc-if>
+
       <div style="flex:1; overflow-y:auto; padding:22px 26px;">
         <div style="display:flex; gap:12px; margin-bottom:18px;">
           <div style="flex:1;">
@@ -2745,7 +2756,7 @@ class Component extends DCLogic {
     const d = this._permDefault || {};
     const vis = ['private','shared','all'].indexOf(d.vis) >= 0 ? d.vis : 'private';
     const shareTravelers = Array.isArray(d.keys) ? d.keys.slice() : [];
-    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', photo:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers }; }
+    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', photo:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers, familyId: this.state.activeFamilyId || '' }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -7226,7 +7237,10 @@ class Component extends DCLogic {
       presenceChips: (this.state.presenceUsers || []).map(u => {
         const ago = Math.max(0, Math.round((Date.now() - (u.lastSeen || 0)) / 1000));
         const rel = ago < 45 ? 'just now' : (ago < 90 ? 'about a minute ago' : Math.round(ago / 60) + ' min ago');
-        return { id: u.id, name: u.you ? (u.name + ' (you)') : u.name, color: u.you ? '#7ee0a8' : '#cfe0f0', title: (u.you ? 'You' : (u.email || u.name)) + ' · last online ' + rel };
+        const uEmailLc = String(u.email || '').toLowerCase().trim();
+        const uMembership = (this.state.cfgMemberships || []).find(m => String(m.email || '').toLowerCase().trim() === uEmailLc && m.active !== false);
+        const dotColor = uMembership ? this.famColor(uMembership.familyId) : '#34d399';
+        return { id: u.id, name: u.you ? (u.name + ' (you)') : u.name, color: u.you ? '#7ee0a8' : '#cfe0f0', title: (u.you ? 'You' : (u.email || u.name)) + ' · last online ' + rel, dotColor };
       }),
       canEditSelected,
       canPermSelected: this.state.cfgDataSource === 'cloud' && canEditSelected,
@@ -7420,8 +7434,15 @@ class Component extends DCLogic {
       paneClass: this.state.paneOpen ? '' : 'tt-paneclosed',
       togglePane: () => this.togglePane(),
       panelTransform: formOpen ? 'translateX(0)' : 'translateX(110%)',
-      formMode: editingId != null ? 'EDIT DESTINATION' : 'NEW DESTINATION',
+      formMode: (() => {
+        const base = editingId != null ? 'EDIT DESTINATION' : 'NEW DESTINATION';
+        if ((this.state.cfgFamilies || []).length <= 1) return base;
+        const fam = (this.state.cfgFamilies || []).find(x => x.id === form.familyId);
+        return fam ? base + ' FOR ' + fam.name.toUpperCase() : base;
+      })(),
       formTitle: editingId != null ? 'Edit location' : 'Add location',
+      showFormFamilyPicker: (this.state.cfgFamilies || []).length > 1,
+      formFamilyOptions: (this.state.cfgFamilies || []).map(f => ({ id: f.id, name: f.name })),
       saveLabel: this.state.geocoding ? 'Locating…' : (editingId != null ? 'Save changes' : 'Add to globe'),
       dupOn: this.state.dupMode,
       dupStyle: cfgPill(this.state.dupMode),
