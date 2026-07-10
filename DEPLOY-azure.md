@@ -169,6 +169,8 @@ When someone without access visits, they can click **Request access** and enter 
 
 Finally, type the same email into the app at **⚙ → System → Access requests** so it also appears on the sign-in screen as a backup.
 
+> **These same two settings also power family invite emails.** Once `RESEND_API_KEY` and `RESEND_FROM` are set, any family admin can send a real invite email (Family Management → an invite's "Customize & send an actual email…") — unlike access requests, invite emails can go to **any** address, not just `ACCESS_REQUEST_TO` (the invitee, whoever they are). `ACCESS_REQUEST_TO` itself is unused for invites. If `RESEND_FROM` is still the free `onboarding@resend.dev` sender, verify your own domain first (see above) — Resend's free sender can only deliver to your own signup address, which defeats the point of inviting other people.
+
 ---
 
 ## Step 6 (optional but recommended) — Turn on data backups

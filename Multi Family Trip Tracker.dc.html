@@ -1086,7 +1086,12 @@
               <sc-for list="{{ myFamilyRows }}" as="f" hint-placeholder-count="1">
                 <div onClick="{{ f.onMakeActive }}" style="{{ f.navRowStyle }}">
                   <div style="display:flex; align-items:center; gap:7px; min-width:0;">
-                    <span style="flex:none; width:8px; height:8px; border-radius:50%; background:{{ f.color }};"></span>
+                    <sc-if value="{{ f.logo }}" hint-placeholder-val="{{ false }}">
+                      <img src="{{ f.logo }}" style="flex:none; width:20px; height:20px; border-radius:5px; object-fit:cover;"/>
+                    </sc-if>
+                    <sc-if value="{{ f.noLogo }}" hint-placeholder-val="{{ true }}">
+                      <span style="flex:none; width:8px; height:8px; border-radius:50%; background:{{ f.color }};"></span>
+                    </sc-if>
                     <div style="min-width:0;">
                       <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#eaf4fd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ f.name }}</div>
                       <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7c8ea6; margin-top:1px;">{{ f.roleLabel }}<sc-if value="{{ f.pending }}" hint-placeholder-val="{{ false }}"> · pending</sc-if></div>
@@ -1104,17 +1109,32 @@
           </div>
           <div style="flex:1; min-width:0; overflow-y:auto; padding:22px 26px;">
             <sc-if value="{{ famMgmtViewFamily }}" hint-placeholder-val="{{ true }}">
-              <div style="display:flex; align-items:center; gap:9px; margin-bottom:4px;">
-                <span style="flex:none; width:12px; height:12px; border-radius:50%; background:{{ activeFamilyColor }}; box-shadow:0 0 10px {{ activeFamilyColor }};"></span>
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:4px;">
+                <sc-if value="{{ hasActiveFamilyLogo }}" hint-placeholder-val="{{ false }}">
+                  <img src="{{ activeFamilyLogo }}" style="width:44px; height:44px; border-radius:11px; object-fit:cover; border:1px solid rgba(255,255,255,0.14); flex:none;"/>
+                </sc-if>
+                <sc-if value="{{ noActiveFamilyLogo }}" hint-placeholder-val="{{ true }}">
+                  <span style="flex:none; width:12px; height:12px; border-radius:50%; background:{{ activeFamilyColor }}; box-shadow:0 0 10px {{ activeFamilyColor }};"></span>
+                </sc-if>
                 <div style="font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#f1f6fc;">{{ activeFamilyName }}</div>
               </div>
               <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; margin-bottom:14px;">A family owns its own trips and travelers. Members share access at reader, editor or admin level.</div>
               <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; align-items:center; gap:7px; margin-bottom:18px;">
-                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#586a82;">COLOR</span>
-                  <sc-for list="{{ familyColorSwatches }}" as="c" hint-placeholder-count="6">
-                    <button onClick="{{ c.onClick }}" title="{{ c.hex }}" style="{{ c.style }}"></button>
-                  </sc-for>
+                <input ref="{{ setLogoInputRef }}" type="file" accept="image/*" onChange="{{ onLogoPick }}" style="display:none;">
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px; flex-wrap:wrap;">
+                  <div style="display:flex; align-items:center; gap:7px;">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#586a82;">COLOR</span>
+                    <sc-for list="{{ familyColorSwatches }}" as="c" hint-placeholder-count="6">
+                      <button onClick="{{ c.onClick }}" title="{{ c.hex }}" style="{{ c.style }}"></button>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#586a82;">LOGO</span>
+                    <button onClick="{{ triggerLogoPick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:7px; padding:6px 10px; cursor:pointer;">{{ logoUploadLabel }}</button>
+                    <sc-if value="{{ hasActiveFamilyLogo }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ removeFamilyLogo }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e9a3a3; background:none; border:none; cursor:pointer;">Remove</button>
+                    </sc-if>
+                  </div>
                 </div>
               </sc-if>
 
@@ -1165,6 +1185,15 @@
                         <button onClick="{{ inviteByEmailClick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Add</button>
                       </div>
                       <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:7px; line-height:1.5;">Grants access the moment they sign in with this email — no email is actually sent.</div>
+                      <button onClick="{{ toggleInviteCompose }}" style="margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9fd6f0; background:none; border:none; cursor:pointer; padding:0; text-decoration:underline;">{{ inviteComposeToggleLabel }}</button>
+                      <sc-if value="{{ inviteComposeOpen }}" hint-placeholder-val="{{ false }}">
+                        <div style="margin-top:9px; padding-top:9px; border-top:1px solid rgba(255,255,255,0.06);">
+                          <input value="{{ inviteSubject }}" onChange="{{ setInviteSubject }}" placeholder="Subject" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none; margin-bottom:7px;"/>
+                          <textarea value="{{ inviteMessage }}" onChange="{{ setInviteMessage }}" rows="5" placeholder="Message" style="width:100%; box-sizing:border-box; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.5; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:8px 9px; outline:none; resize:vertical;"></textarea>
+                          <button onClick="{{ sendInviteEmailClick }}" style="width:100%; box-sizing:border-box; margin-top:8px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none; border-radius:8px; padding:9px; cursor:pointer;">Send invite email</button>
+                          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:6px; line-height:1.5;">Requires an email service configured on the server (Resend). Access is granted either way.</div>
+                        </div>
+                      </sc-if>
                     </div>
 
                     <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 12px;">
@@ -1305,6 +1334,16 @@
               </div>
 
               <button onClick="{{ migrateLegacyFamilies }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Migrate legacy data → default family</button>
+
+              <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">FAMILIES BACKUP (JSON)</div>
+                <input ref="{{ setFamiliesBackupInput }}" type="file" accept="application/json,.json" onChange="{{ onFamiliesBackupFile }}" style="display:none;">
+                <div style="display:flex; gap:8px;">
+                  <button onClick="{{ exportFamiliesBackupClick }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px; cursor:pointer;">Export backup</button>
+                  <button onClick="{{ triggerFamiliesBackupImport }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#e9c46a; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); border-radius:8px; padding:9px; cursor:pointer;">Import backup…</button>
+                </div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:7px; line-height:1.5;">Exports every family, membership, share, invite link, and additional site admin as one JSON file. Importing <b style="color:#e9c46a;">replaces</b> all of it — you'll be asked to confirm first.</div>
+              </div>
             </sc-if>
           </div>
         </div>
@@ -1402,7 +1441,12 @@
                   <div onClick="{{ grp.onToggle }}" style="display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; padding:8px 10px; border-radius:9px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
                     <div style="display:flex; align-items:center; gap:7px; min-width:0;">
                       <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7587a0;">{{ grp.chevron }}</span>
-                      <span style="flex:none; width:8px; height:8px; border-radius:50%; background:{{ grp.color }}; box-shadow:0 0 8px {{ grp.color }};"></span>
+                      <sc-if value="{{ grp.logo }}" hint-placeholder-val="{{ false }}">
+                        <img src="{{ grp.logo }}" style="flex:none; width:16px; height:16px; border-radius:4px; object-fit:cover;"/>
+                      </sc-if>
+                      <sc-if value="{{ grp.noLogo }}" hint-placeholder-val="{{ true }}">
+                        <span style="flex:none; width:8px; height:8px; border-radius:50%; background:{{ grp.color }}; box-shadow:0 0 8px {{ grp.color }};"></span>
+                      </sc-if>
                       <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#dbe6f2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ grp.familyName }}</span>
                       <sc-if value="{{ grp.isMine }}" hint-placeholder-val="{{ false }}">
                         <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8px; letter-spacing:0.08em; color:#fbbf24; border:1px solid rgba(251,191,36,0.35); border-radius:5px; padding:1px 5px;">MINE</span>
@@ -2404,7 +2448,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.0.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.2.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3121,6 +3165,64 @@ class Component extends DCLogic {
     return (f && f.color) || '#5fd3ff';
   }
   setActiveFamily(id) { this.setState({ activeFamilyId: id, inviteLinkText: '' }); }
+  setLogoInputRef = (el) => { this._logoInput = el; };
+  triggerLogoPick = () => { if (this._logoInput) { this._logoInput.value = ''; this._logoInput.click(); } };
+  onLogoPick = (e) => {
+    const file = e.target.files && e.target.files[0];
+    const familyId = this.state.activeFamilyId;
+    if (!file || !file.type.startsWith('image/') || !familyId) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const SIZE = 200;
+        const canvas = document.createElement('canvas');
+        canvas.width = SIZE; canvas.height = SIZE;
+        const ctx = canvas.getContext('2d');
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+        let q = 0.85, dataUrl = canvas.toDataURL('image/jpeg', q);
+        while (dataUrl.length > 60000 && q > 0.3) { q -= 0.1; dataUrl = canvas.toDataURL('image/jpeg', q); }
+        this.familiesAction('setFamilyLogo', { familyId, logo: dataUrl }).then(j => { if (j) this.toast('Logo updated.'); });
+      };
+      img.onerror = () => this.toast('Could not read that image.');
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  async removeFamilyLogo() {
+    if (!this.state.activeFamilyId) return;
+    const j = await this.familiesAction('setFamilyLogo', { familyId: this.state.activeFamilyId, logo: '' });
+    if (j) this.toast('Logo removed.');
+  }
+  setFamiliesBackupInput = (el) => { this._familiesBackupInput = el; };
+  triggerFamiliesBackupImport = () => { if (this._familiesBackupInput) { this._familiesBackupInput.value = ''; this._familiesBackupInput.click(); } };
+  async exportFamiliesBackupClick() {
+    const j = await this.familiesActionSilent('exportFamiliesBackup', {});
+    if (!j) return;
+    const blob = new Blob([JSON.stringify(j, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'families-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    this.toast('Families backup downloaded.');
+  }
+  onFamiliesBackupFile = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data;
+      try { data = JSON.parse(reader.result); } catch (err) { this.toast('Could not parse that file as JSON.'); return; }
+      if (!data || !Array.isArray(data.families) || !Array.isArray(data.memberships)) { this.toast('That file is missing families or memberships.'); return; }
+      const famCount = data.families.length, memCount = data.memberships.length;
+      if (!confirm(`This will REPLACE all families (${famCount}) and memberships (${memCount}) with the contents of this file. This can't be undone. Continue?`)) return;
+      this.familiesAction('importFamiliesBackup', { data }).then(j => { if (j) this.toast('Restored ' + j.families + ' families, ' + j.memberships + ' memberships.'); });
+    };
+    reader.readAsText(file);
+  };
   async setFamilyColorClick(color) {
     if (!this.state.activeFamilyId) return;
     await this.familiesAction('setFamilyColor', { familyId: this.state.activeFamilyId, color });
@@ -3242,6 +3344,35 @@ class Component extends DCLogic {
     const j = await this.familiesAction('invitePerson', { familyId: this.state.activeFamilyId, email, role: this.state.inviteRole || 'reader' });
     if (j) { this.toast('Added ' + email + '.'); this.setState({ inviteEmail: '' }); }
   }
+  defaultInviteEmailTemplate() {
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === this.state.activeFamilyId);
+    const famName = (fam && fam.name) || 'our family';
+    const role = this.state.inviteRole || 'reader';
+    const link = window.location.origin + window.location.pathname;
+    return {
+      subject: `You've been invited to ${famName} on Trip Tracker`,
+      message: `Hi,\n\nYou've been added to "${famName}" on Trip Tracker as a ${role}.\n\nSign in here to get started: ${link}\n\nUse this same email address (${this.state.inviteEmail || 'your email'}) when you sign in.`,
+    };
+  }
+  toggleInviteCompose() {
+    this.setState(s => {
+      if (s.inviteComposeOpen) return { inviteComposeOpen: false };
+      const t = this.defaultInviteEmailTemplate();
+      return { inviteComposeOpen: true, inviteSubject: t.subject, inviteMessage: t.message };
+    });
+  }
+  setInviteSubject(e) { this.setState({ inviteSubject: e.target.value }); }
+  setInviteMessage(e) { this.setState({ inviteMessage: e.target.value }); }
+  async sendInviteEmailClick() {
+    const email = (this.state.inviteEmail || '').trim();
+    const familyId = this.state.activeFamilyId;
+    if (!email || email.indexOf('@') === -1) { this.toast('Enter a valid email.'); return; }
+    if (!familyId) return;
+    await this.familiesAction('invitePerson', { familyId, email, role: this.state.inviteRole || 'reader' });
+    const j = await this.familiesActionSilent('sendInviteEmail', { familyId, email, subject: this.state.inviteSubject, message: this.state.inviteMessage });
+    if (j && j.ok) { this.toast('Invite email sent to ' + email + '.'); this.setState({ inviteEmail: '', inviteComposeOpen: false }); }
+    else { this.toast('Access granted, but the invite email could not be sent (email sending may not be configured on the server).'); this.setState({ inviteComposeOpen: false }); }
+  }
   async createInviteLinkClick() {
     if (!this.state.activeFamilyId) return;
     const j = await this.familiesActionSilent('createInviteLink', { familyId: this.state.activeFamilyId, role: this.state.inviteRole || 'reader' });
@@ -3312,6 +3443,8 @@ class Component extends DCLogic {
             (active ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3);'),
           navRowStyle: 'cursor:pointer; padding:8px 9px; border-radius:9px; transition:background .15s; ' + (active ? 'background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3);' : 'background:transparent; border:1px solid transparent;'),
           color: (fam && fam.color) || '#5fd3ff',
+          logo: (fam && fam.logo) || '',
+          noLogo: !(fam && fam.logo),
         };
       });
     const myFamilyIds = new Set((s.cfgMemberships || []).filter((m) => m.email === s.cloudUserEmail && m.active !== false).map((m) => m.familyId));
@@ -3388,6 +3521,18 @@ class Component extends DCLogic {
       setFamilyViewModeEv: (e) => this.setFamilyViewMode(e.target.value),
       activeFamilyName: (activeFam && activeFam.name) || '',
       activeFamilyColor: (activeFam && activeFam.color) || '#5fd3ff',
+      activeFamilyLogo: (activeFam && activeFam.logo) || '',
+      hasActiveFamilyLogo: !!(activeFam && activeFam.logo),
+      noActiveFamilyLogo: !(activeFam && activeFam.logo),
+      logoUploadLabel: (activeFam && activeFam.logo) ? 'Change logo…' : 'Upload logo…',
+      setLogoInputRef: this.setLogoInputRef,
+      triggerLogoPick: this.triggerLogoPick,
+      onLogoPick: this.onLogoPick,
+      removeFamilyLogo: () => this.removeFamilyLogo(),
+      setFamiliesBackupInput: this.setFamiliesBackupInput,
+      onFamiliesBackupFile: this.onFamiliesBackupFile,
+      exportFamiliesBackupClick: () => this.exportFamiliesBackupClick(),
+      triggerFamiliesBackupImport: () => this.triggerFamiliesBackupImport(),
       familyColorSwatches: (s.cfgFamilyColors || []).map(hex => ({
         hex,
         onClick: () => this.setFamilyColorClick(hex),
@@ -3430,6 +3575,14 @@ class Component extends DCLogic {
       inviteRole: s.inviteRole || 'reader',
       setInviteRole: (e) => this.setInviteRole(e),
       inviteByEmailClick: () => this.inviteByEmailClick(),
+      inviteComposeOpen: !!s.inviteComposeOpen,
+      inviteComposeToggleLabel: s.inviteComposeOpen ? 'Cancel custom email' : 'Customize & send an actual email…',
+      toggleInviteCompose: () => this.toggleInviteCompose(),
+      inviteSubject: s.inviteSubject || '',
+      setInviteSubject: (e) => this.setInviteSubject(e),
+      inviteMessage: s.inviteMessage || '',
+      setInviteMessage: (e) => this.setInviteMessage(e),
+      sendInviteEmailClick: () => this.sendInviteEmailClick(),
       createInviteLinkClick: () => this.createInviteLinkClick(),
       inviteLinkText: s.inviteLinkText || '',
       noInviteLinkText: !s.inviteLinkText,
@@ -6359,6 +6512,8 @@ class Component extends DCLogic {
         trips: byFam[fid], count: byFam[fid].length,
         expanded: !collapsed, chevron: collapsed ? '▸' : '▾',
         color: fid === '__none' ? '#5d7088' : this.famColor(fid),
+        logo: fid === '__none' ? '' : ((this.state.cfgFamilies || []).find(x => x.id === fid) || {}).logo || '',
+        noLogo: fid === '__none' ? true : !((this.state.cfgFamilies || []).find(x => x.id === fid) || {}).logo,
         onToggle: () => this.toggleFamilyGroup(fid),
       };
     });
@@ -7174,7 +7329,7 @@ class Component extends DCLogic {
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
-      appUpdated: 'July 9, 2026',
+      appUpdated: 'July 10, 2026',
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
       latestVersion: this.state.latestVersion,

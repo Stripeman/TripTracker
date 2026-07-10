@@ -380,7 +380,7 @@ module.exports = async function (context, req) {
       return;
     }
 
- — primary (env-var) admins only, so nobody can grant
+    // Site-admin roster management — primary (env-var) admins only, so nobody can grant
     // themselves admin rights or lock out the account that actually controls the app.
     if (action === "addSiteAdmin") {
       if (!meIsPrimaryAdmin) { json(403, { error: "Primary site admin required." }); return; }
@@ -399,6 +399,74 @@ module.exports = async function (context, req) {
       extraSiteAdmins = extraSiteAdmins.filter((e) => e !== email);
       await writeJsonBlob(container, "site-admins.json", extraSiteAdmins);
       json(200, { ok: true, extraSiteAdmins });
+      return;
+    }
+
+    // Full JSON backup of every family/membership/share/invite-link/site-admin row —
+    // site admin only. Import REPLACES all of it (confirmed client-side before calling).
+    if (action === "exportFamiliesBackup") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const invites = await readJsonBlob(container, "invite-links.json", []);
+      json(200, {
+        app: "vacation-location-families", version: 1, exportedAt: new Date().toISOString(),
+        families, memberships: members, shares, extraSiteAdmins, inviteLinks: Array.isArray(invites) ? invites : [],
+      });
+      return;
+    }
+
+    if (action === "importFamiliesBackup") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const data = body.data;
+      if (!data || typeof data !== "object") { json(400, { error: "Invalid backup file." }); return; }
+      const newFamilies = Array.isArray(data.families) ? data.families : null;
+      const newMembers = Array.isArray(data.memberships) ? data.memberships : null;
+      if (!newFamilies || !newMembers) { json(400, { error: "Backup file is missing families or memberships." }); return; }
+      const newShares = Array.isArray(data.shares) ? data.shares : [];
+      const newExtraAdmins = Array.isArray(data.extraSiteAdmins) ? data.extraSiteAdmins : [];
+      const newInvites = Array.isArray(data.inviteLinks) ? data.inviteLinks : [];
+      await writeJsonBlob(container, FAMILIES_BLOB, newFamilies);
+      await writeJsonBlob(container, MEMBERS_BLOB, newMembers);
+      await writeJsonBlob(container, SHARES_BLOB, newShares);
+      await writeJsonBlob(container, "site-admins.json", newExtraAdmins);
+      await writeJsonBlob(container, "invite-links.json", newInvites);
+      json(200, { ok: true, families: newFamilies.length, memberships: newMembers.length, shares: newShares.length });
+      return;
+    }
+
+    // Sends an actual invite email via Resend (same service/env vars as /api/request-access).
+    // Access is granted immediately regardless of whether the email succeeds — email
+    // delivery is a courtesy notification, not the access-control mechanism.
+    if (action === "sendInviteEmail") {
+      const familyId = body.familyId;
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      const email = String(body.email || "").toLowerCase().trim();
+      if (!email || email.indexOf("@") === -1) { json(400, { error: "Valid email required." }); return; }
+      const key = process.env.RESEND_API_KEY;
+      const from = process.env.RESEND_FROM;
+      if (!key || !from) { json(501, { error: "Email sending is not configured on the server." }); return; }
+      const subject = String(body.subject || "You've been invited").slice(0, 200);
+      const text = String(body.message || "").slice(0, 5000);
+      if (!text) { json(400, { error: "Message body required." }); return; }
+      try {
+        const r = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+          body: JSON.stringify({ from, to: [email], reply_to: me.email, subject, text }),
+        });
+        if (!r.ok) {
+          const detail = await r.text().catch(() => "");
+          context.log.error("Resend error", r.status, detail);
+          let reason = "";
+          try { reason = (JSON.parse(detail).message) || ""; } catch (e) { reason = (detail || "").slice(0, 300); }
+          json(502, { error: "Email service rejected the request.", status: r.status, reason });
+          return;
+        }
+      } catch (err) {
+        context.log.error(err);
+        json(500, { error: String((err && err.message) || err) });
+        return;
+      }
+      json(200, { ok: true });
       return;
     }
 

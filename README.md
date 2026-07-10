@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.1.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.2.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -23,11 +23,14 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
   guarded delete. Site admins get an additional "Site administration" sidebar entry
   covering every family, approvals, and the site-admin roster.
 - **Inviting people** — a family admin can add someone **by email** (grants access the
-  moment they next sign in — no email is actually sent) or generate a **shareable
-  invite link** (7-day expiry, single use, role baked in) that anyone can open to join
-  at that role. **Non-account members** — a name with no email (a kid, a pet, whoever)
-  can be added too; they show up as a family member and can be tagged on trips, but can
-  never sign in.
+  moment they next sign in — no email is actually sent by default) or generate a
+  **shareable invite link** (7-day expiry, single use, role baked in) that anyone can
+  open to join at that role. Clicking **"Customize & send an actual email…"** opens an
+  editable **subject + message** (prefilled with a sensible default) and sends a real
+  email via Resend when configured — access is granted either way, even if email
+  delivery isn't set up. **Non-account members** — a name with no email (a kid, a pet,
+  whoever) can be added too; they show up as a family member and can be tagged on
+  trips, but can never sign in.
 - **Family branding** — each family gets an auto-assigned **accent color** (10-color
   palette; a family admin can change it via swatches) and an optional **logo/photo**
   upload (cropped to a square thumbnail client-side before upload). The color/logo show
@@ -49,6 +52,10 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
   admin (a bootstrap failsafe, not editable in-app). A primary admin can add or remove
   additional site admins from Family Management → Site administration; everyone else
   sees the list read-only.
+- **Families backup (JSON)** — a site admin can **export** every family, membership,
+  share, invite link, and additional site admin as one JSON file (Family Management →
+  Site administration), and **import** one back — importing *replaces* all of it, with
+  a confirmation showing exactly how many families/memberships will change.
 - **Family switcher** — the destinations panel gets a small switcher (only shown once
   you can see more than one family) to jump between your active family, all families
   you belong to, or — for site admins — any single family or every family at once.
