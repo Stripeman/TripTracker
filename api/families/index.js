@@ -724,17 +724,22 @@ module.exports = async function (context, req) {
       if (!row) { json(200, { ok: true }); return; } // already gone
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(row.familyId)) { json(403, { error: "Family admin required." }); return; }
       // Guard against deleting a traveler still tagged on a trip (mirrors the client-side
-      // personUsedOnTrip check, enforced here so a raw API call can't bypass it).
-      try {
-        const tripsBlobName = process.env.TRIPS_BLOB || "trip-tracker.json";
-        const tripsData = await readJsonBlob(container, tripsBlobName, null);
-        const locations = (tripsData && Array.isArray(tripsData.locations)) ? tripsData.locations : [];
-        const usedOnTrip = locations.some((l) => Array.isArray(l.travelers) && l.travelers.includes(key));
-        if (usedOnTrip) { json(409, { error: "Tagged on one or more trips — remove it from those first." }); return; }
-      } catch (e) {
-        // If the trips blob can't be read, fail safe by refusing the delete rather than
-        // silently allowing an orphaned reference.
-        json(409, { error: "Could not verify trip usage — try again." }); return;
+      // personUsedOnTrip check, enforced here so a raw API call can't bypass it) — unless
+      // the caller passes force:true, used only by the admin "Delete user…" confirm flow,
+      // which already showed the trip impact and disassociates them from those trips as
+      // part of the same confirmed operation.
+      if (!body.force) {
+        try {
+          const tripsBlobName = process.env.TRIPS_BLOB || "trip-tracker.json";
+          const tripsData = await readJsonBlob(container, tripsBlobName, null);
+          const locations = (tripsData && Array.isArray(tripsData.locations)) ? tripsData.locations : [];
+          const usedOnTrip = locations.some((l) => Array.isArray(l.travelers) && l.travelers.includes(key));
+          if (usedOnTrip) { json(409, { error: "Tagged on one or more trips — remove it from those first." }); return; }
+        } catch (e) {
+          // If the trips blob can't be read, fail safe by refusing the delete rather than
+          // silently allowing an orphaned reference.
+          json(409, { error: "Could not verify trip usage — try again." }); return;
+        }
       }
       travelers = travelers.filter((t) => t.key !== key);
       await writeJsonBlob(container, TRAVELERS_BLOB, travelers);

@@ -1088,6 +1088,12 @@
                         <sc-if value="{{ p.isLastAdmin }}" hint-placeholder-val="{{ false }}">
                           <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a7a52; line-height:1.5;">This is the last active admin — can't be deactivated or deleted.</div>
                         </sc-if>
+                        <sc-if value="{{ p.canDelete }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ p.onRemove }}" title="Delete person" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#f0a6a6; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:7px; cursor:pointer;">Delete person</button>
+                        </sc-if>
+                        <sc-if value="{{ p.deleteBlockedMsg }}" hint-placeholder-val="{{ false }}">
+                          <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a7a52; line-height:1.5;">{{ p.deleteBlockedMsg }}</div>
+                        </sc-if>
                         <sc-if value="{{ p.canDeleteUser }}" hint-placeholder-val="{{ false }}">
                           <button onClick="{{ p.onDeleteUser }}" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#f0a6a6; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:7px; cursor:pointer;">Delete user…</button>
                         </sc-if>
@@ -1789,16 +1795,25 @@
         <div style="width:380px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
           <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
             <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
-            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px; color:#f3d2d2;">Delete user {{ pendingUserDelete.name }}?</div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px; color:#f3d2d2;">Delete {{ pendingUserDelete.name }}?</div>
           </div>
           <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cdd9e6; line-height:1.55; margin-bottom:12px;">This removes <b style="color:#fff;">{{ pendingUserDelete.name }}</b> from the People list and revokes their access.</div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.7; color:#e9c46a; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:9px; padding:11px 12px; margin-bottom:16px;">
             <div><b style="color:#f0a6a6;">{{ pendingUserDelete.owned }}</b> trips owned by them — at risk of deletion.</div>
             <div><b style="color:#7fd6f5;">{{ pendingUserDelete.tagged }}</b> trips will be disassociated (tag removed).</div>
+            <sc-if value="{{ pendingUserDelete.hasBreakdown }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(251,191,36,0.2); color:#cdb87a;">
+                <sc-for list="{{ pendingUserDelete.familyBreakdown }}" as="fb" hint-placeholder-count="1">
+                  <div>{{ fb.name }} — {{ fb.count }} trip{{ fb.plural }}</div>
+                </sc-for>
+              </div>
+            </sc-if>
           </div>
           <div style="display:flex; flex-direction:column; gap:8px;">
-            <button onClick="{{ deleteUserKeepTrips }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe0f2; background:rgba(56,189,248,0.08); border:1px solid rgba(95,211,255,0.3); border-radius:9px; padding:9px; cursor:pointer;">Delete user · keep their trips (unassign)</button>
-            <button onClick="{{ deleteUserAndTrips }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:700; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:9px; padding:9px; cursor:pointer; box-shadow:0 0 16px rgba(220,38,38,0.35);">Delete user + their {{ pendingUserDelete.owned }} trips</button>
+            <button onClick="{{ deleteUserKeepTrips }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe0f2; background:rgba(56,189,248,0.08); border:1px solid rgba(95,211,255,0.3); border-radius:9px; padding:9px; cursor:pointer;">{{ pendingUserDelete.deleteKeepTripsLabel }}</button>
+            <sc-if value="{{ pendingUserDelete.owned }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ deleteUserAndTrips }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:700; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:9px; padding:9px; cursor:pointer; box-shadow:0 0 16px rgba(220,38,38,0.35);">{{ pendingUserDelete.deleteWithTripsLabel }}</button>
+            </sc-if>
             <button onClick="{{ cancelUserDelete }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
           </div>
         </div>
@@ -2484,7 +2499,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.4-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.5-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -6538,10 +6553,11 @@ class Component extends DCLogic {
         statsTaggedText = Object.keys(byOwner).sort().map(n => n + ' (' + byOwner[n] + ')').join(', ');
       }
       const isAddingThis = o.key === this.state.addingPersonKey;
-      const canDelete = !isAddingThis && !used && (!isCloud || isAdmin || mine);
+      // Being tagged on a trip no longer hard-blocks delete — askUserDelete's confirm
+      // modal shows the trip/family impact and disassociates them from those trips.
+      const canDelete = !isAddingThis && (!isCloud || isAdmin || mine);
       let blocked = '';
-      if (used) blocked = 'Tagged on one or more trips — remove it from those first.';
-      else if (isCloud && !isAdmin && !mine) blocked = 'Added by someone else — only they or an admin can remove it.';
+      if (isCloud && !isAdmin && !mine) blocked = 'Added by someone else — only they or an admin can remove it.';
       const groupFamilyId = theirFamilyIds.size ? [...theirFamilyIds][0] : '__unassigned__';
       return {
         key: o.key, isHeader: false, notHeader: true, groupFamilyId,
@@ -6598,7 +6614,7 @@ class Component extends DCLogic {
         familyName: familyNameById[resolvedFamilyId] || '',
         familyPickOptions,
         onFamily: (e) => this.personSetFamily(o.key, e.target.value),
-        onRemove: () => this.personRemove(o.key),
+        onRemove: () => this.askUserDelete(o.key),
         statsOwned, statsPhotos, statsTagged, statsTaggedText,
         statsCountries, statsByYearText, showByYear: !!statsByYearText,
         showStats: isCloud,
@@ -6825,15 +6841,31 @@ class Component extends DCLogic {
       return { accessList: list };
     }, () => { if (this.saveAccess) this.saveAccess(); this.toast(active ? 'User activated' : 'User set inactive'); });
   }
-  // Admin delete-user: compute trip impact, then open the confirm modal.
+  // Admin delete-user: compute trip impact (including a per-family breakdown), then
+  // open the confirm modal.
   askUserDelete(key) {
     const p = (this.state.cfgTravelers || []).find(o => o.key === key);
     if (!p) return;
     const em = String(p.email || '').toLowerCase().trim();
-    if (this.isLastActiveAdmin(em)) { this.toast('Can’t delete the last admin'); return; }
-    const owned = em ? (this.state.locations || []).filter(l => String(l.ownerEmail || '').toLowerCase().trim() === em).length : 0;
-    const tagged = (this.state.locations || []).filter(l => Array.isArray(l.travelers) && l.travelers.includes(key)).length;
-    this.setState({ pendingUserDelete: { key, email: em, name: p.label, owned, tagged } });
+    if (this.isLastActiveAdmin(em, p.familyId)) { this.toast('Can’t delete the last admin'); return; }
+    const ownedLocs = em ? (this.state.locations || []).filter(l => String(l.ownerEmail || '').toLowerCase().trim() === em) : [];
+    const taggedLocs = (this.state.locations || []).filter(l => Array.isArray(l.travelers) && l.travelers.includes(key));
+    const famNameById = {};
+    (this.state.cfgFamilies || []).forEach(f => { famNameById[f.id] = f.name; });
+    const byId = {};
+    [...ownedLocs, ...taggedLocs].forEach(l => { byId[l.id] = l; }); // dedupe trips that are both owned AND tagged
+    const byFamily = {};
+    Object.values(byId).forEach(l => {
+      const fname = l.familyId ? (famNameById[l.familyId] || 'Unknown family') : 'No family';
+      byFamily[fname] = (byFamily[fname] || 0) + 1;
+    });
+    const familyBreakdown = Object.keys(byFamily).sort().map(name => ({ name, count: byFamily[name], plural: byFamily[name] === 1 ? '' : 's' }));
+    const isAccount = !!em;
+    this.setState({ pendingUserDelete: {
+      key, email: em, name: p.label, owned: ownedLocs.length, tagged: taggedLocs.length, familyBreakdown, hasBreakdown: familyBreakdown.length > 0,
+      deleteKeepTripsLabel: isAccount ? 'Delete user · keep their trips (unassign)' : 'Delete · keep their trips (unassign)',
+      deleteWithTripsLabel: isAccount ? ('Delete user + their ' + ownedLocs.length + ' trips') : ('Delete + their ' + ownedLocs.length + ' trips'),
+    } });
   }
   cancelUserDelete() { this.setState({ pendingUserDelete: null }); }
   confirmUserDelete(deleteTrips) {
@@ -6843,7 +6875,7 @@ class Component extends DCLogic {
       fetch('/api/trips?mode=deleteUser', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: pd.email, key: pd.key, deleteTrips: !!deleteTrips }) })
         .then(() => { this._cloudSynced = false; this.cloudLoad(); }).catch(() => {});
     }
-    if (this.state.travelersMigrated) this.familiesAction('deleteTraveler', { key: pd.key }); // best-effort; loadFamilies() inside it refreshes cfgTravelers
+    if (this.state.travelersMigrated) this.familiesAction('deleteTraveler', { key: pd.key, force: true }); // best-effort; loadFamilies() inside it refreshes cfgTravelers
     this.setState(s => {
       const cfgTravelers = (s.cfgTravelers || []).filter(o => o.key !== pd.key);
       const accessList = (s.accessList || []).filter(r => String(r.email || '').toLowerCase().trim() !== pd.email);

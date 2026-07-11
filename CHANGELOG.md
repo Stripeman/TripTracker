@@ -4,6 +4,22 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.5-beta — Unified delete confirmation
+
+### Added
+- **Deleting any person now shows a confirmation** with trip impact — trips owned,
+  trips tagged, and a **per-family breakdown** of how many trips are affected in each
+  family — instead of the old behavior where a name-only person tagged on a trip
+  couldn't be deleted at all (hard-blocked) while an account holder got a confirm
+  dialog with no family breakdown. Both flows are now the same modal, with button
+  wording adapted for whether the person has an account.
+
+### Fixed
+- The confirm-then-delete flow could still be rejected server-side because the trip
+  data update (disassociating the person) and the traveler-record deletion weren't
+  sequenced against the server's own trip-usage guard — the confirmed flow now tells
+  the server this is a reviewed, confirmed deletion.
+
 ## 1.9.4-beta — Explicit default family + add-person popup
 
 ### Added
