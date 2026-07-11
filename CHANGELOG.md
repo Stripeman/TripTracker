@@ -4,6 +4,20 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.2-beta — Staging bugfixes, round 2
+
+### Bug
+- **Transfer ownership button did nothing on first click.** The dropdown's displayed
+  default (first available person) only lived in the render's fallback logic, not
+  actual state — clicking Transfer without first touching the dropdown read an empty
+  value and silently no-opped. The handler now mirrors the same default.
+- **"My Families" didn't list your own family first.** Now sorted with your home
+  family at the top.
+- **"+ Add person" in My Family Management could still add to the wrong family.** It
+  was reusing Site User Management's logic, which could pick up a stale "specific
+  family" selection left over from browsing there. It now always targets the family
+  panel you're actually viewing.
+
 ## 1.9.1-beta — Staging bugfixes (post phase-2 cutover)
 
 ### Bug

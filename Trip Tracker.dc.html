@@ -994,7 +994,7 @@
               <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 15px; margin-bottom:16px;">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">PEOPLE IN {{ activeFamilyName }}</div>
                 <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ addPerson }}" style="width:100%; box-sizing:border-box; margin-bottom:10px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:9px; padding:8px; cursor:pointer;">+ Add person</button>
+                  <button onClick="{{ addPersonToActiveFamily }}" style="width:100%; box-sizing:border-box; margin-bottom:10px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:9px; padding:8px; cursor:pointer;">+ Add person</button>
                 </sc-if>
                 <div style="display:flex; flex-direction:column; gap:8px;">
                   <sc-for list="{{ activeFamilyPeopleRows }}" as="p" hint-placeholder-count="2">
@@ -2463,7 +2463,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.2-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3318,9 +3318,15 @@ class Component extends DCLogic {
   }
   askTransferOwnership() {
     const familyId = this.state.activeFamilyId;
-    const toEmail = this.state.transferOwnerEmail;
-    if (!familyId || !toEmail) return;
+    const activeMembers = (this.state.cfgMemberships || []).filter(m => m.familyId === familyId && m.active !== false);
     const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
+    const targets = activeMembers.filter(m => m.email && m.email !== (fam && fam.createdBy));
+    // Mirror the <select>'s own default-to-first-option fallback — the underlying
+    // state stays unset until the user actually changes the dropdown, so without this
+    // fallback here too, clicking the button while it's still on its default value did
+    // nothing.
+    const toEmail = this.state.transferOwnerEmail || (targets[0] && targets[0].email) || '';
+    if (!familyId || !toEmail) return;
     this.setState({ pendingOwnerTransfer: { familyId, toEmail, familyName: (fam && fam.name) || 'this family' } });
   }
   cancelTransferOwnership() { this.setState({ pendingOwnerTransfer: null }); }
@@ -3541,8 +3547,10 @@ class Component extends DCLogic {
     const families = s.cfgFamilies || [];
     const byId = {}; families.forEach((f) => byId[f.id] = f);
     const roleLabel = (r) => r === 'admin' ? 'Admin' : r === 'editor' ? 'Editor' : 'Reader';
+    const homeFamilyId = this.myHomeFamilyId();
     const myFamilyRows = (s.cfgMemberships || [])
       .filter((m) => m.email === s.cloudUserEmail && m.active !== false)
+      .sort((a, b) => (a.familyId === homeFamilyId ? -1 : b.familyId === homeFamilyId ? 1 : 0))
       .map((m) => {
         const fam = byId[m.familyId];
         const active = m.familyId === s.activeFamilyId;
@@ -6293,13 +6301,17 @@ class Component extends DCLogic {
   // ---- People (Users tab): travelers + access roles unified ----
   // Add a person under the current user (createdBy stamps ownership for delete rules),
   // and open it straight into edit mode.
-  addPerson() {
-    // Add to whichever family is in view: if Site User Management has a SPECIFIC
-    // family selected in its scope dropdown, use that (so a site admin browsing "The
-    // Smiths" adds to The Smiths, not to whatever family they personally have active
-    // in the left panel); otherwise fall back to the left panel's active family.
-    const scope = this.state.usersFamilyScope;
-    const targetFamilyId = (scope && scope !== 'all' && scope !== 'allMine' && scope !== 'mine') ? scope : (this.state.activeFamilyId || '');
+  addPerson(forceFamilyId) {
+    // Add to whichever family is in view: if called with an explicit family (the "My
+    // Family Management" per-family panel always passes its own activeFamilyId, so it
+    // never picks up stale state from elsewhere), use that. Otherwise (Site User
+    // Management's button) use a SPECIFIC family selected in its own scope dropdown if
+    // one is chosen, else fall back to the left panel's active family.
+    let targetFamilyId = forceFamilyId;
+    if (!targetFamilyId) {
+      const scope = this.state.usersFamilyScope;
+      targetFamilyId = (scope && scope !== 'all' && scope !== 'allMine' && scope !== 'mine') ? scope : (this.state.activeFamilyId || '');
+    }
     if (this.state.travelersMigrated) {
       this.setState(s => {
         let key = 'p', i = 1;
@@ -7534,6 +7546,7 @@ class Component extends DCLogic {
         editorGroup('Statuses', 'status', this.state.cfgStatuses, false),
       ],
       addPerson: () => this.addPerson(),
+      addPersonToActiveFamily: () => this.addPerson(s.activeFamilyId),
       showClaimAll: this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin,
       unownedCount: (this.state.locations || []).filter(l => this.tripUnassigned(l)).length,
       noUnclaimed: this.state.mySiteAdmin && this.state.cfgDataSource === 'cloud' && (this.state.locations || []).filter(l => this.tripUnassigned(l)).length === 0,
