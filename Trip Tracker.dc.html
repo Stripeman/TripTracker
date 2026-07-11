@@ -1849,12 +1849,18 @@
               <input type="checkbox" checked="{{ pendingFamilyDelete.nonAccounts }}" onChange="{{ toggleFamilyDeleteNonAccounts }}" style="flex:none; width:15px; height:15px; accent-color:#ef4444;"/>
               <span style="flex:1;">Non-account members <span style="color:#7c8ea6;">({{ pendingFamilyDelete.counts.nonAccounts }})</span></span>
             </label>
+            <sc-if value="{{ pendingFamilyDelete.nonAccountNamesText }}" hint-placeholder-val="{{ '' }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; padding:0 11px; margin-top:-4px;">{{ pendingFamilyDelete.nonAccountNamesText }}</div>
+            </sc-if>
             <label style="display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e8eef6; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 11px; cursor:pointer;">
               <input type="checkbox" checked="{{ pendingFamilyDelete.userAccounts }}" onChange="{{ toggleFamilyDeleteUserAccounts }}" style="flex:none; width:15px; height:15px; accent-color:#ef4444;"/>
-              <span style="flex:1;">User accounts tied to this family <span style="color:#7c8ea6;">({{ pendingFamilyDelete.counts.userAccounts }})</span></span>
+              <span style="flex:1;">Remove their association with this family <span style="color:#7c8ea6;">({{ pendingFamilyDelete.counts.userAccounts }})</span></span>
             </label>
+            <sc-if value="{{ pendingFamilyDelete.userAccountNamesText }}" hint-placeholder-val="{{ '' }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; padding:0 11px; margin-top:-4px;">{{ pendingFamilyDelete.userAccountNamesText }}</div>
+            </sc-if>
           </div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5; margin-bottom:14px;">"User accounts" only removes their membership in this family — their sign-in and other families are untouched.</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#f0c96a; line-height:1.5; margin-bottom:14px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:8px 10px;">⚠ This removes the <strong>association</strong> between these accounts and this family only — it does NOT delete the accounts, their sign-in, or their membership in any other family.</div>
           <div style="display:flex; flex-direction:column; gap:8px;">
             <button onClick="{{ confirmFamilyDeleteSelected }}" disabled="{{ pendingFamilyDelete.noneChecked }}" style="{{ pendingFamilyDelete.deleteSelectedStyle }}">Delete checked items</button>
             <button onClick="{{ confirmFamilyDeleteAll }}" disabled="{{ pendingFamilyDelete.notAllChecked }}" style="{{ pendingFamilyDelete.deleteFamilyStyle }}">Delete family{{ pendingFamilyDelete.allCheckedHint }}</button>
@@ -2503,7 +2509,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.11-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.13-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3421,6 +3427,7 @@ class Component extends DCLogic {
       pendingFamilyDelete: {
         familyId, name,
         counts: { trips: j.trips || 0, images: j.images || 0, nonAccounts: j.nonAccounts || 0, userAccounts: j.userAccounts || 0 },
+        nonAccountNames: j.nonAccountNames || [], userAccountNames: j.userAccountNames || [],
         images: false, trips: false, nonAccounts: false, userAccounts: false,
       },
     });
@@ -3457,10 +3464,17 @@ class Component extends DCLogic {
     const disabledBtnStyle = "width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; border-radius:9px; padding:9px; ";
     const noneChecked = !pd.images && !pd.trips && !pd.nonAccounts && !pd.userAccounts;
     const allChecked = pd.images && pd.trips && pd.nonAccounts && pd.userAccounts;
+    const truncList = (arr, max) => {
+      if (!arr || !arr.length) return '';
+      const shown = arr.slice(0, max).join(', ');
+      return arr.length > max ? shown + ', +' + (arr.length - max) + ' more' : shown;
+    };
     return {
       familyId: pd.familyId,
       name: pd.name,
       counts: pd.counts,
+      nonAccountNamesText: truncList(pd.nonAccountNames, 6),
+      userAccountNamesText: truncList(pd.userAccountNames, 6),
       images: pd.images, trips: pd.trips, nonAccounts: pd.nonAccounts, userAccounts: pd.userAccounts,
       imagesPlural: pd.counts.images === 1 ? '' : 's',
       tripsPlural: pd.counts.trips === 1 ? '' : 's',

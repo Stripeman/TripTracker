@@ -349,6 +349,8 @@ module.exports = async function (context, req) {
         images: famTrips.filter((t) => !!t.photo).length,
         nonAccounts: famMembers.filter((m) => !m.email).length,
         userAccounts: famMembers.filter((m) => !!m.email).length,
+        nonAccountNames: famMembers.filter((m) => !m.email).map((m) => m.name || "Unnamed"),
+        userAccountNames: famMembers.filter((m) => !!m.email).map((m) => m.email),
       });
       return;
     }

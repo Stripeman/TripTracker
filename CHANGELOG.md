@@ -4,6 +4,23 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.13-beta — Clearer wording on family-delete confirmation
+
+### Changed
+- "User accounts tied to this family" checkbox relabeled to "Remove their association with this family," and the explanatory note is now a highlighted warning: removes the association only, does NOT delete the account, sign-in, or other family memberships.
+
+---
+
+## 1.9.12-beta — Delete-family confirmation lists who's affected
+
+### Confirmed safe
+- Checked: "User accounts tied to this family" in the delete-family flow only removes that person's **membership row for this family** (`m.familyId !== familyId` scoping) — it never touches their sign-in, their account, or their membership/role in any other family they belong to.
+
+### Added
+- The delete-family confirmation now lists the actual non-account member names and user-account emails under each checkbox (up to 6, then "+N more"), instead of just a count — no more guessing who's affected.
+
+---
+
 ## 1.9.11-beta — Backup list was missing account-only people
 
 ### Fixed
