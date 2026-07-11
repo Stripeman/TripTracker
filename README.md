@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.8.1--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.8.2--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -305,7 +305,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
     "sortDir": "desc",
     "dataSource": "cloud",
     "accessEmail": "terry.remsik@gmail.com",
-    "travelers": [{ "key": "terry", "label": "Terry", "color": "#fb7185" }],
+    "travelers": [{ "key": "terry", "label": "Terry", "color": "#fb7185", "email": "terry.remsik@gmail.com", "createdBy": "", "familyId": "fam-abc123" }],
     "tripTypes": [{ "key": "vacation", "label": "Personal", "color": "#2dd4bf" }],
     "visitTypes": [{ "key": "city", "label": "City", "color": "#38bdf8" }],
     "statuses": [{ "key": "visited", "label": "Visited", "short": "Visited", "color": "#34d399" }]
@@ -326,6 +326,11 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
       "tripTypes": ["vacation"],
       "travelers": ["terry"],
       "photo": "data:image/jpeg;base64,…",
+      "familyId": "fam-abc123",
+      "owner": "usr_9f2a1c",
+      "ownerEmail": "terry.remsik@gmail.com",
+      "visibility": "private",
+      "sharedWith": [],
       "createdAt": "2026-06-19T13:48:07.884Z",
       "modifiedAt": "2026-06-19T13:48:07.884Z"
     }
@@ -341,10 +346,43 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 - `lat` / `lon` are optional strings — leave blank to geocode from city/state/country on save.
 - `dateEnd` is optional (single‑day trips omit it). `createdAt` / `modifiedAt` are set automatically.
 - `photo` is optional — a data‑URL string for the trip's thumbnail (shown per **Preferences → Show photo thumbnail on card**, in the **Banner / Compact / Framed** layout you've picked). Omit it for a text‑only card.
+- `familyId` — which family this trip belongs to (Cloud mode). Omitted/blank trips are treated as unassigned/legacy and visible everywhere until claimed or migrated.
+- `owner` / `ownerEmail` — the account that owns this trip (Cloud mode); `ownerEmail` drives per‑trip permissions and the family scoping rules described above.
+- `visibility` — `private` (only the owner), `all` (everyone with access to the family), or `shared` (only `sharedWith`). Defaults to `private` when omitted.
+- `sharedWith` — array of emails, only meaningful when `visibility` is `shared`.
 - `settings`: `version` is a number that auto‑increments on every settings change; `showThumbs` toggles trip photos on cards; `cardLayout` is `banner` / `thumbnail` / `framed`; `autoClaim` auto‑assigns unclaimed trips you create; `updateFreqMin` is `3` / `5` / `10`; `theme` is one of the 10 named looks; `accessEmail` is the admin contact shown in the access list; `defaultYear` is `current` or `all`; `defaultTrip` is `all` or any trip‑type key; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` or any traveler key; `defaultVisit` is `all` or any visit‑type key; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`.
-- `settings.travelers` / `tripTypes` / `visitTypes` / `statuses` are the **editable reference lists** — each item is `{ key, label, color }` (statuses also carry a `short` label). Omit them to fall back to the built‑in defaults.
+- `settings.travelers` / `tripTypes` / `visitTypes` / `statuses` are the **editable reference lists** — each item is `{ key, label, color }` (statuses also carry a `short` label). A traveler item can also carry `email` (lets them sign in), `createdBy` (who added a name‑only person — governs delete permission), and `familyId` (which family they belong to). Omit the list to fall back to the built‑in defaults.
 
 Data‑only and settings‑only exports contain just the `locations` or `settings` key respectively. Imports accept any of these shapes (a bare array of locations is also supported for backward compatibility).
+
+### Families backup (JSON)
+
+Site Management → Site Family Management → **Families backup** exports/imports a
+*separate* file covering the multi‑family system itself (families, memberships, shares,
+invite links, additional site admins) — distinct from the trips/settings export above:
+
+```json
+{
+  "app": "vacation-location-families",
+  "version": 1,
+  "exportedAt": "2026-07-11T00:00:00.000Z",
+  "families": [
+    { "id": "fam-abc123", "name": "The Remsiks", "color": "#fb7185", "createdBy": "terry.remsik@gmail.com", "createdAt": "2026-06-01T00:00:00.000Z", "approved": true, "autoApproved": false, "autoNamed": false, "logo": "" }
+  ],
+  "memberships": [
+    { "email": "terry.remsik@gmail.com", "familyId": "fam-abc123", "role": "admin", "active": true, "createdAt": "2026-06-01T00:00:00.000Z" }
+  ],
+  "shares": [
+    { "fromFamilyId": "fam-abc123", "toFamilyId": "fam-xyz789", "role": "reader" }
+  ],
+  "siteAdmins": ["terry.remsik@gmail.com"]
+}
+```
+
+- `families[].autoNamed` — true if the family still has the generic name it was auto‑given (e.g. approving an access request without picking a family); cleared the first time it's renamed. Drives the first‑login onboarding nudge.
+- `memberships[].role` — `reader` / `editor` / `admin`. `active: false` revokes access without deleting the record.
+- `shares[].role` — `reader` / `editor` / `admin-no-delete`; grants `toFamilyId`'s members that level of access to `fromFamilyId`'s trips.
+- Importing **replaces** all of `families`/`memberships`/`shares`/`siteAdmins` — the confirmation shows exactly how many of each will change.
 
 ---
 

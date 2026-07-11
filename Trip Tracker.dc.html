@@ -2910,7 +2910,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.8.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.8.2-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -8112,7 +8112,11 @@ class Component extends DCLogic {
         const uEmailLc = String(u.email || '').toLowerCase().trim();
         const uMembership = (this.state.cfgMemberships || []).find(m => String(m.email || '').toLowerCase().trim() === uEmailLc && m.active !== false);
         const dotColor = uMembership ? this.famColor(uMembership.familyId) : '#34d399';
-        return { id: u.id, name: u.you ? (u.name + ' (you)') : u.name, color: u.you ? '#7ee0a8' : '#cfe0f0', title: (u.you ? 'You' : (u.email || u.name)) + ' · last online ' + rel, dotColor };
+        // Prefer the CURRENT viewer's own traveler list for the display name — the
+        // stored presence record can lag (it's whatever name that person's browser
+        // knew about at heartbeat time, e.g. before their traveler row existed).
+        const displayName = this.travelerNameByEmail(uEmailLc) || u.name;
+        return { id: u.id, name: u.you ? (displayName + ' (you)') : displayName, color: u.you ? '#7ee0a8' : '#cfe0f0', title: (u.you ? 'You' : (u.email || displayName)) + ' · last online ' + rel, dotColor };
       }),
       canEditSelected,
       canPermSelected: this.state.cfgDataSource === 'cloud' && canEditSelected,

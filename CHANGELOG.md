@@ -4,6 +4,15 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.8.2-beta
+
+### Fixed
+- **Online presence could show a person's email instead of their name.** The stored
+  heartbeat name lags behind (it's whatever that person's browser knew before their
+  traveler record existed). The presence chip now always resolves the display name from
+  the current viewer's own traveler list, self-correcting immediately regardless of the
+  other person's session timing.
+
 ## 1.8.1-beta
 
 ### Changed
