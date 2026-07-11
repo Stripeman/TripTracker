@@ -14,6 +14,7 @@
 // the request body — so this endpoint cannot be abused as an open mail relay.
 
 const { BlobServiceClient } = require("@azure/storage-blob");
+const { checkRateLimit } = require("../_shared/rateLimit");
 
 const CONTAINER = process.env.TRIPS_CONTAINER || "data";
 const ACCESS_REQUESTS_BLOB = process.env.ACCESS_REQUESTS_BLOB || "access-requests.json";
@@ -82,6 +83,11 @@ module.exports = async function (context, req) {
   const note = (body && typeof body.message === "string" ? body.message : "").trim().slice(0, 2000);
 
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(requester)) { json(400, { error: "A valid email is required." }); return; }
+
+  // Rate-limited per requester email (not IP — anonymous route) so one address can't
+  // spam the mailbox/admin queue by resubmitting.
+  const rl = checkRateLimit("access-req:" + requester.toLowerCase(), { max: 5, windowMs: 10 * 60000 });
+  if (!rl.ok) { json(429, { error: "Too many requests from this address — please wait a bit before trying again." }); return; }
 
   const persisted = await recordPendingRequest(requester, note);
 

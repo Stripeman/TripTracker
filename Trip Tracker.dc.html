@@ -116,6 +116,14 @@
         <button onClick="{{ toggleCalendarView }}" title="Trips calendar" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
         <button onClick="{{ openHelp }}" title="Help &amp; guide" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>
         <sc-if value="{{ showProfileBtn }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleActivity }}" title="Activity" style="pointer-events:auto; position:relative; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <sc-if value="{{ activityUnreadCount }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute; top:5px; right:5px; width:8px; height:8px; border-radius:50%; background:#fbbf24; box-shadow:0 0 6px 1px rgba(251,191,36,0.7);"></span>
+            </sc-if>
+          </button>
+        </sc-if>
+        <sc-if value="{{ showProfileBtn }}" hint-placeholder-val="{{ false }}">
           <button onClick="{{ toggleProfile }}" title="Your profile" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg>
           </button>
@@ -144,6 +152,26 @@
     <!-- admin login-stats bubble — positioned to the BOTTOM-LEFT of the cursor so it never covers the row you're editing -->
     <div ref="{{ setStatRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; min-width:170px; background:rgba(9,15,25,0.97); border:1px solid rgba(95,211,255,0.38); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.55; padding:9px 11px; border-radius:9px; box-shadow:0 8px 22px rgba(0,0,0,0.5);"></div>
     <div ref="{{ setCardStatRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; min-width:170px; background:rgba(9,15,25,0.97); border:1px solid rgba(95,211,255,0.38); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.55; padding:9px 11px; border-radius:9px; box-shadow:0 8px 22px rgba(0,0,0,0.5);"></div>
+    <!-- activity feed dropdown -->
+    <sc-if value="{{ activityOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeActivity }}" style="position:fixed; inset:0; z-index:70; display:flex; align-items:flex-start; justify-content:flex-end; padding:78px 30px 30px; background:rgba(4,8,15,0.45); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); pointer-events:auto;">
+        <div onClick="{{ stop }}" style="width:360px; max-width:calc(100vw - 60px); max-height:70vh; display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(12,19,30,0.98), rgba(7,12,20,0.98)); border:1px solid rgba(56,189,248,0.28); border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,0.6); overflow:hidden;">
+          <div style="padding:16px 20px; border-bottom:1px solid rgba(56,189,248,0.12); font-family:'Orbitron',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.14em; color:#e8f3ff;">ACTIVITY</div>
+          <div style="flex:1; min-height:0; overflow-y:auto; padding:8px 12px;">
+            <sc-for list="{{ activityItems }}" as="ev" hint-placeholder-count="0">
+              <div style="padding:11px 8px; border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; line-height:1.5;">{{ ev.message }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ ev.when }}</div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ activityEmpty }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:30px 8px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#586a82;">No activity yet.</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- profile dialog -->
     <sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeProfile }}" style="position:fixed; inset:0; z-index:70; display:flex; align-items:flex-start; justify-content:flex-end; padding:78px 30px 30px; background:rgba(4,8,15,0.45); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); pointer-events:auto;">
@@ -1266,6 +1294,22 @@
               </div>
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:16px;">Off hides the Public option in every trip's permissions and quietly downgrades any trip currently set to it.</div>
 
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Public landing page</div>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">Which layout the public site shows before sign-in. Switch it up any time.</div>
+              <div style="display:flex; gap:8px; margin-bottom:18px;">
+                <sc-for list="{{ landingVariantOptions }}" as="lv" hint-placeholder-count="3">
+                  <button onClick="{{ lv.onSelect }}" style="{{ lv.style }}">{{ lv.label }}</button>
+                </sc-for>
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Pricing section on landing page</div>
+                <button onClick="{{ togglePricingSection }}" style="{{ pricingSectionToggleStyle }}">{{ pricingSectionToggleLabel }}</button>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:16px;">Off by default \u2014 hides pricing from the public site until you're ready to show it.</div>
+
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ALL FAMILIES</div>
               <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:18px;">
                 <sc-for list="{{ allFamilyRows }}" as="af" hint-placeholder-count="1">
@@ -1804,6 +1848,28 @@
               <input value="{{ commentDraft }}" onInput="{{ setCommentDraft }}" placeholder="Add a comment…" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 11px;" />
               <button onClick="{{ postComment }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Post</button>
             </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ selected.showAttachments }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.16em; color:#586a82; margin-bottom:9px;">ATTACHMENTS <span style="color:#3d4d63;">· {{ selected.attachmentCount }}</span></div>
+            <sc-for list="{{ selected.attachments }}" as="a" hint-placeholder-count="0">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <div style="flex:none; width:26px; height:26px; border-radius:7px; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); color:#7fb4d8; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:700;">{{ a.ext }}</div>
+                <a href="{{ a.downloadHref }}" target="_blank" rel="noopener" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ a.name }}</a>
+                <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#4d5e76;">{{ a.sizeLabel }}</span>
+                <sc-if value="{{ a.canDelete }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ a.onDelete }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; background:none; border:none; cursor:pointer; padding:0;">delete</button>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ selected.canAddAttachments }}" hint-placeholder-val="{{ false }}">
+              <input ref="{{ setAttachmentInputRef }}" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" onChange="{{ selected.onAttachmentPick }}" style="display:none;">
+              <button onClick="{{ selected.triggerAttachmentPick }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fd6f0; background:rgba(255,255,255,0.03); border:1px dashed rgba(125,200,245,0.35); border-radius:8px; padding:8px; cursor:pointer; margin-top:2px;">{{ selected.attachmentButtonLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ selected.attachmentError }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#f38ba0; margin-top:6px;">{{ selected.attachmentError }}</div>
+            </sc-if>
           </div>
         </sc-if>
         <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
@@ -3044,6 +3110,8 @@ class Component extends DCLogic {
       bulkConfirm: false,
       settingsOpen: false,
       profileOpen: false,
+      activityOpen: false,
+      activityFeed: [],
       dataMode: 'browser',
       confirmLocal: false,
       cloudSeed: 0,
@@ -3070,6 +3138,7 @@ class Component extends DCLogic {
       autoApproveFamilies: false,
       cfgImageUploadsEnabledSite: true,
       cfgPublicSharingEnabledSite: true,
+      cfgShowPricingSection: false,
       newFamilyName: '',
       newFamilyModalOpen: false,
       addPersonModalOpen: false,
@@ -3117,6 +3186,8 @@ class Component extends DCLogic {
       dupMode: false,
       itineraryPanelOpen: false,
       commentDraft: '',
+      attachmentBusyTripId: null,
+      attachmentError: '',
       itineraryModalOpen: false,
       itineraryModalDays: [],
       itineraryModalPlace: '',
@@ -3599,7 +3670,9 @@ class Component extends DCLogic {
         autoApproveFamilies: !!j.autoApproveFamilies,
         cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false,
         cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false,
+        cfgShowPricingSection: !!j.showPricingSection,
         pendingFamiliesList: j.pendingFamilies || [],
+        activityFeed: j.activity || [],
         activeFamilyId: active,
         cfgTravelersServer: j.travelers || [],
         travelersMigrated: migrated,
@@ -3892,6 +3965,14 @@ class Component extends DCLogic {
     const j = await this.familiesAction('setPublicSharingEnabled', { value: !this.state.cfgPublicSharingEnabledSite });
     if (j) { this.setState({ cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false }); this.toast(j.publicSharingEnabled !== false ? 'Public sharing is ON' : 'Public sharing is OFF'); }
   }
+  async togglePricingSection() {
+    const j = await this.familiesAction('setShowPricingSection', { value: !this.state.cfgShowPricingSection });
+    if (j) { this.setState({ cfgShowPricingSection: !!j.showPricingSection }); this.toast(j.showPricingSection ? 'Pricing section is ON' : 'Pricing section is OFF'); }
+  }
+  async setLandingVariant(v) {
+    const j = await this.familiesAction('setLandingVariant', { value: v });
+    if (j) { this.setState({ cfgLandingVariant: j.landingVariant || 'a' }); this.toast('Landing page set to option ' + (j.landingVariant || 'a').toUpperCase()); }
+  }
   // familyImages: undefined = inherit the site default, true/false = this family's override.
   async setFamilyImageUploads(familyId, value) {
     const j = await this.familiesAction('setFamilyImageUploads', { familyId, value });
@@ -4158,6 +4239,10 @@ class Component extends DCLogic {
       publicSharingSiteToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.cfgPublicSharingEnabledSite !== false ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
       togglePublicSharingSite: () => this.togglePublicSharingSite(),
+      pricingSectionToggleLabel: s.cfgShowPricingSection ? 'ON' : 'OFF',
+      pricingSectionToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
+        (s.cfgShowPricingSection ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);'),
+      togglePricingSection: () => this.togglePricingSection(),
       hasPendingFamilies: pendingList.length > 0,
       pendingFamilyRows: pendingList.map((f) => ({ name: f.name, onApprove: () => this.approveFamily(f.id) })),
       pendingFamiliesCount: pendingList.length,
@@ -6182,6 +6267,14 @@ class Component extends DCLogic {
 
   toggleProfile() { this.setState(s => ({ profileOpen: !s.profileOpen })); }
   closeProfile() { this.setState({ profileOpen: false }); }
+  toggleActivity() {
+    this.setState(s => {
+      const opening = !s.activityOpen;
+      if (opening) { try { localStorage.setItem('vl-activity-seen', new Date().toISOString()); } catch (e) {} }
+      return { activityOpen: opening };
+    });
+  }
+  closeActivity() { this.setState({ activityOpen: false }); }
   async askDeleteMyAccount() {
     const j = await this.familiesActionSilent('myAccountDeleteImpact', {});
     if (!j) return;
@@ -7940,6 +8033,73 @@ class Component extends DCLogic {
     };
     reader.readAsDataURL(file);
   };
+  // ---- per-trip attachments (tickets, confirmations — real files, stored in Blob
+  // Storage server-side via /api/attachments; only lightweight metadata lives on the
+  // trip itself). Mirrors the comments pattern: immediate server round-trip rather
+  // than staged in the edit form, since it needs an existing trip id. ----
+  setAttachmentInputRef = (el) => { this._attachmentInput = el; };
+  triggerAttachmentPick(tripId) {
+    this._attachmentTargetTrip = tripId;
+    if (this._attachmentInput) { this._attachmentInput.value = ''; this._attachmentInput.click(); }
+  }
+  onAttachmentPick = async (e) => {
+    const file = (e.target.files || [])[0];
+    const tripId = this._attachmentTargetTrip;
+    if (!file || tripId == null) return;
+    const MAX = 25 * 1024 * 1024;
+    if (file.size > MAX) { this.setState({ attachmentError: 'That file is over 25MB.' }); return; }
+    this.setState({ attachmentBusyTripId: tripId, attachmentError: '' });
+    try {
+      const dataBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+        reader.onerror = () => reject(new Error('read'));
+        reader.readAsDataURL(file);
+      });
+      const r = await fetch('/api/attachments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tripId, filename: file.name, mimeType: file.type || 'application/octet-stream', dataBase64 }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { this.setState({ attachmentBusyTripId: null, attachmentError: (j && j.error) || 'Upload failed.' }); return; }
+      const list = this.state.locations.map(l => l.id === tripId ? { ...l, attachments: [...(l.attachments || []), j.attachment] } : l);
+      this.setState({ locations: list, attachmentBusyTripId: null });
+    } catch (err) {
+      this.setState({ attachmentBusyTripId: null, attachmentError: 'Upload failed — check your connection and try again.' });
+    }
+  };
+  async deleteAttachment(tripId, id) {
+    const trip = (this.state.locations || []).find(l => l.id === tripId);
+    if (!trip) return;
+    const att = (trip.attachments || []).find(a => a.id === id);
+    if (!att) return;
+    const email = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    const mine = (att.uploadedByEmail || '').toLowerCase().trim() === email;
+    if (!mine && !this.tripIsMine(trip) && !this.state.mySiteAdmin) return;
+    // optimistic remove, roll back on failure
+    const prev = this.state.locations;
+    this.setState({ locations: this.state.locations.map(l => l.id === tripId ? { ...l, attachments: (l.attachments || []).filter(a => a.id !== id) } : l) });
+    try {
+      const r = await fetch('/api/attachments', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', tripId, id }),
+      });
+      if (!r.ok) { this.setState({ locations: prev }); this.toast('Could not delete — try again.'); }
+    } catch (e) { this.setState({ locations: prev }); this.toast('Could not delete — try again.'); }
+  }
+  _attachmentExt(att) {
+    const fromName = (att.name || '').split('.').pop();
+    if (fromName && fromName.length <= 4) return fromName.toUpperCase();
+    if ((att.mimeType || '').includes('pdf')) return 'PDF';
+    if ((att.mimeType || '').includes('image')) return 'IMG';
+    return 'FILE';
+  }
+  _attachmentSizeLabel(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
   setGalleryInputRef = (el) => { this._galleryInput = el; };
   triggerGalleryPick = () => { if (this._galleryInput) { this._galleryInput.value = ''; this._galleryInput.click(); } };
   openLightbox = (images, index) => { this.setState({ lightbox: { images: images || [], index: index || 0 } }); };
@@ -8290,6 +8450,22 @@ class Component extends DCLogic {
           try { when = new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(c.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
           return { id: c.id, authorName: c.authorName || c.authorEmail || 'Someone', initial: (c.authorName || c.authorEmail || '?').trim()[0].toUpperCase(), text: c.text, when, canDelete, onDelete: () => this.deleteComment(sl.id, c.id) };
         }),
+        showAttachments: this.state.cfgDataSource === 'cloud' && this.state.cloudAuth,
+        attachmentCount: (sl.attachments || []).length,
+        attachments: (sl.attachments || []).map(a => {
+          const mine = (a.uploadedByEmail || '').toLowerCase().trim() === (this.state.cloudUserEmail || '').toLowerCase().trim();
+          const canDelete = mine || this.tripIsMine(sl) || this.state.mySiteAdmin;
+          return {
+            id: a.id, name: a.name, ext: this._attachmentExt(a), sizeLabel: this._attachmentSizeLabel(a.size),
+            downloadHref: '/api/attachments?tripId=' + encodeURIComponent(sl.id) + '&id=' + encodeURIComponent(a.id),
+            canDelete, onDelete: () => this.deleteAttachment(sl.id, a.id),
+          };
+        }),
+        canAddAttachments: (this.state.cloudRoles || []).includes('editor'),
+        triggerAttachmentPick: () => this.triggerAttachmentPick(sl.id),
+        onAttachmentPick: this.onAttachmentPick,
+        attachmentButtonLabel: this.state.attachmentBusyTripId === sl.id ? 'Uploading…' : '+ Add attachment',
+        attachmentError: this.state.attachmentBusyTripId === sl.id ? '' : (this.state.attachmentError || ''),
       };
     }
     const meId = this.state.cloudUserId || '';
@@ -8800,6 +8976,19 @@ class Component extends DCLogic {
       profileOpen: this.state.profileOpen,
       toggleProfile: () => this.toggleProfile(),
       closeProfile: () => this.closeProfile(),
+      activityOpen: this.state.activityOpen,
+      toggleActivity: () => this.toggleActivity(),
+      closeActivity: () => this.closeActivity(),
+      activityUnreadCount: (() => {
+        let seen = ''; try { seen = localStorage.getItem('vl-activity-seen') || ''; } catch (e) {}
+        return (this.state.activityFeed || []).some(a => a.createdAt > seen);
+      })(),
+      activityEmpty: !(this.state.activityFeed || []).length,
+      activityItems: (this.state.activityFeed || []).map(a => {
+        let when = '';
+        try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
+        return { id: a.id, message: a.message || '', when };
+      }),
       pendingAccountDelete: this.state.pendingAccountDelete,
       askDeleteMyAccount: () => this.askDeleteMyAccount(),
       cancelAccountDelete: () => this.cancelAccountDelete(),
@@ -8882,6 +9071,7 @@ class Component extends DCLogic {
       commentDraft: this.state.commentDraft || '',
       setCommentDraft: (e) => this.setCommentDraft(e),
       postComment: () => this.postComment(),
+      setAttachmentInputRef: this.setAttachmentInputRef,
       togglePerm: () => this.openPermModal('quick'),
       permBtnStyle: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25);',
       // Banner layout sits the button over a photo, so it uses the same neutral

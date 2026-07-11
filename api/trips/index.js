@@ -1,4 +1,5 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
+const { checkRateLimit } = require("../_shared/rateLimit");
 
 // Reads/writes the Trip Tracker dataset to Blob Storage, with PER-USER access control.
 //
@@ -198,6 +199,12 @@ module.exports = async function (context, req) {
     const me = principal(req);
     // The SWA routes already require a role, so a principal should always be present.
     if (!me) { json(401, { error: "Sign in required." }); return; }
+
+    // Basic per-user rate limiting — generous enough for normal use (autosave, tab
+    // focus refresh), tight enough to blunt a runaway retry loop or scripted abuse.
+    const rlLimits = req.method === "GET" ? { max: 90, windowMs: 60000 } : { max: 30, windowMs: 60000 };
+    const rl = checkRateLimit("trips:" + req.method + ":" + me.email, rlLimits);
+    if (!rl.ok) { json(429, { error: "Too many requests, slow down and try again shortly." }); return; }
 
     const container = await getContainer();
     await enrichMe(container, me);

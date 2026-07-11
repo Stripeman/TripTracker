@@ -131,6 +131,12 @@ one, in the same places as above:
 - **Google:** console.cloud.google.com → **APIs & Services → Credentials** → open your
   OAuth client → **Authorized redirect URIs** → **+ Add URI** →
   `https://<preview-url>/.auth/login/google/callback` → **Save**.
+  Same goes for any custom subdomain you point at the app via GoDaddy DNS (e.g.
+  `staging.triptracking.org`, CNAME'd to your Static Web App) — it needs its own
+  **Authorized redirect URI** added here too:
+  `https://staging.triptracking.org/.auth/login/google/callback`. Google rejects
+  callbacks to hostnames it doesn't have listed, so this step is required whenever you
+  add a new custom domain, not just preview slots.
 - **Microsoft:** Entra ID → **App registrations** → your app → **Authentication** →
   **Add URI** → `https://<preview-url>/.auth/login/aad/callback` → **Save**.
 - **Yahoo:** developer.yahoo.com → your app → add

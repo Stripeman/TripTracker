@@ -4,6 +4,28 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.19.0 — Landing page pricing section
+
+### Added
+- **Pricing section on the public landing page** (all three layout variants) — three tiers (Solo Family / Extended Family / Whole Clan). Off by default; a site admin turns it on from Site Family Management → "Pricing section on landing page", same on/off control style as the existing site-wide toggles.
+- New `/api/site-settings` field `showPricingSection` (public, read-only) and `/api/families` action `setShowPricingSection` (site admin only) to control it.
+
+---
+
+## 1.18.0 — Attachments, notifications, rate limiting, public pages
+
+### Added
+- **Attachments per trip (Cloud mode):** attach real files — PDF, images, Word, Excel — up to 25MB, stored in Blob Storage (metadata only on the trip itself). Shown under the detail card's Comments section, with download and delete (uploader, trip owner, or site admin).
+- **In-app activity feed:** a bell icon in the header (badge dot for unseen events) opens a dropdown of recent invites, family shares, and access approvals.
+- **Family-share email:** inviting another whole family now emails that family's admins (via Resend, same setup as existing invite emails) in addition to the existing person-invite and access-approval emails.
+- **Basic API rate limiting:** per-user limits on `/api/trips`, `/api/attachments`, and per-email limits on `/api/request-access`, to blunt retry storms/scripted abuse. In-memory/per-instance — a first layer, not a hard guarantee at scale.
+- **Public-facing pages:** a marketing landing page (two layout options) and a draft Terms of Service page (placeholders for entity name/contact/jurisdiction — needs review before real use).
+
+### Changed
+- `DEPLOY-azure.md`: noted that custom domains added via DNS (e.g. a GoDaddy-parked domain) need their own Authorized redirect URI added in each OAuth provider, same as preview slots.
+
+---
+
 ## 1.17.0 — Light/Dark mode, globe realism, and modal polish
 
 ### Added
