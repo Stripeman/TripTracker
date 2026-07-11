@@ -4,6 +4,41 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.8.0-beta
+
+### Fixed
+- **Signed-in accounts with no traveler record were invisible in Site User Management**
+  (even to site admins) — e.g. a brand-new user who'd only ever signed in. Any active
+  membership without a matching traveler entry is now synthesized into the list
+  automatically.
+- **Metrics ignored families you had real access to.** "All families I have access to"
+  now includes families shared with you via FamilyShare, not just direct memberships.
+- **Metrics was silently tied to the left panel's selected family** — switching the
+  left-panel family changed (or broke) the metrics default. Metrics now computes a
+  stable "home family" independent of `activeFamilyId`.
+- **Role/active status could show the wrong value** when a person belonged to a family
+  other than the one selected in the left panel — role/active is now resolved per-row
+  against that row's own family membership, not a flat map keyed to the active family.
+- **Anyone who could see a person could rename them.** The Edit button is now gated to
+  site admins, that person's family admin, or the person themselves.
+
+### Added
+- **Rename (alias) any user** you administer — family admins for their own families,
+  site admins for anyone. Editing a synthesized account-only row now creates a real
+  traveler record for it automatically so the rename has somewhere to save.
+- **Site User Management renamed** from "Users", with a family-scope dropdown (same
+  pattern as Trip Metrics) — site admins can filter to a specific family or see
+  everyone; other users see their own family plus every family they have access to.
+- **"My Families" member list unified with Site User Management** — the family detail
+  panel's plain email list is now the same rich per-person card (name, color, email,
+  role, active/inactive, edit, delete), scoped to that one family.
+- **Transfer family ownership**, from the family detail panel: the current owner (or a
+  site admin) can hand ownership to another active member.
+- **Traveler storage migration, phase 1 (backend foundation)** — new per-family
+  `travelers.json` storage with gated add/update/move/delete actions and a one-time
+  backfill button; not yet wired into the running app (additive only — see
+  `TRAVELER-STORAGE-PLAN.md`).
+
 ## 1.7.0-beta
 
 ### Added

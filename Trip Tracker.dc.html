@@ -735,9 +735,11 @@
                     <sc-if value="{{ p.roleLabel }}" hint-placeholder-val="{{ false }}">
                       <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.14em; color:#7fd4f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:5px; padding:2px 7px;">{{ p.roleLabel }}</span>
                     </sc-if>
-                    <button onClick="{{ p.onEdit }}" title="Edit" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.24); color:#9fd6f0; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-                    </button>
+                    <sc-if value="{{ p.canEdit }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ p.onEdit }}" title="Edit" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.24); color:#9fd6f0; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                      </button>
+                    </sc-if>
                   </div>
                 </sc-if>
 
@@ -1143,7 +1145,7 @@
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding:0 4px 12px;">PEOPLE &amp; FAMILIES</div>
             <div style="display:flex; flex-direction:column; gap:5px;">
               <sc-if value="{{ showFamMgmtUsersNav }}" hint-placeholder-val="{{ true }}">
-                <div onClick="{{ setFamMgmtViewUsers }}" style="{{ famMgmtNavUsersStyle }}"><span>Users</span></div>
+                <div onClick="{{ setFamMgmtViewUsers }}" style="{{ famMgmtNavUsersStyle }}"><span>Site User Management</span></div>
               </sc-if>
               <div onClick="{{ setFamMgmtViewFamilies }}" style="{{ famMgmtNavFamiliesStyle }}"><span>Families</span></div>
               <sc-if value="{{ showFamMgmtSiteFamNav }}" hint-placeholder-val="{{ false }}">
@@ -1190,8 +1192,18 @@
           </div>
           <div style="flex:1; min-width:0; overflow-y:auto; padding:22px 26px;">
             <sc-if value="{{ famMgmtViewUsers }}" hint-placeholder-val="{{ false }}">
-              <div style="font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#f1f6fc; margin-bottom:4px;">Users</div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; line-height:1.55; margin-bottom:16px;">Everyone you can tag on a trip. Give a person an email to let them sign in — then a role and presence appear. People without an email are just names you can pick.</div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#f1f6fc; margin-bottom:4px;">Site User Management</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; line-height:1.55; margin-bottom:12px;">Everyone you can tag on a trip. Give a person an email to let them sign in — then a role and presence appear. People without an email are just names you can pick.</div>
+              <sc-if value="{{ showUsersFamilyScope }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; gap:7px; margin-bottom:14px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">FAMILY</span>
+                  <select value="{{ usersFamilyScope }}" onChange="{{ setUsersFamilyScope }}" title="Which family's people to show" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                    <sc-for list="{{ usersFamilyScopeOptions }}" as="o" hint-placeholder-count="2">
+                      <option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+              </sc-if>
 
               <button onClick="{{ addPerson }}" style="width:100%; box-sizing:border-box; margin-bottom:12px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:10px; padding:9px; cursor:pointer;">+ Add person</button>
 
@@ -1451,31 +1463,76 @@
               </div>
 
               <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 15px; margin-bottom:16px;">
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">MEMBERS</div>
-                <div style="display:flex; flex-direction:column; gap:7px;">
-                  <sc-for list="{{ activeFamilyMemberRows }}" as="m" hint-placeholder-count="2">
-                    <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:8px 10px;">
-                      <span style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#dbe6f2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.email }}</span>
-                      <sc-if value="{{ m.noAccount }}" hint-placeholder-val="{{ false }}">
-                        <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.1em; color:#7c8ea6; border:1px solid rgba(255,255,255,0.14); border-radius:5px; padding:1px 5px;">NO ACCOUNT</span>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">PEOPLE IN {{ activeFamilyName }}</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <sc-for list="{{ activeFamilyPeopleRows }}" as="p" hint-placeholder-count="2">
+                    <sc-if value="{{ p.isHeader }}" hint-placeholder-val="{{ false }}"></sc-if>
+                    <sc-if value="{{ p.notHeader }}" hint-placeholder-val="{{ true }}">
+                    <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:11px 12px;">
+
+                      <!-- VIEW MODE -->
+                      <sc-if value="{{ p.viewing }}" hint-placeholder-val="{{ true }}">
+                        <div onMouseMove="{{ p.onHover }}" onMouseLeave="{{ hideStat }}" style="display:flex; align-items:center; gap:10px;">
+                          <span style="width:14px; height:14px; flex:none; border-radius:50%; background:{{ p.colorLive }}; box-shadow:0 0 8px {{ p.colorGlow }};"></span>
+                          <div style="flex:1; min-width:0;">
+                            <div style="display:flex; align-items:center; gap:7px;">
+                              <span style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; font-weight:600; color:#eaf4fd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.label }}</span>
+                              <sc-if value="{{ p.online }}" hint-placeholder-val="{{ false }}">
+                                <span title="Online now" style="width:7px; height:7px; flex:none; border-radius:50%; background:#34d399; box-shadow:0 0 7px #34d399;"></span>
+                              </sc-if>
+                            </div>
+                            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.emailText }}</div>
+                          </div>
+                          <sc-if value="{{ p.statusLabel }}" hint-placeholder-val="{{ false }}">
+                            <span style="{{ p.statusStyle }}">{{ p.statusLabel }}</span>
+                          </sc-if>
+                          <sc-if value="{{ p.roleLabel }}" hint-placeholder-val="{{ false }}">
+                            <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.14em; color:#7fd4f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:5px; padding:2px 7px;">{{ p.roleLabel }}</span>
+                          </sc-if>
+                          <sc-if value="{{ p.canEdit }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ p.onEdit }}" title="Edit" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.24); color:#9fd6f0; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                            </button>
+                          </sc-if>
+                        </div>
                       </sc-if>
-                      <sc-if value="{{ m.inactive }}" hint-placeholder-val="{{ false }}">
-                        <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.1em; color:#e9a3a3;">INACTIVE</span>
-                      </sc-if>
-                      <sc-if value="{{ m.canManage }}" hint-placeholder-val="{{ false }}">
-                        <sc-if value="{{ m.hasRoleSelect }}" hint-placeholder-val="{{ true }}">
-                          <select value="{{ m.role }}" onChange="{{ m.onRoleChange }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:6px; padding:4px 6px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                            <option value="reader" style="background:#0a1422;">Reader</option>
-                            <option value="editor" style="background:#0a1422;">Editor</option>
-                            <option value="admin" style="background:#0a1422;">Admin</option>
-                          </select>
+
+                      <!-- EDIT MODE -->
+                      <sc-if value="{{ p.editing }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; align-items:center; gap:7px;">
+                          <input type="color" defaultValue="{{ p.color }}" onChange="{{ p.onColor }}" onBlur="{{ p.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
+                          <input defaultValue="{{ p.label }}" onChange="{{ p.onLabel }}" onBlur="{{ p.onCommit }}" placeholder="Name" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
+                        </div>
+                        <sc-if value="{{ p.canSetEmail }}" hint-placeholder-val="{{ false }}">
+                          <input defaultValue="{{ p.email }}" onChange="{{ p.onEmail }}" onBlur="{{ p.onCommit }}" type="email" placeholder="email — lets them sign in (optional)" style="width:100%; box-sizing:border-box; margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:7px 9px; outline:none;">
                         </sc-if>
-                        <button onClick="{{ m.onRemove }}" title="Remove from family" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
-                      </sc-if>
-                      <sc-if value="{{ m.cantManage }}" hint-placeholder-val="{{ true }}">
-                        <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6;">{{ m.roleLabel }}</span>
+                        <sc-if value="{{ p.canSetRole }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
+                            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">ROLE</span>
+                            <select value="{{ p.role }}" onChange="{{ p.onRole }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                              <option value="" style="background:#0a1422;">No access</option>
+                              <option value="reader" style="background:#0a1422;">Reader</option>
+                              <option value="editor" style="background:#0a1422;">Editor</option>
+                              <option value="admin" style="background:#0a1422;">Admin</option>
+                            </select>
+                          </div>
+                        </sc-if>
+                        <div style="display:flex; gap:7px; margin-top:9px;">
+                          <button onClick="{{ p.onDone }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">Save</button>
+                          <button onClick="{{ p.onCancel }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px; cursor:pointer;">Cancel</button>
+                          <sc-if value="{{ p.canSetActive }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ p.onToggleActive }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#c2cfde; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px 13px; cursor:pointer;">{{ p.activeBtnLabel }}</button>
+                          </sc-if>
+                        </div>
+                        <sc-if value="{{ p.isLastAdmin }}" hint-placeholder-val="{{ false }}">
+                          <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a7a52; line-height:1.5;">This is the last active admin — can't be deactivated or deleted.</div>
+                        </sc-if>
+                        <sc-if value="{{ p.canDeleteUser }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ p.onDeleteUser }}" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#f0a6a6; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:7px; cursor:pointer;">Delete user…</button>
+                        </sc-if>
                       </sc-if>
                     </div>
+                    </sc-if>
                   </sc-for>
                 </div>
                 <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
@@ -2850,7 +2907,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.7.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.8.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4100,6 +4157,7 @@ class Component extends DCLogic {
       })),
       hasActiveFamily: !!activeFam,
       activeFamilyMemberRows,
+      activeFamilyPeopleRows: this.computePeopleRows(s.activeFamilyId),
       isActiveFamilyAdmin,
       newNonAccountName: s.newNonAccountName || '',
       setNewNonAccountName: (e) => this.setNewNonAccountName(e),
@@ -6671,9 +6729,221 @@ class Component extends DCLogic {
   addPersonDone() { this._personSnapshot = null; this.setState({ editingPersonKey: null, addingPersonKey: null }); this.toast('User added'); }
   // Cancel an add → remove the just-created person.
   addPersonCancel(key) { this.setState({ addingPersonKey: null }); this.personRemove(key); }
+  // Every row for the People/Users UI: cfgTravelers plus synthesized rows for any
+  // account (membership) that doesn't have a matching traveler yet. `forceScope`, if
+  // given, overrides the usersFamilyScope selector (used to slice down to one specific
+  // family — e.g. the family-detail panel — without touching the Users tab's own
+  // scope state or grouping by family).
+  computePeopleRows(forceScope) {
+    const isCloud = this.state.cfgDataSource === 'cloud';
+    const mySiteAdmin = !!this.state.mySiteAdmin;
+    const meEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    // Membership lookup keyed by (email, familyId) — NOT a flat email->role map — so a
+    // person's shown role/active state is always THEIR row's own family, never
+    // whichever family happens to be selected in the left panel.
+    const membershipByKey = {};
+    (this.state.cfgMemberships || []).forEach(m => {
+      const e = String(m.email || '').toLowerCase().trim();
+      if (!e) return;
+      membershipByKey[e + '||' + m.familyId] = m;
+    });
+    const legacyRoleByEmail = {};
+    const legacyActiveByEmail = {};
+    (this.state.accessList || []).forEach(r => {
+      const e = String(r.email || '').toLowerCase().trim();
+      if (!e) return;
+      legacyRoleByEmail[e] = r.role;
+      legacyActiveByEmail[e] = r.active !== false;
+    });
+    const onlineEmails = new Set((this.state.presenceUsers || []).map(u => String(u.email || '').toLowerCase().trim()).filter(Boolean));
+    // Family scoping: a family-scoped person is only visible to (a) site admins,
+    // (b) members of any family they also belong to, or (c) themselves. Non-account
+    // entries (no email/login) are scoped by who created them instead.
+    const familiesByEmail = {};
+    (this.state.cfgMemberships || []).filter(m => m.active !== false).forEach(m => {
+      const e = String(m.email || '').toLowerCase().trim();
+      if (!e) return;
+      (familiesByEmail[e] = familiesByEmail[e] || new Set()).add(m.familyId);
+    });
+    const myFamilyIds = familiesByEmail[meEmail] || new Set();
+    const myAdminFamilyIds = new Set((this.state.cfgMemberships || []).filter(m => m.email === meEmail && m.active !== false && m.role === 'admin').map(m => m.familyId));
+    const sharesFamilyWithMe = (ids) => [...ids].some(fid => myFamilyIds.has(fid));
+    const iAdminAnyOf = (ids) => [...ids].some(fid => myAdminFamilyIds.has(fid));
+    const familyNameById = {};
+    (this.state.cfgFamilies || []).forEach(f => { familyNameById[f.id] = f.name; });
+    // Families I can move/assign a person INTO — every family I administer, or every
+    // family in the system for a site admin.
+    const pickableFamilies = mySiteAdmin ? (this.state.cfgFamilies || []) : (this.state.cfgFamilies || []).filter(f => myAdminFamilyIds.has(f.id));
+    // Synthesize a traveler-like row for every account (membership) that doesn't yet
+    // have a matching cfgTravelers entry by email — e.g. someone who signed in or was
+    // approved but was never explicitly added as a "person". Without this they have
+    // real access but are invisible here.
+    const travelerEmails = new Set((this.state.cfgTravelers || []).map(t => String(t.email || '').toLowerCase().trim()).filter(Boolean));
+    const acctByEmail = {};
+    (this.state.cfgMemberships || []).filter(m => m.email && m.active !== false).forEach(m => {
+      const e = String(m.email).toLowerCase().trim();
+      if (travelerEmails.has(e) || acctByEmail[e]) return;
+      acctByEmail[e] = m.familyId;
+    });
+    const acctPalette = ['#5fd3ff', '#fb7185', '#34d399', '#fbbf24', '#a78bfa', '#f472b6', '#38bdf8', '#f59e0b'];
+    const colorForEmail = (e) => { let h = 0; for (let i = 0; i < e.length; i++) h = (h * 31 + e.charCodeAt(i)) >>> 0; return acctPalette[h % acctPalette.length]; };
+    const synthRows = Object.keys(acctByEmail).map(e => {
+      const local = e.split('@')[0] || e;
+      const label = local.charAt(0).toUpperCase() + local.slice(1);
+      return { key: 'acct:' + e, label, color: colorForEmail(e), email: e, createdBy: '', familyId: acctByEmail[e] };
+    });
+    const sourceRows = [...(this.state.cfgTravelers || []), ...synthRows];
+    const uf = this.state.usersFilter || 'all';
+    const editingKey = this.state.editingPersonKey;
+    const rows = sourceRows.filter(o => {
+      if (!isCloud || mySiteAdmin) return true; // local mode / site admin: unrestricted
+      const email = String(o.email || '').toLowerCase().trim();
+      if (email === meEmail) return true;
+      if (email) return sharesFamilyWithMe(familiesByEmail[email] || new Set());
+      const creator = String(o.createdBy || '').toLowerCase().trim();
+      if (!creator || creator === meEmail) return true; // mine, or ownerless legacy entry
+      return sharesFamilyWithMe(familiesByEmail[creator] || new Set());
+    }).map(o => {
+      const email = String(o.email || '').toLowerCase().trim();
+      const mine = !o.createdBy || String(o.createdBy).toLowerCase().trim() === meEmail;
+      const theirFamilyIds = email ? (familiesByEmail[email] || new Set()) : (o.createdBy ? (familiesByEmail[String(o.createdBy).toLowerCase().trim()] || new Set()) : new Set());
+      const resolvedFamilyId = o.familyId || (theirFamilyIds.size ? [...theirFamilyIds][0] : '');
+      const mship = email ? membershipByKey[email + '||' + resolvedFamilyId] : null;
+      const role = mship ? mship.role : (email ? (legacyRoleByEmail[email] || '') : '');
+      const isUser = !!email && !!role;
+      const active = mship ? mship.active !== false : (email ? (legacyActiveByEmail[email] !== false) : true);
+      const used = this.personUsedOnTrip(o.key);
+      // Can I administer THIS person (role/active/delete/rename)? Site admin, or a
+      // family admin of a family this person (or their creator) also belongs to.
+      const isAdmin = mySiteAdmin || iAdminAnyOf(theirFamilyIds);
+      const canEdit = isAdmin || mine || (!!email && email === meEmail);
+      // Family picker options: families I can move this person into, plus their
+      // current family (if any) so the select always shows the right value even if
+      // I don't administer it myself.
+      let familyPickOptions = pickableFamilies.map(f => ({ value: f.id, label: f.name }));
+      if (resolvedFamilyId && !familyPickOptions.some(fo => fo.value === resolvedFamilyId)) {
+        familyPickOptions = [{ value: resolvedFamilyId, label: familyNameById[resolvedFamilyId] || 'Current family' }, ...familyPickOptions];
+      }
+      const locsAll = this.state.locations || [];
+      const ownedLocs = email ? locsAll.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === email) : [];
+      const statsOwned = ownedLocs.length;
+      const statsPhotos = ownedLocs.filter(l => l.photo).length;
+      const statsCountries = new Set(ownedLocs.map(l => (l.country || '').trim()).filter(Boolean)).size;
+      const yearCounts = {};
+      ownedLocs.forEach(l => { const y = (l.date || '').slice(0, 4); if (y) yearCounts[y] = (yearCounts[y] || 0) + 1; });
+      const statsByYearText = Object.keys(yearCounts).sort((a, b) => b.localeCompare(a)).map(y => y + ' (' + yearCounts[y] + ')').join(', ');
+      const taggedLocs = locsAll.filter(l => Array.isArray(l.travelers) && l.travelers.includes(o.key) && String(l.ownerEmail || '').toLowerCase().trim() !== email);
+      const statsTagged = taggedLocs.length;
+      let statsTaggedText = '';
+      if (statsTagged) {
+        const byOwner = {};
+        taggedLocs.forEach(l => {
+          const oe = String(l.ownerEmail || '').toLowerCase().trim();
+          const oname = this.travelerNameByEmail(oe) || oe || 'Unassigned';
+          byOwner[oname] = (byOwner[oname] || 0) + 1;
+        });
+        statsTaggedText = Object.keys(byOwner).sort().map(n => n + ' (' + byOwner[n] + ')').join(', ');
+      }
+      const isAddingThis = o.key === this.state.addingPersonKey;
+      const canDelete = !isAddingThis && !used && (!isCloud || isAdmin || mine);
+      let blocked = '';
+      if (used) blocked = 'Tagged on one or more trips — remove it from those first.';
+      else if (isCloud && !isAdmin && !mine) blocked = 'Added by someone else — only they or an admin can remove it.';
+      const groupFamilyId = theirFamilyIds.size ? [...theirFamilyIds][0] : '__unassigned__';
+      return {
+        key: o.key, isHeader: false, notHeader: true, groupFamilyId,
+        label: o.label, color: o.color, email: o.email || '',
+        colorLive: o.color, colorGlow: (o.color || '#5fd3ff') + '66',
+        viewing: editingKey !== o.key,
+        editing: editingKey === o.key,
+        emailText: o.email ? o.email : 'No login — name only',
+        role, roleLabel: role ? role.toUpperCase() : '',
+        isUser, active,
+        statusLabel: isUser ? (active ? 'ACTIVE' : 'INACTIVE') : '',
+        statusStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:8px; letter-spacing:0.12em; padding:2px 6px; border-radius:5px; ' + (active ? 'color:#7ee0a8; background:rgba(126,224,168,0.12); border:1px solid rgba(126,224,168,0.3);' : 'color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);'),
+        canSetActive: isCloud && isAdmin && isUser && !this.isLastActiveAdmin(o.email),
+        activeBtnLabel: active ? 'Deactivate' : 'Activate',
+        onToggleActive: () => this.personSetActive(o.email, !active),
+        canDeleteUser: isCloud && isAdmin && isUser && !isAddingThis && !this.isLastActiveAdmin(o.email),
+        isLastAdmin: isCloud && isAdmin && isUser && this.isLastActiveAdmin(o.email),
+        onDeleteUser: () => this.askUserDelete(o.key),
+        online: !!email && onlineEmails.has(email),
+        canSetEmail: !isCloud || isAdmin,
+        canSetRole: isCloud && isAdmin && !!o.email,
+        canDelete,
+        deleteBlockedMsg: blocked,
+        canEdit,
+        onEdit: () => this.editPerson(o.key),
+        onHover: (e) => this.showStat(e, o.email),
+        isAdding: o.key === this.state.addingPersonKey,
+        editingExisting: o.key !== this.state.addingPersonKey,
+        onAdd: () => this.addPersonDone(),
+        onAddCancel: () => this.addPersonCancel(o.key),
+        onDone: () => this.donePerson(),
+        onCancel: () => this.cancelPerson(),
+        onLabel: (e) => this.dataItemLabel('traveler', o.key, e.target.value),
+        onColor: (e) => this.dataItemColor('traveler', o.key, e.target.value),
+        onEmail: (e) => this.dataItemEmail(o.key, e.target.value),
+        onCommit: () => this.dataItemCommit(),
+        onRole: (e) => this.personSetRole(o.email, e.target.value),
+        canSetParent: isCloud && isAdmin && !o.email,
+        parentValue: o.createdBy ? String(o.createdBy).toLowerCase().trim() : '',
+        parentOptions: (this.state.cfgTravelers || []).filter(t => t.email && t.key !== o.key && (t.familyId || '') === (resolvedFamilyId || '')).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
+        onParent: (e) => this.personSetParent(o.key, e.target.value),
+        showFamilyPicker: isCloud && isAdmin && familyPickOptions.length > 0,
+        familyValue: resolvedFamilyId,
+        familyName: familyNameById[resolvedFamilyId] || '',
+        familyPickOptions,
+        onFamily: (e) => this.personSetFamily(o.key, e.target.value),
+        onRemove: () => this.personRemove(o.key),
+        statsOwned, statsPhotos, statsTagged, statsTaggedText,
+        statsCountries, statsByYearText, showByYear: !!statsByYearText,
+        showStats: isCloud,
+      };
+    }).filter(r => uf === 'all' ? true : (r.isUser && (uf === 'active' ? r.active : !r.active)))
+      .filter(r => {
+        const scope = forceScope || this.state.usersFamilyScope || (mySiteAdmin ? 'all' : 'mine');
+        if (scope === 'all') return true;
+        if (scope === 'allMine') return this.myAccessibleFamilyIds().has(r.familyValue);
+        if (scope === 'mine') return r.familyValue === this.myHomeFamilyId();
+        return r.familyValue === scope; // a specific familyId (site admin picking one family, or a forced scope)
+      });
+    if (forceScope || !isCloud || !mySiteAdmin) return rows; // no family headers when forcing one specific family
+    // Site admin: group everyone by family, with an "Unassigned" group last.
+    const groups = {};
+    rows.forEach(r => { (groups[r.groupFamilyId] = groups[r.groupFamilyId] || []).push(r); });
+    const ids = Object.keys(groups).filter(id => id !== '__unassigned__').sort((a, b) => (familyNameById[a] || '').localeCompare(familyNameById[b] || ''));
+    if (groups.__unassigned__) ids.push('__unassigned__');
+    const out = [];
+    ids.forEach(id => {
+      out.push({ key: 'hdr-' + id, isHeader: true, notHeader: false, headerLabel: id === '__unassigned__' ? 'No family' : (familyNameById[id] || 'Family') });
+      out.push(...groups[id]);
+    });
+    return out;
+  }
   editPerson(key) {
     this.hideStat();
-    // Snapshot the editable fields so Cancel can revert (edits otherwise commit live).
+    // A synthetic 'acct:'-prefixed row represents an account with no real traveler
+    // entry yet (e.g. someone who signed in but was never added as a "person"). Give
+    // them a real traveler row now, seeded from their account, so the edit (including
+    // a rename) actually has somewhere to save.
+    if (String(key).indexOf('acct:') === 0) {
+      const email = key.slice(5);
+      const m = (this.state.cfgMemberships || []).find(mm => String(mm.email || '').toLowerCase().trim() === email && mm.active !== false);
+      if (!m) return;
+      const local = email.split('@')[0] || email;
+      const label = local.charAt(0).toUpperCase() + local.slice(1);
+      const palette = ['#5fd3ff', '#fb7185', '#34d399', '#fbbf24', '#a78bfa', '#f472b6', '#38bdf8', '#f59e0b'];
+      let h = 0; for (let i = 0; i < email.length; i++) h = (h * 31 + email.charCodeAt(i)) >>> 0;
+      const color = palette[h % palette.length];
+      let newKey = 'p1', i = 1;
+      const taken = new Set((this.state.cfgTravelers || []).map(t => t.key));
+      while (taken.has(newKey)) { i++; newKey = 'p' + i; }
+      const row = { key: newKey, label, color, email, createdBy: '', familyId: m.familyId };
+      this._personSnapshot = { key: newKey, label, color, email, createdBy: '', familyId: m.familyId };
+      this.setState(s => ({ ...this.persistConfig(s, { cfgTravelers: [...(s.cfgTravelers || []), row] }), editingPersonKey: newKey }));
+      return;
+    }
     const p = (this.state.cfgTravelers || []).find(o => o.key === key);
     this._personSnapshot = p ? { key, label: p.label, color: p.color, email: p.email || '', createdBy: p.createdBy || '', familyId: p.familyId || '' } : null;
     this.setState({ editingPersonKey: key });
@@ -7652,163 +7922,26 @@ class Component extends DCLogic {
       askBulk: () => this.askBulk(),
       cancelBulk: () => this.cancelBulk(),
       applyBulk: () => this.applyBulk(),
-      peopleRows: (() => {
-        const isCloud = this.state.cfgDataSource === 'cloud';
-        const mySiteAdmin = !!this.state.mySiteAdmin;
-        const meEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
-        const roleByEmail = {};
-        (this.state.accessList || []).forEach(r => { const e = String(r.email || '').toLowerCase().trim(); if (e) roleByEmail[e] = r.role; });
-        // Post-migration, the ACTIVE family's membership is the real source of truth for
-        // role — override any legacy access-list value with it where one exists.
-        (this.state.cfgMemberships || []).filter(m => m.familyId === this.state.activeFamilyId && m.active !== false)
-          .forEach(m => { const e = String(m.email || '').toLowerCase().trim(); if (e) roleByEmail[e] = m.role; });
-        const onlineEmails = new Set((this.state.presenceUsers || []).map(u => String(u.email || '').toLowerCase().trim()).filter(Boolean));
-        const activeByEmail = {};
-        (this.state.accessList || []).forEach(r => { const e = String(r.email || '').toLowerCase().trim(); if (e) activeByEmail[e] = r.active !== false; });
-        (this.state.cfgMemberships || []).filter(m => m.familyId === this.state.activeFamilyId)
-          .forEach(m => { const e = String(m.email || '').toLowerCase().trim(); if (e) activeByEmail[e] = m.active !== false; });
-        // Family scoping: a family-scoped person is only visible to (a) site admins,
-        // (b) members of any family they also belong to, or (c) themselves. Non-account
-        // entries (no email/login) are scoped by who created them instead.
-        const familiesByEmail = {};
-        (this.state.cfgMemberships || []).filter(m => m.active !== false).forEach(m => {
-          const e = String(m.email || '').toLowerCase().trim();
-          if (!e) return;
-          (familiesByEmail[e] = familiesByEmail[e] || new Set()).add(m.familyId);
-        });
-        const myFamilyIds = familiesByEmail[meEmail] || new Set();
-        const myAdminFamilyIds = new Set((this.state.cfgMemberships || []).filter(m => m.email === meEmail && m.active !== false && m.role === 'admin').map(m => m.familyId));
-        const sharesFamilyWithMe = (ids) => [...ids].some(fid => myFamilyIds.has(fid));
-        const iAdminAnyOf = (ids) => [...ids].some(fid => myAdminFamilyIds.has(fid));
-        const familyNameById = {};
-        (this.state.cfgFamilies || []).forEach(f => { familyNameById[f.id] = f.name; });
-        // Families I can move/assign a person INTO — every family I administer, or every
-        // family in the system for a site admin.
-        const pickableFamilies = mySiteAdmin ? (this.state.cfgFamilies || []) : (this.state.cfgFamilies || []).filter(f => myAdminFamilyIds.has(f.id));
-        const uf = this.state.usersFilter || 'all';
-        const editingKey = this.state.editingPersonKey;
-        const rows = (this.state.cfgTravelers || []).filter(o => {
-          if (!isCloud || mySiteAdmin) return true; // local mode / site admin: unrestricted
-          const email = String(o.email || '').toLowerCase().trim();
-          if (email === meEmail) return true;
-          if (email) return sharesFamilyWithMe(familiesByEmail[email] || new Set());
-          const creator = String(o.createdBy || '').toLowerCase().trim();
-          if (!creator || creator === meEmail) return true; // mine, or ownerless legacy entry
-          return sharesFamilyWithMe(familiesByEmail[creator] || new Set());
-        }).map(o => {
-          const email = String(o.email || '').toLowerCase().trim();
-          const role = email ? (roleByEmail[email] || '') : '';
-          const isUser = !!email && !!role;
-          const active = isUser ? (activeByEmail[email] !== false) : true;
-          const used = this.personUsedOnTrip(o.key);
-          const mine = !o.createdBy || String(o.createdBy).toLowerCase().trim() === meEmail;
-          // Can I administer THIS person (role/active/delete/rename)? Site admin, or a
-          // family admin of a family this person (or their creator) also belongs to.
-          const theirFamilyIds = email ? (familiesByEmail[email] || new Set()) : (o.createdBy ? (familiesByEmail[String(o.createdBy).toLowerCase().trim()] || new Set()) : new Set());
-          const isAdmin = mySiteAdmin || iAdminAnyOf(theirFamilyIds);
-          const resolvedFamilyId = o.familyId || (theirFamilyIds.size ? [...theirFamilyIds][0] : '');
-          // Family picker options: families I can move this person into, plus their
-          // current family (if any) so the select always shows the right value even if
-          // I don't administer it myself.
-          let familyPickOptions = pickableFamilies.map(f => ({ value: f.id, label: f.name }));
-          if (resolvedFamilyId && !familyPickOptions.some(fo => fo.value === resolvedFamilyId)) {
-            familyPickOptions = [{ value: resolvedFamilyId, label: familyNameById[resolvedFamilyId] || 'Current family' }, ...familyPickOptions];
-          }
-          const locsAll = this.state.locations || [];
-          const ownedLocs = email ? locsAll.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === email) : [];
-          const statsOwned = ownedLocs.length;
-          const statsPhotos = ownedLocs.filter(l => l.photo).length;
-          const statsCountries = new Set(ownedLocs.map(l => (l.country || '').trim()).filter(Boolean)).size;
-          const yearCounts = {};
-          ownedLocs.forEach(l => { const y = (l.date || '').slice(0, 4); if (y) yearCounts[y] = (yearCounts[y] || 0) + 1; });
-          const statsByYearText = Object.keys(yearCounts).sort((a, b) => b.localeCompare(a)).map(y => y + ' (' + yearCounts[y] + ')').join(', ');
-          const taggedLocs = locsAll.filter(l => Array.isArray(l.travelers) && l.travelers.includes(o.key) && String(l.ownerEmail || '').toLowerCase().trim() !== email);
-          const statsTagged = taggedLocs.length;
-          let statsTaggedText = '';
-          if (statsTagged) {
-            const byOwner = {};
-            taggedLocs.forEach(l => {
-              const oe = String(l.ownerEmail || '').toLowerCase().trim();
-              const oname = this.travelerNameByEmail(oe) || oe || 'Unassigned';
-              byOwner[oname] = (byOwner[oname] || 0) + 1;
-            });
-            statsTaggedText = Object.keys(byOwner).sort().map(n => n + ' (' + byOwner[n] + ')').join(', ');
-          }
-          const isAddingThis = o.key === this.state.addingPersonKey;
-          const canDelete = !isAddingThis && !used && (!isCloud || isAdmin || mine);
-          let blocked = '';
-          if (used) blocked = 'Tagged on one or more trips — remove it from those first.';
-          else if (isCloud && !isAdmin && !mine) blocked = 'Added by someone else — only they or an admin can remove it.';
-          const groupFamilyId = theirFamilyIds.size ? [...theirFamilyIds][0] : '__unassigned__';
-          return {
-            key: o.key, isHeader: false, notHeader: true, groupFamilyId,
-            label: o.label, color: o.color, email: o.email || '',
-            colorLive: o.color, colorGlow: (o.color || '#5fd3ff') + '66',
-            viewing: editingKey !== o.key,
-            editing: editingKey === o.key,
-            emailText: o.email ? o.email : 'No login — name only',
-            role, roleLabel: role ? role.toUpperCase() : '',
-            isUser, active,
-            statusLabel: isUser ? (active ? 'ACTIVE' : 'INACTIVE') : '',
-            statusStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:8px; letter-spacing:0.12em; padding:2px 6px; border-radius:5px; ' + (active ? 'color:#7ee0a8; background:rgba(126,224,168,0.12); border:1px solid rgba(126,224,168,0.3);' : 'color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);'),
-            canSetActive: isCloud && isAdmin && isUser && !this.isLastActiveAdmin(o.email),
-            activeBtnLabel: active ? 'Deactivate' : 'Activate',
-            onToggleActive: () => this.personSetActive(o.email, !active),
-            canDeleteUser: isCloud && isAdmin && isUser && !isAddingThis && !this.isLastActiveAdmin(o.email),
-            isLastAdmin: isCloud && isAdmin && isUser && this.isLastActiveAdmin(o.email),
-            onDeleteUser: () => this.askUserDelete(o.key),
-            online: !!email && onlineEmails.has(email),
-            canSetEmail: !isCloud || isAdmin,
-            canSetRole: isCloud && isAdmin && !!o.email,
-            canDelete,
-            deleteBlockedMsg: blocked,
-            onEdit: () => this.editPerson(o.key),
-            onHover: (e) => this.showStat(e, o.email),
-            isAdding: o.key === this.state.addingPersonKey,
-            editingExisting: o.key !== this.state.addingPersonKey,
-            onAdd: () => this.addPersonDone(),
-            onAddCancel: () => this.addPersonCancel(o.key),
-            onDone: () => this.donePerson(),
-            onCancel: () => this.cancelPerson(),
-            onLabel: (e) => this.dataItemLabel('traveler', o.key, e.target.value),
-            onColor: (e) => this.dataItemColor('traveler', o.key, e.target.value),
-            onEmail: (e) => this.dataItemEmail(o.key, e.target.value),
-            onCommit: () => this.dataItemCommit(),
-            onRole: (e) => this.personSetRole(o.email, e.target.value),
-            canSetParent: isCloud && isAdmin && !o.email,
-            parentValue: o.createdBy ? String(o.createdBy).toLowerCase().trim() : '',
-            parentOptions: (this.state.cfgTravelers || []).filter(t => t.email && t.key !== o.key && (t.familyId || '') === (resolvedFamilyId || '')).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
-            onParent: (e) => this.personSetParent(o.key, e.target.value),
-            showFamilyPicker: isCloud && isAdmin && familyPickOptions.length > 0,
-            familyValue: resolvedFamilyId,
-            familyName: familyNameById[resolvedFamilyId] || '',
-            familyPickOptions,
-            onFamily: (e) => this.personSetFamily(o.key, e.target.value),
-            onRemove: () => this.personRemove(o.key),
-            statsOwned, statsPhotos, statsTagged, statsTaggedText,
-            statsCountries, statsByYearText, showByYear: !!statsByYearText,
-            showStats: isCloud,
-          };
-        }).filter(r => uf === 'all' ? true : (r.isUser && (uf === 'active' ? r.active : !r.active)));
-        if (!isCloud || !mySiteAdmin) return rows;
-        // Site admin: group everyone by family, with an "Unassigned" group last.
-        const groups = {};
-        rows.forEach(r => { (groups[r.groupFamilyId] = groups[r.groupFamilyId] || []).push(r); });
-        const ids = Object.keys(groups).filter(id => id !== '__unassigned__').sort((a, b) => (familyNameById[a] || '').localeCompare(familyNameById[b] || ''));
-        if (groups.__unassigned__) ids.push('__unassigned__');
-        const out = [];
-        ids.forEach(id => {
-          out.push({ key: 'hdr-' + id, isHeader: true, notHeader: false, headerLabel: id === '__unassigned__' ? 'No family' : (familyNameById[id] || 'Family') });
-          out.push(...groups[id]);
-        });
-        return out;
-      })(),
+      peopleRows: this.computePeopleRows(),
       usersFilterSeg: [
         { label: 'All', style: (this.state.usersFilter || 'all') === 'all' ? 'flex:1;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.04em;padding:6px 4px;border-radius:7px;cursor:pointer;color:#04111e;background:#5fd3ff;border:1px solid #5fd3ff;' : 'flex:1;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.04em;padding:6px 4px;border-radius:7px;cursor:pointer;color:#9fb3c8;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);', onSelect: () => this.setState({ usersFilter: 'all' }) },
         { label: 'Active', style: (this.state.usersFilter || 'all') === 'active' ? 'flex:1;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.04em;padding:6px 4px;border-radius:7px;cursor:pointer;color:#04111e;background:#7ee0a8;border:1px solid #7ee0a8;' : 'flex:1;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.04em;padding:6px 4px;border-radius:7px;cursor:pointer;color:#9fb3c8;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);', onSelect: () => this.setState({ usersFilter: 'active' }) },
         { label: 'Inactive', style: (this.state.usersFilter || 'all') === 'inactive' ? 'flex:1;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.04em;padding:6px 4px;border-radius:7px;cursor:pointer;color:#04111e;background:#f0a6a6;border:1px solid #f0a6a6;' : 'flex:1;text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.04em;padding:6px 4px;border-radius:7px;cursor:pointer;color:#9fb3c8;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);', onSelect: () => this.setState({ usersFilter: 'inactive' }) },
       ],
-      showUsersFilter: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('admin'),
+      showUsersFilter: this.state.cfgDataSource === 'cloud' && (!!this.state.mySiteAdmin || (this.state.cfgMemberships || []).some(m => m.email === this.state.cloudUserEmail && m.active !== false && m.role === 'admin')),
+      usersFamilyScope: this.state.usersFamilyScope || (this.state.mySiteAdmin ? 'all' : 'mine'),
+      setUsersFamilyScope: (e) => this.setState({ usersFamilyScope: e.target.value }),
+      showUsersFamilyScope: this.state.cfgDataSource === 'cloud',
+      usersFamilyScopeOptions: (() => {
+        if (this.state.mySiteAdmin) {
+          return [{ value: 'all', label: 'All families' }, ...(this.state.cfgFamilies || []).map(f => ({ value: f.id, label: f.name }))];
+        }
+        const homeId = this.myHomeFamilyId();
+        const homeFamObj = (this.state.cfgFamilies || []).find(f => f.id === homeId);
+        const opts = [{ value: 'mine', label: (homeFamObj && homeFamObj.name) || 'My family' }];
+        if (this.myAccessibleFamilyIds().size > 1) opts.push({ value: 'allMine', label: 'All families I have access to' });
+        return opts;
+      })(),
       cfgFormStyle: cfgPill(this.state.cfgDetailsFormDefault),
       cfgFormLabel: this.state.cfgDetailsFormDefault ? 'ON' : 'OFF',
       cfgCardStyle: cfgPill(this.state.cfgDetailsCard),
