@@ -2503,7 +2503,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.9-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.11-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -5173,6 +5173,25 @@ class Component extends DCLogic {
   // Keying by bare key would silently merge two different people into one checkbox.
   // A trip is "theirs" for this purpose if either its ownerEmail matches their email,
   // or its travelers[] tags their key (scoped to the trip's own familyId).
+  // Same merged people source as the People & Family panel: cfgTravelers PLUS a
+  // synthetic row for every membership (account) that has no matching traveler entry
+  // yet — otherwise someone who signed in/was approved but was never explicitly added
+  // as a "person" is invisible here, even though they own/can own trips.
+  backupAllPeople() {
+    const travelerEmails = new Set((this.state.cfgTravelers || []).map(t => String(t.email || '').toLowerCase().trim()).filter(Boolean));
+    const acctByEmail = {};
+    (this.state.cfgMemberships || []).filter(m => m.email && m.active !== false).forEach(m => {
+      const e = String(m.email).toLowerCase().trim();
+      if (travelerEmails.has(e) || acctByEmail[e]) return;
+      acctByEmail[e] = m.familyId;
+    });
+    const synthRows = Object.keys(acctByEmail).map(e => {
+      const local = e.split('@')[0] || e;
+      const label = local.charAt(0).toUpperCase() + local.slice(1);
+      return { key: 'acct:' + e, label, email: e, createdBy: '', familyId: acctByEmail[e] };
+    });
+    return [...(this.state.cfgTravelers || []), ...synthRows];
+  }
   backupUserRows() {
     const map = this.state.backupUsers || {};
     const mkRow = (id, label) => {
@@ -5186,19 +5205,19 @@ class Component extends DCLogic {
     };
     const rows = [mkRow('unassigned', 'Unassigned')];
     const seen = new Set();
-    (this.state.cfgTravelers || []).forEach(t => {
+    this.backupAllPeople().forEach(t => {
       const rowId = t.key + '::' + (t.familyId || '');
       if (seen.has(rowId)) return;
       seen.add(rowId);
       rows.push(mkRow(rowId, t.label || t.email || t.key));
     });
-    // legacy: an ownerEmail on a trip that doesn't match any current traveler row
+    // legacy: an ownerEmail on a trip that doesn't match any current person row
     // (e.g. a deleted person) still gets its own row so their trips aren't silently
     // force-included/excluded by a row the user never sees.
     (this.state.locations || []).forEach(l => {
       const email = l.ownerEmail ? String(l.ownerEmail).toLowerCase().trim() : '';
       if (!email) return;
-      const matchesTraveler = (this.state.cfgTravelers || []).some(t => t.email && String(t.email).toLowerCase().trim() === email);
+      const matchesTraveler = this.backupAllPeople().some(t => t.email && String(t.email).toLowerCase().trim() === email);
       if (!matchesTraveler && !seen.has(email)) { seen.add(email); rows.push(mkRow(email, email)); }
     });
     return rows;
@@ -5219,7 +5238,7 @@ class Component extends DCLogic {
     if (this.state.cfgDataSource !== 'cloud' || this.backupAllChecked()) return all;
     const map = this.state.backupUsers || {};
     const keyByEmail = {};
-    (this.state.cfgTravelers || []).forEach(t => { if (t.email) keyByEmail[String(t.email).toLowerCase().trim()] = t.key + '::' + (t.familyId || ''); });
+    this.backupAllPeople().forEach(t => { if (t.email) keyByEmail[String(t.email).toLowerCase().trim()] = t.key + '::' + (t.familyId || ''); });
     const included = (id) => map[id] !== false;
     return all.filter(l => {
       const ownerEmail = l.ownerEmail ? String(l.ownerEmail).toLowerCase().trim() : '';

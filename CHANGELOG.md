@@ -4,6 +4,20 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.11-beta — Backup list was missing account-only people
+
+### Fixed
+- The backup "include these users" list only read `cfgTravelers`, but the People & Family panel actually shows a merged list — `cfgTravelers` plus a synthesized row for every membership/account that signed in or was approved but was never explicitly added as a "person." Those accounts (and their families) were invisible in the backup list even though they own trips. The backup list now uses the same merged source.
+
+---
+
+## 1.9.10-beta — Code review pass
+
+### Fixed
+- `myTravelerKey()` was defined twice in the logic class. The second, weaker definition (no email trim/case-safety) silently overrode the first, more robust one — removed the duplicate.
+
+---
+
 ## 1.9.9-beta — Backup checkboxes now family-scoped
 
 ### Fixed
