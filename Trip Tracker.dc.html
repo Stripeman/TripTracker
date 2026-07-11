@@ -1144,12 +1144,9 @@
           <div style="width:230px; flex:none; background:rgba(255,255,255,0.02); border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; padding:16px 12px; overflow-y:auto;">
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding:0 4px 12px;">PEOPLE &amp; FAMILIES</div>
             <div style="display:flex; flex-direction:column; gap:5px;">
-              <sc-if value="{{ showFamMgmtUsersNav }}" hint-placeholder-val="{{ true }}">
-                <div onClick="{{ setFamMgmtViewUsers }}" style="{{ famMgmtNavUsersStyle }}"><span>Site User Management</span></div>
-              </sc-if>
-              <div onClick="{{ setFamMgmtViewFamilies }}" style="{{ famMgmtNavFamiliesStyle }}"><span>Families</span></div>
-              <sc-if value="{{ showFamMgmtSiteFamNav }}" hint-placeholder-val="{{ false }}">
-                <div onClick="{{ setFamMgmtViewSiteFam }}" style="{{ famMgmtNavSiteFamStyle }}"><span>Site Family Mgmt</span></div>
+              <div onClick="{{ setFamMgmtViewFamilies }}" style="{{ famMgmtNavFamiliesStyle }}"><span>My Family Management</span></div>
+              <sc-if value="{{ showFamMgmtSiteNav }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ setFamMgmtViewSite }}" style="{{ famMgmtNavSiteStyle }}"><span>Site Management</span></div>
               </sc-if>
               <sc-if value="{{ showFamMgmtPendingNav }}" hint-placeholder-val="{{ false }}">
                 <div onClick="{{ setFamMgmtViewPending }}" style="{{ famMgmtNavPendingStyle }}">
@@ -1191,6 +1188,12 @@
             <button onClick="{{ closeFamilyMgmt }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:9px; padding:8px; cursor:pointer; margin-top:10px;">Close</button>
           </div>
           <div style="flex:1; min-width:0; overflow-y:auto; padding:22px 26px;">
+            <sc-if value="{{ showSiteMgmtSubTabs }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:6px; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:14px;">
+                <div onClick="{{ setFamMgmtViewUsers }}" style="{{ siteMgmtSubUsersStyle }}"><span>Site User Management</span></div>
+                <div onClick="{{ setFamMgmtViewSiteFam }}" style="{{ siteMgmtSubFamStyle }}"><span>Site Family Management</span></div>
+              </div>
+            </sc-if>
             <sc-if value="{{ famMgmtViewUsers }}" hint-placeholder-val="{{ false }}">
               <div style="font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#f1f6fc; margin-bottom:4px;">Site User Management</div>
               <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; line-height:1.55; margin-bottom:12px;">Everyone you can tag on a trip. Give a person an email to let them sign in — then a role and presence appear. People without an email are just names you can pick.</div>
@@ -1621,7 +1624,7 @@
             </sc-if>
 
             <sc-if value="{{ famMgmtViewSiteFam }}" hint-placeholder-val="{{ false }}">
-              <div style="font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#f1f6fc; margin-bottom:16px;">Site Family Mgmt</div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#f1f6fc; margin-bottom:16px;">Site Family Management</div>
 
               <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
                 <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Auto-approve new families</div>
@@ -2907,7 +2910,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.8.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.8.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4193,13 +4196,19 @@ class Component extends DCLogic {
       setFamMgmtViewFamilies: () => this.setFamMgmtView('families'),
       setFamMgmtViewSiteFam: () => this.setFamMgmtView('sitefam'),
       setFamMgmtViewPending: () => this.setFamMgmtView('pending'),
+      setFamMgmtViewSite: () => this.setFamMgmtView((s.famMgmtView === 'users' || s.famMgmtView === 'sitefam') ? s.famMgmtView : 'users'),
       famMgmtNavUsersStyle: famMgmtNavStyle(s.famMgmtView === 'users'),
       famMgmtNavFamiliesStyle: famMgmtNavStyle((s.famMgmtView || 'families') === 'families'),
       famMgmtNavSiteFamStyle: famMgmtNavStyle(s.famMgmtView === 'sitefam'),
       famMgmtNavPendingStyle: famMgmtNavStyle(s.famMgmtView === 'pending'),
+      famMgmtNavSiteStyle: famMgmtNavStyle(s.famMgmtView === 'users' || s.famMgmtView === 'sitefam'),
       showFamMgmtUsersNav: s.cfgDataSource !== 'cloud' || s.mySiteAdmin || (s.cfgMemberships || []).some(m => m.email === s.cloudUserEmail && m.active !== false && (m.role === 'editor' || m.role === 'admin')),
       showFamMgmtPendingNav: s.mySiteAdmin,
       showFamMgmtSiteFamNav: s.mySiteAdmin,
+      showFamMgmtSiteNav: s.mySiteAdmin,
+      showSiteMgmtSubTabs: s.famMgmtView === 'users' || s.famMgmtView === 'sitefam',
+      siteMgmtSubUsersStyle: famMgmtNavStyle(s.famMgmtView === 'users') + 'padding:8px 14px;',
+      siteMgmtSubFamStyle: famMgmtNavStyle(s.famMgmtView === 'sitefam') + 'padding:8px 14px;',
       showFamMgmtSiteAdminSection: s.mySiteAdmin,
       famMgmtPendingCount: (s.cfgAccessRequests || []).length + pendingList.length,
       famMgmtPendingBadge: ((s.cfgAccessRequests || []).length + pendingList.length) > 0 ? (' · ' + ((s.cfgAccessRequests || []).length + pendingList.length)) : '',

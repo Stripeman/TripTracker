@@ -4,6 +4,17 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.8.1-beta
+
+### Changed
+- **People & Family Management nav restructured.** "Site User Management" and "Site
+  Family Mgmt" (renamed "Site Family Management") are no longer separate top-level
+  items — they're now two sub-tabs under a single **"Site Management"** entry
+  (site-admin only). "Families" is renamed **"My Family Management"**. Non-site-admin
+  family admins no longer see a standalone Site User Management tab — they manage their
+  own family's people from My Family Management → their family's detail panel, which
+  already shows the same rich people list scoped to that family.
+
 ## 1.8.0-beta
 
 ### Fixed
