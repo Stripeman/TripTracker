@@ -3697,7 +3697,7 @@ class Component extends DCLogic {
         : 'Copies today\'s shared traveler list into the new per-family storage. Click it to switch the app over to reading/writing people per-family (server-enforced).',
       showFamilySwitcher: s.cfgDataSource === 'cloud' && familyViewOptions.length > 1,
       familyViewOptions,
-      familySwitcherStyle: 'width:100%; margin-top:9px; font-family:\'IBM Plex Mono\',monospace; font-size:10.5px; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid ' + ((activeFamObj && activeFam.color) || 'rgba(56,189,248,0.24)') + '; border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;',
+      familySwitcherStyle: 'width:100%; margin-top:9px; font-family:\'IBM Plex Mono\',monospace; font-size:10.5px; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid ' + ((activeFamObj && activeFamObj.color) || 'rgba(56,189,248,0.24)') + '; border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;',
       familyViewMode: s.familyViewMode || 'active',
       setFamilyViewModeEv: (e) => this.setFamilyViewMode(e.target.value),
       activeFamilyName: (activeFamObj && activeFamObj.name) || '',
