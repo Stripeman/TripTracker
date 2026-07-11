@@ -4,6 +4,25 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.8.3-beta
+
+### Bug
+- **Cross-family privilege escalation via the legacy global role claim.** `cloudRoles`
+  (`reader`/`editor`/`admin`) is the ceiling role across ALL of a user's family
+  memberships — so anyone who is admin of even their own self-created solo family got a
+  global `admin` claim. Several actions still gated on that legacy claim instead of a
+  per-family check, letting any family admin reach across every other family's data:
+  bulk-edit / bulk-reassign-owner (`bulkTargets`/`applyBulk`), claim-all-unowned-trips,
+  site-wide login-stats/analytics export, and `personRemove`. All now require true site
+  admin status or admin membership in the specific family being acted on.
+
+### Cleaned up
+- Deleted ~474 lines of dead template: a pre-redesign "Config" settings tab (the old
+  People/Families UI) that no button could reach anymore, plus its orphaned renderVals
+  entries.
+- Deleted `api-mftt/`, a stale duplicate of `api/` missing recent actions and unused by
+  the deployed app.
+
 ## 1.8.2-beta
 
 ### Fixed

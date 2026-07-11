@@ -657,480 +657,6 @@
         </sc-if>
         </sc-if>
 
-        <sc-if value="{{ showConfigTab }}" hint-placeholder-val="{{ false }}">
-
-        <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:6px;">PEOPLE</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:14px;">Everyone you can tag on a trip. Give a person an email to let them sign in — then a role and presence appear. People without an email are just names you can pick.</div>
-
-          <sc-if value="{{ hasAccessRequests }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-bottom:16px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.26); border-radius:12px; padding:13px 14px;">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#fcd34d; margin-bottom:4px;">ACCESS REQUESTS · {{ accessRequestCount }} PENDING</div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#c9ab63; line-height:1.5; margin-bottom:11px;">Someone asked to get in. Pick a role and family, then approve — that's it, they're added as a person too.</div>
-              <div style="display:flex; flex-direction:column; gap:8px;">
-                <sc-for list="{{ accessRequestRows }}" as="r" hint-placeholder-count="1">
-                  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 11px;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
-                      <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#eaf4fd; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ r.email }}</span>
-                      <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7c8ea6;">{{ r.whenText }}</span>
-                    </div>
-                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">
-                      <select value="{{ r.role }}" onChange="{{ r.onRole }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                        <option value="reader" style="background:#0a1422;">Reader</option>
-                        <option value="editor" style="background:#0a1422;">Editor</option>
-                        <option value="admin" style="background:#0a1422;">Admin</option>
-                      </select>
-                      <sc-if value="{{ r.showFamilyPicker }}" hint-placeholder-val="{{ false }}">
-                        <select value="{{ r.familyId }}" onChange="{{ r.onFamily }}" style="flex:1; min-width:120px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                          <sc-for list="{{ r.familyOptions }}" as="fo" hint-placeholder-count="1">
-                            <option value="{{ fo.value }}" style="background:#0a1422;">{{ fo.label }}</option>
-                          </sc-for>
-                        </select>
-                      </sc-if>
-                      <button onClick="{{ r.onApprove }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:6px 12px; cursor:pointer;">Approve</button>
-                      <button onClick="{{ r.onDecline }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 10px; cursor:pointer;">Decline</button>
-                    </div>
-                  </div>
-                </sc-for>
-              </div>
-            </div>
-          </sc-if>
-
-          <button onClick="{{ addPerson }}" style="width:100%; box-sizing:border-box; margin-bottom:12px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:10px; padding:9px; cursor:pointer;">+ Add person</button>
-
-          <sc-if value="{{ showAccessAdmin }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ exportLoginStats }}" style="width:100%; box-sizing:border-box; margin-bottom:12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:7px; cursor:pointer;">↓ Export login stats (CSV)</button>
-          </sc-if>
-
-          <sc-if value="{{ showUsersFilter }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex; gap:6px; margin-bottom:12px;">
-              <sc-for list="{{ usersFilterSeg }}" as="s" hint-placeholder-count="3"><button onClick="{{ s.onSelect }}" style="{{ s.style }}">{{ s.label }}</button></sc-for>
-            </div>
-          </sc-if>
-
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <sc-for list="{{ peopleRows }}" as="p" hint-placeholder-count="3">
-              <sc-if value="{{ p.isHeader }}" hint-placeholder-val="{{ false }}">
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; color:#6b7d94; margin:14px 0 2px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06);">{{ p.headerLabel }}</div>
-              </sc-if>
-              <sc-if value="{{ p.notHeader }}" hint-placeholder-val="{{ true }}">
-              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:11px 12px;">
-
-                <!-- VIEW MODE -->
-                <sc-if value="{{ p.viewing }}" hint-placeholder-val="{{ true }}">
-                  <div onMouseMove="{{ p.onHover }}" onMouseLeave="{{ hideStat }}" style="display:flex; align-items:center; gap:10px;">
-                    <span style="width:14px; height:14px; flex:none; border-radius:50%; background:{{ p.colorLive }}; box-shadow:0 0 8px {{ p.colorGlow }};"></span>
-                    <div style="flex:1; min-width:0;">
-                      <div style="display:flex; align-items:center; gap:7px;">
-                        <span style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; font-weight:600; color:#eaf4fd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.label }}</span>
-                        <sc-if value="{{ p.online }}" hint-placeholder-val="{{ false }}">
-                          <span title="Online now" style="width:7px; height:7px; flex:none; border-radius:50%; background:#34d399; box-shadow:0 0 7px #34d399;"></span>
-                        </sc-if>
-                      </div>
-                      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.emailText }}</div>
-                    </div>
-                    <sc-if value="{{ p.statusLabel }}" hint-placeholder-val="{{ false }}">
-                      <span style="{{ p.statusStyle }}">{{ p.statusLabel }}</span>
-                    </sc-if>
-                    <sc-if value="{{ p.roleLabel }}" hint-placeholder-val="{{ false }}">
-                      <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.14em; color:#7fd4f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:5px; padding:2px 7px;">{{ p.roleLabel }}</span>
-                    </sc-if>
-                    <sc-if value="{{ p.canEdit }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ p.onEdit }}" title="Edit" style="flex:none; width:28px; height:28px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.24); color:#9fd6f0; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-                      </button>
-                    </sc-if>
-                  </div>
-                </sc-if>
-
-                <!-- EDIT MODE -->
-                <sc-if value="{{ p.editing }}" hint-placeholder-val="{{ false }}">
-                  <div style="display:flex; align-items:center; gap:7px;">
-                    <input type="color" defaultValue="{{ p.color }}" onChange="{{ p.onColor }}" onBlur="{{ p.onCommit }}" title="Colour" style="width:28px; height:28px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:7px; background:none; cursor:pointer;">
-                    <input defaultValue="{{ p.label }}" onChange="{{ p.onLabel }}" onBlur="{{ p.onCommit }}" placeholder="Name" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:7px 9px; outline:none;">
-                  </div>
-                  <sc-if value="{{ p.canSetEmail }}" hint-placeholder-val="{{ false }}">
-                    <input defaultValue="{{ p.email }}" onChange="{{ p.onEmail }}" onBlur="{{ p.onCommit }}" type="email" placeholder="email — lets them sign in (optional)" style="width:100%; box-sizing:border-box; margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#bcd2e6; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.09); border-radius:7px; padding:7px 9px; outline:none;">
-                  </sc-if>
-                  <sc-if value="{{ p.showStats }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:9px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 10px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9fb3c8; display:flex; flex-direction:column; gap:3px;">
-                      <div style="display:flex; justify-content:space-between;"><span>Trips owned</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsOwned }}</span></div>
-                      <div style="display:flex; justify-content:space-between;"><span>Countries visited</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsCountries }}</span></div>
-                      <div style="display:flex; justify-content:space-between;"><span>Thumbnails</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsPhotos }}</span></div>
-                      <div style="display:flex; justify-content:space-between;"><span>Tagged in other trips</span><span style="color:#eaf4fd; font-weight:600;">{{ p.statsTagged }}</span></div>
-                      <sc-if value="{{ p.statsTaggedText }}" hint-placeholder-val="{{ false }}">
-                        <div style="color:#7c8ea6; font-size:9.5px; line-height:1.4; margin-top:1px;">{{ p.statsTaggedText }}</div>
-                      </sc-if>
-                      <sc-if value="{{ p.showByYear }}" hint-placeholder-val="{{ false }}">
-                        <div style="border-top:1px solid rgba(255,255,255,0.06); margin-top:4px; padding-top:4px; color:#7c8ea6; font-size:9.5px; line-height:1.4;">By year: {{ p.statsByYearText }}</div>
-                      </sc-if>
-                    </div>
-                  </sc-if>
-                  <sc-if value="{{ p.canSetRole }}" hint-placeholder-val="{{ false }}">
-                    <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
-                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">ROLE</span>
-                      <select value="{{ p.role }}" onChange="{{ p.onRole }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                        <option value="" style="background:#0a1422;">No access</option>
-                        <option value="reader" style="background:#0a1422;">Reader</option>
-                        <option value="editor" style="background:#0a1422;">Editor</option>
-                        <option value="admin" style="background:#0a1422;">Admin</option>
-                      </select>
-                    </div>
-                  </sc-if>
-                  <sc-if value="{{ p.showFamilyPicker }}" hint-placeholder-val="{{ false }}">
-                    <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
-                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">FAMILY</span>
-                      <select value="{{ p.familyValue }}" onChange="{{ p.onFamily }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                        <sc-for list="{{ p.familyPickOptions }}" as="fo" hint-placeholder-count="2">
-                          <option value="{{ fo.value }}" style="background:#0a1422;">{{ fo.label }}</option>
-                        </sc-for>
-                      </select>
-                    </div>
-                  </sc-if>
-                  <sc-if value="{{ p.canSetParent }}" hint-placeholder-val="{{ false }}">
-                    <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
-                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">OWNED BY</span>
-                      <select value="{{ p.parentValue }}" onChange="{{ p.onParent }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                        <option value="" style="background:#0a1422;">— Unassigned —</option>
-                        <sc-for list="{{ p.parentOptions }}" as="po" hint-placeholder-count="2">
-                          <option value="{{ po.value }}" style="background:#0a1422;">{{ po.label }}</option>
-                        </sc-for>
-                      </select>
-                    </div>
-                  </sc-if>
-                  <div style="display:flex; gap:7px; margin-top:9px;">
-                    <sc-if value="{{ p.isAdding }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ p.onAdd }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">Add</button>
-                      <button onClick="{{ p.onAddCancel }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px; cursor:pointer;">Cancel</button>
-                    </sc-if>
-                    <sc-if value="{{ p.editingExisting }}" hint-placeholder-val="{{ true }}">
-                      <button onClick="{{ p.onDone }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">Save</button>
-                      <button onClick="{{ p.onCancel }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px; cursor:pointer;">Cancel</button>
-                      <sc-if value="{{ p.canSetActive }}" hint-placeholder-val="{{ false }}">
-                        <button onClick="{{ p.onToggleActive }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#c2cfde; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:7px 13px; cursor:pointer;">{{ p.activeBtnLabel }}</button>
-                      </sc-if>
-                    </sc-if>
-                  </div>
-                  <sc-if value="{{ p.isLastAdmin }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a7a52; line-height:1.5;">This is the last active admin — can't be deactivated or deleted.</div>
-                  </sc-if>
-                  <sc-if value="{{ p.canDelete }}" hint-placeholder-val="{{ false }}">
-                    <button onClick="{{ p.onRemove }}" title="Delete person" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#f0a6a6; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:7px; cursor:pointer;">Delete person</button>
-                  </sc-if>
-                  <sc-if value="{{ p.deleteBlockedMsg }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8a7a52; line-height:1.5;">{{ p.deleteBlockedMsg }}</div>
-                  </sc-if>
-                  <sc-if value="{{ p.canDeleteUser }}" hint-placeholder-val="{{ false }}">
-                    <button onClick="{{ p.onDeleteUser }}" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#f0a6a6; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:7px; cursor:pointer;">Delete user…</button>
-                  </sc-if>
-                </sc-if>
-              </div>
-              </sc-if>
-            </sc-for>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ showTripsTab }}" hint-placeholder-val="{{ false }}">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#5d7088; margin-bottom:6px;">TRIP MANAGEMENT</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#5d7088; margin-bottom:6px;">BULK EDIT</div>
-          <div style="background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.16); border-radius:9px; padding:9px 11px; margin-bottom:13px;">
-            <div style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fc4dd; line-height:1.5;">Trips are chosen by the <strong style="color:#cfe6f5;">filters on the left</strong>. Tick the fields to change, then apply.</div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7fd6f5; margin-top:6px;">{{ bulkCount }} of your trips match</div>
-          </div>
-
-          <div style="display:flex; flex-direction:column;">
-            <sc-if value="{{ bulkCanOwner }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-bottom:11px;">
-                <button onClick="{{ toggleBulkOwner }}" style="display:flex; align-items:center; gap:9px; width:100%; background:none; border:none; cursor:pointer; padding:0; text-align:left;">
-                  <span style="width:16px; height:16px; flex:none; border-radius:4px; border:1px solid rgba(95,211,255,0.45); display:flex; align-items:center; justify-content:center;"><sc-if value="{{ bulkChkOwner }}" hint-placeholder-val="{{ false }}"><span style="width:9px; height:9px; border-radius:2px; background:#5fd3ff; box-shadow:0 0 6px #5fd3ff88;"></span></sc-if></span>
-                  <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Owner <span style="color:#6b7d94; font-size:10px;">(admin)</span></span>
-                </button>
-                <sc-if value="{{ bulkChkOwner }}" hint-placeholder-val="{{ false }}">
-                  <select value="{{ bulkOwner }}" onChange="{{ setBulkOwner }}" style="width:100%; box-sizing:border-box; margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.3); border-radius:8px; padding:7px 9px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                    <option value="" style="background:#0a1422;">Choose a person…</option>
-                    <sc-for list="{{ bulkOwnerOptions }}" as="o" hint-placeholder-count="2"><option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option></sc-for>
-                  </select>
-                </sc-if>
-              </div>
-            </sc-if>
-
-            <div style="margin-bottom:11px;">
-              <button onClick="{{ toggleBulkVis }}" style="display:flex; align-items:center; gap:9px; width:100%; background:none; border:none; cursor:pointer; padding:0; text-align:left;">
-                <span style="width:16px; height:16px; flex:none; border-radius:4px; border:1px solid rgba(95,211,255,0.45); display:flex; align-items:center; justify-content:center;"><sc-if value="{{ bulkChkVis }}" hint-placeholder-val="{{ false }}"><span style="width:9px; height:9px; border-radius:2px; background:#5fd3ff; box-shadow:0 0 6px #5fd3ff88;"></span></sc-if></span>
-                <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Who can see it</span>
-              </button>
-              <sc-if value="{{ bulkChkVis }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; gap:6px; margin-top:7px;"><sc-for list="{{ bulkVisSeg }}" as="s" hint-placeholder-count="3"><button onClick="{{ s.onSelect }}" style="{{ s.style }}">{{ s.label }}</button></sc-for></div>
-                <sc-if value="{{ bulkVisShared }}" hint-placeholder-val="{{ false }}">
-                  <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:7px;"><sc-for list="{{ bulkShareChips }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</button></sc-for></div>
-                </sc-if>
-              </sc-if>
-            </div>
-
-            <div style="margin-bottom:11px;">
-              <button onClick="{{ toggleBulkVisit }}" style="display:flex; align-items:center; gap:9px; width:100%; background:none; border:none; cursor:pointer; padding:0; text-align:left;">
-                <span style="width:16px; height:16px; flex:none; border-radius:4px; border:1px solid rgba(95,211,255,0.45); display:flex; align-items:center; justify-content:center;"><sc-if value="{{ bulkChkVisit }}" hint-placeholder-val="{{ false }}"><span style="width:9px; height:9px; border-radius:2px; background:#5fd3ff; box-shadow:0 0 6px #5fd3ff88;"></span></sc-if></span>
-                <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Visit type</span>
-              </button>
-              <sc-if value="{{ bulkChkVisit }}" hint-placeholder-val="{{ false }}"><div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:7px;"><sc-for list="{{ bulkVisitChips }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</button></sc-for></div></sc-if>
-            </div>
-
-            <div style="margin-bottom:11px;">
-              <button onClick="{{ toggleBulkTravelers }}" style="display:flex; align-items:center; gap:9px; width:100%; background:none; border:none; cursor:pointer; padding:0; text-align:left;">
-                <span style="width:16px; height:16px; flex:none; border-radius:4px; border:1px solid rgba(95,211,255,0.45); display:flex; align-items:center; justify-content:center;"><sc-if value="{{ bulkChkTravelers }}" hint-placeholder-val="{{ false }}"><span style="width:9px; height:9px; border-radius:2px; background:#5fd3ff; box-shadow:0 0 6px #5fd3ff88;"></span></sc-if></span>
-                <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Travelers</span>
-              </button>
-              <sc-if value="{{ bulkChkTravelers }}" hint-placeholder-val="{{ false }}"><div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:7px;"><sc-for list="{{ bulkTravelerChips }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</button></sc-for></div></sc-if>
-            </div>
-
-            <div style="margin-bottom:11px;">
-              <button onClick="{{ toggleBulkTrip }}" style="display:flex; align-items:center; gap:9px; width:100%; background:none; border:none; cursor:pointer; padding:0; text-align:left;">
-                <span style="width:16px; height:16px; flex:none; border-radius:4px; border:1px solid rgba(95,211,255,0.45); display:flex; align-items:center; justify-content:center;"><sc-if value="{{ bulkChkTrip }}" hint-placeholder-val="{{ false }}"><span style="width:9px; height:9px; border-radius:2px; background:#5fd3ff; box-shadow:0 0 6px #5fd3ff88;"></span></sc-if></span>
-                <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Trip type</span>
-              </button>
-              <sc-if value="{{ bulkChkTrip }}" hint-placeholder-val="{{ false }}"><div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:7px;"><sc-for list="{{ bulkTripChips }}" as="c" hint-placeholder-count="2"><button onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</button></sc-for></div></sc-if>
-            </div>
-
-            <div style="margin-bottom:4px;">
-              <button onClick="{{ toggleBulkNotes }}" style="display:flex; align-items:center; gap:9px; width:100%; background:none; border:none; cursor:pointer; padding:0; text-align:left;">
-                <span style="width:16px; height:16px; flex:none; border-radius:4px; border:1px solid rgba(95,211,255,0.45); display:flex; align-items:center; justify-content:center;"><sc-if value="{{ bulkChkNotes }}" hint-placeholder-val="{{ false }}"><span style="width:9px; height:9px; border-radius:2px; background:#5fd3ff; box-shadow:0 0 6px #5fd3ff88;"></span></sc-if></span>
-                <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Notes <span style="color:#6b7d94; font-size:10px;">(replaces)</span></span>
-              </button>
-              <sc-if value="{{ bulkChkNotes }}" hint-placeholder-val="{{ false }}"><textarea value="{{ bulkNotes }}" onChange="{{ setBulkNotes }}" placeholder="New notes for all matching trips" style="width:100%; box-sizing:border-box; margin-top:7px; min-height:50px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.3); border-radius:8px; padding:8px 10px; outline:none; resize:vertical;"></textarea></sc-if>
-            </div>
-
-            <sc-if value="{{ bulkAnyField }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ askBulk }}" style="width:100%; box-sizing:border-box; margin-top:6px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#7fe3ff,#38bdf8); border:none; border-radius:9px; padding:10px; cursor:pointer;">Apply to {{ bulkCount }} trips</button>
-              <sc-if value="{{ bulkConfirm }}" hint-placeholder-val="{{ false }}">
-                <div style="margin-top:10px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.32); border-radius:10px; padding:11px 12px;">
-                  <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#f1d79a; line-height:1.5; margin-bottom:10px;">Apply the ticked changes to {{ bulkCount }} trips? This overwrites those fields and can't be auto-undone.</div>
-                  <div style="display:flex; gap:8px;">
-                    <button onClick="{{ cancelBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:8px; cursor:pointer;">Cancel</button>
-                    <button onClick="{{ applyBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; color:#04111e; background:#fbbf24; border:1px solid #fbbf24; border-radius:8px; padding:8px; cursor:pointer;">Apply {{ bulkCount }}</button>
-                  </div>
-                </div>
-              </sc-if>
-            </sc-if>
-          </div>
-
-          <sc-if value="{{ showClaimAll }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:18px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.09);"></div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.2em; color:#5d7088; margin-bottom:6px;">UNCLAIMED TRIPS</div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:12px;">Older trips with no owner yet — assign each to a person, or claim them all to yourself.</div>
-            <button onClick="{{ askClaimAll }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe0f2; background:rgba(56,189,248,0.08); border:1px solid rgba(95,211,255,0.3); border-radius:9px; padding:9px 12px; cursor:pointer;">Assign all {{ unownedCount }} to me</button>
-            <sc-if value="{{ confirmClaim }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-top:10px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.32); border-radius:10px; padding:11px 12px;">
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#f1d79a; line-height:1.5; margin-bottom:10px;">Assign all {{ unownedCount }} unowned trips to your account? This can't be auto-undone.</div>
-                <div style="display:flex; gap:8px;">
-                  <button onClick="{{ cancelClaimAll }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:8px; cursor:pointer;">Cancel</button>
-                  <button onClick="{{ claimAllUnowned }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:700; color:#04111e; background:#fbbf24; border:1px solid #fbbf24; border-radius:8px; padding:8px; cursor:pointer;">Claim {{ unownedCount }}</button>
-                </div>
-              </div>
-            </sc-if>
-          </sc-if>
-
-          <sc-if value="{{ unownedCount }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex; flex-direction:column; gap:8px; margin-top:16px;">
-              <sc-for list="{{ unclaimedTrips }}" as="t" hint-placeholder-count="3">
-                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:11px 12px;">
-                  <div style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; font-weight:600; color:#eaf4fd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ t.place }}</div>
-                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-top:2px;">{{ t.dates }}</div>
-                  <div style="display:flex; align-items:center; gap:7px; margin-top:9px;">
-                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">ASSIGN TO</span>
-                    <select value="" onChange="{{ t.onAssign }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                      <option value="" style="background:#0a1422;">Choose a person…</option>
-                      <sc-for list="{{ t.ownerOptions }}" as="o" hint-placeholder-count="2">
-                        <option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option>
-                      </sc-for>
-                    </select>
-                  </div>
-                </div>
-              </sc-for>
-            </div>
-          </sc-if>
-          <sc-if value="{{ noUnclaimed }}" hint-placeholder-val="{{ true }}">
-            <div style="margin-top:14px; text-align:center; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#7ee0a8;">✓ Every trip has an owner.</div>
-          </sc-if>
-        </sc-if>
-
-        </sc-if>
-
-        <sc-if value="{{ isCloudSource }}" hint-placeholder-val="{{ false }}">
-          <div style="margin:20px 0 16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);"></div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:6px;">MY FAMILIES</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:14px;">A family owns its own trips and travelers. You can belong to more than one — your own, plus any that have invited you in.</div>
-
-          <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
-            <sc-for list="{{ myFamilyRows }}" as="f" hint-placeholder-count="1">
-              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:11px 13px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                <div>
-                  <div style="font-family:'Space Grotesk',sans-serif; font-size:13.5px; font-weight:600; color:#eaf4fd;">{{ f.name }}</div>
-                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; margin-top:2px;">{{ f.roleLabel }}<sc-if value="{{ f.pending }}" hint-placeholder-val="{{ false }}"> · awaiting site-admin approval</sc-if></div>
-                </div>
-                <button onClick="{{ f.onMakeActive }}" style="{{ f.activeBtnStyle }}">{{ f.activeBtnLabel }}</button>
-              </div>
-            </sc-for>
-          </div>
-
-          <sc-if value="{{ hasActiveFamily }}" hint-placeholder-val="{{ false }}">
-            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:13px 14px; margin-bottom:16px;">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">MEMBERS OF {{ activeFamilyName }}</div>
-              <div style="display:flex; flex-direction:column; gap:7px;">
-                <sc-for list="{{ activeFamilyMemberRows }}" as="m" hint-placeholder-count="1">
-                  <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 9px;">
-                    <span style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#dbe6f2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ m.email }}</span>
-                    <sc-if value="{{ m.noAccount }}" hint-placeholder-val="{{ false }}">
-                      <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.1em; color:#7c8ea6; border:1px solid rgba(255,255,255,0.14); border-radius:5px; padding:1px 5px;">NO ACCOUNT</span>
-                    </sc-if>
-                    <sc-if value="{{ m.inactive }}" hint-placeholder-val="{{ false }}">
-                      <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.1em; color:#e9a3a3;">INACTIVE</span>
-                    </sc-if>
-                    <sc-if value="{{ m.canManage }}" hint-placeholder-val="{{ false }}">
-                      <sc-if value="{{ m.hasRoleSelect }}" hint-placeholder-val="{{ true }}">
-                        <select value="{{ m.role }}" onChange="{{ m.onRoleChange }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:6px; padding:4px 6px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                          <option value="reader" style="background:#0a1422;">Reader</option>
-                          <option value="editor" style="background:#0a1422;">Editor</option>
-                          <option value="admin" style="background:#0a1422;">Admin</option>
-                        </select>
-                      </sc-if>
-                      <button onClick="{{ m.onRemove }}" title="Remove from family" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
-                    </sc-if>
-                    <sc-if value="{{ m.cantManage }}" hint-placeholder-val="{{ true }}">
-                      <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6;">{{ m.roleLabel }}</span>
-                    </sc-if>
-                  </div>
-                </sc-for>
-              </div>
-              <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                  <input value="{{ newNonAccountName }}" onChange="{{ setNewNonAccountName }}" placeholder="Add family member (no email) — e.g. a kid" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
-                  <button onClick="{{ addNonAccountMemberClick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Add</button>
-                </div>
-                <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#7c5c5c;">DANGER ZONE</span>
-                  <button onClick="{{ askDeleteActiveFamily }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:6px 11px; cursor:pointer;">Delete this family…</button>
-                </div>
-              </sc-if>
-            </div>
-          </sc-if>
-
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:13px 14px; margin-bottom:16px;">
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">CREATE A NEW FAMILY</div>
-            <div style="display:flex; gap:8px;">
-              <input value="{{ newFamilyName }}" onChange="{{ setNewFamilyName }}" placeholder="e.g. The Andersons" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:8px 10px; outline:none;"/>
-              <button onClick="{{ createFamily }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Create</button>
-            </div>
-            <sc-if value="{{ autoApproveFamilies }}" hint-placeholder-val="{{ false }}">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7ee0a8; margin-top:7px;">New families are auto-approved right now.</div>
-            </sc-if>
-            <sc-if value="{{ notAutoApproveFamilies }}" hint-placeholder-val="{{ true }}">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; margin-top:7px;">New families need site-admin approval before they can be used.</div>
-            </sc-if>
-          </div>
-
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:6px;">FAMILIES THAT CAN SEE OURS</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:10px;">Invite a whole family to view (or edit) your active family's trips. Admin-no-delete lets them edit but never delete.</div>
-          <div style="display:flex; gap:8px; margin-bottom:10px;">
-            <select value="{{ shareTargetFamilyId }}" onChange="{{ setShareTargetFamilyId }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:8px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-              <option value="" style="background:#0a1422;">Choose a family…</option>
-              <sc-for list="{{ otherFamilyOptions }}" as="o" hint-placeholder-count="1">
-                <option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option>
-              </sc-for>
-            </select>
-            <select value="{{ shareTargetRole }}" onChange="{{ setShareTargetRole }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:8px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-              <option value="reader" style="background:#0a1422;">Reader</option>
-              <option value="editor" style="background:#0a1422;">Editor</option>
-              <option value="admin-no-delete" style="background:#0a1422;">Admin (no delete)</option>
-            </select>
-            <button onClick="{{ inviteFamilyShare }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Invite</button>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:18px;">
-            <sc-for list="{{ myOutgoingShares }}" as="sh" hint-placeholder-count="1">
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 10px;">
-                <span>{{ sh.label }}</span>
-                <button onClick="{{ sh.onRemove }}" title="Remove access" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
-              </div>
-            </sc-for>
-          </div>
-
-          <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:6px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:8px;">SITE ADMIN</div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; line-height:1.5; margin-bottom:10px;">Primary admin(s) — set via the <span style="color:#c8d2e0;">SITE_ADMIN_EMAIL</span> environment variable, not editable here (a failsafe so no one gets locked out): <span style="color:#eaf4fd;">{{ primaryAdminEmailsText }}</span></div>
-
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ADDITIONAL SITE ADMINS</div>
-              <sc-if value="{{ hasExtraSiteAdmins }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
-                  <sc-for list="{{ extraSiteAdminRows }}" as="sa" hint-placeholder-count="1">
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px;">
-                      <span>{{ sa.email }}</span>
-                      <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
-                        <button onClick="{{ sa.onRemove }}" title="Remove site admin" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
-                      </sc-if>
-                    </div>
-                  </sc-for>
-                </div>
-              </sc-if>
-              <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; gap:8px; margin-bottom:12px;">
-                  <input value="{{ newSiteAdminEmail }}" onChange="{{ setNewSiteAdminEmail }}" placeholder="new-admin@example.com" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
-                  <button onClick="{{ addSiteAdminClick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Add admin</button>
-                </div>
-              </sc-if>
-              <sc-if value="{{ showSiteAdminReadOnlyNote }}" hint-placeholder-val="{{ false }}">
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-bottom:12px;">Only a primary admin can add or remove site admins.</div>
-              </sc-if>
-
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c8d2e0;">Auto-approve new families</div>
-                <button onClick="{{ toggleAutoApproveFamilies }}" style="{{ autoApproveToggleStyle }}">{{ autoApproveToggleLabel }}</button>
-              </div>
-
-              <sc-if value="{{ hasPendingFamilies }}" hint-placeholder-val="{{ false }}">
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PENDING APPROVAL</div>
-                <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:14px;">
-                  <sc-for list="{{ pendingFamilyRows }}" as="pf" hint-placeholder-count="1">
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(251,191,36,0.05); border:1px solid rgba(251,191,36,0.22); border-radius:8px; padding:8px 10px;">
-                      <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd;">{{ pf.name }}</span>
-                      <button onClick="{{ pf.onApprove }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:999px; padding:5px 11px; cursor:pointer;">Approve</button>
-                    </div>
-                  </sc-for>
-                </div>
-              </sc-if>
-
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ASSIGN A PERSON TO A FAMILY</div>
-              <div style="display:flex; gap:8px; margin-bottom:14px;">
-                <input value="{{ assignEmail }}" onChange="{{ setAssignEmail }}" placeholder="person@example.com" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
-                <select value="{{ assignFamilyId }}" onChange="{{ setAssignFamilyId }}" style="flex:none; width:150px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:7px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                  <option value="" style="background:#0a1422;">Family…</option>
-                  <sc-for list="{{ allFamilyOptions }}" as="o" hint-placeholder-count="1">
-                    <option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option>
-                  </sc-for>
-                </select>
-                <select value="{{ assignRole }}" onChange="{{ setAssignRole }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:7px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                  <option value="reader" style="background:#0a1422;">Reader</option>
-                  <option value="editor" style="background:#0a1422;">Editor</option>
-                  <option value="admin" style="background:#0a1422;">Admin</option>
-                </select>
-                <button onClick="{{ assignUserToFamily }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Assign</button>
-              </div>
-
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ALL FAMILIES</div>
-              <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
-                <sc-for list="{{ allFamilyRows }}" as="af" hint-placeholder-count="1">
-                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 10px;">
-                    <span>{{ af.label }}</span>
-                    <button onClick="{{ af.onDelete }}" title="Delete family" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
-                  </div>
-                </sc-for>
-              </div>
-
-              <button onClick="{{ migrateLegacyFamilies }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Migrate legacy data → default family</button>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:6px; line-height:1.5;">One-time, safe to click more than once. Moves the old flat access-list into a "The Remsiks" family so existing trips/roles keep working under the new model.</div>
-            </div>
-          </sc-if>
-        </sc-if>
-        </sc-if>
 
           </div>
         </div>
@@ -2910,7 +2436,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.8.2-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.8.3-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4295,7 +3821,7 @@ class Component extends DCLogic {
   }
   // Admin-only: load per-user login analytics + trip counts for the access-list hover bubble.
   async loadLoginStats() {
-    if (this.state.cfgDataSource !== 'cloud' || !(this.state.cloudRoles || []).includes('admin')) return;
+    if (this.state.cfgDataSource !== 'cloud' || !this.state.mySiteAdmin) return;
     try {
       const res = await fetch('/api/presence?stats=1', { cache: 'no-store' });
       if (!res.ok) return;
@@ -6328,9 +5854,15 @@ class Component extends DCLogic {
     this.setState({ toastMsg: msg });
     this._toastTimer = setTimeout(() => this.setState({ toastMsg: '' }), 2200);
   }
-  // ---- bulk edit (Trips tab): target set = LEFT filters ∩ trips I own (admin: all) ----
+  // Family ids I administer (site admin bypasses this everywhere it's checked).
+  myAdminFamilyIds() {
+    const email = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    return new Set((this.state.cfgMemberships || []).filter(m => m.email === email && m.active !== false && m.role === 'admin').map(m => m.familyId));
+  }
+  // ---- bulk edit (Trips tab): target set = LEFT filters ∩ (trips I own, OR trips in a family I administer, OR every trip for a site admin) ----
   bulkTargets() {
-    return (this.state.locations || []).filter(l => this.passesFilter(l) && (this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin') || this.tripIsMine(l)));
+    const adminFamIds = this.myAdminFamilyIds();
+    return (this.state.locations || []).filter(l => this.passesFilter(l) && (this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin || adminFamIds.has(l.familyId) || this.tripIsMine(l)));
   }
   toggleBulkField(k) { this.setState(s => ({ bulk: { ...s.bulk, fields: { ...s.bulk.fields, [k]: !s.bulk.fields[k] } } })); }
   setBulkVal(k, v) { this.setState(s => ({ bulk: { ...s.bulk, [k]: v } })); }
@@ -6340,7 +5872,7 @@ class Component extends DCLogic {
   applyBulk() {
     const b = this.state.bulk, fl = b.fields;
     const ids = new Set(this.bulkTargets().map(l => l.id));
-    const isAdmin = (this.state.cloudRoles || []).includes('admin');
+    const isAdmin = this.state.mySiteAdmin || this.myAdminFamilyIds().size > 0;
     const now = new Date().toISOString();
     const emails = b.vis === 'shared' ? [...new Set((b.shareKeys || []).map(k => this.travelerEmail(k)).filter(Boolean))] : [];
     const propChange = fl.notes || fl.visit || fl.travelers || fl.trip || fl.vis;
@@ -7123,7 +6655,8 @@ class Component extends DCLogic {
     const p = (this.state.cfgTravelers || []).find(o => o.key === key);
     if (!p) return;
     if (this.personUsedOnTrip(key)) { return; } // guarded in UI too
-    const isAdmin = (this.state.cloudRoles || []).includes('admin');
+    const theirFamilyId = p.familyId || ((this.state.cfgMemberships || []).find(m => p.email && m.email === String(p.email).toLowerCase().trim() && m.active !== false) || {}).familyId;
+    const isAdmin = this.state.mySiteAdmin || this.myAdminFamilyIds().has(theirFamilyId);
     const meEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
     const mine = !p.createdBy || String(p.createdBy).toLowerCase().trim() === meEmail;
     if (this.state.cfgDataSource === 'cloud' && !isAdmin && !mine) return; // not yours
@@ -7855,15 +7388,10 @@ class Component extends DCLogic {
       settingsTab: this.state.settingsTab,
       tabFiltersStyle: tabBtnStyle(this.state.settingsTab === 'filters'),
       tabSystemStyle: tabBtnStyle(this.state.settingsTab === 'system'),
-      tabConfigStyle: tabBtnStyle(this.state.settingsTab === 'config'),
       tabTripsStyle: tabBtnStyle(this.state.settingsTab === 'trips'),
       tabStorageStyle: tabBtnStyle(this.state.settingsTab === 'storage'),
       showFiltersTab: this.state.settingsTab === 'filters',
       showSystemTab: this.state.settingsTab === 'system',
-      showConfigTab: this.state.settingsTab === 'config',
-      showFamiliesSection: this.state.settingsTab === 'config' && this.state.cfgDataSource === 'cloud',
-      showPeopleFamiliesNav: (this.state.cfgDataSource !== 'cloud') || (this.state.cloudRoles || []).includes('editor') || this.state.cfgDataSource === 'cloud',
-      canAdminCloud: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('admin'),
       canEditCloud: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('editor'),
       canTripsTab: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('editor'),
       showTripsTab: this.state.settingsTab === 'trips' && (this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('editor')),
@@ -7872,7 +7400,6 @@ class Component extends DCLogic {
       showStorageTab: this.state.settingsTab === 'storage',
       setTabFilters: () => this.setSettingsTab('filters'),
       setTabSystem: () => this.setSettingsTab('system'),
-      setTabConfig: () => this.setSettingsTab('config'),
       setTabStorage: () => this.setSettingsTab('storage'),
       cfgVersion: this.state.cfgVersion,
       dataEditorsSettings: [
@@ -7881,9 +7408,9 @@ class Component extends DCLogic {
         editorGroup('Statuses', 'status', this.state.cfgStatuses, false),
       ],
       addPerson: () => this.addPerson(),
-      showClaimAll: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('admin'),
+      showClaimAll: this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin,
       unownedCount: (this.state.locations || []).filter(l => this.tripUnassigned(l)).length,
-      noUnclaimed: (this.state.cloudRoles || []).includes('admin') && this.state.cfgDataSource === 'cloud' && (this.state.locations || []).filter(l => this.tripUnassigned(l)).length === 0,
+      noUnclaimed: this.state.mySiteAdmin && this.state.cfgDataSource === 'cloud' && (this.state.locations || []).filter(l => this.tripUnassigned(l)).length === 0,
       confirmClaim: this.state.confirmClaim,
       askClaimAll: () => this.askClaimAll(),
       cancelClaimAll: () => this.cancelClaimAll(),
@@ -7904,7 +7431,7 @@ class Component extends DCLogic {
       bulkFields: this.state.bulk.fields,
       bulkCount: this.bulkTargets().length,
       bulkConfirm: this.state.bulkConfirm,
-      bulkCanOwner: (this.state.cloudRoles || []).includes('admin') && this.state.cfgDataSource === 'cloud',
+      bulkCanOwner: (this.state.mySiteAdmin || this.myAdminFamilyIds().size > 0) && this.state.cfgDataSource === 'cloud',
       bulkOwner: this.state.bulk.owner,
       bulkNotes: this.state.bulk.notes,
       bulkOwnerOptions: (this.state.cfgTravelers || []).filter(t => t.email).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
@@ -8146,8 +7673,8 @@ class Component extends DCLogic {
         return { key: o.key, letter, title: o.label + (hasEmail ? ' · ' + o.email : ' · no email set'), style, onToggle: () => { if (hasEmail) this.togglePermShare(o.key); } };
       }),
       selectedReadOnly: !!selected && !canEditSelected && (this.state.cloudRoles || []).includes('editor'),
-      canAdmin: this.state.cfgDataSource !== 'cloud' || (this.state.cloudRoles || []).includes('admin'),
-      showAccessAdmin: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('admin'),
+      canAdmin: this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin,
+      showAccessAdmin: this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin,
       exportLoginStats: () => this.exportLoginStats(),
       accessRows: (this.state.accessList || []).map((r, i) => ({
         email: r.email, role: r.role,
