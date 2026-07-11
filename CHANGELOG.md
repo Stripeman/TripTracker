@@ -4,6 +4,29 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.1-beta — Staging bugfixes (post phase-2 cutover)
+
+### Bug
+- **Adding a person went to the wrong family.** "+ Add person" in Site User
+  Management always used the left panel's active family, not whichever family you'd
+  browsed to via that screen's own FAMILY dropdown — so a site admin viewing "The
+  Smiths" could silently add a new person to their own family instead.
+- **No way to add a person from "My Family Management".** That per-family panel had no
+  "+ Add person" button at all — it only ever existed on Site User Management, which
+  is now gated behind Site Management (site-admin only), leaving regular family admins
+  with no way to add anyone. Added an "+ Add person" button directly to the family
+  detail panel, scoped to the family being viewed.
+- **Can't reassign a person's family from "My Family Management".** The FAMILY (and
+  OWNED BY) picker only existed in the Site User Management copy of the person editor
+  — the condensed version built for the per-family panel was missing both sections
+  entirely. Added them, so family admins can now move/reassign people from their own
+  family panel too, not just Site Management.
+- **A new name-only person showed no owner.** "OWNED BY" only listed people who
+  already had a materialized traveler record, so the person who actually created the
+  entry (the current admin) often didn't appear as an option — even though `createdBy`
+  was set correctly underneath, it looked unassigned. Owner options are now built from
+  real family memberships, so the creator always shows up.
+
 ## 1.9.0-beta — Traveler storage, phase 2 (cutover)
 
 ### Added

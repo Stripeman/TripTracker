@@ -993,6 +993,9 @@
 
               <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 15px; margin-bottom:16px;">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">PEOPLE IN {{ activeFamilyName }}</div>
+                <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ addPerson }}" style="width:100%; box-sizing:border-box; margin-bottom:10px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:9px; padding:8px; cursor:pointer;">+ Add person</button>
+                </sc-if>
                 <div style="display:flex; flex-direction:column; gap:8px;">
                   <sc-for list="{{ activeFamilyPeopleRows }}" as="p" hint-placeholder-count="2">
                     <sc-if value="{{ p.isHeader }}" hint-placeholder-val="{{ false }}"></sc-if>
@@ -1043,6 +1046,27 @@
                               <option value="reader" style="background:#0a1422;">Reader</option>
                               <option value="editor" style="background:#0a1422;">Editor</option>
                               <option value="admin" style="background:#0a1422;">Admin</option>
+                            </select>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ p.showFamilyPicker }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
+                            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">FAMILY</span>
+                            <select value="{{ p.familyValue }}" onChange="{{ p.onFamily }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                              <sc-for list="{{ p.familyPickOptions }}" as="fo" hint-placeholder-count="2">
+                                <option value="{{ fo.value }}" style="background:#0a1422;">{{ fo.label }}</option>
+                              </sc-for>
+                            </select>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ p.canSetParent }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex; align-items:center; gap:7px; margin-top:7px;">
+                            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; flex:none;">OWNED BY</span>
+                            <select value="{{ p.parentValue }}" onChange="{{ p.onParent }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                              <option value="" style="background:#0a1422;">— Unassigned —</option>
+                              <sc-for list="{{ p.parentOptions }}" as="po" hint-placeholder-count="2">
+                                <option value="{{ po.value }}" style="background:#0a1422;">{{ po.label }}</option>
+                              </sc-for>
                             </select>
                           </div>
                         </sc-if>
@@ -2439,7 +2463,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -6270,6 +6294,12 @@ class Component extends DCLogic {
   // Add a person under the current user (createdBy stamps ownership for delete rules),
   // and open it straight into edit mode.
   addPerson() {
+    // Add to whichever family is in view: if Site User Management has a SPECIFIC
+    // family selected in its scope dropdown, use that (so a site admin browsing "The
+    // Smiths" adds to The Smiths, not to whatever family they personally have active
+    // in the left panel); otherwise fall back to the left panel's active family.
+    const scope = this.state.usersFamilyScope;
+    const targetFamilyId = (scope && scope !== 'all' && scope !== 'allMine' && scope !== 'mine') ? scope : (this.state.activeFamilyId || '');
     if (this.state.travelersMigrated) {
       this.setState(s => {
         let key = 'p', i = 1;
@@ -6278,7 +6308,7 @@ class Component extends DCLogic {
         const palette = ['#5fd3ff', '#fb7185', '#c084fc', '#22d3ee', '#fbbf24', '#fb923c', '#a78bfa', '#4ade80', '#e879f9'];
         const color = palette[s.cfgTravelers.length % palette.length];
         const createdBy = (s.cloudUserEmail || '').toLowerCase().trim();
-        const item = { key, label: 'New person', color, email: '', createdBy, familyId: s.activeFamilyId || '' };
+        const item = { key, label: 'New person', color, email: '', createdBy, familyId: targetFamilyId };
         return { cfgTravelers: [...s.cfgTravelers, item], editingPersonKey: key, addingPersonKey: key };
       });
       return;
@@ -6290,7 +6320,7 @@ class Component extends DCLogic {
       const palette = ['#5fd3ff', '#fb7185', '#c084fc', '#22d3ee', '#fbbf24', '#fb923c', '#a78bfa', '#4ade80', '#e879f9'];
       const color = palette[s.cfgTravelers.length % palette.length];
       const createdBy = (s.cloudUserEmail || '').toLowerCase().trim();
-      const item = { key, label: 'New person', color, email: '', createdBy, familyId: s.activeFamilyId || '' };
+      const item = { key, label: 'New person', color, email: '', createdBy, familyId: targetFamilyId };
       return { ...this.persistConfig(s, { cfgTravelers: [...s.cfgTravelers, item] }), editingPersonKey: key, addingPersonKey: key };
     });
   }
@@ -6473,7 +6503,17 @@ class Component extends DCLogic {
         onRole: (e) => this.personSetRole(o.email, e.target.value),
         canSetParent: isCloud && isAdmin && !o.email,
         parentValue: o.createdBy ? String(o.createdBy).toLowerCase().trim() : '',
-        parentOptions: (this.state.cfgTravelers || []).filter(t => t.email && t.key !== o.key && (t.familyId || '') === (resolvedFamilyId || '')).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
+        // Options: every real ACCOUNT in this family (from memberships, not just
+        // cfgTravelers) so the creator always shows up even if they don't have their
+        // own materialized traveler row yet.
+        parentOptions: (this.state.cfgMemberships || [])
+          .filter(m => m.active !== false && m.email && m.familyId === (resolvedFamilyId || '') && String(m.email).toLowerCase().trim() !== email)
+          .map(m => String(m.email).toLowerCase().trim())
+          .filter((e, i, arr) => arr.indexOf(e) === i)
+          .map(e => {
+            const t = (this.state.cfgTravelers || []).find(tt => String(tt.email || '').toLowerCase().trim() === e);
+            return { value: e, label: t ? t.label : e };
+          }),
         onParent: (e) => this.personSetParent(o.key, e.target.value),
         showFamilyPicker: isCloud && isAdmin && familyPickOptions.length > 0,
         familyValue: resolvedFamilyId,
