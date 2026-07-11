@@ -4,6 +4,24 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.3-beta — "Viewing a family" vs. "your active family" decoupled
+
+### Bug
+- **Browsing a family under "My Families" silently changed your active family**,
+  which drove the left panel's trip-family filter/dropdown — clicking a family row
+  just to look at it would reshuffle what trips you saw. Viewing a family's details in
+  People & Family Management is now fully separate from your app-wide active family; a
+  small "Use this"/"Active" pill on each row lets you deliberately switch instead.
+- **The whole family detail panel (rename, color, logo, members, invites, sharing,
+  transfer ownership, delete, "+ Add person", role/active toggles, last-admin checks)
+  was silently keyed to your TRUE active family**, not whichever family you were
+  actually viewing — so most of it broke or silently no-oped the moment you looked at
+  a family other than your own. Every action in that panel now consistently targets
+  the family actually on screen.
+- **"Create a new family" appeared once per family** in the detail panel (looked like
+  it belonged to whichever family you were viewing). Moved to a single "+ New" button
+  next to the "MY FAMILIES" header.
+
 ## 1.9.2-beta — Staging bugfixes, round 2
 
 ### Bug

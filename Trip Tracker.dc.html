@@ -685,12 +685,15 @@
             </div>
 
             <sc-if value="{{ famMgmtViewFamilies }}" hint-placeholder-val="{{ true }}">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; padding:16px 4px 8px; border-top:1px solid rgba(255,255,255,0.06); margin-top:12px;">MY FAMILIES</div>
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:16px 4px 8px; border-top:1px solid rgba(255,255,255,0.06); margin-top:12px;">
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94;">MY FAMILIES</span>
+                <button onClick="{{ openNewFamilyModal }}" title="Create a new family" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.06em; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.35); border-radius:6px; padding:3px 8px; cursor:pointer;">+ New</button>
+              </div>
               <sc-if value="{{ hasMyFamilies }}" hint-placeholder-val="{{ true }}">
                 <div style="display:flex; flex-direction:column; gap:6px;">
                   <sc-for list="{{ myFamilyRows }}" as="f" hint-placeholder-count="1">
-                    <div onClick="{{ f.onMakeActive }}" style="{{ f.navRowStyle }}">
-                      <div style="display:flex; align-items:center; gap:7px; min-width:0;">
+                    <div onClick="{{ f.onView }}" style="{{ f.navRowStyle }}">
+                      <div style="display:flex; align-items:center; gap:7px; min-width:0; flex:1;">
                         <sc-if value="{{ f.logo }}" hint-placeholder-val="{{ false }}">
                           <img ref="{{ f.logoRef }}" style="flex:none; width:20px; height:20px; border-radius:5px; object-fit:cover;"/>
                         </sc-if>
@@ -702,6 +705,7 @@
                           <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7c8ea6; margin-top:1px;">{{ f.roleLabel }}<sc-if value="{{ f.pending }}" hint-placeholder-val="{{ false }}"> · pending</sc-if></div>
                         </div>
                       </div>
+                      <button onClick="{{ f.onMakeActive }}" style="{{ f.activeBtnStyle }}">{{ f.activeBtnLabel }}</button>
                     </div>
                   </sc-for>
                 </div>
@@ -1170,7 +1174,6 @@
                 </sc-for>
               </div>
 
-              <button onClick="{{ openNewFamilyModal }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.08); border:1px dashed rgba(95,211,255,0.4); border-radius:10px; padding:10px 14px; cursor:pointer;">+ Create a new family</button>
             </sc-if>
 
             <sc-if value="{{ famMgmtViewSiteFam }}" hint-placeholder-val="{{ false }}">
@@ -2463,7 +2466,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.2-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.3-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2711,6 +2714,7 @@ class Component extends DCLogic {
       shareTargetFamilyId: '',
       shareTargetRole: 'reader',
       activeFamilyId: '',
+      famDetailFamilyId: '',
       familyViewMode: 'active',
       assignEmail: '',
       assignFamilyId: '',
@@ -3238,7 +3242,7 @@ class Component extends DCLogic {
   triggerLogoPick = () => { if (this._logoInput) { this._logoInput.value = ''; this._logoInput.click(); } };
   onLogoPick = (e) => {
     const file = e.target.files && e.target.files[0];
-    const familyId = this.state.activeFamilyId;
+    const familyId = this.viewFamilyId();
     if (!file || !file.type.startsWith('image/') || !familyId) return;
     const reader = new FileReader();
     reader.onload = () => {
@@ -3261,8 +3265,8 @@ class Component extends DCLogic {
     reader.readAsDataURL(file);
   };
   async removeFamilyLogo() {
-    if (!this.state.activeFamilyId) return;
-    const j = await this.familiesAction('setFamilyLogo', { familyId: this.state.activeFamilyId, logo: '' });
+    if (!this.viewFamilyId()) return;
+    const j = await this.familiesAction('setFamilyLogo', { familyId: this.viewFamilyId(), logo: '' });
     if (j) this.toast('Logo removed.');
   }
   setFamiliesBackupInput = (el) => { this._familiesBackupInput = el; };
@@ -3293,11 +3297,11 @@ class Component extends DCLogic {
     reader.readAsText(file);
   };
   async setFamilyColorClick(color) {
-    if (!this.state.activeFamilyId) return;
-    await this.familiesAction('setFamilyColor', { familyId: this.state.activeFamilyId, color });
+    if (!this.viewFamilyId()) return;
+    await this.familiesAction('setFamilyColor', { familyId: this.viewFamilyId(), color });
   }
   async renameFamily(name) {
-    const familyId = this.state.activeFamilyId;
+    const familyId = this.viewFamilyId();
     const clean = (name || '').trim();
     if (!familyId || !clean) return;
     const j = await this.familiesAction('rename', { familyId, name: clean });
@@ -3310,14 +3314,14 @@ class Component extends DCLogic {
     const name = (this.state.familyNameDraft || '').trim();
     if (!name) return;
     await this.renameFamily(name);
-    this.setState({ familyNameEditing: false, onboardFamilyId: this.state.onboardFamilyId === this.state.activeFamilyId ? null : this.state.onboardFamilyId });
+    this.setState({ familyNameEditing: false, onboardFamilyId: this.state.onboardFamilyId === this.viewFamilyId() ? null : this.state.onboardFamilyId });
   }
   onRenameFamilyKeyDown(e) {
     if (e.key === 'Enter') { this.saveFamilyName(); }
     else if (e.key === 'Escape') { this.cancelFamilyNameEdit(); }
   }
   askTransferOwnership() {
-    const familyId = this.state.activeFamilyId;
+    const familyId = this.viewFamilyId();
     const activeMembers = (this.state.cfgMemberships || []).filter(m => m.familyId === familyId && m.active !== false);
     const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
     const targets = activeMembers.filter(m => m.email && m.email !== (fam && fam.createdBy));
@@ -3341,8 +3345,8 @@ class Component extends DCLogic {
   setShareTargetRole(e) { this.setState({ shareTargetRole: e.target.value }); }
   async inviteFamilyShare() {
     const toFamilyId = this.state.shareTargetFamilyId;
-    if (!toFamilyId || !this.state.activeFamilyId) return;
-    const j = await this.familiesAction('inviteFamily', { fromFamilyId: this.state.activeFamilyId, toFamilyId, role: this.state.shareTargetRole });
+    if (!toFamilyId || !this.viewFamilyId()) return;
+    const j = await this.familiesAction('inviteFamily', { fromFamilyId: this.viewFamilyId(), toFamilyId, role: this.state.shareTargetRole });
     if (j) { this.toast('Invited.'); this.setState({ shareTargetFamilyId: '' }); }
   }
   async removeFamilyShare(fromFamilyId, toFamilyId) {
@@ -3361,9 +3365,9 @@ class Component extends DCLogic {
     });
   }
   async askDeleteActiveFamily() {
-    if (!this.state.activeFamilyId) return;
-    const fam = (this.state.cfgFamilies || []).find(f => f.id === this.state.activeFamilyId);
-    await this.askDeleteFamily(this.state.activeFamilyId, (fam && fam.name) || 'this family');
+    if (!this.viewFamilyId()) return;
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === this.viewFamilyId());
+    await this.askDeleteFamily(this.viewFamilyId(), (fam && fam.name) || 'this family');
   }
   async askDeleteFamily(familyId, name) {
     const j = await this.familiesActionSilent('familyDeleteImpact', { familyId });
@@ -3444,18 +3448,23 @@ class Component extends DCLogic {
   }
   openFamilyMgmt() { this.loadFamilies(); this.setState({ familyMgmtOpen: true, famMgmtView: 'families' }); }
   closeFamilyMgmt() { this.setState({ familyMgmtOpen: false }); }
+  // Which family's details the People & Family Management modal is showing right now.
+  // Deliberately separate from activeFamilyId (the left panel's trip-family filter) —
+  // browsing a family's details here must NEVER change what the main app shows.
+  viewFamilyId() { return this.state.famDetailFamilyId || this.state.activeFamilyId; }
+  viewFamily(familyId) { this.setState({ famDetailFamilyId: familyId }); }
   setFamMgmtView(v) { this.setState({ famMgmtView: v }); }
   setInviteEmail(e) { this.setState({ inviteEmail: e.target.value }); }
   setInviteRole(e) { this.setState({ inviteRole: e.target.value }); }
   async inviteByEmailClick() {
     const email = (this.state.inviteEmail || '').trim();
     if (!email || email.indexOf('@') === -1) { this.toast('Enter a valid email.'); return; }
-    if (!this.state.activeFamilyId) return;
-    const j = await this.familiesAction('invitePerson', { familyId: this.state.activeFamilyId, email, role: this.state.inviteRole || 'reader' });
+    if (!this.viewFamilyId()) return;
+    const j = await this.familiesAction('invitePerson', { familyId: this.viewFamilyId(), email, role: this.state.inviteRole || 'reader' });
     if (j) { this.toast('Added ' + email + '.'); this.setState({ inviteEmail: '' }); }
   }
   defaultInviteEmailTemplate() {
-    const fam = (this.state.cfgFamilies || []).find(f => f.id === this.state.activeFamilyId);
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === this.viewFamilyId());
     const famName = (fam && fam.name) || 'our family';
     const role = this.state.inviteRole || 'reader';
     const link = window.location.origin + window.location.pathname;
@@ -3475,7 +3484,7 @@ class Component extends DCLogic {
   setInviteMessage(e) { this.setState({ inviteMessage: e.target.value }); }
   async sendInviteEmailClick() {
     const email = (this.state.inviteEmail || '').trim();
-    const familyId = this.state.activeFamilyId;
+    const familyId = this.viewFamilyId();
     if (!email || email.indexOf('@') === -1) { this.toast('Enter a valid email.'); return; }
     if (!familyId) return;
     await this.familiesAction('invitePerson', { familyId, email, role: this.state.inviteRole || 'reader' });
@@ -3484,8 +3493,8 @@ class Component extends DCLogic {
     else { this.toast('Access granted, but the invite email could not be sent (email sending may not be configured on the server).'); this.setState({ inviteComposeOpen: false }); }
   }
   async createInviteLinkClick() {
-    if (!this.state.activeFamilyId) return;
-    const j = await this.familiesActionSilent('createInviteLink', { familyId: this.state.activeFamilyId, role: this.state.inviteRole || 'reader' });
+    if (!this.viewFamilyId()) return;
+    const j = await this.familiesActionSilent('createInviteLink', { familyId: this.viewFamilyId(), role: this.state.inviteRole || 'reader' });
     if (j && j.code) {
       const url = window.location.origin + window.location.pathname + '?invite=' + j.code;
       this.setState({ inviteLinkText: url });
@@ -3518,8 +3527,8 @@ class Component extends DCLogic {
   async addNonAccountMemberClick() {
     const name = (this.state.newNonAccountName || '').trim();
     if (!name) { this.toast('Enter a name.'); return; }
-    if (!this.state.activeFamilyId) { this.toast('No active family.'); return; }
-    const j = await this.familiesAction('addNonAccountMember', { familyId: this.state.activeFamilyId, name });
+    if (!this.viewFamilyId()) { this.toast('No family selected.'); return; }
+    const j = await this.familiesAction('addNonAccountMember', { familyId: this.viewFamilyId(), name });
     if (j) { this.toast('Added ' + name + '.'); this.setState({ newNonAccountName: '' }); }
   }
   async assignUserToFamily() {
@@ -3554,15 +3563,17 @@ class Component extends DCLogic {
       .map((m) => {
         const fam = byId[m.familyId];
         const active = m.familyId === s.activeFamilyId;
+        const viewing = m.familyId === (s.famDetailFamilyId || s.activeFamilyId);
         return {
           name: (fam && fam.name) || '(unknown family)',
           roleLabel: roleLabel(m.role),
           pending: !!(fam && !fam.approved),
-          onMakeActive: () => this.setActiveFamily(m.familyId),
+          onView: () => this.viewFamily(m.familyId),
+          onMakeActive: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setActiveFamily(m.familyId); },
           activeBtnLabel: active ? 'Active' : 'Use this',
           activeBtnStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:9.5px; font-weight:600; border-radius:999px; padding:5px 11px; cursor:pointer; ' +
             (active ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3);'),
-          navRowStyle: 'cursor:pointer; padding:8px 9px; border-radius:9px; transition:background .15s; ' + (active ? 'background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3);' : 'background:transparent; border:1px solid transparent;'),
+          navRowStyle: 'cursor:pointer; padding:8px 9px; border-radius:9px; transition:background .15s; display:flex; align-items:center; gap:8px; ' + (viewing ? 'background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3);' : 'background:transparent; border:1px solid transparent;'),
           color: (fam && fam.color) || '#5fd3ff',
           logo: (fam && fam.logo) || '',
           noLogo: !(fam && fam.logo),
@@ -3570,26 +3581,30 @@ class Component extends DCLogic {
         };
       });
     const myFamilyIds = new Set((s.cfgMemberships || []).filter((m) => m.email === s.cloudUserEmail && m.active !== false).map((m) => m.familyId));
-    const otherFamilyOptions = families.filter((f) => f.id !== s.activeFamilyId).map((f) => ({ value: f.id, label: f.name }));
+    // Which family's details this panel shows — deliberately separate from the left
+    // panel's activeFamilyId (see viewFamilyId()). Browsing a family here must never
+    // change what the main app/left panel is filtered to.
+    const viewFamilyId = s.famDetailFamilyId || s.activeFamilyId;
+    const otherFamilyOptions = families.filter((f) => f.id !== viewFamilyId).map((f) => ({ value: f.id, label: f.name }));
     const shareRoleLabel = (r) => r === 'admin-no-delete' ? 'Admin (no delete)' : r === 'editor' ? 'Editor' : 'Reader';
-    const myOutgoingShares = (s.cfgShares || []).filter((sh) => sh.fromFamilyId === s.activeFamilyId).map((sh) => ({
+    const myOutgoingShares = (s.cfgShares || []).filter((sh) => sh.fromFamilyId === viewFamilyId).map((sh) => ({
       label: (byId[sh.toFamilyId] ? byId[sh.toFamilyId].name : sh.toFamilyId) + ' — ' + shareRoleLabel(sh.role),
       onRemove: () => this.removeFamilyShare(sh.fromFamilyId, sh.toFamilyId),
     }));
     const pendingList = s.pendingFamiliesList || [];
     const myFamilyIdsArr = [...myFamilyIds];
     const familyViewOptions = [];
-    const activeFam = byId[s.activeFamilyId];
-    if (activeFam) familyViewOptions.push({ value: s.activeFamilyId, label: activeFam.name + ' (active family)', color: activeFam.color || '#5fd3ff' });
+    const trueActiveFam = byId[s.activeFamilyId];
+    if (trueActiveFam) familyViewOptions.push({ value: s.activeFamilyId, label: trueActiveFam.name + ' (active family)', color: trueActiveFam.color || '#5fd3ff' });
     if (myFamilyIdsArr.length > 1) familyViewOptions.push({ value: 'allMine', label: 'All my families', color: '#9fb3c8' });
     if (s.mySiteAdmin) {
       familyViewOptions.push({ value: 'all', label: 'Every family (site admin)', color: '#9fb3c8' });
       families.filter(fm => fm.id !== s.activeFamilyId).forEach(fm => familyViewOptions.push({ value: fm.id, label: fm.name + ' (view as admin)', color: fm.color || '#5fd3ff' }));
     }
-    const activeMembers = (s.cfgMemberships || []).filter(m => m.familyId === s.activeFamilyId);
+    const activeMembers = (s.cfgMemberships || []).filter(m => m.familyId === viewFamilyId);
     const myActiveMembership = activeMembers.find(m => m.email === s.cloudUserEmail);
     const isActiveFamilyAdmin = !!s.mySiteAdmin || (myActiveMembership && myActiveMembership.role === 'admin');
-    const activeFamObj = byId[s.activeFamilyId];
+    const activeFamObj = byId[viewFamilyId];
     const isFamilyOwner = !!s.mySiteAdmin || (activeFamObj && activeFamObj.createdBy === s.cloudUserEmail);
     const ownerMember = activeFamObj && activeMembers.find(m => m.email === activeFamObj.createdBy);
     const transferTargetOptions = activeMembers
@@ -3604,11 +3619,11 @@ class Component extends DCLogic {
       inactive: m.active === false,
       canManage: isActiveFamilyAdmin,
       cantManage: !isActiveFamilyAdmin,
-      onRoleChange: (e) => this.familiesAction('invitePerson', { familyId: s.activeFamilyId, email: m.email, role: e.target.value, active: m.active !== false }),
+      onRoleChange: (e) => this.familiesAction('invitePerson', { familyId: viewFamilyId, email: m.email, role: e.target.value, active: m.active !== false }),
       onRemove: () => {
         const label = m.email || m.name || 'this member';
         if (!confirm('Remove ' + label + ' from this family?')) return;
-        this.familiesAction('removeMember', m.email ? { familyId: s.activeFamilyId, email: m.email } : { familyId: s.activeFamilyId, id: m.id });
+        this.familiesAction('removeMember', m.email ? { familyId: viewFamilyId, email: m.email } : { familyId: viewFamilyId, id: m.id });
       },
     }));
     return {
@@ -3682,10 +3697,10 @@ class Component extends DCLogic {
         : 'Copies today\'s shared traveler list into the new per-family storage. Click it to switch the app over to reading/writing people per-family (server-enforced).',
       showFamilySwitcher: s.cfgDataSource === 'cloud' && familyViewOptions.length > 1,
       familyViewOptions,
-      familySwitcherStyle: 'width:100%; margin-top:9px; font-family:\'IBM Plex Mono\',monospace; font-size:10.5px; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid ' + ((activeFam && activeFam.color) || 'rgba(56,189,248,0.24)') + '; border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;',
+      familySwitcherStyle: 'width:100%; margin-top:9px; font-family:\'IBM Plex Mono\',monospace; font-size:10.5px; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid ' + ((activeFamObj && activeFam.color) || 'rgba(56,189,248,0.24)') + '; border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;',
       familyViewMode: s.familyViewMode || 'active',
       setFamilyViewModeEv: (e) => this.setFamilyViewMode(e.target.value),
-      activeFamilyName: (activeFam && activeFam.name) || '',
+      activeFamilyName: (activeFamObj && activeFamObj.name) || '',
       notActiveFamilyAdmin: !isActiveFamilyAdmin,
       isFamilyOwner,
       notFamilyOwner: !isFamilyOwner,
@@ -3711,13 +3726,13 @@ class Component extends DCLogic {
       cancelFamilyNameEdit: () => this.cancelFamilyNameEdit(),
       saveFamilyName: () => this.saveFamilyName(),
       onRenameFamilyKeyDown: (e) => this.onRenameFamilyKeyDown(e),
-      showFamilyOnboardingTip: !!s.onboardFamilyId && s.onboardFamilyId === s.activeFamilyId,
-      activeFamilyColor: (activeFam && activeFam.color) || '#5fd3ff',
-      activeFamilyLogo: (activeFam && activeFam.logo) || '',
-      activeFamilyLogoRef: (el) => { if (el && activeFam && activeFam.logo) el.src = activeFam.logo; },
-      hasActiveFamilyLogo: !!(activeFam && activeFam.logo),
-      noActiveFamilyLogo: !(activeFam && activeFam.logo),
-      logoUploadLabel: (activeFam && activeFam.logo) ? 'Change logo…' : 'Upload logo…',
+      showFamilyOnboardingTip: !!s.onboardFamilyId && s.onboardFamilyId === viewFamilyId,
+      activeFamilyColor: (activeFamObj && activeFamObj.color) || '#5fd3ff',
+      activeFamilyLogo: (activeFamObj && activeFamObj.logo) || '',
+      activeFamilyLogoRef: (el) => { if (el && activeFamObj && activeFamObj.logo) el.src = activeFamObj.logo; },
+      hasActiveFamilyLogo: !!(activeFamObj && activeFamObj.logo),
+      noActiveFamilyLogo: !(activeFamObj && activeFamObj.logo),
+      logoUploadLabel: (activeFamObj && activeFamObj.logo) ? 'Change logo…' : 'Upload logo…',
       setLogoInputRef: this.setLogoInputRef,
       triggerLogoPick: this.triggerLogoPick,
       onLogoPick: this.onLogoPick,
@@ -3729,11 +3744,11 @@ class Component extends DCLogic {
       familyColorSwatches: (s.cfgFamilyColors || []).map(hex => ({
         hex,
         onClick: () => this.setFamilyColorClick(hex),
-        style: 'width:20px; height:20px; border-radius:50%; cursor:pointer; background:' + hex + '; border:2px solid ' + (activeFam && activeFam.color === hex ? '#fff' : 'transparent') + '; box-shadow:0 0 0 1px rgba(255,255,255,0.15);',
+        style: 'width:20px; height:20px; border-radius:50%; cursor:pointer; background:' + hex + '; border:2px solid ' + (activeFamObj && activeFamObj.color === hex ? '#fff' : 'transparent') + '; box-shadow:0 0 0 1px rgba(255,255,255,0.15);',
       })),
-      hasActiveFamily: !!activeFam,
+      hasActiveFamily: !!activeFamObj,
       activeFamilyMemberRows,
-      activeFamilyPeopleRows: this.computePeopleRows(s.activeFamilyId),
+      activeFamilyPeopleRows: this.computePeopleRows(viewFamilyId),
       isActiveFamilyAdmin,
       newNonAccountName: s.newNonAccountName || '',
       setNewNonAccountName: (e) => this.setNewNonAccountName(e),
@@ -6488,11 +6503,11 @@ class Component extends DCLogic {
         isUser, active,
         statusLabel: isUser ? (active ? 'ACTIVE' : 'INACTIVE') : '',
         statusStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:8px; letter-spacing:0.12em; padding:2px 6px; border-radius:5px; ' + (active ? 'color:#7ee0a8; background:rgba(126,224,168,0.12); border:1px solid rgba(126,224,168,0.3);' : 'color:#f0a6a6; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3);'),
-        canSetActive: isCloud && isAdmin && isUser && !this.isLastActiveAdmin(o.email),
+        canSetActive: isCloud && isAdmin && isUser && !this.isLastActiveAdmin(o.email, resolvedFamilyId),
         activeBtnLabel: active ? 'Deactivate' : 'Activate',
-        onToggleActive: () => this.personSetActive(o.email, !active),
-        canDeleteUser: isCloud && isAdmin && isUser && !isAddingThis && !this.isLastActiveAdmin(o.email),
-        isLastAdmin: isCloud && isAdmin && isUser && this.isLastActiveAdmin(o.email),
+        onToggleActive: () => this.personSetActive(o.email, !active, resolvedFamilyId),
+        canDeleteUser: isCloud && isAdmin && isUser && !isAddingThis && !this.isLastActiveAdmin(o.email, resolvedFamilyId),
+        isLastAdmin: isCloud && isAdmin && isUser && this.isLastActiveAdmin(o.email, resolvedFamilyId),
         onDeleteUser: () => this.askUserDelete(o.key),
         online: !!email && onlineEmails.has(email),
         canSetEmail: !isCloud || isAdmin,
@@ -6512,7 +6527,7 @@ class Component extends DCLogic {
         onColor: (e) => this.dataItemColor('traveler', o.key, e.target.value),
         onEmail: (e) => this.dataItemEmail(o.key, e.target.value),
         onCommit: () => this.dataItemCommit(),
-        onRole: (e) => this.personSetRole(o.email, e.target.value),
+        onRole: (e) => this.personSetRole(o.email, e.target.value, resolvedFamilyId),
         canSetParent: isCloud && isAdmin && !o.email,
         parentValue: o.createdBy ? String(o.createdBy).toLowerCase().trim() : '',
         // Options: every real ACCOUNT in this family (from memberships, not just
@@ -6700,12 +6715,13 @@ class Component extends DCLogic {
   // this updates the ACTIVE family's membership for them. It also mirrors into the legacy
   // accessList/saveAccess path so un-migrated deployments (memberships.json not created yet)
   // keep working until an admin runs the migration.
-  personSetRole(email, role) {
+  personSetRole(email, role, familyId) {
     const em = String(email || '').toLowerCase().trim();
     if (!em) return;
-    if (this.state.activeFamilyId) {
-      if (role) this.familiesAction('invitePerson', { familyId: this.state.activeFamilyId, email: em, role });
-      else this.familiesAction('removeMember', { familyId: this.state.activeFamilyId, email: em });
+    const fid = familyId || this.viewFamilyId();
+    if (fid) {
+      if (role) this.familiesAction('invitePerson', { familyId: fid, email: em, role });
+      else this.familiesAction('removeMember', { familyId: fid, email: em });
     }
     this.setState(s => {
       let list = (s.accessList || []).slice();
@@ -6720,26 +6736,35 @@ class Component extends DCLogic {
   // grants no access until reactivated. No-op if they have no access-list entry yet.
   // Count active admins for the currently-active family (falls back to the legacy
   // access list for un-migrated deployments where memberships.json doesn't exist yet).
-  activeAdminCount() {
-    const forFamily = (this.state.cfgMemberships || []).filter(m => m.familyId === this.state.activeFamilyId);
+  activeAdminCount(familyId) {
+    const fid = familyId || this.viewFamilyId();
+    const forFamily = (this.state.cfgMemberships || []).filter(m => m.familyId === fid);
     if (forFamily.length) return forFamily.filter(m => m.role === 'admin' && m.active !== false).length;
     return (this.state.accessList || []).filter(r => r.role === 'admin' && r.active !== false).length;
   }
   // True if this email is the ONLY remaining active admin (can't be deactivated/deleted).
-  isLastActiveAdmin(email) {
+  isLastActiveAdmin(email, familyId) {
     const em = String(email || '').toLowerCase().trim();
     if (!em) return false;
+    const fid = familyId || this.viewFamilyId();
+    const forFamily = (this.state.cfgMemberships || []).filter(m => m.familyId === fid);
+    if (forFamily.length) {
+      const mine = forFamily.find(m => String(m.email || '').toLowerCase().trim() === em);
+      if (!mine || mine.role !== 'admin' || mine.active === false) return false;
+      return this.activeAdminCount(fid) <= 1;
+    }
     const r = (this.state.accessList || []).find(x => String(x.email || '').toLowerCase().trim() === em);
     if (!r || r.role !== 'admin' || r.active === false) return false;
-    return this.activeAdminCount() <= 1;
+    return this.activeAdminCount(fid) <= 1;
   }
-  personSetActive(email, active) {
+  personSetActive(email, active, familyId) {
     const em = String(email || '').toLowerCase().trim();
     if (!em) return;
-    if (!active && this.isLastActiveAdmin(em)) { this.toast('Can’t deactivate the last admin'); return; }
-    if (this.state.activeFamilyId) {
-      const cur = (this.state.cfgMemberships || []).find(m => m.email === em && m.familyId === this.state.activeFamilyId);
-      this.familiesAction('invitePerson', { familyId: this.state.activeFamilyId, email: em, role: (cur && cur.role) || 'reader', active: !!active });
+    const fid = familyId || this.viewFamilyId();
+    if (!active && this.isLastActiveAdmin(em, fid)) { this.toast('Can’t deactivate the last admin'); return; }
+    if (fid) {
+      const cur = (this.state.cfgMemberships || []).find(m => m.email === em && m.familyId === fid);
+      this.familiesAction('invitePerson', { familyId: fid, email: em, role: (cur && cur.role) || 'reader', active: !!active });
     }
     this.setState(s => {
       const list = (s.accessList || []).slice();
@@ -7546,7 +7571,7 @@ class Component extends DCLogic {
         editorGroup('Statuses', 'status', this.state.cfgStatuses, false),
       ],
       addPerson: () => this.addPerson(),
-      addPersonToActiveFamily: () => this.addPerson(s.activeFamilyId),
+      addPersonToActiveFamily: () => this.addPerson(this.viewFamilyId()),
       showClaimAll: this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin,
       unownedCount: (this.state.locations || []).filter(l => this.tripUnassigned(l)).length,
       noUnclaimed: this.state.mySiteAdmin && this.state.cfgDataSource === 'cloud' && (this.state.locations || []).filter(l => this.tripUnassigned(l)).length === 0,
