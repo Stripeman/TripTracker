@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.6.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.7.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -29,6 +29,9 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
   whichever one is selected: members and roles, invites, branding, sharing, and a
   guarded delete. Site admins get an additional "Site administration" sidebar entry
   covering every family, approvals, and the site-admin roster.
+- **Ownership & transfer** — a family's detail panel shows its **Owner**. The current
+  owner (or a site admin) can **transfer ownership** to any other active member, who's
+  promoted to admin automatically if they weren't already.
 - **Inviting people** — a family admin can add someone **by email** (grants access the
   moment they next sign in — no email is actually sent by default) or generate a
   **shareable invite link** (7-day expiry, single use, role baked in) that anyone can

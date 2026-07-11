@@ -4,6 +4,20 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.7.0-beta
+
+### Added
+- **Transfer family ownership.** The family detail panel now shows its **Owner**; the
+  current owner (or a site admin) can transfer ownership to any other active member,
+  who's promoted to admin if they weren't already, via a new gated `transferOwnership`
+  action. Confirmed with a popup before it takes effect.
+- **Traveler storage migration, phase 1 (backend).** New `travelers.json` blob with
+  family-admin-gated `addTraveler`/`updateTraveler`/`moveTraveler`/`deleteTraveler`
+  actions, plus a site-admin **"Backfill travelers → per-family storage"** one-time
+  migration button. This is additive — the app still runs entirely on the existing
+  shared `settings.travelers` for now; nothing user-facing changes yet. See
+  `TRAVELER-STORAGE-PLAN.md` for what's shipped vs. the remaining (riskier) cutover.
+
 ## 1.6.0-beta
 
 ### Fixed

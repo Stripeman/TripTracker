@@ -1429,6 +1429,27 @@
                 </div>
               </sc-if>
 
+              <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94;">OWNER · <span style="color:#bcd2e6; letter-spacing:0;">{{ ownerLabel }}</span></div>
+                </div>
+                <sc-if value="{{ isFamilyOwner }}" hint-placeholder-val="{{ false }}">
+                  <sc-if value="{{ hasTransferTargets }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:7px; margin-top:9px; flex-wrap:wrap;">
+                      <select value="{{ transferOwnerEmail }}" onChange="{{ setTransferOwnerEmail }}" style="flex:1; min-width:160px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                        <sc-for list="{{ transferTargetOptions }}" as="to" hint-placeholder-count="2">
+                          <option value="{{ to.value }}" style="background:#0a1422;">{{ to.label }}</option>
+                        </sc-for>
+                      </select>
+                      <button onClick="{{ askTransferOwnership }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:7px 12px; cursor:pointer;">Transfer ownership</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ noTransferTargets }}" hint-placeholder-val="{{ true }}">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; margin-top:8px;">Invite another member first to be able to transfer ownership to them.</div>
+                  </sc-if>
+                </sc-if>
+              </div>
+
               <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 15px; margin-bottom:16px;">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">MEMBERS</div>
                 <div style="display:flex; flex-direction:column; gap:7px;">
@@ -1579,6 +1600,11 @@
 
               <button onClick="{{ migrateLegacyFamilies }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Migrate legacy data → default family</button>
 
+              <div style="margin-top:14px;">
+                <button onClick="{{ migrateTravelers }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Backfill travelers → per-family storage</button>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:6px; line-height:1.5;">One-time, safe to click more than once. Copies today's shared traveler list into the new per-family storage (doesn't remove or change the current list — the app keeps using it until a later release cuts over).</div>
+              </div>
+
               <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">FAMILIES BACKUP (JSON)</div>
                 <input ref="{{ setFamiliesBackupInput }}" type="file" accept="application/json,.json" onChange="{{ onFamiliesBackupFile }}" style="display:none;">
@@ -1613,6 +1639,20 @@
           <div style="display:flex; gap:8px; margin-top:16px;">
             <button onClick="{{ closeNewFamilyModal }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px; cursor:pointer;">{{ newFamilyCancelLabel }}</button>
             <button onClick="{{ createFamily }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:700; color:#04111e; background:linear-gradient(180deg,#7fe3ff,#5fd3ff); border:none; border-radius:8px; padding:9px; cursor:pointer;">Create</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- transfer-ownership confirm popup -->
+    <sc-if value="{{ hasPendingOwnerTransfer }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ pendingOwnerTransfer.onCancel }}" style="position:fixed; inset:0; z-index:93; background:rgba(2,6,14,0.7); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; pointer-events:auto;">
+        <div onClick="{{ stop }}" style="width:360px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(56,189,248,0.3); border-radius:14px; padding:22px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; color:#f1f6fc; margin-bottom:8px;">Transfer ownership?</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; line-height:1.55; margin-bottom:16px;"><span style="color:#eaf4fd;">{{ pendingOwnerTransfer.toEmail }}</span> will become the owner of <span style="color:#eaf4fd;">{{ pendingOwnerTransfer.familyName }}</span> (promoted to admin if they weren't already). You'll keep your existing role.</div>
+          <div style="display:flex; gap:8px;">
+            <button onClick="{{ pendingOwnerTransfer.onCancel }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px; cursor:pointer;">Cancel</button>
+            <button onClick="{{ pendingOwnerTransfer.onConfirm }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:700; color:#04111e; background:linear-gradient(180deg,#7fe3ff,#5fd3ff); border:none; border-radius:8px; padding:9px; cursor:pointer;">Transfer</button>
           </div>
         </div>
       </div>
@@ -2810,7 +2850,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.6.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.7.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3042,6 +3082,7 @@ class Component extends DCLogic {
       cfgMemberships: [],
       cfgShares: [],
       cfgAccessRequests: [],
+      cfgTravelersServer: [],
       reqDraftRole: {},
       reqDraftFamily: {},
       mySiteAdmin: false,
@@ -3521,6 +3562,7 @@ class Component extends DCLogic {
         autoApproveFamilies: !!j.autoApproveFamilies,
         pendingFamiliesList: j.pendingFamilies || [],
         activeFamilyId: active,
+        cfgTravelersServer: j.travelers || [], // new per-family storage; not yet wired into the UI — see TRAVELER-STORAGE-PLAN.md
       });
       // First-ever login with no family memberships yet: take them straight to
       // People & Family, prompted to create one (they become its admin automatically).
@@ -3653,6 +3695,21 @@ class Component extends DCLogic {
   onRenameFamilyKeyDown(e) {
     if (e.key === 'Enter') { this.saveFamilyName(); }
     else if (e.key === 'Escape') { this.cancelFamilyNameEdit(); }
+  }
+  askTransferOwnership() {
+    const familyId = this.state.activeFamilyId;
+    const toEmail = this.state.transferOwnerEmail;
+    if (!familyId || !toEmail) return;
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
+    this.setState({ pendingOwnerTransfer: { familyId, toEmail, familyName: (fam && fam.name) || 'this family' } });
+  }
+  cancelTransferOwnership() { this.setState({ pendingOwnerTransfer: null }); }
+  async confirmTransferOwnership() {
+    const pd = this.state.pendingOwnerTransfer;
+    if (!pd) return;
+    const j = await this.familiesAction('transferOwnership', { familyId: pd.familyId, toEmail: pd.toEmail });
+    if (j) this.toast('Ownership transferred to ' + pd.toEmail);
+    this.setState({ pendingOwnerTransfer: null });
   }
   setShareTargetFamilyId(e) { this.setState({ shareTargetFamilyId: e.target.value }); }
   setShareTargetRole(e) { this.setState({ shareTargetRole: e.target.value }); }
@@ -3849,6 +3906,14 @@ class Component extends DCLogic {
     const j = await this.familiesAction('migrateLegacy', {});
     if (j) { this.toast('Migrated ' + (j.migratedMembers || 0) + ' member(s) + ' + (j.migratedTrips || 0) + ' trip(s) into "The Remsiks".'); this.cloudLoad(); }
   }
+  async migrateTravelers() {
+    const j = await this.familiesAction('migrateTravelers', {});
+    if (j) {
+      let msg = 'Backfilled ' + (j.migrated || 0) + ' of ' + (j.total || 0) + ' traveler(s).';
+      if (j.unresolved) msg += ' ' + j.unresolved + ' had no resolvable family and were skipped.';
+      this.toast(msg);
+    }
+  }
   // Everything the Families tab template needs, computed fresh each render.
   familiesRenderVals() {
     const s = this.state;
@@ -3896,6 +3961,12 @@ class Component extends DCLogic {
     const activeMembers = (s.cfgMemberships || []).filter(m => m.familyId === s.activeFamilyId);
     const myActiveMembership = activeMembers.find(m => m.email === s.cloudUserEmail);
     const isActiveFamilyAdmin = !!s.mySiteAdmin || (myActiveMembership && myActiveMembership.role === 'admin');
+    const activeFamObj = byId[s.activeFamilyId];
+    const isFamilyOwner = !!s.mySiteAdmin || (activeFamObj && activeFamObj.createdBy === s.cloudUserEmail);
+    const ownerMember = activeFamObj && activeMembers.find(m => m.email === activeFamObj.createdBy);
+    const transferTargetOptions = activeMembers
+      .filter(m => m.email && m.active !== false && m.email !== (activeFamObj && activeFamObj.createdBy))
+      .map(m => ({ value: m.email, label: m.email }));
     const activeFamilyMemberRows = activeMembers.map(m => ({
       email: m.email || m.name || '(unnamed)',
       role: m.role,
@@ -3975,6 +4046,7 @@ class Component extends DCLogic {
       setAssignRole: (e) => this.setAssignRole(e),
       assignUserToFamily: () => this.assignUserToFamily(),
       migrateLegacyFamilies: () => this.migrateLegacyFamilies(),
+      migrateTravelers: () => this.migrateTravelers(),
       showFamilySwitcher: s.cfgDataSource === 'cloud' && familyViewOptions.length > 1,
       familyViewOptions,
       familySwitcherStyle: 'width:100%; margin-top:9px; font-family:\'IBM Plex Mono\',monospace; font-size:10.5px; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid ' + ((activeFam && activeFam.color) || 'rgba(56,189,248,0.24)') + '; border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;',
@@ -3982,6 +4054,22 @@ class Component extends DCLogic {
       setFamilyViewModeEv: (e) => this.setFamilyViewMode(e.target.value),
       activeFamilyName: (activeFam && activeFam.name) || '',
       notActiveFamilyAdmin: !isActiveFamilyAdmin,
+      isFamilyOwner,
+      notFamilyOwner: !isFamilyOwner,
+      ownerLabel: (ownerMember && (ownerMember.email || ownerMember.name)) || (activeFamObj && activeFamObj.createdBy) || '\u2014',
+      hasTransferTargets: transferTargetOptions.length > 0,
+      noTransferTargets: transferTargetOptions.length === 0,
+      transferTargetOptions,
+      transferOwnerEmail: s.transferOwnerEmail || (transferTargetOptions[0] && transferTargetOptions[0].value) || '',
+      setTransferOwnerEmail: (e) => this.setState({ transferOwnerEmail: e.target.value }),
+      askTransferOwnership: () => this.askTransferOwnership(),
+      pendingOwnerTransfer: s.pendingOwnerTransfer ? {
+        toEmail: s.pendingOwnerTransfer.toEmail,
+        familyName: s.pendingOwnerTransfer.familyName,
+        onConfirm: () => this.confirmTransferOwnership(),
+        onCancel: () => this.cancelTransferOwnership(),
+      } : null,
+      hasPendingOwnerTransfer: !!s.pendingOwnerTransfer,
       familyNameEditing: !!s.familyNameEditing,
       familyNameNotEditing: !s.familyNameEditing,
       familyNameDraft: s.familyNameDraft || '',
@@ -5885,14 +5973,34 @@ class Component extends DCLogic {
   }
   toggleDup() { this.setState(s => ({ dupMode: !s.dupMode })); }
   // Build a full statistics snapshot over ALL trips (unfiltered) for the metrics panel.
+  // Every family this user can see trips for: families they're a member of, PLUS any
+  // family that has shared access TO one of those (FamilyShare.toFamilyId is theirs).
+  // Independent of which family is selected in the left panel.
+  myAccessibleFamilyIds() {
+    const email = this.state.cloudUserEmail;
+    const ids = new Set((this.state.cfgMemberships || []).filter(m => m.email === email && m.active !== false).map(m => m.familyId));
+    (this.state.cfgShares || []).forEach(sh => { if (ids.has(sh.toFamilyId)) ids.add(sh.fromFamilyId); });
+    return ids;
+  }
+  // The user's own "home" family for metrics' default single-family view — stable and
+  // deliberately NOT tied to activeFamilyId (which just follows left-panel selection).
+  // Prefers a family they created; otherwise their earliest membership.
+  myHomeFamilyId() {
+    const email = this.state.cloudUserEmail;
+    const mine = (this.state.cfgMemberships || []).filter(m => m.email === email && m.active !== false);
+    if (!mine.length) return this.state.activeFamilyId;
+    const owned = (this.state.cfgFamilies || []).find(f => f.createdBy === email && mine.some(m => m.familyId === f.id));
+    if (owned) return owned.id;
+    const sorted = [...mine].sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+    return sorted[0].familyId;
+  }
   metricsScopedLocations() {
     const scope = this.state.metricsFamilyScope || 'mine';
-    const myFamilyIds = new Set((this.state.cfgMemberships || []).filter(m => m.email === this.state.cloudUserEmail && m.active !== false).map(m => m.familyId));
     return (this.state.locations || []).filter(l => {
       if (!l.familyId) return true;
       if (scope === 'all') return true;
-      if (scope === 'allMine') return myFamilyIds.has(l.familyId);
-      return l.familyId === this.state.activeFamilyId;
+      if (scope === 'allMine') return this.myAccessibleFamilyIds().has(l.familyId);
+      return l.familyId === this.myHomeFamilyId();
     });
   }
   computeMetrics() {
@@ -7347,10 +7455,11 @@ class Component extends DCLogic {
       metricsFamilyScope: this.state.metricsFamilyScope || 'mine',
       setMetricsFamilyScope: (e) => this.setMetricsFamilyScope(e),
       metricsFamilyScopeOptions: (() => {
-        const activeFamObj = (this.state.cfgFamilies || []).find(f => f.id === this.state.activeFamilyId);
-        const opts = [{ value: 'mine', label: (activeFamObj && activeFamObj.name) || 'My family' }];
-        const myFamCount = new Set((this.state.cfgMemberships || []).filter(m => m.email === this.state.cloudUserEmail && m.active !== false).map(m => m.familyId)).size;
-        if (myFamCount > 1) opts.push({ value: 'allMine', label: 'All my families' });
+        const homeId = this.myHomeFamilyId();
+        const homeFamObj = (this.state.cfgFamilies || []).find(f => f.id === homeId);
+        const opts = [{ value: 'mine', label: (homeFamObj && homeFamObj.name) || 'My family' }];
+        const accessibleCount = this.myAccessibleFamilyIds().size;
+        if (accessibleCount > 1) opts.push({ value: 'allMine', label: 'All families I have access to' });
         if (this.state.mySiteAdmin) opts.push({ value: 'all', label: 'Every family (site admin)' });
         return opts;
       })(),

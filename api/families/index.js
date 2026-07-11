@@ -33,12 +33,18 @@ const { BlobServiceClient } = require("@azure/storage-blob");
 //   approveAccess { email, role, familyId }     → site admin only: grants a pending access request (from
 //                                                  /api/request-access) and clears it
 //   declineAccess { email }                     → site admin only: clears a pending access request
+//   transferOwnership { familyId, toEmail }     → current owner (family.createdBy) or site admin only
+//   addTraveler / updateTraveler / moveTraveler / deleteTraveler → per-family traveler storage
+//                                                  (see TRAVELER-STORAGE-PLAN.md); family-admin gated
+//   migrateTravelers { fallbackFamilyId? }      → site admin only: one-time backfill from
+//                                                  settings.travelers into travelers.json
 
 const CONTAINER = process.env.TRIPS_CONTAINER || "data";
 const FAMILIES_BLOB = process.env.FAMILIES_BLOB || "families.json";
 const MEMBERS_BLOB = process.env.MEMBERSHIPS_BLOB || "memberships.json";
 const SHARES_BLOB = process.env.FAMILY_SHARES_BLOB || "family-shares.json";
 const ACCESS_REQUESTS_BLOB = process.env.ACCESS_REQUESTS_BLOB || "access-requests.json";
+const TRAVELERS_BLOB = process.env.TRAVELERS_BLOB || "travelers.json";
 const VALID_ROLES = ["reader", "editor", "admin"];
 const SHARE_ROLES = ["reader", "editor", "admin-no-delete"];
 const FAMILY_COLORS = ["#38bdf8", "#fb7185", "#fbbf24", "#4ade80", "#a78bfa", "#fb923c", "#22d3ee", "#e879f9", "#f87171", "#34d399"];
@@ -153,6 +159,8 @@ module.exports = async function (context, req) {
     let members = await readJsonBlob(container, MEMBERS_BLOB, []);
     let shares = await readJsonBlob(container, SHARES_BLOB, []);
     let settings = await readJsonBlob(container, "family-settings.json", { autoApproveFamilies: false });
+    let travelers = await readJsonBlob(container, TRAVELERS_BLOB, []);
+    if (!Array.isArray(travelers)) travelers = [];
 
     const myMemberships = members.filter((m) => m.email === me.email && m.active !== false);
     const myFamilyIds = new Set(myMemberships.map((m) => m.familyId));
@@ -162,10 +170,12 @@ module.exports = async function (context, req) {
       const visibleFamilies = meIsSiteAdmin ? families : families.filter((f) => myFamilyIds.has(f.id));
       const visibleMembers = meIsSiteAdmin ? members : members.filter((m) => myAdminFamilyIds.has(m.familyId) || m.email === me.email);
       const visibleShares = meIsSiteAdmin ? shares : shares.filter((s) => myFamilyIds.has(s.fromFamilyId) || myFamilyIds.has(s.toFamilyId));
+      const visibleTravelers = meIsSiteAdmin ? travelers : travelers.filter((t) => myFamilyIds.has(t.familyId));
       json(200, {
         families: visibleFamilies,
         memberships: visibleMembers,
         shares: visibleShares,
+        travelers: visibleTravelers,
         myMemberships,
         familyColors: FAMILY_COLORS,
         siteAdmin: meIsSiteAdmin,
@@ -211,6 +221,28 @@ module.exports = async function (context, req) {
       if (!name) { json(400, { error: "Name required." }); return; }
       families = families.map((f) => f.id === body.familyId ? { ...f, name, autoNamed: false } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
+      json(200, { ok: true });
+      return;
+    }
+
+    // Transfer the "owner" record (family.createdBy) to another active member of the
+    // family. Only the CURRENT owner or a site admin may do this — a regular family
+    // admin who isn't the owner cannot reassign it out from under the owner. The new
+    // owner is promoted to admin if they weren't already (ownership implies admin
+    // rights); the outgoing owner keeps whatever role they already had.
+    if (action === "transferOwnership") {
+      const familyId = body.familyId;
+      const toEmail = String(body.toEmail || "").toLowerCase().trim();
+      const fam = families.find((f) => f.id === familyId);
+      if (!fam) { json(404, { error: "Family not found." }); return; }
+      if (!toEmail) { json(400, { error: "Recipient email required." }); return; }
+      if (!meIsSiteAdmin && fam.createdBy !== me.email) { json(403, { error: "Only the current owner (or a site admin) can transfer ownership." }); return; }
+      const targetIdx = members.findIndex((m) => m.email === toEmail && m.familyId === familyId && m.active !== false);
+      if (targetIdx === -1) { json(400, { error: "That person isn't an active member of this family." }); return; }
+      if (members[targetIdx].role !== "admin") members[targetIdx] = { ...members[targetIdx], role: "admin" };
+      families = families.map((f) => f.id === familyId ? { ...f, createdBy: toEmail } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      await writeJsonBlob(container, MEMBERS_BLOB, members);
       json(200, { ok: true });
       return;
     }
@@ -608,6 +640,101 @@ module.exports = async function (context, req) {
       else members.push({ email, familyId, role, active: true, createdAt: new Date().toISOString() });
       await writeJsonBlob(container, MEMBERS_BLOB, members);
       json(200, { ok: true });
+      return;
+    }
+
+    // ---- Per-family traveler storage (new — see TRAVELER-STORAGE-PLAN.md) ----
+    // Row shape: { id, familyId, label, color, email, createdBy, createdAt }. This is
+    // additive: settings.travelers (in the trips blob) keeps working as the fallback
+    // source until the frontend fully cuts over and a later release drops it.
+    if (action === "addTraveler") {
+      const familyId = body.familyId;
+      if (!familyId) { json(400, { error: "familyId required." }); return; }
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      const label = String(body.label || "New person").trim() || "New person";
+      const color = String(body.color || "#5fd3ff");
+      const email = String(body.email || "").toLowerCase().trim();
+      const row = { id: genId("trav"), familyId, label, color, email, createdBy: me.email, createdAt: new Date().toISOString() };
+      travelers.push(row);
+      await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
+      json(200, { ok: true, traveler: row });
+      return;
+    }
+
+    if (action === "updateTraveler") {
+      const id = body.id;
+      const idx = travelers.findIndex((t) => t.id === id);
+      if (idx === -1) { json(404, { error: "Traveler not found." }); return; }
+      const row = travelers[idx];
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(row.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const patch = body.patch || {};
+      const next = { ...row };
+      if (typeof patch.label === "string") next.label = patch.label.trim() || row.label;
+      if (typeof patch.color === "string") next.color = patch.color;
+      if (typeof patch.email === "string") next.email = patch.email.toLowerCase().trim();
+      travelers[idx] = next;
+      await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
+      json(200, { ok: true, traveler: next });
+      return;
+    }
+
+    // Move a traveler tag to a different family. Requires admin of the TARGET family
+    // (mirrors assignFamily) — site admin bypasses.
+    if (action === "moveTraveler") {
+      const id = body.id;
+      const familyId = body.familyId;
+      const idx = travelers.findIndex((t) => t.id === id);
+      if (idx === -1) { json(404, { error: "Traveler not found." }); return; }
+      if (!familyId) { json(400, { error: "familyId required." }); return; }
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Admin of that family required." }); return; }
+      travelers[idx] = { ...travelers[idx], familyId };
+      await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
+      json(200, { ok: true });
+      return;
+    }
+
+    if (action === "deleteTraveler") {
+      const id = body.id;
+      const row = travelers.find((t) => t.id === id);
+      if (!row) { json(200, { ok: true }); return; } // already gone
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(row.familyId)) { json(403, { error: "Family admin required." }); return; }
+      travelers = travelers.filter((t) => t.id !== id);
+      await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
+      json(200, { ok: true });
+      return;
+    }
+
+    // One-time, idempotent backfill: copy settings.travelers (in the trips blob) into
+    // the new per-family travelers.json, resolving a familyId for each row that lacks
+    // one. Safe to re-run — skips rows already migrated (matched by deterministic id).
+    // Does NOT touch or remove settings.travelers; the frontend still reads from there
+    // until a later release cuts it over.
+    if (action === "migrateTravelers") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const tripsBlobName = process.env.TRIPS_BLOB || "trip-tracker.json";
+      const tripsData = await readJsonBlob(container, tripsBlobName, null);
+      const settingsTravelers = (tripsData && tripsData.settings && Array.isArray(tripsData.settings.travelers)) ? tripsData.settings.travelers : [];
+      const membershipFamilyByEmail = {};
+      members.filter((m) => m.active !== false && m.email).forEach((m) => {
+        const e = String(m.email).toLowerCase().trim();
+        if (!membershipFamilyByEmail[e]) membershipFamilyByEmail[e] = m.familyId;
+      });
+      const fallbackFamilyId = body.fallbackFamilyId || (families[0] && families[0].id) || null;
+      const existingIds = new Set(travelers.map((t) => t.id));
+      let migrated = 0, skipped = 0, unresolved = 0;
+      settingsTravelers.forEach((o) => {
+        const id = "trav-legacy-" + String(o.key || "");
+        if (!o.key || existingIds.has(id)) { skipped++; return; }
+        const email = String(o.email || "").toLowerCase().trim();
+        const createdBy = String(o.createdBy || "").toLowerCase().trim();
+        let familyId = (email && membershipFamilyByEmail[email]) || (createdBy && membershipFamilyByEmail[createdBy]) || fallbackFamilyId;
+        if (!familyId) { unresolved++; return; }
+        travelers.push({ id, familyId, label: o.label || "Unnamed", color: o.color || "#5fd3ff", email, createdBy, createdAt: new Date().toISOString() });
+        existingIds.add(id);
+        migrated++;
+      });
+      await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
+      json(200, { ok: true, migrated, skipped, unresolved, total: settingsTravelers.length });
       return;
     }
 
