@@ -4,6 +4,27 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.13.0-beta — Phase 3: reworked sharing permissions + image-upload controls
+
+### Added
+- **Unified Permissions modal**: the lock icon on a trip card (and a new picker button in the trip form's "Who can see this" section) now opens one popup with two tabs — Visibility and Specific people — instead of the old cramped inline row of buttons.
+- **Two new visibility tiers**: "Only me" (hidden from literally everyone, including your own family — new, requires nothing else to be shared) and "Only my family" (promoted from the old "keep private from shares" checkbox into a first-class tier). Combined with the existing "All shared families" (now the explicit default) and "Public" (renamed from "All users"), that's the full four-tier model end to end.
+- **"Specific people" is explicitly additive** — picking people always layers on top of whichever visibility tier is selected (even "Only me"), and the modal says so.
+- **Site-wide + per-family image-upload controls**: a site admin can turn photo/gallery uploads off for the whole app (Settings → Site Family Management); each family's admin can override that default for their own family (People & Family Management → their family panel). The trip form hides the Photo/Gallery sections (with an explanation) when uploads are off for the trip's family, and the server strips any photo/gallery on save if uploads are disabled for that family — enforced both places.
+
+### Changed
+- Server-side (`api/trips`): added `soloPrivate` (true = visible to nobody but the owner, overriding even family membership) alongside the existing `hiddenFromShares`; `sharedWith` is now always additive regardless of the base tier, rather than only applying under a "shared" visibility value.
+
+## 1.12.0-beta — Phase 3: richer trip content (item 3.2 — itinerary) + lightbox fixes
+
+### Added
+- **Day-by-day itinerary**: an optional "+ Add day-by-day notes" section on the trip form generates one note field per day in the trip's date range (capped at 60 days). Notes are pruned to the current range and saved keyed by date.
+- Detail card shows a "View itinerary · N days" button (same collapsed-behind-a-button pattern as the gallery) opening a read-only modal listing each day's notes.
+
+### Fixed
+- **Gallery lightbox was non-interactive** — the close button, prev/next arrows, and backdrop-click didn't respond to clicks; they all sat under an app-wide overlay that intentionally sets `pointer-events:none` so clicks reach the 3D globe through the gaps, and the lightbox (and the new itinerary modal) forgot to opt back in with `pointer-events:auto`. Fixed on both.
+- Lightbox images were rendering at their native pixel size instead of filling the viewing area (only `max-width`/`max-height` were set, which cap size but don't grow a smaller image to fill it). Now sized to fill 90vw × 78vh with `object-fit:contain`.
+
 ## 1.11.1-beta — Phase 3: gallery follow-up fixes
 
 ### Fixed

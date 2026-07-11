@@ -29,7 +29,9 @@ In priority order:
 1. ✅ **DONE (1.11.0-beta)** — Multiple photos per trip (gallery), with a lightbox
    viewer on the detail card. Cover photo stays the card thumbnail; gallery photos
    are extra.
-2. Itinerary / day-by-day notes.
+2. ✅ **DONE (1.12.0-beta)** — Itinerary / day-by-day notes, with a per-day note
+   field on the form (auto-generated from the trip's date range) and a read-only
+   itinerary viewer on the detail card.
 3. Comments/discussion per trip.
 4. Attachments (tickets, confirmations).
 
