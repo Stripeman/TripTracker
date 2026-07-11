@@ -52,7 +52,7 @@
     .tt-detailcard { left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
     .tt-metrics { top: 104px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
     .tt-config { top: 68px !important; left: 10px !important; right: 10px !important; width: auto !important; max-height: calc(100vh - 84px) !important; }
-    .tt-form { width: 100vw !important; }
+    .tt-form { width: 100vw !important; max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
     .tt-fammodal { width: 100vw !important; height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; flex-direction: column !important; }
     .tt-famsidebar { width: 100% !important; flex: none !important; max-height: 34vh !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; }
   }
@@ -2430,8 +2430,10 @@
       </div>
     </sc-if>
 
-    <!-- slide-in form -->
-    <div class="tt-form" style="position:absolute; top:0; right:0; bottom:0; width:388px; pointer-events:auto; background:rgba(7,12,21,0.92); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-left:1px solid rgba(56,189,248,0.2); box-shadow:-20px 0 60px rgba(0,0,0,0.55); transition:transform 0.42s cubic-bezier(0.16,1,0.3,1); transform:{{ panelTransform }}; display:flex; flex-direction:column;">
+    <!-- trip form popup -->
+    <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeForm }}" style="position:fixed; inset:0; z-index:90; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; padding:24px;">
+    <div onClick="{{ stop }}" class="tt-form" style="width:min(640px,94vw); max-height:88vh; pointer-events:auto; background:rgba(8,14,24,0.97); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(56,189,248,0.22); border-radius:18px; box-shadow:0 30px 90px rgba(0,0,0,0.6); display:flex; flex-direction:column;">
       <div style="display:flex; justify-content:space-between; align-items:center; padding:24px 26px 18px; border-bottom:1px solid rgba(56,189,248,0.12);">
         <div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">{{ formMode }}</div>
@@ -2456,7 +2458,15 @@
         </div>
       </sc-if>
 
+      <div style="display:flex; gap:2px; flex:none; padding:0 26px; border-bottom:1px solid rgba(255,255,255,0.08);">
+        <button onClick="{{ setFormTabDetails }}" style="{{ formTabDetailsStyle }}">Details</button>
+        <button onClick="{{ setFormTabNotes }}" style="{{ formTabNotesStyle }}">Notes &amp; photos</button>
+        <button onClick="{{ setFormTabItinerary }}" style="{{ formTabItineraryStyle }}">Itinerary</button>
+        <button onClick="{{ setFormTabSharing }}" style="{{ formTabSharingStyle }}">Permissions</button>
+      </div>
+
       <div style="flex:1; overflow-y:auto; padding:22px 26px;">
+        <sc-if value="{{ formTabIsDetails }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; gap:12px; margin-bottom:18px;">
           <div style="flex:1;">
             <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">COUNTRY</label>
@@ -2566,8 +2576,10 @@
             </div>
           </div>
         </sc-if>
+        </sc-if>
 
-        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">NOTES <span style="color:#445;">·opt</span></label>
+        <sc-if value="{{ formTabIsNotes }}" hint-placeholder-val="{{ false }}">
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:0 0 7px;">NOTES <span style="color:#445;">·opt</span></label>
         <textarea name="notes" value="{{ form.notes }}" onChange="{{ onField }}" placeholder="Anything to remember — hotels, highlights, who you went with…" rows="3" style="width:100%; resize:vertical; min-height:74px; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.5; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;"></textarea>
 
         <sc-if value="{{ formImagesAllowed }}" hint-placeholder-val="{{ true }}">
@@ -2620,8 +2632,10 @@
         <sc-if value="{{ formImagesBlocked }}" hint-placeholder-val="{{ false }}">
           <div style="margin:18px 0; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; line-height:1.5; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:10px 12px;">📷 Photo uploads are turned off for this family right now. A family admin can re-enable them in People &amp; Family Management.</div>
         </sc-if>
+        </sc-if>
 
-        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:18px 0 7px;">ITINERARY <span style="color:#445;">·opt</span></label>
+        <sc-if value="{{ formTabIsItinerary }}" hint-placeholder-val="{{ false }}">
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:0 0 7px;">ITINERARY <span style="color:#445;">·opt</span></label>
         <sc-if value="{{ itineraryPanelOpen }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; flex-direction:column; gap:8px;">
             <sc-for list="{{ itineraryDays }}" as="d" hint-placeholder-count="0">
@@ -2638,9 +2652,14 @@
         <sc-if value="{{ itineraryPanelClosed }}" hint-placeholder-val="{{ true }}">
           <button onClick="{{ toggleItineraryPanel }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fd6f0; background:rgba(255,255,255,0.03); border:1px dashed rgba(125,200,245,0.35); border-radius:9px; padding:9px 12px; cursor:pointer;">+ Add day-by-day notes</button>
         </sc-if>
+        </sc-if>
 
+        <sc-if value="{{ formTabIsSharing }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ showVisibilityHidden }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#7c8ea6; line-height:1.5; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:11px 13px;">Permissions apply once this family is synced to Cloud storage. In Local/Demo mode, trips are only ever visible on this device.</div>
+        </sc-if>
         <sc-if value="{{ showVisibility }}" hint-placeholder-val="{{ false }}">
-          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 8px;">WHO CAN SEE THIS</label>
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:0 0 8px;">PERMISSIONS</label>
           <button onClick="{{ openPermForm }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.32); border-radius:10px; padding:11px 13px; cursor:pointer; text-align:left;">
             <span style="font-size:15px;">{{ permFormTierIcon }}</span>
             <span style="flex:1;">{{ permFormTierLabel }}</span>
@@ -2658,6 +2677,7 @@
         <sc-if value="{{ showModified }}" hint-placeholder-val="{{ false }}">
           <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:14px 0 7px;">LAST MODIFIED <span style="color:#445;">·read-only</span></label>
           <div style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8093aa; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 13px;">{{ modifiedText }}</div>
+        </sc-if>
         </sc-if>
       </div>
 
@@ -2679,6 +2699,8 @@
         </div>
       </div>
     </div>
+    </div>
+    </sc-if>
 
   </div>
 </div>
@@ -2728,7 +2750,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.13.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.15.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2900,6 +2922,7 @@ class Component extends DCLogic {
       accessMsgOk: false,
       selectedId: null,
       formOpen: false,
+      formTab: 'details',
       editingId: null,
       dateText: null,
       dateEndText: null,
@@ -6044,7 +6067,7 @@ class Component extends DCLogic {
   openAdd() {
     const n = new Date();
     const todayISO = n.toISOString().slice(0, 10);
-    this.setState({ formOpen: true, editingId: null, dateText: null, dateEndText: null, form: { ...this.blankForm(), date: todayISO }, formError: '', selectedId: null, calOpen: false, calY: n.getFullYear(), calM: n.getMonth(), settingsOpen: false, detailsOpen: this.state.cfgDetailsFormDefault, photoSuggestion: null, itineraryPanelOpen: false });
+    this.setState({ formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, form: { ...this.blankForm(), date: todayISO }, formError: '', selectedId: null, calOpen: false, calY: n.getFullYear(), calM: n.getMonth(), settingsOpen: false, detailsOpen: this.state.cfgDetailsFormDefault, photoSuggestion: null, itineraryPanelOpen: false });
   }
   // Instant duplicate from the edit form: opens a fresh (unsaved) new-trip form
   // pre-filled with everything from the trip currently being edited, except its
@@ -6054,11 +6077,12 @@ class Component extends DCLogic {
       const f = s.form || {};
       const dup = { ...f, date: '', dateEnd: '' };
       delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
-      return { formOpen: true, editingId: null, dateText: null, dateEndText: null, formError: '', form: dup, selectedId: null, calOpen: false };
+      return { formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, formError: '', form: dup, selectedId: null, calOpen: false };
     });
     this.toast('Duplicated — pick a new date');
   }
   closeForm() { this.setState({ formOpen: false, editingId: null, formError: '' }); }
+  setFormTab(tab) { this.setState({ formTab: tab }); }
 
   editSelected(id) {
     const useId = (typeof id === 'number' || typeof id === 'string') ? id : this.state.selectedId;
@@ -6070,7 +6094,7 @@ class Component extends DCLogic {
     (this.state.cfgTravelers || []).forEach(t => { if (t.email) travByEmail[t.email] = t.key; });
     const shareTravelers = [], leftover = [];
     shared.forEach(e => { if (travByEmail[e]) shareTravelers.push(travByEmail[e]); else leftover.push(e); });
-    this.setState({ formOpen: true, editingId: loc.id, dateText: null, dateEndText: null, formError: '', photoSuggestion: null, detailsOpen: this.state.cfgDetailsFormDefault, itineraryPanelOpen: !!(loc.itinerary && Object.keys(loc.itinerary).some(k => loc.itinerary[k])), form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [], visibility: loc.visibility || 'private', sharedWith: loc.sharedWith || [], shareTravelers, sharedWithText: leftover.join(', ') } });
+    this.setState({ formOpen: true, formTab: 'details', editingId: loc.id, dateText: null, dateEndText: null, formError: '', photoSuggestion: null, detailsOpen: this.state.cfgDetailsFormDefault, itineraryPanelOpen: !!(loc.itinerary && Object.keys(loc.itinerary).some(k => loc.itinerary[k])), form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [], visibility: loc.visibility || 'private', sharedWith: loc.sharedWith || [], shareTravelers, sharedWithText: leftover.join(', ') } });
   }
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
@@ -7738,7 +7762,7 @@ class Component extends DCLogic {
     if (this.state.dupMode) {
       const dup = { ...f, date: '', dateEnd: '', sharedWithText: (f.sharedWith || []).filter(e => !(this.state.cfgTravelers || []).some(t => t.email === e)).join(', '), shareTravelers: (this.state.form.shareTravelers || []) };
       delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
-      this.setState({ locations: list, formOpen: true, editingId: null, dateText: null, dateEndText: null, formError: '', selectedId: savedId, form: dup, calOpen: false });
+      this.setState({ locations: list, formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, formError: '', selectedId: savedId, form: dup, calOpen: false });
     } else {
       this.setState({ locations: list, formOpen: false, editingId: null, formError: '', selectedId: savedId });
     }
@@ -8157,6 +8181,7 @@ class Component extends DCLogic {
       tripTypeChips,
       travelerChips,
       showVisibility: this.state.cfgDataSource === 'cloud',
+      showVisibilityHidden: this.state.cfgDataSource !== 'cloud',
       formImagesAllowed: this.state.cfgDataSource !== 'cloud' || this.familyImagesEffective(form.familyId || this.state.activeFamilyId),
       formImagesBlocked: this.state.cfgDataSource === 'cloud' && !this.familyImagesEffective(form.familyId || this.state.activeFamilyId),
       permFormTierLabel: (this.PERM_TIERS.find(t => t.key === this.tierOfLoc(form)) || this.PERM_TIERS[2]).label,
@@ -8686,6 +8711,18 @@ class Component extends DCLogic {
         onToggle: () => this.toggleMyBackupDupe(d.id),
       })),
       formOpen,
+      formTabIsDetails: (this.state.formTab || 'details') === 'details',
+      formTabIsNotes: this.state.formTab === 'notes',
+      formTabIsItinerary: this.state.formTab === 'itinerary',
+      formTabIsSharing: this.state.formTab === 'sharing',
+      formTabDetailsStyle: tabBtnStyle((this.state.formTab || 'details') === 'details'),
+      formTabNotesStyle: tabBtnStyle(this.state.formTab === 'notes'),
+      formTabItineraryStyle: tabBtnStyle(this.state.formTab === 'itinerary'),
+      formTabSharingStyle: tabBtnStyle(this.state.formTab === 'sharing'),
+      setFormTabDetails: () => this.setFormTab('details'),
+      setFormTabNotes: () => this.setFormTab('notes'),
+      setFormTabItinerary: () => this.setFormTab('itinerary'),
+      setFormTabSharing: () => this.setFormTab('sharing'),
       formError: this.state.formError,
       cityHint: (form.city && form.city.trim()) ? '' : '·required',
       dateHint: form.date ? '' : '·required',

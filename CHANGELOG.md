@@ -4,6 +4,21 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.15.1-beta — Permissions tab
+
+### Changed
+- Renamed the trip form's "Sharing" tab to "Permissions" — same lock-icon permissions modal as the trip card. In Local/Demo mode it now shows an explanatory note instead of appearing empty.
+
+## 1.15.0-beta — Tabs inside the trip form
+
+### Changed
+- The trip popup now has 4 tabs — Details, Notes & photos, Itinerary, Sharing — instead of one long scroll. Permissions ("Who can see this") lives on its own Sharing tab, separate from photos.
+
+## 1.14.0-beta — Trip form is now a popup
+
+### Changed
+- The Add/Edit trip form was a 388px panel slid in from the right edge of the screen; it's now a centered popup modal (like the Family and Permissions modals), 640px wide with its own backdrop, so the growing set of sections (photo, gallery, itinerary, permissions) has more room to breathe instead of being crammed into a narrow strip.
+
 ## 1.13.0-beta — Phase 3: reworked sharing permissions + image-upload controls
 
 ### Added

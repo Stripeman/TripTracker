@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.9.5--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.15.1--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -105,6 +105,7 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
 - **Travelers**: Terry · [others] — multi‑select, each colour‑coded; shown on the detail card.
 - The destinations list shows each trip's **date range** on the same line as the country.
 - Click any saved location (on the globe or in the list) to view its detail card, then **Edit** or **Delete** it.
+- **The Add/Edit form is a centered popup** with four tabs — **Details** (place, dates, status, trip details), **Notes & photos**, **Itinerary**, and **Permissions** (same "who can see this" picker as the card's lock button) — instead of one long scrolling panel.
 - **Required fields:** every destination needs a **city**, a **date**, and a **status** (State is also required for U.S. cities). The `·required` hint clears automatically once a field has a value.
 - **Duplicate guard:** if a trip with the same place and the same date already exists, a *“This trip already exists — add anyway?”* notice appears next to the Dates field. It's informational — you can still add it.
 - **Audit stamps:** the Edit form shows a read-only **Added** timestamp (set when the destination is first created) and a **Last modified** timestamp (updated each time you save changes).
@@ -167,7 +168,8 @@ In Cloud mode every trip belongs to whoever created it — ownership is resolved
 - **Traveler presence dot:** in **⚙ → Users**, each person with an email shows a small status dot next to their name — **green** when that person (matched by their email) is currently online, **grey** when offline. Hovering the dot shows a cursor-following tooltip with their **online status and role(s)** (e.g. "Online · editor, reader"). Roles are reported by each browser's presence heartbeat, so a Traveler's role is shown while they're online; offline, the tooltip notes the role appears once they sign in. (This is separate from the always-on "ONLINE" bar at the bottom of the screen.)
 - **Settings sync to the cloud:** editing configuration data (Travelers and their **emails**, visit/trip types, statuses, default filters, display options) saves to the cloud automatically a moment after you change it — so the name↔email mapping and your settings persist and are shared with other users, not just stored in your browser. (Requires the `editor`/`admin` role, like any cloud write.)
 - **You can only edit your own trips.** Trips shared with you are view-only (the detail card shows an owner badge, a visibility badge, and "Shared with you · view only" instead of Edit/Delete). A normal save never touches anyone else's data.
-- **Quick permission editor:** on a trip you own (Cloud mode), the detail card has a **🔒 lock button** next to the close button. It opens a compact "Who can see this" picker — **Private / All users / People** — where People shows each registered Traveler as a **colored first-initial circle** (hover for their full name + email). Changes **save instantly**, and your last choice becomes the **default visibility for the next new trip** you create.
+- **Quick permission editor:** on a trip you own (Cloud mode), the detail card has a **🔒 lock button** next to the close button. It opens a compact "Who can see this" picker — **Private / All users / People** — where People shows each registered Traveler as a **colored first-initial circle** (hover for their full name + email). Changes **save instantly**, and your last choice becomes the **default visibility for the next new trip** you create. The Add/Edit form's **Permissions tab** opens this same picker; in Local/Demo mode it shows a short note instead, since permissions only apply once a family is synced to Cloud storage.
+- **Site-wide public sharing switch:** a site admin can turn **public ("All users") sharing** off entirely for the whole site (⚙ → Site Family Management, next to the image-uploads toggle). When off, the **Public** tier is hidden from every permissions picker and any trip already set to public is treated as private until it's changed.
 - **Owner filter:** the left filter panel adds an **Owner** row — **Everyone** (all you can see) / **Mine** / **Shared with me** — and the globe follows the filter.
 - **Legacy trips** (created before this feature, with no owner) stay visible to everyone; an admin can assign or claim them via the **Trips** tab.
 - **Admins** get no special *viewing* power — they see a trip only if its owner shared it, same as anyone. Admin rights apply to **Import**, **Clear data**, assigning/claiming **unclaimed trips**, managing **users** (roles, active/inactive, delete), and bulk **owner** reassignment.
