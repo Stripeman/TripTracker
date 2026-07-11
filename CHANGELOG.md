@@ -4,6 +4,22 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.17.0 — Light/Dark mode, globe realism, and modal polish
+
+### Added
+- **Appearance: Dark / Light toggle** in Preferences → Settings, independent of the 9 accent themes (and Realistic space) — pick any color theme, then flip Dark/Light on top of it. Replaces the old standalone "Light" theme entry (existing users on Light are migrated automatically).
+- Preferences → Globe: **Cloud drift speed** slider (0–3x), shown when Realistic space is active.
+
+### Changed
+- **Realistic space** globe: land is now one continuous latitude-banded terrain gradient (ice → forest → desert → tropics, mirrored both hemispheres) instead of per-country flat fills — no more patchwork look at country borders. Added mottled terrain texture and softer terminator shading.
+- Clouds rebuilt as stretched, wispy swirl systems for a more realistic satellite-photo feel, denser than before.
+- All modal dialogs (Help & guide, permissions, delete confirmations, transfer ownership, cloud access message) are now top-justified like the trip form, so they don't jump vertically when their content changes.
+- Light mode's own tone dialed back — less bright/washed out.
+- **Theme + Dark/Light are now per-person**, not shared: each browser/person keeps their own choice, stored locally and never synced to the family's cloud config. New installs default to **Realistic space** + Dark.
+- **Admins can lock the theme for everyone** — a "Lock for everyone" toggle in Preferences → Appearance (site admins only) freezes the current theme + Dark/Light choice as the enforced look for all users; the picker is disabled (with a 🔒 note) for everyone else until an admin turns it back off.
+
+---
+
 ## 1.16.1-beta — Form top-justified
 
 ### Changed

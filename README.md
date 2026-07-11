@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.15.1--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.17.0-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -189,7 +189,7 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 - **Status** — All / Visited
 - **Traveler** — **Auto (me)** / All / *(your travelers)*. **Auto (me)** is the default: when you're signed in, the list opens filtered to **your own** trips (matched by your email → Traveler), so each person lands on their own travels first. Set a specific traveler or All to override.
 - Ships defaulting to **Descending + Current year + Personal + Visited**; changing a default applies immediately and is carried in settings export/import.
-- **Themes** — a grid of **10 looks** (Aurora · Cobalt · Violet · Orchid · Magenta · Crimson · Ember · Amber · Emerald · Mono). Picking one instantly retints the **whole app** — globe, tiles, cards, modals and all — and is saved with your settings. Aurora is the default cyan.
+- **Themes** — a grid of **10 looks** (Aurora · Cobalt · Violet · Orchid · Magenta · Crimson · Ember · Amber · Emerald · Mono), plus a **Dark/Light** toggle independent of the accent theme. Picking one instantly retints the **whole app** — globe, tiles, cards, modals and all. **Per-person:** each browser/person keeps their own theme + Dark/Light choice, stored locally and never synced to the family's shared settings. New installs default to **Realistic space** + Dark. **Site admins** can flip **Lock for everyone** to freeze their current choice as the enforced look for all users (shared setting); everyone else's picker is disabled until it's unlocked.
 
 **Site User Management** (People & Family Management → Site Management → Site User Management, site admins only) — the unified **People** list, scoped to your own family: you only see people who share a family with you (or yourself); everyone else is invisible, and only a site admin or an admin of that person's family can edit their role, activate/deactivate, or delete them. Site admins see everyone, **grouped by family** (with a "No family" group for anyone unassigned). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative) and, for a name‑only person, an **Owned by** parent user; a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
 - **Active / Inactive** — an admin can mark a user **Inactive** (keeps the record and role but revokes access until reactivated), shown as a coloured badge, and filter the list by **All / Active / Inactive**. The last remaining active admin can't be deactivated or deleted (buttons hidden, with a notice) — there's always at least one admin.nactive**.
@@ -303,7 +303,6 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
     "stateBorders": false,
     "autoClaim": false,
     "updateFreqMin": 10,
-    "theme": "aurora",
     "defaultYear": "current",
     "defaultTrip": "vacation",
     "defaultStatus": "visited",
@@ -357,7 +356,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 - `owner` / `ownerEmail` — the account that owns this trip (Cloud mode); `ownerEmail` drives per‑trip permissions and the family scoping rules described above.
 - `visibility` — `private` (only the owner), `all` (everyone with access to the family), or `shared` (only `sharedWith`). Defaults to `private` when omitted.
 - `sharedWith` — array of emails, only meaningful when `visibility` is `shared`.
-- `settings`: `version` is a number that auto‑increments on every settings change; `showThumbs` toggles trip photos on cards; `cardLayout` is `banner` / `thumbnail` / `framed`; `autoClaim` auto‑assigns unclaimed trips you create; `updateFreqMin` is `3` / `5` / `10`; `theme` is one of the 10 named looks; `accessEmail` is the admin contact shown in the access list; `defaultYear` is `current` or `all`; `defaultTrip` is `all` or any trip‑type key; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` or any traveler key; `defaultVisit` is `all` or any visit‑type key; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`.
+- `settings`: `version` is a number that auto‑increments on every settings change; `showThumbs` toggles trip photos on cards; `cardLayout` is `banner` / `thumbnail` / `framed`; `autoClaim` auto‑assigns unclaimed trips you create; `updateFreqMin` is `3` / `5` / `10`; `accessEmail` is the admin contact shown in the access list; `defaultYear` is `current` or `all`; `defaultTrip` is `all` or any trip‑type key; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` or any traveler key; `defaultVisit` is `all` or any visit‑type key; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`; `themeLocked` (admin-set) forces `lockedTheme` / `lockedLightMode` on everyone. **Not included:** `theme` and `lightMode` are per‑person and stored only in that browser's local storage, never in shared settings.
 - `settings.travelers` / `tripTypes` / `visitTypes` / `statuses` are the **editable reference lists** — each item is `{ key, label, color }` (statuses also carry a `short` label). A traveler item can also carry `email` (lets them sign in), `createdBy` (who added a name‑only person — governs delete permission), and `familyId` (which family they belong to). Omit the list to fall back to the built‑in defaults.
 
 Data‑only and settings‑only exports contain just the `locations` or `settings` key respectively. Imports accept any of these shapes (a bare array of locations is also supported for backward compatibility).

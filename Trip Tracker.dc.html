@@ -15,6 +15,7 @@
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; height: 100%; background: #04070e; overflow: hidden; }
+  .tt-light-invert img, .tt-light-invert canvas { filter: invert(1) hue-rotate(180deg); }
   @keyframes vl-fade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes vl-ping { 0% { transform: scale(0.5); opacity: 0.85; } 80%, 100% { transform: scale(2); opacity: 0; } }
   @keyframes vl-upulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(251,191,36,0.55), 0 0 13px rgba(251,191,36,0.3); } 50% { box-shadow: 0 0 0 1px rgba(251,191,36,0.8), 0 0 22px rgba(251,191,36,0.6); } }
@@ -282,6 +283,15 @@
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Spin the globe</span>
             <button onClick="{{ toggleSpin }}" style="{{ cfgSpinStyle }}">{{ cfgSpinLabel }}</button>
           </div>
+          <sc-if value="{{ showCloudDrift }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.05);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Cloud drift speed</span>
+              <div style="display:flex; align-items:center; gap:9px;">
+                <input type="range" min="0" max="3" step="0.1" value="{{ cloudDriftValue }}" onChange="{{ setCloudDrift }}" style="width:100px; accent-color:#5fd3ff;" />
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7d90a8; width:30px; text-align:right;">{{ cloudDriftLabel }}</span>
+              </div>
+            </div>
+          </sc-if>
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.05);">
             <div style="flex:1; padding-right:8px;">
               <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">State / province borders</span>
@@ -360,6 +370,26 @@
               </sc-for>
             </div>
           </div>
+        </div>
+
+        <!-- APPEARANCE: dark/light toggle, independent of the accent theme below -->
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin:18px 0 11px;">APPEARANCE</div>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px;">
+          <div style="display:flex; gap:8px;">
+            <button onClick="{{ setDarkMode }}" style="{{ lightModeDarkStyle }}">Dark</button>
+            <button onClick="{{ setLightModeOn }}" style="{{ lightModeLightStyle }}">Light</button>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:9px; line-height:1.4;">Applies on top of whichever theme you pick below.</div>
+          <sc-if value="{{ themeLockedForMe }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#f0b95f; margin-top:7px; line-height:1.4;">🔒 An admin has locked the theme for everyone.</div>
+          </sc-if>
+          <sc-if value="{{ canLockTheme }}" hint-placeholder-val="{{ false }}">
+            <label style="display:flex; align-items:center; gap:8px; margin-top:11px; padding-top:11px; border-top:1px solid rgba(255,255,255,0.06); cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#c6d3e2;">
+              <input type="checkbox" checked="{{ themeLocked }}" onChange="{{ onToggleThemeLock }}" style="width:14px; height:14px; accent-color:#5fd3ff; flex:none;" />
+              {{ themeLockLabel }}
+            </label>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:5px; line-height:1.4;">When on, everyone sees your current Dark/Light + theme pick and can't change it themselves.</div>
+          </sc-if>
         </div>
 
         <!-- THEMES: swatch grid; selected tile gets a ring + glow -->
@@ -1352,7 +1382,7 @@
 
     <!-- transfer-ownership confirm popup -->
     <sc-if value="{{ hasPendingOwnerTransfer }}" hint-placeholder-val="{{ false }}">
-      <div onClick="{{ pendingOwnerTransfer.onCancel }}" style="position:fixed; inset:0; z-index:93; background:rgba(2,6,14,0.7); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; pointer-events:auto;">
+      <div onClick="{{ pendingOwnerTransfer.onCancel }}" style="position:fixed; inset:0; z-index:93; background:rgba(2,6,14,0.7); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:flex-start; justify-content:center; padding-top:78px; pointer-events:auto;">
         <div onClick="{{ stop }}" style="width:360px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(56,189,248,0.3); border-radius:14px; padding:22px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
           <div style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; color:#f1f6fc; margin-bottom:8px;">Transfer ownership?</div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; line-height:1.55; margin-bottom:16px;"><span style="color:#eaf4fd;">{{ pendingOwnerTransfer.toEmail }}</span> will become the owner of <span style="color:#eaf4fd;">{{ pendingOwnerTransfer.familyName }}</span> (promoted to admin if they weren't already). You'll keep your existing role.</div>
@@ -1868,7 +1898,7 @@
 
     <!-- trip delete confirmation -->
     <sc-if value="{{ pendingTripDelete }}" hint-placeholder-val="{{ null }}">
-      <div style="position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+      <div style="position:fixed; inset:0; z-index:60; display:flex; align-items:flex-start; justify-content:center; padding-top:78px; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
         <div style="width:340px; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
           <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
             <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
@@ -1891,7 +1921,7 @@
 
     <!-- delete-my-account confirmation (self-service) -->
     <sc-if value="{{ pendingAccountDelete }}" hint-placeholder-val="{{ null }}">
-      <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+      <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:flex-start; justify-content:center; padding-top:78px; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
         <div style="width:400px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
           <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
             <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
@@ -1925,7 +1955,7 @@
 
     <!-- delete-user confirmation (admin) -->
     <sc-if value="{{ pendingUserDelete }}" hint-placeholder-val="{{ null }}">
-      <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+      <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:flex-start; justify-content:center; padding-top:78px; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
         <div style="width:380px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
           <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
             <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
@@ -1956,7 +1986,7 @@
 
     <!-- delete-family confirmation (family admin or site admin) -->
     <sc-if value="{{ pendingFamilyDelete }}" hint-placeholder-val="{{ null }}">
-      <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+      <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:flex-start; justify-content:center; padding-top:78px; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
         <div style="width:400px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
           <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
             <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
@@ -2223,7 +2253,7 @@
 
     <!-- cloud access message (cloud mode, not authorized) -->
     <sc-if value="{{ cloudBlocked }}" hint-placeholder-val="{{ false }}">
-      <div style="position:absolute; inset:0; z-index:28; pointer-events:auto; display:flex; align-items:center; justify-content:center; padding:40px; background:rgba(3,6,12,0.55); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); animation:vl-fade 0.2s ease;">
+      <div style="position:absolute; inset:0; z-index:28; pointer-events:auto; display:flex; align-items:flex-start; justify-content:center; padding:78px 40px 40px; background:rgba(3,6,12,0.55); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); animation:vl-fade 0.2s ease;">
         <div style="width:min(420px,92vw); background:rgba(9,15,26,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6); padding:28px; text-align:center;">
           <div style="width:46px; height:46px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.35); color:#fcd34d; font-size:22px;">🔒</div>
           <div style="font-family:'Orbitron',sans-serif; font-size:16px; letter-spacing:0.1em; color:#eaf4fd;">{{ cloudBlockTitle }}</div>
@@ -2267,7 +2297,7 @@
 
     <!-- unified permissions modal: quick-edit from the card's lock icon, or from the form's picker -->
     <sc-if value="{{ pmOpen }}" hint-placeholder-val="{{ false }}">
-      <div onClick="{{ pmClose }}" style="position:fixed; inset:0; z-index:98; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center;">
+      <div onClick="{{ pmClose }}" style="position:fixed; inset:0; z-index:98; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:flex-start; justify-content:center; padding-top:78px;">
         <div onClick="{{ stop }}" style="width:380px; max-width:92vw; max-height:82vh; overflow:auto; background:#0b1420; border:1px solid rgba(125,200,245,0.28); border-radius:16px; box-shadow:0 24px 60px rgba(0,0,0,0.55);">
           <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 18px 0;">
             <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; color:#eaf2fb; display:flex; align-items:center; gap:8px;">🔒 Permissions</div>
@@ -2408,7 +2438,7 @@
 
     <!-- help / guide modal -->
     <sc-if value="{{ helpOpen }}" hint-placeholder-val="{{ false }}">
-      <div onClick="{{ closeHelp }}" style="position:absolute; inset:0; z-index:30; pointer-events:auto; display:flex; align-items:center; justify-content:center; padding:40px; background:rgba(2,5,10,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); animation:vl-fade 0.2s ease;">
+      <div onClick="{{ closeHelp }}" style="position:absolute; inset:0; z-index:30; pointer-events:auto; display:flex; align-items:flex-start; justify-content:center; padding:78px 40px 40px; background:rgba(2,5,10,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); animation:vl-fade 0.2s ease;">
         <div onClick="{{ stopProp }}" style="width:min(720px,92vw); max-height:84vh; display:flex; flex-direction:column; background:rgba(9,15,26,0.98); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6); overflow:hidden;">
           <div style="display:flex; align-items:center; justify-content:space-between; padding:17px 22px; border-bottom:1px solid rgba(56,189,248,0.14); flex:none;">
             <div style="font-family:'Orbitron',sans-serif; font-size:14px; letter-spacing:0.14em; color:#e8f3ff;">HELP &amp; GUIDE</div>
@@ -2774,7 +2804,8 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.16.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
+    this.APP_VERSION = '1.17.0';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2792,6 +2823,7 @@ class Component extends DCLogic {
       { key:'amber',   label:'Amber',   filter:'hue-rotate(206deg) saturate(1.12) brightness(1.04)',  swatch:'#f5c24c' },
       { key:'emerald', label:'Emerald', filter:'hue-rotate(-30deg) saturate(1.05) brightness(1)',     swatch:'#4cf5b0' },
       { key:'mono',    label:'Mono',    filter:'hue-rotate(0deg) saturate(0.2) brightness(1.04)',     swatch:'#9fb3c8' },
+      { key:'space',   label:'Realistic space', filter:'hue-rotate(0deg) saturate(1) brightness(1)', swatch:'radial-gradient(circle at 32% 30%, #cfe3ff 0%, #274a63 12%, #0a1626 55%, #04070d 100%)' },
     ];
     // --- reference data: the editable "data lists" (Settings tab can change these) ---
     // Each entry: { key (stable id), label (shown), color (chip + map) }.
@@ -2884,14 +2916,33 @@ class Component extends DCLogic {
     const cfgStatusCard = cfg.statusCard !== false;
     const cfgShowThumbs = cfg.showThumbs !== false;
     const cfgCardLayout = ['banner','thumbnail','framed'].includes(cfg.cardLayout) ? cfg.cardLayout : 'banner';
+    const cfgGlobeStyle = cfg.globeStyle === 'space' ? 'space' : 'stylized';
+    const cfgCloudDrift = Number.isFinite(cfg.cloudDrift) ? cfg.cloudDrift : 1;
     const cfgSpin = cfg.spin !== false;
     const cfgDebugMode = cfg.debugMode === true;
     const cfgStateBorders = cfg.stateBorders === true;
     const cfgAutoClaim = cfg.autoClaim === true;
     const cfgAccessEmail = (typeof cfg.accessEmail === 'string' && cfg.accessEmail.trim()) ? cfg.accessEmail.trim() : 'Terry.Remsik@gmail.com';
     const cfgDefaultYear = cfg.defaultYear === 'all' ? 'all' : 'current';
-    // Selected theme key (one of this.THEMES); falls back to 'aurora' (default cyan).
-    const cfgTheme = (typeof cfg.theme === 'string' && this.THEMES.some(t => t.key === cfg.theme)) ? cfg.theme : 'aurora';
+    // Theme + Light/Dark are PER-PERSON: read from a separate local-only key so they
+    // never sync to the shared cloud config (each browser/person keeps its own look).
+    // First run migrates any theme/lightMode previously saved in the shared config.
+    let localTheme = {};
+    try { localTheme = JSON.parse(localStorage.getItem(this.LOCAL_THEME) || '{}') || {}; } catch (e) {}
+    const hasLocalTheme = typeof localTheme.theme === 'string' || typeof localTheme.lightMode === 'boolean';
+    // Selected theme key (one of this.THEMES); falls back to 'space' (Realistic space, dark).
+    const themeSrc = hasLocalTheme ? localTheme.theme : cfg.theme;
+    const cfgTheme = (typeof themeSrc === 'string' && this.THEMES.some(t => t.key === themeSrc)) ? themeSrc : 'space';
+    // Light/Dark mode: independent of accent theme. Migrates the old standalone
+    // "Light" theme (now removed from THEMES) into lightMode=true on first load.
+    const cfgLightMode = hasLocalTheme && typeof localTheme.lightMode === 'boolean' ? localTheme.lightMode
+      : (typeof cfg.lightMode === 'boolean' ? cfg.lightMode : (cfg.theme === 'light'));
+    if (!hasLocalTheme) { try { localStorage.setItem(this.LOCAL_THEME, JSON.stringify({ theme: cfgTheme, lightMode: cfgLightMode })); } catch (e) {} }
+    // Admin theme lock: SHARED (synced via cfgObject) — when on, everyone sees the
+    // admin's chosen theme/lightMode regardless of their own per-person pick.
+    const cfgThemeLocked = cfg.themeLocked === true;
+    const cfgLockedTheme = (typeof cfg.lockedTheme === 'string' && this.THEMES.some(t => t.key === cfg.lockedTheme)) ? cfg.lockedTheme : cfgTheme;
+    const cfgLockedLightMode = typeof cfg.lockedLightMode === 'boolean' ? cfg.lockedLightMode : cfgLightMode;
     // Editable data lists (fall back to built-in defaults), then refresh lookups.
     const cfgVisitTypes = this.sanitizeList(cfg.visitTypes, this.DEF_VISIT_TYPES);
     const cfgTripTypes = this.sanitizeList(cfg.tripTypes, this.DEF_TRIP_TYPES);
@@ -2919,6 +2970,12 @@ class Component extends DCLogic {
       cfgStatusCard,
       cfgShowThumbs,
       cfgCardLayout,
+      cfgGlobeStyle,
+      cfgLightMode,
+      cfgThemeLocked,
+      cfgLockedTheme,
+      cfgLockedLightMode,
+      cfgCloudDrift,
       cfgSpin,
       cfgDebugMode,
       cfgStateBorders,
@@ -4517,7 +4574,7 @@ class Component extends DCLogic {
     this._endCal = () => this.endCalDrag();
     window.addEventListener('pointerup', this._endCal);
     this._raf = requestAnimationFrame(this.loop);
-    this.applyTheme(this.state.cfgTheme);
+    this.applyTheme(this.effectiveTheme(), this.effectiveLightMode());
     this._onBeforeUnload = (e) => {
       if (this.isFormDirty()) { e.preventDefault(); e.returnValue = ''; return ''; }
     };
@@ -4577,15 +4634,75 @@ class Component extends DCLogic {
   }
 
   // Theme: store the root wrapper element, then drive its CSS `filter` imperatively.
-  setThemeRoot(el) { if (el) { this.themeRootEl = el; this.applyTheme(this.state.cfgTheme); } }
-  applyTheme(key) {
-    const t = this.THEMES.find(x => x.key === key) || this.THEMES[0];
-    if (this.themeRootEl) this.themeRootEl.style.filter = t.filter;
+  setThemeRoot(el) { if (el) { this.themeRootEl = el; this.applyTheme(this.effectiveTheme(), this.effectiveLightMode()); } }
+  hashStr(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) | 0; }
+    return Math.abs(h) % 17;
   }
+  // Light/Dark is a separate, always-available toggle layered on top of whichever
+  // accent theme is selected — appended as extra filter functions after the accent's
+  // own hue-rotate, so it works no matter which of the 9 color themes (or Realistic
+  // space) is active.
+  applyTheme(key, lightModeOverride) {
+    const t = this.THEMES.find(x => x.key === key) || this.THEMES[0];
+    const lightMode = lightModeOverride !== undefined ? lightModeOverride : this.state.cfgLightMode;
+    let filter = t.filter;
+    if (lightMode) filter += ' invert(1) hue-rotate(180deg) brightness(0.88) contrast(0.92) sepia(0.08)';
+    if (this.themeRootEl) {
+      this.themeRootEl.style.filter = filter;
+      this.themeRootEl.classList.toggle('tt-light-invert', !!lightMode);
+    }
+  }
+  // Effective theme/lightMode: the admin's locked choice when a lock is on
+  // (site-wide, synced), otherwise this person's own local pick.
+  effectiveTheme(s) { s = s || this.state; return s.cfgThemeLocked ? s.cfgLockedTheme : s.cfgTheme; }
+  effectiveLightMode(s) { s = s || this.state; return s.cfgThemeLocked ? s.cfgLockedLightMode : s.cfgLightMode; }
   setTheme(key) {
     if (!this.THEMES.some(t => t.key === key)) return;
+    if (this.state.cfgThemeLocked) {
+      // Locked: only reachable by an admin (UI disables the picker for everyone
+      // else) — changing it updates the shared, enforced choice for everyone.
+      if (!this.state.mySiteAdmin) return;
+      this.applyTheme(key, this.state.cfgLockedLightMode);
+      this.setState(s => this.persistConfig(s, { cfgLockedTheme: key }));
+      return;
+    }
     this.applyTheme(key);
-    this.setState(s => this.persistConfig(s, { cfgTheme: key }));
+    // Theme is per-person: written to the local-only key, never pushed to cloud.
+    this.persistLocalTheme({ theme: key });
+    this.setState(s => this.persistConfig(s, { cfgTheme: key, cfgGlobeStyle: key === 'space' ? 'space' : 'stylized' }));
+  }
+  setLightMode(v) {
+    if (this.state.cfgThemeLocked) {
+      if (!this.state.mySiteAdmin) return;
+      this.applyTheme(this.state.cfgLockedTheme, v);
+      this.setState(s => this.persistConfig(s, { cfgLockedLightMode: v }));
+      return;
+    }
+    this.applyTheme(this.state.cfgTheme, v);
+    this.persistLocalTheme({ lightMode: v });
+    this.setState({ cfgLightMode: v });
+  }
+  // Admin-only: lock the theme site-wide, or release it. Turning it on seeds the
+  // lock with whatever the admin is currently looking at.
+  toggleThemeLock(on) {
+    if (!this.state.mySiteAdmin) return;
+    if (on) {
+      const key = this.effectiveTheme(), lm = this.effectiveLightMode();
+      this.applyTheme(key, lm);
+      this.setState(s => this.persistConfig(s, { cfgThemeLocked: true, cfgLockedTheme: key, cfgLockedLightMode: lm }));
+    } else {
+      this.applyTheme(this.state.cfgTheme, this.state.cfgLightMode);
+      this.setState(s => this.persistConfig(s, { cfgThemeLocked: false }));
+    }
+  }
+  // Writes theme/lightMode to the per-person local key only — no cloud push, no shared version bump.
+  persistLocalTheme(patch) {
+    let cur = {};
+    try { cur = JSON.parse(localStorage.getItem(this.LOCAL_THEME) || '{}') || {}; } catch (e) {}
+    const next = { theme: this.state.cfgTheme, lightMode: this.state.cfgLightMode, ...cur, ...patch };
+    try { localStorage.setItem(this.LOCAL_THEME, JSON.stringify(next)); } catch (e) {}
   }
 
   setCanvasRef(el) {
@@ -4829,36 +4946,156 @@ class Component extends DCLogic {
     const path = d3.geoPath(proj, ctx);
 
     // atmosphere
+    const spaceStyle = this.state.cfgGlobeStyle === 'space';
+    if (spaceStyle) {
+      if (!this._stars || this._starsW !== w || this._starsH !== h) {
+        this._starsW = w; this._starsH = h;
+        this._stars = Array.from({ length: 220 }, () => ({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.1 + 0.2, a: Math.random() * 0.6 + 0.25 }));
+      }
+      for (const st of this._stars) {
+        ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, 2 * Math.PI);
+        ctx.fillStyle = `rgba(255,255,255,${st.a})`; ctx.fill();
+      }
+    }
     const atm = ctx.createRadialGradient(cx, cy, R * 0.92, cx, cy, R * 1.28);
-    atm.addColorStop(0, 'rgba(56,189,248,0.32)');
-    atm.addColorStop(0.5, 'rgba(56,189,248,0.08)');
-    atm.addColorStop(1, 'rgba(56,189,248,0)');
+    if (spaceStyle) {
+      atm.addColorStop(0, 'rgba(120,190,255,0.55)');
+      atm.addColorStop(0.35, 'rgba(90,165,240,0.22)');
+      atm.addColorStop(0.7, 'rgba(70,140,220,0.06)');
+      atm.addColorStop(1, 'rgba(70,140,220,0)');
+    } else {
+      atm.addColorStop(0, 'rgba(56,189,248,0.32)');
+      atm.addColorStop(0.5, 'rgba(56,189,248,0.08)');
+      atm.addColorStop(1, 'rgba(56,189,248,0)');
+    }
     ctx.fillStyle = atm;
     ctx.beginPath(); ctx.arc(cx, cy, R * 1.28, 0, 2 * Math.PI); ctx.fill();
 
     // ocean sphere
     const oc = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, R * 0.1, cx, cy, R);
-    oc.addColorStop(0, '#15324d');
-    oc.addColorStop(0.6, '#0b1f33');
-    oc.addColorStop(1, '#061320');
+    if (spaceStyle) {
+      oc.addColorStop(0, '#2f6a9e');
+      oc.addColorStop(0.45, '#164e7d');
+      oc.addColorStop(0.75, '#0a2c50');
+      oc.addColorStop(1, '#030f22');
+    } else {
+      oc.addColorStop(0, '#15324d');
+      oc.addColorStop(0.6, '#0b1f33');
+      oc.addColorStop(1, '#061320');
+    }
     ctx.beginPath(); path({ type: 'Sphere' }); ctx.fillStyle = oc; ctx.fill();
 
     // graticule
     ctx.beginPath(); path(d3.geoGraticule10());
-    ctx.strokeStyle = 'rgba(86,160,210,0.13)'; ctx.lineWidth = 0.6; ctx.stroke();
+    ctx.strokeStyle = spaceStyle ? 'rgba(180,200,220,0.07)' : 'rgba(86,160,210,0.13)'; ctx.lineWidth = 0.6; ctx.stroke();
 
     // land
     if (this.land) {
-      ctx.beginPath(); path(this.land);
-      const lg = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, R * 0.1, cx, cy, R);
-      lg.addColorStop(0, '#1d4a5e');
-      lg.addColorStop(1, '#0e2a36');
-      ctx.fillStyle = lg; ctx.fill();
-      ctx.strokeStyle = 'rgba(94,214,255,0.35)'; ctx.lineWidth = 0.5; ctx.stroke();
+      if (spaceStyle) {
+        // Continuous terrain: one clip over ALL land, filled with a single sphere-space
+        // gradient banded like real biomes (ice → forest → desert → tropics → desert →
+        // forest → ice). Avoids a per-country patchwork — countries are for borders only.
+        ctx.save();
+        ctx.beginPath(); path(this.land); ctx.clip();
+        const landGrad = ctx.createLinearGradient(cx, cy - R, cx, cy + R);
+        landGrad.addColorStop(0.00, '#e9edec');
+        landGrad.addColorStop(0.10, '#b8c4b0');
+        landGrad.addColorStop(0.22, '#4f7a45');
+        landGrad.addColorStop(0.34, '#3d6b3a');
+        landGrad.addColorStop(0.42, '#a9935c');
+        landGrad.addColorStop(0.5, '#4a7a3f');
+        landGrad.addColorStop(0.58, '#a9935c');
+        landGrad.addColorStop(0.66, '#3d6b3a');
+        landGrad.addColorStop(0.78, '#4f7a45');
+        landGrad.addColorStop(0.90, '#b8c4b0');
+        landGrad.addColorStop(1.00, '#e9edec');
+        ctx.fillStyle = landGrad;
+        ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.fill();
+        // subtle terminator shading from the (fixed, offset) sun direction
+        const sunLon = -this.rotation[0] * 0.35;
+        const litCos = Math.cos((0 - sunLon) * Math.PI / 180);
+        ctx.fillStyle = `rgba(0,10,10,${0.16 - 0.16 * Math.max(-1, litCos)})`;
+        ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.fill();
+        // organic mottling: many small soft noise blotches over the whole landmass so it
+        // reads as textured terrain rather than a flat gradient.
+        if (!this._landNoise || this._landNoise.length !== 260) {
+          this._landNoise = Array.from({ length: 260 }, () => ({
+            u: Math.random() * 2 - 1, v: Math.random() * 2 - 1,
+            r: 0.03 + Math.random() * 0.09, dark: Math.random() > 0.5,
+          }));
+        }
+        for (const n of this._landNoise) {
+          const bx = cx + n.u * R, by = cy + n.v * R;
+          if ((n.u * n.u + n.v * n.v) > 1) continue;
+          const br = n.r * R;
+          const bg = ctx.createRadialGradient(bx, by, 0, bx, by, br);
+          const tone = n.dark ? 'rgba(0,20,10,0.10)' : 'rgba(255,255,255,0.07)';
+          bg.addColorStop(0, tone); bg.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.beginPath(); ctx.arc(bx, by, br, 0, 2 * Math.PI); ctx.fillStyle = bg; ctx.fill();
+        }
+        ctx.restore();
+        ctx.beginPath(); path(this.land);
+        ctx.strokeStyle = 'rgba(15,25,18,0.22)'; ctx.lineWidth = 0.4; ctx.stroke();
+      } else {
+        ctx.beginPath(); path(this.land);
+        const lg = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, R * 0.1, cx, cy, R);
+        lg.addColorStop(0, '#1d4a5e');
+        lg.addColorStop(1, '#0e2a36');
+        ctx.fillStyle = lg; ctx.fill();
+        ctx.strokeStyle = 'rgba(94,214,255,0.35)'; ctx.lineWidth = 0.5; ctx.stroke();
+      }
     }
     if (this.borders) {
       ctx.beginPath(); path(this.borders);
-      ctx.strokeStyle = 'rgba(56,189,248,0.18)'; ctx.lineWidth = 0.4; ctx.stroke();
+      ctx.strokeStyle = spaceStyle ? 'rgba(200,210,190,0.10)' : 'rgba(56,189,248,0.18)'; ctx.lineWidth = 0.4; ctx.stroke();
+    }
+    // cloud layer — swirling frontal systems (chains of overlapping puffs curling
+    // around a center) plus scattered small puffs, for real satellite-photo density.
+    if (spaceStyle) {
+      if (!this._cloudSystems) {
+        const mkPuffs = (n, spread) => Array.from({ length: n }, (_, i) => {
+          const ang = (i / n) * Math.PI * 2.2 + Math.random() * 0.6;
+          const rad = spread * (0.25 + 0.75 * (i / n));
+          return { dLon: Math.cos(ang) * rad, dLat: Math.sin(ang) * rad * 0.7, r: 3.5 + Math.random() * 5, a: 0.35 + Math.random() * 0.35 };
+        });
+        this._cloudSystems = Array.from({ length: 16 }, () => ({
+          lon: Math.random() * 360 - 180, lat: Math.random() * 150 - 75,
+          spread: 6 + Math.random() * 10, drift: (Math.random() - 0.5) * 0.006,
+          puffs: mkPuffs(10 + Math.floor(Math.random() * 8), 6 + Math.random() * 10),
+        }));
+        this._cloudPuffsSmall = Array.from({ length: 60 }, () => ({
+          lon: Math.random() * 360 - 180, lat: Math.random() * 170 - 85,
+          r: 2 + Math.random() * 4, a: 0.15 + Math.random() * 0.25, drift: (Math.random() - 0.5) * 0.006,
+        }));
+      }
+      const _cloudCenter = [-this.rotation[0], -this.rotation[1]];
+      const driftMul = Number.isFinite(this.state.cfgCloudDrift) ? this.state.cfgCloudDrift : 1;
+      ctx.save();
+      ctx.beginPath(); path({ type: 'Sphere' }); ctx.clip();
+      const drawPuff = (lon, lat, r, a) => {
+        if (d3.geoDistance([lon, lat], _cloudCenter) > Math.PI / 2 + 0.25) return;
+        const p = proj([lon, lat]);
+        if (!p) return;
+        ctx.save();
+        ctx.translate(p[0], p[1]);
+        ctx.scale(1.6, 0.75);
+        const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+        cg.addColorStop(0, `rgba(255,255,255,${a})`);
+        cg.addColorStop(0.6, `rgba(255,255,255,${a * 0.45})`);
+        cg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, 2 * Math.PI);
+        ctx.fillStyle = cg; ctx.fill();
+        ctx.restore();
+      };
+      for (const sys of this._cloudSystems) {
+        sys.lon += sys.drift * driftMul;
+        for (const pf of sys.puffs) drawPuff(sys.lon + pf.dLon, sys.lat + pf.dLat, pf.r, pf.a);
+      }
+      for (const c of this._cloudPuffsSmall) {
+        c.lon += c.drift * driftMul;
+        drawPuff(c.lon, c.lat, c.r, c.a);
+      }
+      ctx.restore();
     }
     // state / province borders — only for large countries, only while the globe is still.
     // Lazy-load the line data the first time we see the flag on (covers reload / cloud /
@@ -4873,7 +5110,7 @@ class Component extends DCLogic {
 
     // rim
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI);
-    ctx.strokeStyle = 'rgba(120,225,255,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = spaceStyle ? 'rgba(140,200,255,0.55)' : 'rgba(120,225,255,0.5)'; ctx.lineWidth = spaceStyle ? 1.4 : 1; ctx.stroke();
 
     // markers — grouped by coordinate; multi-destination clusters fan out when expanded
     this._hits = [];
@@ -5132,7 +5369,8 @@ class Component extends DCLogic {
   // Maps the friendly key names shown in the settings debug JSON back onto the
   // cfg* state fields cfgObject() reads them from.
   settingsKeyMap() {
-    return { version: 'cfgVersion', detailsFormDefault: 'cfgDetailsFormDefault', detailsCard: 'cfgDetailsCard', statusCard: 'cfgStatusCard', showThumbs: 'cfgShowThumbs', cardLayout: 'cfgCardLayout', spin: 'cfgSpin', debugMode: 'cfgDebugMode', stateBorders: 'cfgStateBorders', autoClaim: 'cfgAutoClaim', updateFreqMin: 'cfgUpdateFreqMin', theme: 'cfgTheme', defaultYear: 'cfgDefaultYear', defaultTrip: 'cfgDefaultTrip', defaultStatus: 'cfgDefaultStatus', defaultTraveler: 'cfgDefaultTraveler', defaultVisit: 'cfgDefaultVisit', sortDir: 'sortDir', dataSource: 'cfgDataSource', accessEmail: 'cfgAccessEmail', visitTypes: 'cfgVisitTypes', tripTypes: 'cfgTripTypes', statuses: 'cfgStatuses' };
+    // theme/lightMode intentionally omitted — per-person, not part of shared settings JSON.
+    return { version: 'cfgVersion', detailsFormDefault: 'cfgDetailsFormDefault', detailsCard: 'cfgDetailsCard', statusCard: 'cfgStatusCard', showThumbs: 'cfgShowThumbs', cardLayout: 'cfgCardLayout', cloudDrift: 'cfgCloudDrift', globeStyle: 'cfgGlobeStyle', spin: 'cfgSpin', debugMode: 'cfgDebugMode', stateBorders: 'cfgStateBorders', autoClaim: 'cfgAutoClaim', updateFreqMin: 'cfgUpdateFreqMin', themeLocked: 'cfgThemeLocked', lockedTheme: 'cfgLockedTheme', lockedLightMode: 'cfgLockedLightMode', defaultYear: 'cfgDefaultYear', defaultTrip: 'cfgDefaultTrip', defaultStatus: 'cfgDefaultStatus', defaultTraveler: 'cfgDefaultTraveler', defaultVisit: 'cfgDefaultVisit', sortDir: 'sortDir', dataSource: 'cfgDataSource', accessEmail: 'cfgAccessEmail', visitTypes: 'cfgVisitTypes', tripTypes: 'cfgTripTypes', statuses: 'cfgStatuses' };
   }
   confirmDebugJsonSave() {
     const target = this.state.debugJsonTarget || 'trip';
@@ -5360,7 +5598,10 @@ class Component extends DCLogic {
    * number; persistConfigNoBump is used mid-typing in the data editor so the
    * version only ticks once on blur. Any config change also schedules a cloud push. */
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, cardLayout: s.cfgCardLayout, spin: s.cfgSpin, debugMode: s.cfgDebugMode, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, updateFreqMin: s.cfgUpdateFreqMin, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, statuses: s.cfgStatuses };
+    // NOTE: theme + lightMode are per-person (see LOCAL_THEME) and deliberately excluded
+    // here so they never get written into the shared config that syncs to the family.
+    // themeLocked/lockedTheme/lockedLightMode ARE shared (admin-controlled enforcement).
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, cardLayout: s.cfgCardLayout, cloudDrift: s.cfgCloudDrift, globeStyle: s.cfgGlobeStyle, spin: s.cfgSpin, debugMode: s.cfgDebugMode, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, updateFreqMin: s.cfgUpdateFreqMin, themeLocked: s.cfgThemeLocked, lockedTheme: s.cfgLockedTheme, lockedLightMode: s.cfgLockedLightMode, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -5772,6 +6013,12 @@ class Component extends DCLogic {
       cfgStatusCard: settings.statusCard !== false,
       cfgShowThumbs: settings.showThumbs !== false,
       cfgCardLayout: ['banner','thumbnail','framed'].includes(settings.cardLayout) ? settings.cardLayout : 'banner',
+      cfgGlobeStyle: settings.globeStyle === 'space' ? 'space' : 'stylized',
+      // theme/lightMode NOT taken from incoming settings — per-person, stays as-is.
+      cfgThemeLocked: settings.themeLocked === true,
+      cfgLockedTheme: (typeof settings.lockedTheme === 'string' && this.THEMES.some(t => t.key === settings.lockedTheme)) ? settings.lockedTheme : ((this.state && this.state.cfgLockedTheme) || 'space'),
+      cfgLockedLightMode: typeof settings.lockedLightMode === 'boolean' ? settings.lockedLightMode : ((this.state && this.state.cfgLockedLightMode) || false),
+      cfgCloudDrift: Number.isFinite(settings.cloudDrift) ? settings.cloudDrift : 1,
       cfgSpin: settings.spin !== false,
       cfgDebugMode: settings.debugMode === true,
       cfgStateBorders: settings.stateBorders === true,
@@ -5779,7 +6026,6 @@ class Component extends DCLogic {
       cfgAccessEmail: (typeof settings.accessEmail === 'string' && settings.accessEmail.trim()) ? settings.accessEmail.trim() : ((this.state && this.state.cfgAccessEmail) || 'Terry.Remsik@gmail.com'),
       detailsOpen: settings.detailsFormDefault !== false,
       cfgDefaultYear: settings.defaultYear === 'all' ? 'all' : 'current',
-      cfgTheme: (typeof settings.theme === 'string' && this.THEMES.some(t => t.key === settings.theme)) ? settings.theme : ((this.state && this.state.cfgTheme) || 'aurora'),
       cfgDefaultTrip: (settings.defaultTrip === 'all' || tripKeys.includes(settings.defaultTrip)) ? settings.defaultTrip : (tripKeys.includes('vacation') ? 'vacation' : 'all'),
       cfgDefaultStatus: settings.defaultStatus === 'all' ? 'all' : 'visited',
       cfgDefaultTraveler: (settings.defaultTraveler === 'all' || settings.defaultTraveler === 'auto' || travKeys.includes(settings.defaultTraveler)) ? settings.defaultTraveler : 'auto',
@@ -5789,6 +6035,11 @@ class Component extends DCLogic {
     };
     this.rebuildLookups(patch);
     try { localStorage.setItem(this.CFG, JSON.stringify(this.cfgObject({ ...(this.state || {}), ...patch }))); } catch (er) {}
+    // Re-apply the visible theme in case the lock state (or the admin's locked
+    // choice) just changed via this settings pull.
+    const effTheme = patch.cfgThemeLocked ? patch.cfgLockedTheme : ((this.state && this.state.cfgTheme) || 'space');
+    const effLight = patch.cfgThemeLocked ? patch.cfgLockedLightMode : ((this.state && this.state.cfgLightMode) || false);
+    this.applyTheme(effTheme, effLight);
     return patch;
   }
 
@@ -5873,6 +6124,13 @@ class Component extends DCLogic {
   dismissUpdate() { this.setState({ updateDismissed: true }); }
   setCardLayout(key) {
     this.setState(s => this.persistConfig(s, { cfgCardLayout: key }));
+  }
+  setGlobeStyle(key) {
+    this.setState(s => this.persistConfig(s, { cfgGlobeStyle: key }));
+  }
+  setCloudDrift(v) {
+    const n = Math.max(0, Math.min(3, Number(v)));
+    this.setState(s => this.persistConfig(s, { cfgCloudDrift: n }));
   }
   closeHelp() { this.setState({ helpOpen: false }); }
   openHelp() { this.setState({ helpOpen: true }); this.loadHelpDoc('readme'); }
@@ -8276,16 +8534,38 @@ class Component extends DCLogic {
       cfgSpinStyle: cfgPill(this.state.cfgSpin),
       cfgSpinLabel: this.state.cfgSpin ? 'ON' : 'OFF',
       toggleSpin: () => this.toggleCfgKey('cfgSpin', 'spin'),
+      lightModeOn: !!this.state.cfgLightMode,
+      lightModeOn: this.effectiveLightMode(),
+      themeLocked: !!this.state.cfgThemeLocked,
+      themeLockedForMe: !!this.state.cfgThemeLocked && !this.state.mySiteAdmin,
+      canLockTheme: !!this.state.mySiteAdmin,
+      onToggleThemeLock: () => this.toggleThemeLock(!this.state.cfgThemeLocked),
+      themeLockLabel: this.state.cfgThemeLocked ? '🔒 Locked for everyone' : 'Lock for everyone',
+      lightModeDarkStyle: !this.effectiveLightMode()
+        ? 'flex:1; font-family:\'Space Grotesk\',sans-serif; font-size:12px; font-weight:600; padding:8px; border-radius:8px; cursor:pointer; border:1px solid rgba(56,189,248,0.4); background:rgba(56,189,248,0.14); color:#9fe6ff;'
+        : 'flex:1; font-family:\'Space Grotesk\',sans-serif; font-size:12px; padding:8px; border-radius:8px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03); color:#8ea0b8;',
+      lightModeLightStyle: this.effectiveLightMode()
+        ? 'flex:1; font-family:\'Space Grotesk\',sans-serif; font-size:12px; font-weight:600; padding:8px; border-radius:8px; cursor:pointer; border:1px solid rgba(56,189,248,0.4); background:rgba(56,189,248,0.14); color:#9fe6ff;'
+        : 'flex:1; font-family:\'Space Grotesk\',sans-serif; font-size:12px; padding:8px; border-radius:8px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03); color:#8ea0b8;',
+      setDarkMode: () => this.setLightMode(false),
+      setLightModeOn: () => this.setLightMode(true),
+      showCloudDrift: this.state.cfgGlobeStyle === 'space',
+      cloudDriftValue: Number.isFinite(this.state.cfgCloudDrift) ? this.state.cfgCloudDrift : 1,
+      cloudDriftLabel: (Number.isFinite(this.state.cfgCloudDrift) ? this.state.cfgCloudDrift : 1).toFixed(1) + 'x',
+      setCloudDrift: (e) => this.setCloudDrift(e.target.value),
       cfgStateBordersStyle: cfgPill(this.state.cfgStateBorders),
       cfgStateBordersLabel: this.state.cfgStateBorders ? 'ON' : 'OFF',
       toggleStateBorders: () => this.toggleStateBorders(),
       themeTiles: this.THEMES.map(t => {
-        const on = this.state.cfgTheme === t.key;
+        const on = this.effectiveTheme() === t.key;
+        const locked = !!this.state.cfgThemeLocked && !this.state.mySiteAdmin;
         return {
           key: t.key, label: t.label, swatch: t.swatch, on,
           onSelect: () => this.setTheme(t.key),
-          swatchStyle: 'width:18px; height:18px; flex:none; border-radius:6px; background:#38bdf8; box-shadow:0 0 0 1px rgba(255,255,255,0.18) inset; filter:' + t.filter + ';',
-          style: 'display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:10px; cursor:pointer; transition:all .15s; color:' +
+          swatchStyle: (t.key === 'space')
+            ? 'width:18px; height:18px; flex:none; border-radius:6px; background:' + t.swatch + '; box-shadow:0 0 0 1px rgba(255,255,255,0.18) inset;'
+            : 'width:18px; height:18px; flex:none; border-radius:6px; background:#38bdf8; box-shadow:0 0 0 1px rgba(255,255,255,0.18) inset; filter:' + t.filter + ';',
+          style: 'display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:10px; cursor:' + (locked ? 'not-allowed' : 'pointer') + '; transition:all .15s; opacity:' + (locked ? '0.55' : '1') + '; color:' +
             (on ? '#eaf6ff' : '#c6d3e2') + '; background:' +
             (on ? 'rgba(95,211,255,0.12)' : 'rgba(255,255,255,0.03)') +
             '; border:1px solid ' + (on ? '#5fd3ff' : 'rgba(255,255,255,0.1)') +
