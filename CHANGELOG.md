@@ -4,6 +4,14 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.14-beta — "Delete family" button was calling an undefined method
+
+### Fixed
+- **`confirmFamilyDeleteAll` was never defined** — the "Delete family" button's `onClick` referenced a method that didn't exist in the logic class, so clicking it silently threw and did nothing at all. Added the missing method.
+- Removed the native `disabled` attribute from both delete buttons in the confirmation modal (a disabled button also fires nothing on click, with zero feedback) — they now always respond, with a toast explaining what's still needed if the required checkboxes aren't checked.
+
+---
+
 ## 1.9.13-beta — Clearer wording on family-delete confirmation
 
 ### Changed

@@ -1862,8 +1862,8 @@
           </div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#f0c96a; line-height:1.5; margin-bottom:14px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:8px 10px;">⚠ This removes the <strong>association</strong> between these accounts and this family only — it does NOT delete the accounts, their sign-in, or their membership in any other family.</div>
           <div style="display:flex; flex-direction:column; gap:8px;">
-            <button onClick="{{ confirmFamilyDeleteSelected }}" disabled="{{ pendingFamilyDelete.noneChecked }}" style="{{ pendingFamilyDelete.deleteSelectedStyle }}">Delete checked items</button>
-            <button onClick="{{ confirmFamilyDeleteAll }}" disabled="{{ pendingFamilyDelete.notAllChecked }}" style="{{ pendingFamilyDelete.deleteFamilyStyle }}">Delete family{{ pendingFamilyDelete.allCheckedHint }}</button>
+            <button onClick="{{ confirmFamilyDeleteSelected }}" style="{{ pendingFamilyDelete.deleteSelectedStyle }}">Delete checked items</button>
+            <button onClick="{{ confirmFamilyDeleteAll }}" style="{{ pendingFamilyDelete.deleteFamilyStyle }}">Delete family{{ pendingFamilyDelete.allCheckedHint }}</button>
             <button onClick="{{ cancelFamilyDelete }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
           </div>
         </div>
@@ -2509,7 +2509,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.13-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.14-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3454,9 +3454,22 @@ class Component extends DCLogic {
   }
   async confirmFamilyDeleteSelected() {
     const pd = this.state.pendingFamilyDelete; if (!pd) return;
-    if (!pd.images && !pd.trips && !pd.nonAccounts && !pd.userAccounts) return;
+    if (!pd.images && !pd.trips && !pd.nonAccounts && !pd.userAccounts) { this.toast('Check at least one category first.'); return; }
     const j = await this.familiesAction('deleteFamilyData', { familyId: pd.familyId, images: pd.images, trips: pd.trips, nonAccounts: pd.nonAccounts, userAccounts: pd.userAccounts, deleteFamily: false });
     if (j) { this.toast('Deleted ' + (j.tripsRemoved || 0) + ' trip(s), cleared ' + (j.imagesCleared || 0) + ' image(s), removed ' + (j.nonAccountsRemoved || 0) + ' non-account member(s) + ' + (j.userAccountsRemoved || 0) + ' user account(s).'); this.setState({ pendingFamilyDelete: null }); this.cloudLoad(); }
+  }
+  // "Delete family" itself — only takes effect once all 4 categories are checked
+  // (mirrored/enforced again server-side). Was previously referenced by the template
+  // but never defined, so clicking it silently threw and did nothing.
+  async confirmFamilyDeleteAll() {
+    const pd = this.state.pendingFamilyDelete; if (!pd) return;
+    if (!pd.images || !pd.trips || !pd.nonAccounts || !pd.userAccounts) { this.toast('Check all 4 categories above to delete the whole family.'); return; }
+    const j = await this.familiesAction('deleteFamilyData', { familyId: pd.familyId, images: true, trips: true, nonAccounts: true, userAccounts: true, deleteFamily: true });
+    if (j) {
+      this.toast('Deleted ' + (pd.name || 'the family') + ' — ' + (j.tripsRemoved || 0) + ' trip(s), ' + (j.nonAccountsRemoved || 0) + ' non-account member(s) + ' + (j.userAccountsRemoved || 0) + ' user account(s) removed.');
+      this.setState({ pendingFamilyDelete: null, famDetailFamilyId: null });
+      this.cloudLoad();
+    }
   }
   familyDeleteModalVals(s) {
     const pd = s.pendingFamilyDelete;
