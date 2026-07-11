@@ -1730,12 +1730,10 @@
         </sc-if>
         <sc-if value="{{ selected.hasGallery }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">GALLERY</div>
-            <div style="display:flex; flex-wrap:wrap; gap:7px;">
-              <sc-for list="{{ selected.galleryItems }}" as="g" hint-placeholder-count="0">
-                <img ref="{{ g.setRef }}" onClick="{{ g.open }}" style="width:58px; height:58px; object-fit:cover; border-radius:9px; border:1px solid rgba(255,255,255,0.12); cursor:pointer; display:block;">
-              </sc-for>
-            </div>
+            <button onClick="{{ selected.openGallery }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:10px 12px; cursor:pointer;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10.5" r="1.5"></circle><path d="M21 15l-5-5L5 19"></path></svg>
+              View gallery <span style="color:#7fb4d8;">· {{ selected.galleryCount }}</span>
+            </button>
           </div>
         </sc-if>
         <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
@@ -2521,7 +2519,7 @@
         </sc-if>
 
         <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:18px 0 7px;">GALLERY <span style="color:#445;">·opt</span></label>
-        <input ref="{{ setGalleryInputRef }}" type="file" accept="image/*" multiple="" onChange="{{ onGalleryPick }}" style="display:none;">
+        <input ref="{{ setGalleryInputRef }}" type="file" accept="image/*" multiple="{{ true }}" onChange="{{ onGalleryPick }}" style="display:none;">
         <div style="display:flex; flex-wrap:wrap; gap:8px;">
           <sc-for list="{{ formGalleryItems }}" as="g" hint-placeholder-count="0">
             <div style="position:relative; width:56px; height:56px; flex:none;">
@@ -2640,7 +2638,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.11.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.11.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -7391,13 +7389,6 @@ class Component extends DCLogic {
       const el = this._formGalleryRefs && this._formGalleryRefs[i];
       if (el && el.src !== url) el.src = url;
     });
-    if (this._detailGalleryRefs) {
-      const sl = this.state.locations.find(l => l.id === this.state.selectedId);
-      (sl && sl.gallery || []).forEach((url, i) => {
-        const el = this._detailGalleryRefs[i];
-        if (el && el.src !== url) el.src = url;
-      });
-    }
     if (this._lightboxImg) {
       const src = this.state.lightbox ? this.state.lightbox.images[this.state.lightbox.index] : '';
       if (this._lightboxImg.src !== src) this._lightboxImg.src = src;
@@ -7442,15 +7433,15 @@ class Component extends DCLogic {
       reader.onload = () => {
         const img = new Image();
         img.onload = () => {
-          const SIZE = 200;
+          const SIZE = 480;
           const canvas = document.createElement('canvas');
           canvas.width = SIZE; canvas.height = SIZE;
           const ctx = canvas.getContext('2d');
           const side = Math.min(img.width, img.height);
           const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
           ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
-          let q = 0.8, dataUrl = canvas.toDataURL('image/jpeg', q);
-          while (dataUrl.length > 40000 && q > 0.35) { q -= 0.12; dataUrl = canvas.toDataURL('image/jpeg', q); }
+          let q = 0.82, dataUrl = canvas.toDataURL('image/jpeg', q);
+          while (dataUrl.length > 140000 && q > 0.35) { q -= 0.12; dataUrl = canvas.toDataURL('image/jpeg', q); }
           resolve(dataUrl);
         };
         img.onerror = () => reject(new Error('img'));
@@ -7723,7 +7714,8 @@ class Component extends DCLogic {
         onStatsHover: (e) => this.showCardStat(e, 'trip:' + sl.id),
         onStatsLeave: () => this.hideCardStat(),
         hasGallery: Array.isArray(sl.gallery) && sl.gallery.length > 0,
-        galleryItems: (sl.gallery || []).map((url, i) => ({ url, open: () => this.openLightbox(sl.gallery, i), setRef: (el) => { this._detailGalleryRefs = this._detailGalleryRefs || {}; this._detailGalleryRefs[i] = el; if (el && el.src !== url) el.src = url; } })),
+        galleryCount: (sl.gallery || []).length,
+        openGallery: () => this.openLightbox(sl.gallery, 0),
       };
     }
     const meId = this.state.cloudUserId || '';

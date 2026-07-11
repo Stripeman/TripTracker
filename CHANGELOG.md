@@ -4,6 +4,13 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.11.1-beta — Phase 3: gallery follow-up fixes
+
+### Fixed
+- Multi-select on the gallery file picker wasn't actually enabling (a boolean attribute rendered as a literal empty string) — you could only add one photo at a time. Now picks multiple at once.
+- Detail card's gallery could push the card's top off-screen when a trip had many photos (the card grows upward, anchored to its bottom-fixed position, with no scroll). Replaced the inline thumbnail strip with a single "View gallery · N" button that opens the lightbox — card height no longer depends on gallery size.
+- Gallery photos were stored at a very small resolution (200px), so the full-screen lightbox view looked blurry/tiny. Bumped to 480px.
+
 ## 1.11.0-beta — Phase 3: richer trip content (item 3.1 — photo gallery)
 
 ### Added
