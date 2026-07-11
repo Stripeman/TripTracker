@@ -193,6 +193,9 @@
               </sc-if>
             </sc-if>
           </div>
+          <div style="padding:0 20px 10px;">
+            <button onClick="{{ askDeleteMyAccount }}" style="width:100%; box-sizing:border-box; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.06em; color:#e9a3a3; background:none; border:none; text-decoration:underline; cursor:pointer; padding:2px 0; text-align:left;">Delete my account…</button>
+          </div>
           <div style="padding:4px 20px 18px; display:flex; gap:9px;">
             <button onClick="{{ closeProfile }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:10px; cursor:pointer;">Close</button>
             <a href="/.auth/logout" style="flex:1; text-align:center; text-decoration:none; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#f0b4b4; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.34); border-radius:10px; padding:10px; cursor:pointer;">Sign out</a>
@@ -1808,6 +1811,40 @@
       </div>
     </sc-if>
 
+    <!-- delete-my-account confirmation (self-service) -->
+    <sc-if value="{{ pendingAccountDelete }}" hint-placeholder-val="{{ null }}">
+      <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+        <div style="width:400px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+          <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
+            <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px; color:#f3d2d2;">Delete your account?</div>
+          </div>
+          <sc-if value="{{ pendingAccountDelete.blocked }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#f1c4c4; line-height:1.55; margin-bottom:16px;">You're the sole admin of <strong>{{ pendingAccountDelete.blockedNamesText }}</strong>. Transfer ownership or promote another admin there first — otherwise that family would be left with no one able to administer it.</div>
+            <button onClick="{{ cancelAccountDelete }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:9px; padding:9px; cursor:pointer;">Got it</button>
+          </sc-if>
+          <sc-if value="{{ pendingAccountDelete.canDelete }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cdd9e6; line-height:1.55; margin-bottom:13px;">This removes your membership from every family below, your person/traveler record, and your tag on any trip you don't own. It never deletes your sign-in itself.</div>
+            <div style="display:flex; flex-direction:column; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9fb3c8; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:9px; padding:10px 12px; margin-bottom:14px;">
+              <div>Families you'll leave: <span style="color:#eaf4fd;">{{ pendingAccountDelete.families }}</span> <span style="color:#7c8ea6;">({{ pendingAccountDelete.familyNamesText }})</span></div>
+              <div>Trips you own: <span style="color:#eaf4fd;">{{ pendingAccountDelete.trips }}</span> <span style="color:#7c8ea6;">({{ pendingAccountDelete.images }} with photos)</span></div>
+              <div>Other trips you're tagged on: <span style="color:#eaf4fd;">{{ pendingAccountDelete.tagged }}</span> — your tag is removed, trip stays</div>
+              <sc-if value="{{ pendingAccountDelete.nonAccountsCreated }}" hint-placeholder-val="{{ false }}">
+                <div>Non-account people you added: <span style="color:#eaf4fd;">{{ pendingAccountDelete.nonAccountsCreated }}</span> — untouched</div>
+              </sc-if>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button onClick="{{ confirmDeleteMyAccountKeep }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe0f2; background:rgba(56,189,248,0.08); border:1px solid rgba(95,211,255,0.3); border-radius:9px; padding:9px; cursor:pointer;">Delete account · keep my trips (unassign)</button>
+              <sc-if value="{{ pendingAccountDelete.trips }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ confirmDeleteMyAccountWithTrips }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:700; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:9px; padding:9px; cursor:pointer; box-shadow:0 0 16px rgba(220,38,38,0.35);">Delete account + my {{ pendingAccountDelete.trips }} trips</button>
+              </sc-if>
+              <button onClick="{{ cancelAccountDelete }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- delete-user confirmation (admin) -->
     <sc-if value="{{ pendingUserDelete }}" hint-placeholder-val="{{ null }}">
       <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
@@ -2524,7 +2561,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.16-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.17-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2769,6 +2806,7 @@ class Component extends DCLogic {
       addPersonDraft: { label: '', color: '#5fd3ff', email: '' },
       newFamilyIsOnboarding: false,
       onboardPromptShown: false,
+      pendingAccountDelete: null,
       onboardAwaitingApproval: false,
       onboardFamilyId: null,
       familyNameEditing: false,
@@ -5587,6 +5625,30 @@ class Component extends DCLogic {
 
   toggleProfile() { this.setState(s => ({ profileOpen: !s.profileOpen })); }
   closeProfile() { this.setState({ profileOpen: false }); }
+  async askDeleteMyAccount() {
+    const j = await this.familiesActionSilent('myAccountDeleteImpact', {});
+    if (!j) return;
+    this.setState({
+      pendingAccountDelete: {
+        families: j.families || 0, familyNamesText: (j.familyNames || []).join(', ') || 'none',
+        trips: j.trips || 0, images: j.images || 0, tagged: j.tagged || 0, nonAccountsCreated: j.nonAccountsCreated || 0,
+        blocked: (j.blockedFamilies || []).length > 0,
+        blockedNamesText: (j.blockedFamilies || []).map(f => f.name).join(', '),
+        canDelete: !(j.blockedFamilies || []).length,
+      },
+    });
+  }
+  cancelAccountDelete() { this.setState({ pendingAccountDelete: null }); }
+  async confirmDeleteMyAccountKeep() { await this.doDeleteMyAccount('keep'); }
+  async confirmDeleteMyAccountWithTrips() { await this.doDeleteMyAccount('withTrips'); }
+  async doDeleteMyAccount(mode) {
+    const j = await this.familiesAction('deleteMyAccount', { mode });
+    if (j) {
+      this.toast('Your account has been deleted' + (j.tripsRemoved ? (' — ' + j.tripsRemoved + ' trip(s) removed') : '') + '. Signing you out…');
+      this.setState({ pendingAccountDelete: null, profileOpen: false });
+      setTimeout(() => { window.location.href = '/.auth/logout'; }, 1500);
+    }
+  }
   stop(e) { if (e && e.stopPropagation) e.stopPropagation(); }
   // My traveler key (the person record whose email matches my login), for "associated" counts.
   myTravelerKey() {
@@ -7968,6 +8030,11 @@ class Component extends DCLogic {
       profileOpen: this.state.profileOpen,
       toggleProfile: () => this.toggleProfile(),
       closeProfile: () => this.closeProfile(),
+      pendingAccountDelete: this.state.pendingAccountDelete,
+      askDeleteMyAccount: () => this.askDeleteMyAccount(),
+      cancelAccountDelete: () => this.cancelAccountDelete(),
+      confirmDeleteMyAccountKeep: () => this.confirmDeleteMyAccountKeep(),
+      confirmDeleteMyAccountWithTrips: () => this.confirmDeleteMyAccountWithTrips(),
       confirmRemovePhotos: this.state.confirmRemovePhotos,
       askRemoveAllPhotos: this.askRemoveAllPhotos,
       cancelRemoveAllPhotos: this.cancelRemoveAllPhotos,

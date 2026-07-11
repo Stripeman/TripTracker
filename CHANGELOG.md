@@ -4,6 +4,15 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.17-beta — Delete my own account
+
+### Added
+- **"Delete my account…"** in the Profile popup — self-service account deletion with the same confirmation pattern as family/user delete: shows exactly how many families you'd leave, trips you own (+ photos), other trips you're tagged on, and non-account people you've added, before anything happens.
+- Blocked (with a clear message) if you're the sole active admin of any family — transfer ownership or promote another admin there first.
+- Two modes, like person delete: keep your trips (unassigned) or delete them too. Either way your tag is removed from other people's trips, your membership is removed from every family, and your traveler/person record is deleted. Your sign-in itself is never touched by the app (you're signed out at the end, but the identity provider account is untouched).
+
+---
+
 ## 1.9.16-beta — Onboarding now branches on auto-approve
 
 ### Changed

@@ -321,6 +321,87 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Self-service account deletion: counts shown in the confirmation UI before
+    // anything is removed. Any family where I'm the sole active admin blocks the
+    // whole operation — I'd have to transfer ownership/promote another admin first,
+    // otherwise that family would be orphaned with no one able to administer it.
+    if (action === "myAccountDeleteImpact") {
+      const myEmail = me.email.toLowerCase();
+      const myMemberships = members.filter((m) => m.email === myEmail && m.active !== false);
+      const blockedFamilies = [];
+      myMemberships.forEach((m) => {
+        if (m.role !== "admin") return;
+        const otherActiveAdmins = members.some((x) => x.familyId === m.familyId && x.email !== myEmail && x.active !== false && x.role === "admin");
+        if (!otherActiveAdmins) {
+          const fam = families.find((f) => f.id === m.familyId);
+          blockedFamilies.push({ id: m.familyId, name: (fam && fam.name) || "a family" });
+        }
+      });
+      const tripsBlobName = process.env.TRIPS_BLOB || "trip-tracker.json";
+      const tripsData = await readJsonBlob(container, tripsBlobName, null);
+      const locations = tripsData ? (Array.isArray(tripsData) ? tripsData : (tripsData.locations || [])) : [];
+      const myTrips = locations.filter((t) => String(t.ownerEmail || "").toLowerCase().trim() === myEmail);
+      const myTravelerKeys = travelers.filter((t) => String(t.email || "").toLowerCase().trim() === myEmail).map((t) => t.key);
+      const tagged = locations.filter((t) => Array.isArray(t.travelers) && t.travelers.some((k) => myTravelerKeys.includes(k)) && String(t.ownerEmail || "").toLowerCase().trim() !== myEmail);
+      const nonAccountsCreated = members.filter((m) => !m.email && String(m.createdBy || "").toLowerCase().trim() === myEmail);
+      json(200, {
+        families: myMemberships.length,
+        familyNames: myMemberships.map((m) => { const f = families.find((x) => x.id === m.familyId); return (f && f.name) || "a family"; }),
+        trips: myTrips.length,
+        images: myTrips.filter((t) => !!t.photo).length,
+        tagged: tagged.length,
+        nonAccountsCreated: nonAccountsCreated.length,
+        blockedFamilies,
+      });
+      return;
+    }
+
+    // Delete my own account — removes my membership from EVERY family, my traveler
+    // record(s), and my tag from other people's trips. mode 'keep' leaves my own
+    // trips in place (ownerless); mode 'withTrips' deletes them (and their photos)
+    // too. Refuses if I'm the sole active admin of any family (see impact check above).
+    if (action === "deleteMyAccount") {
+      const myEmail = me.email.toLowerCase();
+      const myMemberships = members.filter((m) => m.email === myEmail && m.active !== false);
+      const blocked = myMemberships.some((m) => {
+        if (m.role !== "admin") return false;
+        return !members.some((x) => x.familyId === m.familyId && x.email !== myEmail && x.active !== false && x.role === "admin");
+      });
+      if (blocked) { json(409, { error: "You're the sole admin of at least one family — transfer ownership or promote another admin first." }); return; }
+      const mode = body.mode === "withTrips" ? "withTrips" : "keep";
+      const myTravelerKeys = travelers.filter((t) => String(t.email || "").toLowerCase().trim() === myEmail).map((t) => t.key);
+
+      const tripsBlobName = process.env.TRIPS_BLOB || "trip-tracker.json";
+      const tripsData = await readJsonBlob(container, tripsBlobName, null);
+      let tripsRemoved = 0;
+      if (tripsData) {
+        const locations = Array.isArray(tripsData) ? tripsData : (tripsData.locations || []);
+        let out = locations;
+        if (mode === "withTrips") {
+          out = out.filter((t) => {
+            if (String(t.ownerEmail || "").toLowerCase().trim() !== myEmail) return true;
+            tripsRemoved++;
+            return false;
+          });
+        } else {
+          out = out.map((t) => (String(t.ownerEmail || "").toLowerCase().trim() === myEmail ? { ...t, ownerEmail: "", owner: "" } : t));
+        }
+        // remove my tag from everyone else's trips regardless of mode
+        out = out.map((t) => (Array.isArray(t.travelers) && t.travelers.some((k) => myTravelerKeys.includes(k)))
+          ? { ...t, travelers: t.travelers.filter((k) => !myTravelerKeys.includes(k)) }
+          : t);
+        const payload = Array.isArray(tripsData) ? { app: "vacation-location", version: 1, locations: out } : { ...tripsData, locations: out };
+        await writeJsonBlob(container, tripsBlobName, payload);
+      }
+
+      members = members.filter((m) => m.email !== myEmail);
+      await writeJsonBlob(container, MEMBERS_BLOB, members);
+      travelers = travelers.filter((t) => String(t.email || "").toLowerCase().trim() !== myEmail);
+      await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
+      json(200, { ok: true, tripsRemoved });
+      return;
+    }
+
     // A "non-account" member: a name with no email/login (kids, pets, whoever) — still
     // shows up as a family member but can never sign in. Family admin or site admin only.
     if (action === "addNonAccountMember") {
