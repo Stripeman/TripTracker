@@ -655,8 +655,12 @@ module.exports = async function (context, req) {
       const familyId = body.familyId;
       if (!familyId) { json(400, { error: "familyId required." }); return; }
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
-      const key = String(body.key || "").trim() || genId("trav");
-      if (travelers.some((t) => t.key === key)) { json(409, { error: "That key is already in use." }); return; }
+      let key = String(body.key || "").trim() || genId("trav");
+      // If the client's proposed short key ("p", "p1"...) collides with one already in
+      // storage (e.g. it was generated against a stale/locally-scoped view of the
+      // list), don't hard-fail the add — just make it unique. Key uniqueness is what
+      // matters, not the specific short form.
+      if (travelers.some((t) => t.key === key)) key = key + "-" + genId("x");
       const label = String(body.label || "New person").trim() || "New person";
       const color = String(body.color || "#5fd3ff");
       const email = String(body.email || "").toLowerCase().trim();

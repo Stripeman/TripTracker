@@ -982,11 +982,12 @@
                   <sc-if value="{{ hasTransferTargets }}" hint-placeholder-val="{{ false }}">
                     <div style="display:flex; align-items:center; gap:7px; margin-top:9px; flex-wrap:wrap;">
                       <select value="{{ transferOwnerEmail }}" onChange="{{ setTransferOwnerEmail }}" style="flex:1; min-width:160px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                        <option value="" style="background:#0a1422;">Choose a person…</option>
                         <sc-for list="{{ transferTargetOptions }}" as="to" hint-placeholder-count="2">
                           <option value="{{ to.value }}" style="background:#0a1422;">{{ to.label }}</option>
                         </sc-for>
                       </select>
-                      <button onClick="{{ askTransferOwnership }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:7px 12px; cursor:pointer;">Transfer ownership</button>
+                      <button onClick="{{ askTransferOwnership }}" disabled="{{ notCanAskTransferOwnership }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:7px 12px; cursor:pointer; opacity:{{ transferBtnOpacity }};">Transfer ownership</button>
                     </div>
                   </sc-if>
                   <sc-if value="{{ noTransferTargets }}" hint-placeholder-val="{{ true }}">
@@ -1136,11 +1137,6 @@
                         <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:7px; line-height:1.5;">Share this with anyone — no email address needed up front. 7-day expiry, single use.</div>
                       </sc-if>
                     </div>
-                  </div>
-
-                  <div style="display:flex; gap:8px; margin-top:16px;">
-                    <input value="{{ newNonAccountName }}" onChange="{{ setNewNonAccountName }}" placeholder="Add family member (no email) — e.g. a kid" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
-                    <button onClick="{{ addNonAccountMemberClick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Add</button>
                   </div>
 
                   <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; gap:10px;">
@@ -3322,15 +3318,9 @@ class Component extends DCLogic {
   }
   askTransferOwnership() {
     const familyId = this.viewFamilyId();
-    const activeMembers = (this.state.cfgMemberships || []).filter(m => m.familyId === familyId && m.active !== false);
+    const toEmail = this.state.transferOwnerEmail;
+    if (!familyId || !toEmail) return; // require an explicit choice — no default fallback, so accidental clicks can't transfer to the wrong person
     const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
-    const targets = activeMembers.filter(m => m.email && m.email !== (fam && fam.createdBy));
-    // Mirror the <select>'s own default-to-first-option fallback — the underlying
-    // state stays unset until the user actually changes the dropdown, so without this
-    // fallback here too, clicking the button while it's still on its default value did
-    // nothing.
-    const toEmail = this.state.transferOwnerEmail || (targets[0] && targets[0].email) || '';
-    if (!familyId || !toEmail) return;
     this.setState({ pendingOwnerTransfer: { familyId, toEmail, familyName: (fam && fam.name) || 'this family' } });
   }
   cancelTransferOwnership() { this.setState({ pendingOwnerTransfer: null }); }
@@ -3708,7 +3698,10 @@ class Component extends DCLogic {
       hasTransferTargets: transferTargetOptions.length > 0,
       noTransferTargets: transferTargetOptions.length === 0,
       transferTargetOptions,
-      transferOwnerEmail: s.transferOwnerEmail || (transferTargetOptions[0] && transferTargetOptions[0].value) || '',
+      transferOwnerEmail: s.transferOwnerEmail || '',
+      canAskTransferOwnership: !!s.transferOwnerEmail,
+      notCanAskTransferOwnership: !s.transferOwnerEmail,
+      transferBtnOpacity: s.transferOwnerEmail ? 1 : 0.45,
       setTransferOwnerEmail: (e) => this.setState({ transferOwnerEmail: e.target.value }),
       askTransferOwnership: () => this.askTransferOwnership(),
       pendingOwnerTransfer: s.pendingOwnerTransfer ? {
