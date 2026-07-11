@@ -645,6 +645,20 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // A person picks ONE of their own families as the default that loads on sign-in —
+    // purely a per-user preference, stored as a flag on their own membership rows (only
+    // ever touches rows for the CALLER's own email, never anyone else's).
+    if (action === "setDefaultFamily") {
+      const familyId = body.familyId;
+      if (!familyId) { json(400, { error: "familyId required." }); return; }
+      const mine = members.filter((m) => m.email === me.email && m.active !== false);
+      if (!mine.some((m) => m.familyId === familyId)) { json(403, { error: "You're not a member of that family." }); return; }
+      members = members.map((m) => m.email === me.email ? { ...m, isDefault: m.familyId === familyId } : m);
+      await writeJsonBlob(container, MEMBERS_BLOB, members);
+      json(200, { ok: true });
+      return;
+    }
+
     // ---- Per-family traveler storage (new — see TRAVELER-STORAGE-PLAN.md) ----
     // Row shape: { key, familyId, label, color, email, createdBy, createdAt }. `key` is
     // the SAME identifier trips reference in location.travelers[] — preserved verbatim

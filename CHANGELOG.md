@@ -4,6 +4,31 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.4-beta — Explicit default family + add-person popup
+
+### Added
+- **"Set as default family"** — a star button on each row in "My Families" lets you
+  explicitly pick which family loads by default at sign-in (only one can be default;
+  picking a new one clears the old). The sign-in default now prefers this explicit
+  choice over the previous guess-by-ownership/admin-role logic, which could pick the
+  wrong family for someone who owns or administers more than one.
+- **"+ Add person" is now a popup** (name, color, optional email) instead of an inline
+  editable row — clearer, and removes a subtle race in the old inline-add flow.
+
+### Fixed
+- **Duplicate "add a person" entry points.** A legacy "Add family member (no email)"
+  input existed separately from "+ Add person" and wrote to a different, no-longer-
+  displayed backend concept — removed; "+ Add person" already supports no-email
+  entries.
+- **Adding a person could silently fail to save** if a short auto-generated key (`p`,
+  `p1`...) collided with one already in storage from earlier testing — the server now
+  resolves the collision instead of rejecting the add.
+- **A leftover reference to a renamed variable** (`activeFam` → `activeFamObj`) in the
+  family switcher's style crashed `renderVals()` on load in some cases.
+- **Transfer-ownership dropdown pre-selected the first member**, so clicking Transfer
+  without touching the dropdown could transfer to the wrong person by accident. It now
+  requires an explicit choice (blank by default; button disabled until one is picked).
+
 ## 1.9.3-beta — "Viewing a family" vs. "your active family" decoupled
 
 ### Bug

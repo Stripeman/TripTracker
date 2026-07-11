@@ -705,6 +705,9 @@
                           <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7c8ea6; margin-top:1px;">{{ f.roleLabel }}<sc-if value="{{ f.pending }}" hint-placeholder-val="{{ false }}"> · pending</sc-if></div>
                         </div>
                       </div>
+                      <button onClick="{{ f.onSetDefault }}" title="{{ f.defaultStarTitle }}" style="{{ f.defaultStarStyle }}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="{{ f.starFill }}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                      </button>
                       <button onClick="{{ f.onMakeActive }}" style="{{ f.activeBtnStyle }}">{{ f.activeBtnLabel }}</button>
                     </div>
                   </sc-for>
@@ -1227,6 +1230,25 @@
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:7px; line-height:1.5;">Exports every family, membership, share, invite link, and additional site admin as one JSON file. Importing <b style="color:#e9c46a;">replaces</b> all of it — you'll be asked to confirm first.</div>
               </div>
             </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- add-person popup -->
+    <sc-if value="{{ addPersonModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeAddPersonModal }}" style="position:fixed; inset:0; z-index:92; background:rgba(2,6,14,0.7); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; pointer-events:auto; animation:vl-fade 0.2s ease;">
+        <div onClick="{{ stop }}" style="width:380px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(56,189,248,0.3); border-radius:14px; padding:22px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; color:#f1f6fc; margin-bottom:4px;">Add a person</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; line-height:1.5; margin-bottom:16px;">To <span style="color:#eaf4fd;">{{ addPersonFamilyName }}</span>. Give them an email to let them sign in, or leave it blank for a name-only entry (a kid, a pet…).</div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <input type="color" value="{{ addPersonColor }}" onChange="{{ setAddPersonColor }}" title="Colour" style="width:40px; height:40px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:10px; background:none; cursor:pointer;">
+            <input value="{{ addPersonLabel }}" onChange="{{ setAddPersonLabel }}" placeholder="Name" autoFocus="{{ true }}" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:14px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:9px; padding:10px 12px; outline:none;"/>
+          </div>
+          <input value="{{ addPersonEmail }}" onChange="{{ setAddPersonEmail }}" type="email" placeholder="email — optional, lets them sign in" style="width:100%; box-sizing:border-box; margin-bottom:16px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px 12px; outline:none;"/>
+          <div style="display:flex; gap:8px;">
+            <button onClick="{{ closeAddPersonModal }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
+            <button onClick="{{ submitAddPersonModal }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:700; color:#04111e; background:linear-gradient(180deg,#7fe3ff,#5fd3ff); border:none; border-radius:9px; padding:9px; cursor:pointer;">Add</button>
           </div>
         </div>
       </div>
@@ -2462,7 +2484,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.3-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.4-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2702,6 +2724,9 @@ class Component extends DCLogic {
       autoApproveFamilies: false,
       newFamilyName: '',
       newFamilyModalOpen: false,
+      addPersonModalOpen: false,
+      addPersonFamilyId: '',
+      addPersonDraft: { label: '', color: '#5fd3ff', email: '' },
       newFamilyIsOnboarding: false,
       onboardPromptShown: false,
       onboardFamilyId: null,
@@ -3159,8 +3184,15 @@ class Component extends DCLogic {
       // default active family = the one I'm admin of (my own family), else my first membership
       let active = this.state.activeFamilyId;
       if (!active || !mine.some((m) => m.familyId === active)) {
+        // Priority: an explicit "set as default" pick > the family I actually OWN
+        // (created) > any other admin membership > my first membership. An explicit
+        // pick always wins — it's there specifically to override the ambiguous case
+        // where someone owns/admins more than one family.
+        const myEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
+        const defaultRow = mine.find((m) => m.isDefault);
+        const ownedFam = (j.families || []).find((f) => f.createdBy === myEmail && mine.some((m) => m.familyId === f.id));
         const adminRow = mine.find((m) => m.role === 'admin');
-        active = (adminRow || mine[0] || {}).familyId || '';
+        active = (defaultRow && defaultRow.familyId) || (ownedFam && ownedFam.id) || (adminRow || mine[0] || {}).familyId || '';
       }
       const migrated = !!j.travelersMigrated;
       this.setState(s => ({
@@ -3234,6 +3266,10 @@ class Component extends DCLogic {
     return (f && f.color) || '#5fd3ff';
   }
   setActiveFamily(id) { this.setState({ activeFamilyId: id, inviteLinkText: '' }); }
+  async setDefaultFamily(familyId) {
+    const j = await this.familiesAction('setDefaultFamily', { familyId });
+    if (j) this.toast('Set as default family');
+  }
   setLogoInputRef = (el) => { this._logoInput = el; };
   triggerLogoPick = () => { if (this._logoInput) { this._logoInput.value = ''; this._logoInput.click(); } };
   onLogoPick = (e) => {
@@ -3568,6 +3604,11 @@ class Component extends DCLogic {
           logo: (fam && fam.logo) || '',
           noLogo: !(fam && fam.logo),
           logoRef: (el) => { if (el && fam && fam.logo) el.src = fam.logo; },
+          isDefault: !!m.isDefault,
+          onSetDefault: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setDefaultFamily(m.familyId); },
+          defaultStarTitle: m.isDefault ? 'Your default family — loads first at sign-in' : 'Set as your default family (loads first at sign-in)',
+          defaultStarStyle: 'flex:none; width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:none; border:none; padding:0; ' + (m.isDefault ? 'color:#fbbf24;' : 'color:#4a5a70;'),
+          starFill: m.isDefault ? 'currentColor' : 'none',
         };
       });
     const myFamilyIds = new Set((s.cfgMemberships || []).filter((m) => m.email === s.cloudUserEmail && m.active !== false).map((m) => m.familyId));
@@ -3621,6 +3662,16 @@ class Component extends DCLogic {
       setNewFamilyName: (e) => this.setNewFamilyName(e),
       createFamily: () => this.createFamily(),
       newFamilyModalOpen: !!s.newFamilyModalOpen,
+      addPersonModalOpen: !!s.addPersonModalOpen,
+      closeAddPersonModal: () => this.closeAddPersonModal(),
+      addPersonLabel: (s.addPersonDraft || {}).label || '',
+      addPersonColor: (s.addPersonDraft || {}).color || '#5fd3ff',
+      addPersonEmail: (s.addPersonDraft || {}).email || '',
+      setAddPersonLabel: (e) => this.setAddPersonLabel(e),
+      setAddPersonColor: (e) => this.setAddPersonColor(e),
+      setAddPersonEmail: (e) => this.setAddPersonEmail(e),
+      submitAddPersonModal: () => this.submitAddPersonModal(),
+      addPersonFamilyName: (() => { const f = (this.state.cfgFamilies || []).find(ff => ff.id === s.addPersonFamilyId); return f ? f.name : ''; })(),
       newFamilyIsOnboarding: !!s.newFamilyIsOnboarding,
       newFamilyCancelLabel: s.newFamilyIsOnboarding ? 'Skip for now' : 'Cancel',
       openNewFamilyModal: () => this.openNewFamilyModal(),
@@ -6309,40 +6360,47 @@ class Component extends DCLogic {
   // ---- People (Users tab): travelers + access roles unified ----
   // Add a person under the current user (createdBy stamps ownership for delete rules),
   // and open it straight into edit mode.
-  addPerson(forceFamilyId) {
-    // Add to whichever family is in view: if called with an explicit family (the "My
-    // Family Management" per-family panel always passes its own activeFamilyId, so it
-    // never picks up stale state from elsewhere), use that. Otherwise (Site User
-    // Management's button) use a SPECIFIC family selected in its own scope dropdown if
-    // one is chosen, else fall back to the left panel's active family.
+  // Opens the "Add person" popup, targeted at whichever family is in view: if called
+  // with an explicit family (the "My Family Management" per-family panel always
+  // passes its own viewFamilyId, so it never picks up stale state from elsewhere),
+  // use that. Otherwise (Site User Management's button) use a SPECIFIC family
+  // selected in its own scope dropdown if one is chosen, else the left panel's active
+  // family.
+  openAddPersonModal(forceFamilyId) {
     let targetFamilyId = forceFamilyId;
     if (!targetFamilyId) {
       const scope = this.state.usersFamilyScope;
       targetFamilyId = (scope && scope !== 'all' && scope !== 'allMine' && scope !== 'mine') ? scope : (this.state.activeFamilyId || '');
     }
+    const palette = ['#5fd3ff', '#fb7185', '#c084fc', '#22d3ee', '#fbbf24', '#fb923c', '#a78bfa', '#4ade80', '#e879f9'];
+    const color = palette[(this.state.cfgTravelers || []).length % palette.length];
+    this.setState({ addPersonModalOpen: true, addPersonFamilyId: targetFamilyId, addPersonDraft: { label: '', color, email: '' } });
+  }
+  closeAddPersonModal() { this.setState({ addPersonModalOpen: false }); }
+  setAddPersonLabel(e) { this.setState(s => ({ addPersonDraft: { ...s.addPersonDraft, label: e.target.value } })); }
+  setAddPersonColor(e) { this.setState(s => ({ addPersonDraft: { ...s.addPersonDraft, color: e.target.value } })); }
+  setAddPersonEmail(e) { this.setState(s => ({ addPersonDraft: { ...s.addPersonDraft, email: e.target.value } })); }
+  async submitAddPersonModal() {
+    const d = this.state.addPersonDraft || {};
+    const label = (d.label || '').trim();
+    if (!label) { this.toast('Enter a name.'); return; }
+    const familyId = this.state.addPersonFamilyId;
+    const color = d.color || '#5fd3ff';
+    const email = String(d.email || '').trim().toLowerCase();
+    let key = 'p', i = 1;
+    const taken = new Set((this.state.cfgTravelers || []).map(o => o.key));
+    while (taken.has(key)) { key = 'p' + (++i); }
+    const createdBy = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    const item = { key, label, color, email, createdBy, familyId };
     if (this.state.travelersMigrated) {
-      this.setState(s => {
-        let key = 'p', i = 1;
-        const taken = new Set(s.cfgTravelers.map(o => o.key));
-        while (taken.has(key)) { key = 'p' + (++i); }
-        const palette = ['#5fd3ff', '#fb7185', '#c084fc', '#22d3ee', '#fbbf24', '#fb923c', '#a78bfa', '#4ade80', '#e879f9'];
-        const color = palette[s.cfgTravelers.length % palette.length];
-        const createdBy = (s.cloudUserEmail || '').toLowerCase().trim();
-        const item = { key, label: 'New person', color, email: '', createdBy, familyId: targetFamilyId };
-        return { cfgTravelers: [...s.cfgTravelers, item], editingPersonKey: key, addingPersonKey: key };
-      });
-      return;
+      this.setState(s => ({ cfgTravelers: [...(s.cfgTravelers || []), item], addPersonModalOpen: false }));
+      const j = await this.familiesAction('addTraveler', { key, familyId, label, color, email });
+      if (j) this.toast('Added ' + label);
+      else this.setState(s => ({ cfgTravelers: (s.cfgTravelers || []).filter(o => o.key !== key) })); // never made it to the server — drop the local placeholder
+    } else {
+      this.setState(s => ({ ...this.persistConfig(s, { cfgTravelers: [...s.cfgTravelers, item] }), addPersonModalOpen: false }));
+      this.toast('Added ' + label);
     }
-    this.setState(s => {
-      let key = 'p', i = 1;
-      const taken = new Set(s.cfgTravelers.map(o => o.key));
-      while (taken.has(key)) { key = 'p' + (++i); }
-      const palette = ['#5fd3ff', '#fb7185', '#c084fc', '#22d3ee', '#fbbf24', '#fb923c', '#a78bfa', '#4ade80', '#e879f9'];
-      const color = palette[s.cfgTravelers.length % palette.length];
-      const createdBy = (s.cloudUserEmail || '').toLowerCase().trim();
-      const item = { key, label: 'New person', color, email: '', createdBy, familyId: targetFamilyId };
-      return { ...this.persistConfig(s, { cfgTravelers: [...s.cfgTravelers, item] }), editingPersonKey: key, addingPersonKey: key };
-    });
   }
   // Confirm a freshly-added person (the Add button).
   addPersonDone() {
@@ -7563,8 +7621,8 @@ class Component extends DCLogic {
         editorGroup('Visit types', 'visit', this.state.cfgVisitTypes, false),
         editorGroup('Statuses', 'status', this.state.cfgStatuses, false),
       ],
-      addPerson: () => this.addPerson(),
-      addPersonToActiveFamily: () => this.addPerson(this.viewFamilyId()),
+      addPerson: () => this.openAddPersonModal(),
+      addPersonToActiveFamily: () => this.openAddPersonModal(this.viewFamilyId()),
       showClaimAll: this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin,
       unownedCount: (this.state.locations || []).filter(l => this.tripUnassigned(l)).length,
       noUnclaimed: this.state.mySiteAdmin && this.state.cfgDataSource === 'cloud' && (this.state.locations || []).filter(l => this.tripUnassigned(l)).length === 0,
