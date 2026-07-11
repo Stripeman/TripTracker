@@ -1272,7 +1272,7 @@
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#5fd3ff; margin-bottom:6px;">WELCOME — LET'S GET YOU SET UP</div>
           </sc-if>
           <div style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; color:#f1f6fc; margin-bottom:4px;">Create a new family</div>
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; line-height:1.5; margin-bottom:14px;">A family owns its own trips and travelers. You'll be made its admin automatically, and can invite others in after.</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; line-height:1.5; margin-bottom:14px;">{{ newFamilyIntroText }}</div>
           <input value="{{ newFamilyName }}" onChange="{{ setNewFamilyName }}" placeholder="e.g. The Andersons" autoFocus="{{ true }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:10px 11px; outline:none;"/>
           <sc-if value="{{ autoApproveFamilies }}" hint-placeholder-val="{{ false }}">
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7ee0a8; margin-top:9px;">New families are auto-approved right now.</div>
@@ -1284,6 +1284,21 @@
             <button onClick="{{ closeNewFamilyModal }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:9px; cursor:pointer;">{{ newFamilyCancelLabel }}</button>
             <button onClick="{{ createFamily }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:700; color:#04111e; background:linear-gradient(180deg,#7fe3ff,#5fd3ff); border:none; border-radius:8px; padding:9px; cursor:pointer;">Create</button>
           </div>
+          <sc-if value="{{ newFamilyIsOnboarding }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ requestJoinFromOnboarding }}" style="width:100%; margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7ee0f0; background:none; border:none; text-decoration:underline; cursor:pointer; padding:0;">Already have a family to join instead? Request access →</button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- onboarding: self-serve family creation is off — a request was auto-filed, awaiting admin approval -->
+    <sc-if value="{{ onboardAwaitingApproval }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed; inset:0; z-index:92; background:rgba(2,6,14,0.7); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; pointer-events:auto;">
+        <div style="width:360px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(56,189,248,0.3); border-radius:14px; padding:22px; box-shadow:0 24px 70px rgba(0,0,0,0.6); text-align:center;">
+          <div style="font-size:30px; margin-bottom:10px;">👋</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; color:#f1f6fc; margin-bottom:8px;">Thanks for registering!</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9fb3c8; line-height:1.6; margin-bottom:18px;">Your request has been submitted and is awaiting site-admin approval. You'll get access as soon as it's reviewed.</div>
+          <button onClick="{{ dismissOnboardAwaitingApproval }}" style="width:100%; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:700; color:#04111e; background:linear-gradient(180deg,#7fe3ff,#5fd3ff); border:none; border-radius:8px; padding:10px; cursor:pointer;">Got it</button>
         </div>
       </div>
     </sc-if>
@@ -2509,7 +2524,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.14-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.16-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2754,6 +2769,7 @@ class Component extends DCLogic {
       addPersonDraft: { label: '', color: '#5fd3ff', email: '' },
       newFamilyIsOnboarding: false,
       onboardPromptShown: false,
+      onboardAwaitingApproval: false,
       onboardFamilyId: null,
       familyNameEditing: false,
       familyNameDraft: '',
@@ -3122,6 +3138,25 @@ class Component extends DCLogic {
     this.openMailtoFallback();
     this.setState({ reqSending: false, reqSent: true, reqVia: 'mailto' });
   }
+  // From the "create a new family" onboarding modal: instead of spinning up their
+  // own family, a signed-in-but-memberless person (e.g. someone just removed from
+  // a family) can ask to (re)join an existing one. Goes through the same
+  // /api/request-access persistence as the signed-out request form, so it shows up
+  // in Pending Actions for a site admin to review — instead of silently vanishing
+  // if they hit "Skip for now".
+  async requestJoinFromOnboarding() {
+    const email = (this.state.cloudUserEmail || '').trim();
+    if (!email) { this.toast('Sign in first.'); return; }
+    try {
+      const res = await fetch('/api/request-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, message: 'Requested from onboarding — wants to join an existing family rather than create a new one.' }),
+      });
+      if (res.ok) { this.toast('Request sent — a site admin will review it.'); this.closeNewFamilyModal(); return; }
+    } catch (e) {}
+    this.toast('Could not send the request — try again.');
+  }
   openMailtoFallback() {
     const to = (this.state.cfgAccessEmail || '').trim();
     const from = (this.state.reqEmail || '').trim();
@@ -3241,10 +3276,23 @@ class Component extends DCLogic {
         // server copy (settings.travelers has been fully retired as a data source).
         cfgTravelers: j.travelers || [],
       }));
-      // First-ever login with no family memberships yet: take them straight to
-      // People & Family, prompted to create one (they become its admin automatically).
+      // First-ever login with no family memberships yet.
       if (mine.length === 0 && !this.state.onboardPromptShown) {
-        this.setState({ onboardPromptShown: true, familyMgmtOpen: true, famMgmtView: 'families', newFamilyModalOpen: true, newFamilyIsOnboarding: true });
+        if (j.autoApproveFamilies) {
+          // Auto-creation is ON: welcome them straight into making their own family.
+          this.setState({ onboardPromptShown: true, familyMgmtOpen: true, famMgmtView: 'families', newFamilyModalOpen: true, newFamilyIsOnboarding: true });
+        } else {
+          // Auto-creation is OFF: don't let them self-serve a family — file a normal
+          // access request on their behalf and tell them it's awaiting admin approval.
+          this.setState({ onboardPromptShown: true, onboardAwaitingApproval: true });
+          const email = (this.state.cloudUserEmail || '').trim();
+          if (email) {
+            fetch('/api/request-access', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, message: 'Auto-filed on first login (self-serve family creation is off).' }),
+            }).catch(() => {});
+          }
+        }
       } else if (!this.state.onboardPromptShown) {
         // A family was auto-created for them (e.g. an admin approved their access request
         // without picking an existing family) and still has its generic auto-given name —
@@ -3719,6 +3767,12 @@ class Component extends DCLogic {
       submitAddPersonModal: () => this.submitAddPersonModal(),
       addPersonFamilyName: (() => { const f = (this.state.cfgFamilies || []).find(ff => ff.id === s.addPersonFamilyId); return f ? f.name : ''; })(),
       newFamilyIsOnboarding: !!s.newFamilyIsOnboarding,
+      newFamilyIntroText: s.newFamilyIsOnboarding
+        ? 'Thanks for registering! A family owns its own trips and travelers. You\'ll be made its admin automatically, and can invite others in after.'
+        : 'A family owns its own trips and travelers. You\'ll be made its admin automatically, and can invite others in after.',
+      requestJoinFromOnboarding: () => this.requestJoinFromOnboarding(),
+      onboardAwaitingApproval: !!s.onboardAwaitingApproval,
+      dismissOnboardAwaitingApproval: () => this.setState({ onboardAwaitingApproval: false }),
       newFamilyCancelLabel: s.newFamilyIsOnboarding ? 'Skip for now' : 'Cancel',
       openNewFamilyModal: () => this.openNewFamilyModal(),
       closeNewFamilyModal: () => this.closeNewFamilyModal(),

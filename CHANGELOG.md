@@ -4,6 +4,22 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.16-beta — Onboarding now branches on auto-approve
+
+### Changed
+- First-login onboarding now branches on the "Auto-approve new families" setting:
+  - **ON**: welcomed with "Thanks for registering!" and taken straight to create their own family (unchanged flow, updated copy).
+  - **OFF**: no self-serve family creation offered — an access request is auto-filed on their behalf and they see "Thanks for registering! Your request has been submitted and is awaiting site-admin approval," landing in Pending Actions for review.
+
+---
+
+## 1.9.15-beta — Onboarding had no path back into an existing family
+
+### Fixed
+- A signed-in user with zero family memberships (e.g. someone just removed from a family) was only ever offered "Create a new family" or "Skip for now" — no way to ask to (re)join an existing family, and no visibility for the site admin either way. The onboarding modal now has a "Request access instead" link that submits a normal pending access request (shows up in Pending Actions), reusing the same persistence as the signed-out request form.
+
+---
+
 ## 1.9.14-beta — "Delete family" button was calling an undefined method
 
 ### Fixed
