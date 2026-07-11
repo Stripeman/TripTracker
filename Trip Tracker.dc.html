@@ -1828,48 +1828,18 @@
         </sc-if>
         <sc-if value="{{ selected.showComments }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.16em; color:#586a82; margin-bottom:9px;">COMMENTS <span style="color:#3d4d63;">· {{ selected.commentCount }}</span></div>
-            <sc-for list="{{ selected.comments }}" as="c" hint-placeholder-count="0">
-              <div style="display:flex; gap:8px; margin-bottom:10px;">
-                <div style="flex:none; width:22px; height:22px; border-radius:50%; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#9fd6f0; font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">{{ c.initial }}</div>
-                <div style="flex:1; min-width:0;">
-                  <div style="display:flex; align-items:baseline; gap:6px;">
-                    <span style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#cfe0f0;">{{ c.authorName }}</span>
-                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#4d5e76;">{{ c.when }}</span>
-                    <sc-if value="{{ c.canDelete }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ c.onDelete }}" style="margin-left:auto; flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; background:none; border:none; cursor:pointer; padding:0;">delete</button>
-                    </sc-if>
-                  </div>
-                  <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c2cfde; line-height:1.5; white-space:pre-wrap; margin-top:2px;">{{ c.text }}</div>
-                </div>
-              </div>
-            </sc-for>
-            <div style="display:flex; gap:8px; margin-top:6px;">
-              <input value="{{ commentDraft }}" onInput="{{ setCommentDraft }}" placeholder="Add a comment…" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 11px;" />
-              <button onClick="{{ postComment }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Post</button>
-            </div>
+            <button onClick="{{ selected.openComments }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:10px 12px; cursor:pointer;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+              Comments <span style="color:#7fb4d8;">· {{ selected.commentCount }}</span>
+            </button>
           </div>
         </sc-if>
         <sc-if value="{{ selected.showAttachments }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.16em; color:#586a82; margin-bottom:9px;">ATTACHMENTS <span style="color:#3d4d63;">· {{ selected.attachmentCount }}</span></div>
-            <sc-for list="{{ selected.attachments }}" as="a" hint-placeholder-count="0">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <div style="flex:none; width:26px; height:26px; border-radius:7px; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); color:#7fb4d8; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:700;">{{ a.ext }}</div>
-                <a href="{{ a.downloadHref }}" target="_blank" rel="noopener" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ a.name }}</a>
-                <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#4d5e76;">{{ a.sizeLabel }}</span>
-                <sc-if value="{{ a.canDelete }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ a.onDelete }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; background:none; border:none; cursor:pointer; padding:0;">delete</button>
-                </sc-if>
-              </div>
-            </sc-for>
-            <sc-if value="{{ selected.canAddAttachments }}" hint-placeholder-val="{{ false }}">
-              <input ref="{{ setAttachmentInputRef }}" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" onChange="{{ selected.onAttachmentPick }}" style="display:none;">
-              <button onClick="{{ selected.triggerAttachmentPick }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fd6f0; background:rgba(255,255,255,0.03); border:1px dashed rgba(125,200,245,0.35); border-radius:8px; padding:8px; cursor:pointer; margin-top:2px;">{{ selected.attachmentButtonLabel }}</button>
-            </sc-if>
-            <sc-if value="{{ selected.attachmentError }}" hint-placeholder-val="{{ false }}">
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#f38ba0; margin-top:6px;">{{ selected.attachmentError }}</div>
-            </sc-if>
+          <div style="margin-top:10px;">
+            <button onClick="{{ selected.openAttachments }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:10px 12px; cursor:pointer;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95L10.13 17.1a1.5 1.5 0 0 1-2.12-2.12l7.34-7.34"></path></svg>
+              Attachments <span style="color:#7fb4d8;">· {{ selected.attachmentCount }}</span>
+            </button>
           </div>
         </sc-if>
         <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
@@ -2423,6 +2393,84 @@
                 <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#cdd9e6; line-height:1.55; white-space:pre-wrap;">{{ d.text }}</div>
               </div>
             </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- comments -->
+    <sc-if value="{{ commentsModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeCommentsModal }}" style="position:fixed; inset:0; z-index:80; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; animation:vl-fade 0.2s ease;">
+        <div onClick="{{ stop }}" style="width:min(480px,94vw); max-height:80vh; display:flex; flex-direction:column; background:rgba(8,14,24,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,0.08); flex:none;">
+            <div>
+              <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.14em; color:#e8f3ff;">COMMENTS</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ selected.city }} · {{ selected.commentCount }}</div>
+            </div>
+            <button onClick="{{ closeCommentsModal }}" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:17px; line-height:1;">×</button>
+          </div>
+          <div style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px;">
+            <sc-for list="{{ selected.comments }}" as="c" hint-placeholder-count="0">
+              <div style="display:flex; gap:8px; margin-bottom:14px;">
+                <div style="flex:none; width:22px; height:22px; border-radius:50%; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#9fd6f0; font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">{{ c.initial }}</div>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; align-items:baseline; gap:6px;">
+                    <span style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#cfe0f0;">{{ c.authorName }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#4d5e76;">{{ c.when }}</span>
+                    <sc-if value="{{ c.canDelete }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ c.onDelete }}" style="margin-left:auto; flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; background:none; border:none; cursor:pointer; padding:0;">delete</button>
+                    </sc-if>
+                  </div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c2cfde; line-height:1.5; white-space:pre-wrap; margin-top:2px;">{{ c.text }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ selected.noComments }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#586a82;">No comments yet.</div>
+            </sc-if>
+          </div>
+          <div style="display:flex; gap:8px; padding:14px 22px; border-top:1px solid rgba(255,255,255,0.08); flex:none;">
+            <input value="{{ commentDraft }}" onInput="{{ setCommentDraft }}" placeholder="Add a comment…" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 11px;" />
+            <button onClick="{{ postComment }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Post</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- attachments -->
+    <sc-if value="{{ attachmentsModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeAttachmentsModal }}" style="position:fixed; inset:0; z-index:80; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; animation:vl-fade 0.2s ease;">
+        <div onClick="{{ stop }}" style="width:min(480px,94vw); max-height:80vh; display:flex; flex-direction:column; background:rgba(8,14,24,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,0.08); flex:none;">
+            <div>
+              <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.14em; color:#e8f3ff;">ATTACHMENTS</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ selected.city }} · {{ selected.attachmentCount }}</div>
+            </div>
+            <button onClick="{{ closeAttachmentsModal }}" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:17px; line-height:1;">×</button>
+          </div>
+          <div style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px;">
+            <sc-for list="{{ selected.attachments }}" as="a" hint-placeholder-count="0">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <div style="flex:none; width:26px; height:26px; border-radius:7px; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); color:#7fb4d8; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:700;">{{ a.ext }}</div>
+                <a href="{{ a.downloadHref }}" target="_blank" rel="noopener" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ a.name }}</a>
+                <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#4d5e76;">{{ a.sizeLabel }}</span>
+                <sc-if value="{{ a.canDelete }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ a.onDelete }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; background:none; border:none; cursor:pointer; padding:0;">delete</button>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ selected.noAttachments }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#586a82; margin-bottom:4px;">No attachments yet.</div>
+            </sc-if>
+          </div>
+          <div style="padding:14px 22px; border-top:1px solid rgba(255,255,255,0.08); flex:none;">
+            <sc-if value="{{ selected.canAddAttachments }}" hint-placeholder-val="{{ false }}">
+              <input ref="{{ setAttachmentInputRef }}" type="file" multiple="true" accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" onChange="{{ selected.onAttachmentPick }}" style="display:none;">
+              <button onClick="{{ selected.triggerAttachmentPick }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fd6f0; background:rgba(255,255,255,0.03); border:1px dashed rgba(125,200,245,0.35); border-radius:8px; padding:8px; cursor:pointer;">{{ selected.attachmentButtonLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ selected.attachmentError }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#f38ba0; margin-top:6px;">{{ selected.attachmentError }}</div>
+            </sc-if>
           </div>
         </div>
       </div>
@@ -3188,6 +3236,8 @@ class Component extends DCLogic {
       commentDraft: '',
       attachmentBusyTripId: null,
       attachmentError: '',
+      commentsModalOpen: false,
+      attachmentsModalOpen: false,
       itineraryModalOpen: false,
       itineraryModalDays: [],
       itineraryModalPlace: '',
@@ -7869,7 +7919,11 @@ class Component extends DCLogic {
     this.toast('Trip deleted');
   }
 
-  deselect() { this.setState({ selectedId: null, pm: null, commentDraft: '' }); this.expandedKey = null; }
+  deselect() { this.setState({ selectedId: null, pm: null, commentDraft: '', commentsModalOpen: false, attachmentsModalOpen: false }); this.expandedKey = null; }
+  openCommentsModal() { this.setState({ commentsModalOpen: true }); }
+  closeCommentsModal() { this.setState({ commentsModalOpen: false }); }
+  openAttachmentsModal() { this.setState({ attachmentsModalOpen: true }); }
+  closeAttachmentsModal() { this.setState({ attachmentsModalOpen: false }); }
 
   togglePane() { this.setState(s => ({ paneOpen: !s.paneOpen })); }
 
@@ -8043,31 +8097,33 @@ class Component extends DCLogic {
     if (this._attachmentInput) { this._attachmentInput.value = ''; this._attachmentInput.click(); }
   }
   onAttachmentPick = async (e) => {
-    const file = (e.target.files || [])[0];
+    const files = Array.from(e.target.files || []);
     const tripId = this._attachmentTargetTrip;
-    if (!file || tripId == null) return;
+    if (!files.length || tripId == null) return;
     const MAX = 25 * 1024 * 1024;
-    if (file.size > MAX) { this.setState({ attachmentError: 'That file is over 25MB.' }); return; }
     this.setState({ attachmentBusyTripId: tripId, attachmentError: '' });
-    try {
-      const dataBase64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
-        reader.onerror = () => reject(new Error('read'));
-        reader.readAsDataURL(file);
-      });
-      const r = await fetch('/api/attachments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tripId, filename: file.name, mimeType: file.type || 'application/octet-stream', dataBase64 }),
-      });
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok) { this.setState({ attachmentBusyTripId: null, attachmentError: (j && j.error) || 'Upload failed.' }); return; }
-      const list = this.state.locations.map(l => l.id === tripId ? { ...l, attachments: [...(l.attachments || []), j.attachment] } : l);
-      this.setState({ locations: list, attachmentBusyTripId: null });
-    } catch (err) {
-      this.setState({ attachmentBusyTripId: null, attachmentError: 'Upload failed — check your connection and try again.' });
+    for (const file of files) {
+      if (file.size > MAX) { this.setState({ attachmentError: '"' + file.name + '" is over 25MB — skipped.' }); continue; }
+      try {
+        const dataBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+          reader.onerror = () => reject(new Error('read'));
+          reader.readAsDataURL(file);
+        });
+        const r = await fetch('/api/attachments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tripId, filename: file.name, mimeType: file.type || 'application/octet-stream', dataBase64 }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) { this.setState({ attachmentError: (j && j.error) || ('Upload of "' + file.name + '" failed.') }); continue; }
+        this.setState(s => ({ locations: s.locations.map(l => l.id === tripId ? { ...l, attachments: [...(l.attachments || []), j.attachment] } : l) }));
+      } catch (err) {
+        this.setState({ attachmentError: 'Upload of "' + file.name + '" failed — check your connection.' });
+      }
     }
+    this.setState({ attachmentBusyTripId: null });
   };
   async deleteAttachment(tripId, id) {
     const trip = (this.state.locations || []).find(l => l.id === tripId);
@@ -8461,7 +8517,11 @@ class Component extends DCLogic {
             canDelete, onDelete: () => this.deleteAttachment(sl.id, a.id),
           };
         }),
+        noComments: (sl.comments || []).length === 0,
+        noAttachments: (sl.attachments || []).length === 0,
         canAddAttachments: (this.state.cloudRoles || []).includes('editor'),
+        openComments: () => this.openCommentsModal(),
+        openAttachments: () => this.openAttachmentsModal(),
         triggerAttachmentPick: () => this.triggerAttachmentPick(sl.id),
         onAttachmentPick: this.onAttachmentPick,
         attachmentButtonLabel: this.state.attachmentBusyTripId === sl.id ? 'Uploading…' : '+ Add attachment',
@@ -9072,6 +9132,10 @@ class Component extends DCLogic {
       setCommentDraft: (e) => this.setCommentDraft(e),
       postComment: () => this.postComment(),
       setAttachmentInputRef: this.setAttachmentInputRef,
+      commentsModalOpen: this.state.commentsModalOpen && !!selected,
+      closeCommentsModal: () => this.closeCommentsModal(),
+      attachmentsModalOpen: this.state.attachmentsModalOpen && !!selected,
+      closeAttachmentsModal: () => this.closeAttachmentsModal(),
       togglePerm: () => this.openPermModal('quick'),
       permBtnStyle: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25);',
       // Banner layout sits the button over a photo, so it uses the same neutral

@@ -4,6 +4,14 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.20.0 — Comments & attachments moved to modals, multi-file upload
+
+### Changed
+- **Comments** and **Attachments** are no longer shown inline on the trip detail card — each now has its own button (with a live count) that opens a modal, matching the existing Gallery/Itinerary pattern. Keeps the card compact for trips with a lot of discussion or files.
+- **Attachment upload now accepts multiple files at once** (select or drag several) instead of one at a time; each uploads and reports errors independently, so one oversized or failed file doesn't block the rest.
+
+---
+
 ## 1.19.0 — Landing page pricing section
 
 ### Added
