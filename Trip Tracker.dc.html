@@ -1752,6 +1752,30 @@
             </button>
           </div>
         </sc-if>
+        <sc-if value="{{ selected.showComments }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.16em; color:#586a82; margin-bottom:9px;">COMMENTS <span style="color:#3d4d63;">· {{ selected.commentCount }}</span></div>
+            <sc-for list="{{ selected.comments }}" as="c" hint-placeholder-count="0">
+              <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <div style="flex:none; width:22px; height:22px; border-radius:50%; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#9fd6f0; font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">{{ c.initial }}</div>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; align-items:baseline; gap:6px;">
+                    <span style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#cfe0f0;">{{ c.authorName }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#4d5e76;">{{ c.when }}</span>
+                    <sc-if value="{{ c.canDelete }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ c.onDelete }}" style="margin-left:auto; flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; background:none; border:none; cursor:pointer; padding:0;">delete</button>
+                    </sc-if>
+                  </div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c2cfde; line-height:1.5; white-space:pre-wrap; margin-top:2px;">{{ c.text }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <input value="{{ commentDraft }}" onInput="{{ setCommentDraft }}" placeholder="Add a comment…" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 11px;" />
+              <button onClick="{{ postComment }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Post</button>
+            </div>
+          </div>
+        </sc-if>
         <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex; gap:9px; margin-top:16px;">
             <button onClick="{{ editSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 18px rgba(251,191,36,0.35);">Edit</button>
@@ -2432,8 +2456,8 @@
 
     <!-- trip form popup -->
     <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeForm }}" style="position:fixed; inset:0; z-index:90; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; padding:24px;">
-    <div onClick="{{ stop }}" class="tt-form" style="width:min(640px,94vw); max-height:88vh; pointer-events:auto; background:rgba(8,14,24,0.97); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(56,189,248,0.22); border-radius:18px; box-shadow:0 30px 90px rgba(0,0,0,0.6); display:flex; flex-direction:column;">
+    <div onClick="{{ closeForm }}" style="position:fixed; inset:0; z-index:90; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:flex-start; justify-content:center; padding:24px; overflow-y:auto;">
+    <div onClick="{{ stop }}" class="tt-form" style="width:min(640px,94vw); max-height:88vh; margin-top:5vh; pointer-events:auto; background:rgba(8,14,24,0.97); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(56,189,248,0.22); border-radius:18px; box-shadow:0 30px 90px rgba(0,0,0,0.6); display:flex; flex-direction:column;">
       <div style="display:flex; justify-content:space-between; align-items:center; padding:24px 26px 18px; border-bottom:1px solid rgba(56,189,248,0.12);">
         <div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">{{ formMode }}</div>
@@ -2750,7 +2774,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.15.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.16.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3035,6 +3059,7 @@ class Component extends DCLogic {
       geocoding: false,
       dupMode: false,
       itineraryPanelOpen: false,
+      commentDraft: '',
       itineraryModalOpen: false,
       itineraryModalDays: [],
       itineraryModalPlace: '',
@@ -4493,6 +4518,10 @@ class Component extends DCLogic {
     window.addEventListener('pointerup', this._endCal);
     this._raf = requestAnimationFrame(this.loop);
     this.applyTheme(this.state.cfgTheme);
+    this._onBeforeUnload = (e) => {
+      if (this.isFormDirty()) { e.preventDefault(); e.returnValue = ''; return ''; }
+    };
+    window.addEventListener('beforeunload', this._onBeforeUnload);
   }
   componentWillUnmount() {
     cancelAnimationFrame(this._raf);
@@ -4502,6 +4531,7 @@ class Component extends DCLogic {
     if (this._presTimer) clearInterval(this._presTimer);
     if (this._statsTimer) clearInterval(this._statsTimer);
     if (this._famTimer) clearInterval(this._famTimer);
+    window.removeEventListener('beforeunload', this._onBeforeUnload);
   }
 
   componentDidUpdate() {
@@ -4639,7 +4669,7 @@ class Component extends DCLogic {
 
   selectLocation(id) {
     const loc = this.state.locations.find(l => l.id === id);
-    this.setState({ selectedId: id, pm: null });
+    this.setState({ selectedId: id, pm: null, commentDraft: '' });
     // If the edit pane is open, switch it to the trip just clicked.
     if (this.state.formOpen && this.state.editingId != null && loc) this.editSelected(id);
     if (loc) {
@@ -6067,7 +6097,7 @@ class Component extends DCLogic {
   openAdd() {
     const n = new Date();
     const todayISO = n.toISOString().slice(0, 10);
-    this.setState({ formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, form: { ...this.blankForm(), date: todayISO }, formError: '', selectedId: null, calOpen: false, calY: n.getFullYear(), calM: n.getMonth(), settingsOpen: false, detailsOpen: this.state.cfgDetailsFormDefault, photoSuggestion: null, itineraryPanelOpen: false });
+    this.setState({ formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, form: { ...this.blankForm(), date: todayISO }, formError: '', selectedId: null, calOpen: false, calY: n.getFullYear(), calM: n.getMonth(), settingsOpen: false, detailsOpen: this.state.cfgDetailsFormDefault, photoSuggestion: null, itineraryPanelOpen: false, formSnapshot: JSON.stringify({ ...this.blankForm(), date: todayISO }) });
   }
   // Instant duplicate from the edit form: opens a fresh (unsaved) new-trip form
   // pre-filled with everything from the trip currently being edited, except its
@@ -6077,11 +6107,19 @@ class Component extends DCLogic {
       const f = s.form || {};
       const dup = { ...f, date: '', dateEnd: '' };
       delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
-      return { formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, formError: '', form: dup, selectedId: null, calOpen: false };
+      return { formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, formError: '', form: dup, selectedId: null, calOpen: false, formSnapshot: JSON.stringify(dup) };
     });
     this.toast('Duplicated — pick a new date');
   }
-  closeForm() { this.setState({ formOpen: false, editingId: null, formError: '' }); }
+  isFormDirty() {
+    if (!this.state.formOpen) return false;
+    if (this.state.formSnapshot == null) return false;
+    return JSON.stringify(this.state.form || {}) !== this.state.formSnapshot;
+  }
+  closeForm() {
+    if (this.isFormDirty() && !window.confirm('Discard unsaved changes to this trip?')) return;
+    this.setState({ formOpen: false, editingId: null, formError: '' });
+  }
   setFormTab(tab) { this.setState({ formTab: tab }); }
 
   editSelected(id) {
@@ -6094,7 +6132,8 @@ class Component extends DCLogic {
     (this.state.cfgTravelers || []).forEach(t => { if (t.email) travByEmail[t.email] = t.key; });
     const shareTravelers = [], leftover = [];
     shared.forEach(e => { if (travByEmail[e]) shareTravelers.push(travByEmail[e]); else leftover.push(e); });
-    this.setState({ formOpen: true, formTab: 'details', editingId: loc.id, dateText: null, dateEndText: null, formError: '', photoSuggestion: null, detailsOpen: this.state.cfgDetailsFormDefault, itineraryPanelOpen: !!(loc.itinerary && Object.keys(loc.itinerary).some(k => loc.itinerary[k])), form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [], visibility: loc.visibility || 'private', sharedWith: loc.sharedWith || [], shareTravelers, sharedWithText: leftover.join(', ') } });
+    const editForm = { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [], visibility: loc.visibility || 'private', sharedWith: loc.sharedWith || [], shareTravelers, sharedWithText: leftover.join(', ') };
+    this.setState({ formOpen: true, formTab: 'details', editingId: loc.id, dateText: null, dateEndText: null, formError: '', photoSuggestion: null, detailsOpen: this.state.cfgDetailsFormDefault, itineraryPanelOpen: !!(loc.itinerary && Object.keys(loc.itinerary).some(k => loc.itinerary[k])), form: editForm, formSnapshot: JSON.stringify(editForm) });
   }
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
@@ -6153,6 +6192,38 @@ class Component extends DCLogic {
     this.persist(list);
     this.setState({ locations: list });
     this.toast('Sharing updated');
+  }
+  // ---- per-trip comments/discussion ----
+  setCommentDraft(e) { this.setState({ commentDraft: e.target.value }); }
+  postComment() {
+    const id = this.state.selectedId;
+    const text = String(this.state.commentDraft || '').trim();
+    if (id == null || !text) return;
+    const email = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    const name = (this.state.cfgTravelers || []).find(t => t.email && t.email.toLowerCase().trim() === email);
+    const comment = {
+      id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      authorEmail: email,
+      authorName: (name && name.label) || email || 'Someone',
+      text,
+      createdAt: new Date().toISOString(),
+    };
+    const list = this.state.locations.map(l => l.id === id ? { ...l, comments: [...(l.comments || []), comment] } : l);
+    this.persist(list);
+    this.setState({ locations: list, commentDraft: '' });
+  }
+  deleteComment(tripId, commentId) {
+    const email = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    const trip = (this.state.locations || []).find(l => l.id === tripId);
+    if (!trip) return;
+    const c = (trip.comments || []).find(c => c.id === commentId);
+    if (!c) return;
+    const isMineComment = (c.authorEmail || '').toLowerCase().trim() === email;
+    const isAdmin = this.state.mySiteAdmin;
+    if (!isMineComment && !this.tripIsMine(trip) && !isAdmin) return;
+    const list = this.state.locations.map(l => l.id === tripId ? { ...l, comments: (l.comments || []).filter(x => x.id !== commentId) } : l);
+    this.persist(list);
+    this.setState({ locations: list });
   }
   // Card badges describing ownership + who can see a trip (cloud mode only).
   // Email-aware ownership: a trip is mine if I created it (owner id) or my email is its
@@ -7447,7 +7518,7 @@ class Component extends DCLogic {
     this.toast('Trip deleted');
   }
 
-  deselect() { this.setState({ selectedId: null, pm: null }); this.expandedKey = null; }
+  deselect() { this.setState({ selectedId: null, pm: null, commentDraft: '' }); this.expandedKey = null; }
 
   togglePane() { this.setState(s => ({ paneOpen: !s.paneOpen })); }
 
@@ -7762,7 +7833,7 @@ class Component extends DCLogic {
     if (this.state.dupMode) {
       const dup = { ...f, date: '', dateEnd: '', sharedWithText: (f.sharedWith || []).filter(e => !(this.state.cfgTravelers || []).some(t => t.email === e)).join(', '), shareTravelers: (this.state.form.shareTravelers || []) };
       delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
-      this.setState({ locations: list, formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, formError: '', selectedId: savedId, form: dup, calOpen: false });
+      this.setState({ locations: list, formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, formError: '', selectedId: savedId, form: dup, calOpen: false, formSnapshot: JSON.stringify(dup) });
     } else {
       this.setState({ locations: list, formOpen: false, editingId: null, formError: '', selectedId: savedId });
     }
@@ -7952,6 +8023,15 @@ class Component extends DCLogic {
         itineraryDayPlural: this._itineraryDayList(sl.date, sl.dateEnd).length === 1 ? '' : 's',
         itineraryWrapStyle: 'margin-top:14px; ' + ((Array.isArray(sl.gallery) && sl.gallery.length > 0) ? '' : 'padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);'),
         openItinerary: () => this.openItineraryModal(sl),
+        showComments: this.state.cfgDataSource === 'cloud' && this.state.cloudAuth,
+        commentCount: (sl.comments || []).length,
+        comments: (sl.comments || []).map(c => {
+          const mine = (c.authorEmail || '').toLowerCase().trim() === (this.state.cloudUserEmail || '').toLowerCase().trim();
+          const canDelete = mine || this.tripIsMine(sl) || this.state.mySiteAdmin;
+          let when = '';
+          try { when = new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(c.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
+          return { id: c.id, authorName: c.authorName || c.authorEmail || 'Someone', initial: (c.authorName || c.authorEmail || '?').trim()[0].toUpperCase(), text: c.text, when, canDelete, onDelete: () => this.deleteComment(sl.id, c.id) };
+        }),
       };
     }
     const meId = this.state.cloudUserId || '';
@@ -8519,6 +8599,9 @@ class Component extends DCLogic {
       }),
       canEditSelected,
       canPermSelected: this.state.cfgDataSource === 'cloud' && canEditSelected,
+      commentDraft: this.state.commentDraft || '',
+      setCommentDraft: (e) => this.setCommentDraft(e),
+      postComment: () => this.postComment(),
       togglePerm: () => this.openPermModal('quick'),
       permBtnStyle: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25);',
       // Banner layout sits the button over a photo, so it uses the same neutral

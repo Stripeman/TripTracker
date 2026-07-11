@@ -4,6 +4,17 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.16.1-beta — Form top-justified
+
+### Changed
+- The trip Add/Edit popup is now top-justified (not vertically centered), so switching tabs with different content heights no longer shifts the whole modal up/down.
+
+## 1.16.0-beta — Unsaved-changes warning + trip comments
+
+### Added
+- **Unsaved changes warning:** closing the trip popup (× / backdrop / Cancel) with edits pending now confirms before discarding. Same guard on browser tab close/refresh while the form is open and dirty.
+- **Comments per trip (Cloud mode):** a Comments section on the detail card — name, timestamp, and text per comment, delete for your own comments (or the trip owner/site admin), and a quick add box. Starts Phase 3 priority #3 (richer trip content).
+
 ## 1.15.1-beta — Permissions tab
 
 ### Changed
