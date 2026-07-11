@@ -2503,7 +2503,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.6-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.9-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -5162,16 +5162,24 @@ class Component extends DCLogic {
   }
 
   // ---- SYSTEM BACKUP: which users' trips get included -----------------------
-  // backupUsers is a sparse map of email (or 'unassigned') -> boolean. A missing
-  // entry defaults to checked/included — so "everyone on by default" needs no
-  // seeding step, and adding a brand-new person just shows up already included.
+  // backupUsers is a sparse map of traveler key (or email, for legacy owner-only
+  // ---- SYSTEM BACKUP: which users' trips get included -----------------------
+  // backupUsers is a sparse map of row id -> boolean. A missing entry defaults to
+  // checked/included — so "everyone on by default" needs no seeding step, and adding
+  // a brand-new person just shows up already included.
+  // Rows are keyed by key+familyId (NOT the bare traveler key) — in a multi-family
+  // app, two different people in different families can share the same short key
+  // (esp. legacy rows created before a key-collision fix shipped this session).
+  // Keying by bare key would silently merge two different people into one checkbox.
+  // A trip is "theirs" for this purpose if either its ownerEmail matches their email,
+  // or its travelers[] tags their key (scoped to the trip's own familyId).
   backupUserRows() {
     const map = this.state.backupUsers || {};
-    const mkRow = (key, label) => {
-      const checked = map[key] !== false;
+    const mkRow = (id, label) => {
+      const checked = map[id] !== false;
       return {
-        key, label, checked,
-        onToggle: () => this.toggleBackupUser(key),
+        key: id, label, checked,
+        onToggle: () => this.toggleBackupUser(id),
         boxBg: checked ? 'rgba(95,211,255,0.32)' : 'transparent',
         checkMark: checked ? '✓' : '',
       };
@@ -5179,15 +5187,19 @@ class Component extends DCLogic {
     const rows = [mkRow('unassigned', 'Unassigned')];
     const seen = new Set();
     (this.state.cfgTravelers || []).forEach(t => {
-      if (!t.email) return;
-      const email = String(t.email).toLowerCase().trim();
-      if (seen.has(email)) return;
-      seen.add(email);
-      rows.push(mkRow(email, t.label || email));
+      const rowId = t.key + '::' + (t.familyId || '');
+      if (seen.has(rowId)) return;
+      seen.add(rowId);
+      rows.push(mkRow(rowId, t.label || t.email || t.key));
     });
+    // legacy: an ownerEmail on a trip that doesn't match any current traveler row
+    // (e.g. a deleted person) still gets its own row so their trips aren't silently
+    // force-included/excluded by a row the user never sees.
     (this.state.locations || []).forEach(l => {
       const email = l.ownerEmail ? String(l.ownerEmail).toLowerCase().trim() : '';
-      if (email && !seen.has(email)) { seen.add(email); rows.push(mkRow(email, email)); }
+      if (!email) return;
+      const matchesTraveler = (this.state.cfgTravelers || []).some(t => t.email && String(t.email).toLowerCase().trim() === email);
+      if (!matchesTraveler && !seen.has(email)) { seen.add(email); rows.push(mkRow(email, email)); }
     });
     return rows;
   }
@@ -5198,13 +5210,24 @@ class Component extends DCLogic {
     });
   }
   backupAllChecked() { return this.backupUserRows().every(r => r.checked); }
+  // A trip is included if ANY person associated with it is checked — owner (by email
+  // or by traveler key::familyId, whichever row exists) OR any tagged traveler in
+  // travelers[] (scoped to the trip's own familyId, same collision-safe identity as
+  // the rows above). A trip with no owner and no tags at all falls under 'unassigned'.
   backupFilteredLocations() {
     const all = this.state.locations || [];
     if (this.state.cfgDataSource !== 'cloud' || this.backupAllChecked()) return all;
     const map = this.state.backupUsers || {};
+    const keyByEmail = {};
+    (this.state.cfgTravelers || []).forEach(t => { if (t.email) keyByEmail[String(t.email).toLowerCase().trim()] = t.key + '::' + (t.familyId || ''); });
+    const included = (id) => map[id] !== false;
     return all.filter(l => {
-      const key = l.ownerEmail ? String(l.ownerEmail).toLowerCase().trim() : 'unassigned';
-      return map[key] !== false;
+      const ownerEmail = l.ownerEmail ? String(l.ownerEmail).toLowerCase().trim() : '';
+      const ownerId = ownerEmail ? (keyByEmail[ownerEmail] || ownerEmail) : '';
+      const tagIds = Array.isArray(l.travelers) ? l.travelers.map((k) => k + '::' + (l.familyId || '')) : [];
+      if (!ownerId && !tagIds.length) return included('unassigned');
+      if (ownerId && included(ownerId)) return true;
+      return tagIds.some((id) => included(id));
     });
   }
 
@@ -6348,7 +6371,6 @@ class Component extends DCLogic {
     this.persist(list);
     this.toast('Claimed ' + n + ' trip' + (n === 1 ? '' : 's'));
   }
-  myTravelerKey() { const e = (this.state.cloudUserEmail || '').toLowerCase(); if (!e) return ''; const t = (this.state.cfgTravelers || []).find(o => o.email && o.email === e); return t ? t.key : ''; }
   // When the default-traveler filter is "Auto (me)", point it at the signed-in user's
   // own traveler once their identity is known (unless they've changed it this session).
   applyAutoTravelerFilter() {

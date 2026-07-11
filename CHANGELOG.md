@@ -4,6 +4,28 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.9-beta — Backup checkboxes now family-scoped
+
+### Fixed
+- The backup-list checkbox identity was still the bare traveler `key`, so two people in different families sharing the same legacy key toggled the same checkbox and the same trip-inclusion logic — a real gap given this is now a multi-family app. Row identity and trip-tag matching are now scoped by `key + familyId` end-to-end, so families with colliding legacy keys are handled correctly and independently.
+
+---
+
+## 1.9.8-beta — Backup list regression fix
+
+### Fixed
+- The 1.9.7 fix deduped backup-list rows by traveler `key` alone. Some legacy people (created before a key-collision fix shipped this session) share the same short key across different families — deduping by key alone silently dropped one of two real people with an email from the list. Now dedupes by key+familyId instead.
+
+---
+
+## 1.9.7-beta — Backup user list now reflects real trip tagging
+
+### Fixed
+- **Backup "include these users" list** only showed people with an email set, because it only recognized `ownerEmail`. Trips are actually tagged to people via a `travelers[]` array (which includes name-only people) — the list now has one row per traveler (email or not), keyed by their traveler key.
+- **Which trips a checkbox controls** now matches reality: a trip is included if *either* its owner or *any* tagged traveler is checked, not just the owner.
+
+---
+
 ## 1.9.6-beta — Migration buttons hide once run
 
 ### Changed
