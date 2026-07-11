@@ -5,8 +5,10 @@ const { BlobServiceClient } = require("@azure/storage-blob");
 // Each trip may carry:
 //   owner       — stable user id of the creator (Azure clientPrincipal.userId)
 //   ownerEmail  — creator's email, for display
-//   visibility  — "private" (owner only) | "shared" (specific people) | "all" (any signed-in user)
-//   sharedWith  — array of emails the owner shared a "shared" trip with
+//   visibility  — "private" (family + shared families, per hiddenFromShares) | "all" (any signed-in user)
+//   hiddenFromShares — true hides it from families you've shared with (family itself still sees it)
+//   soloPrivate — true hides it from EVERYONE but the owner (not even the owner's own family)
+//   sharedWith  — array of emails ADDITIVELY granted access, on top of the above tier
 // Trips with no `owner` are LEGACY (created before access control) and are treated as
 // visible to everyone but editable by no one via normal saves (admins manage them via Import).
 //
@@ -54,26 +56,33 @@ function isMine(trip, me) {
 // Trips created before the family model has no `familyId` — those are treated exactly
 // as before (visible to any signed-in user, editable only by their owner) so existing
 // unmigrated deployments keep working until an admin runs the migration.
+function sharedDirect(trip, me) {
+  return Array.isArray(trip.sharedWith) && trip.sharedWith.map((s) => String(s).toLowerCase()).includes(me.email);
+}
+
 function canView(trip, me) {
   if (!trip) return false;
   if (me.siteAdmin) return true;
+  if (isMine(trip, me)) return true;
+  // `sharedWith` is an ADDITIVE grant — specific people named here can always see the
+  // trip, regardless of its base visibility tier (even "only me").
+  if (sharedDirect(trip, me)) return true;
+  // "Only me" (soloPrivate) is a hard ceiling: nobody but the owner and explicit
+  // invitees above sees it — not even the owner's own family.
+  if (trip.soloPrivate) return false;
   if (!trip.familyId) {
     // legacy trip (pre-family) — old rules
     if (!trip.owner && !trip.ownerEmail) return true;
-    if (isMine(trip, me)) return true;
     if (trip.visibility === "all") return true;
-    if (trip.visibility === "shared" && Array.isArray(trip.sharedWith)) {
-      if (trip.sharedWith.map((s) => String(s).toLowerCase()).includes(me.email)) return true;
-    }
     return false;
   }
   if (me.familyRoles.has(trip.familyId)) return true; // any role in the owning family sees it
   const shareRole = me.sharesIn.get(trip.familyId);
-  if (shareRole) return true; // another family shared their whole family's trips with mine
+  // A family share grants visibility into that family's trips — UNLESS this specific
+  // trip has been marked private-even-when-shared (a per-trip override so one family
+  // can share broadly while still keeping a handful of trips out of it).
+  if (shareRole && !trip.hiddenFromShares) return true;
   if (trip.visibility === "all") return true;
-  if (trip.visibility === "shared" && Array.isArray(trip.sharedWith)) {
-    if (trip.sharedWith.map((s) => String(s).toLowerCase()).includes(me.email)) return true;
-  }
   return false;
 }
 
@@ -81,10 +90,12 @@ function canView(trip, me) {
 // trips I personally own (legacy path). Read-only family shares never grant edit.
 function canEdit(trip, me) {
   if (me.siteAdmin) return true;
+  if (trip.soloPrivate) return isMine(trip, me); // truly-private trips: owner only, even for family editors
   if (!trip.familyId) return isMine(trip, me); // legacy path unchanged
   const myRole = me.familyRoles.get(trip.familyId);
   if (myRole === "editor" || myRole === "admin") return true;
   const shareRole = me.sharesIn.get(trip.familyId);
+  if (shareRole && trip.hiddenFromShares) return false; // per-trip override also blocks edit via a share
   if (shareRole === "editor" || shareRole === "admin-no-delete") return true;
   return false;
 }
@@ -93,6 +104,7 @@ function canEdit(trip, me) {
 // role, and not a plain editor) or the trip's own owner may delete it.
 function canDelete(trip, me) {
   if (me.siteAdmin) return true;
+  if (trip.soloPrivate) return isMine(trip, me);
   if (!trip.familyId) return isMine(trip, me);
   const myRole = me.familyRoles.get(trip.familyId);
   if (myRole === "admin") return true;
@@ -191,9 +203,41 @@ module.exports = async function (context, req) {
     await enrichMe(container, me);
     const blob = container.getBlockBlobClient(BLOB);
 
+    // Effective image-uploads permission per family: a family's own `imagesEnabled`
+    // (true/false) overrides the site-wide default; unset inherits the site default.
+    // Best-effort / fail-open — if either blob is unreadable, uploads stay allowed.
+    let imagesAllowedByFamily = new Map();
+    let siteImagesOn = true;
+    let sitePublicSharingOn = true;
+    try {
+      const settingsBlob = container.getBlockBlobClient("family-settings.json");
+      if (await settingsBlob.exists()) {
+        const dl = await settingsBlob.download();
+        const fs = JSON.parse(await streamToString(dl.readableStreamBody));
+        siteImagesOn = fs.imageUploadsEnabled !== false;
+        sitePublicSharingOn = fs.publicSharingEnabled !== false;
+      }
+      const familiesBlob = container.getBlockBlobClient(process.env.FAMILIES_BLOB || "families.json");
+      if (await familiesBlob.exists()) {
+        const dl = await familiesBlob.download();
+        const list = JSON.parse(await streamToString(dl.readableStreamBody));
+        (Array.isArray(list) ? list : []).forEach((f) => {
+          imagesAllowedByFamily.set(f.id, f.imagesEnabled === undefined || f.imagesEnabled === null ? siteImagesOn : !!f.imagesEnabled);
+        });
+      }
+    } catch (e) { /* fail open */ }
+    const imagesAllowed = (familyId) => familyId && imagesAllowedByFamily.has(familyId) ? imagesAllowedByFamily.get(familyId) : siteImagesOn;
+    const stripImagesIfBlocked = (t) => {
+      if (imagesAllowed(t.familyId)) return t;
+      if (!t.photo && !(Array.isArray(t.gallery) && t.gallery.length)) return t;
+      const { photo, gallery, ...rest } = t;
+      return { ...rest, gallery: [] };
+    };
+
     if (req.method === "GET") {
       const { locations, settings } = await readDataset(blob);
-      const visible = locations.filter((t) => canView(t, me));
+      const viewTrip = (t) => (t.visibility === "all" && !sitePublicSharingOn) ? { ...t, visibility: "private" } : t;
+      const visible = locations.filter((t) => canView(viewTrip(t), me));
       json(200, {
         app: "vacation-location",
         version: 1,
@@ -283,10 +327,12 @@ module.exports = async function (context, req) {
     const normalize = (t, owner, ownerEmail) => {
       let visibility = t.visibility;
       if (["private", "shared", "all"].indexOf(visibility) === -1) visibility = "private";
+      if (visibility === "shared") visibility = "private"; // legacy tier folded into the additive sharedWith model
+      if (visibility === "all" && !sitePublicSharingOn) visibility = "private"; // site admin disabled public sharing
       const sharedWith = Array.isArray(t.sharedWith)
         ? t.sharedWith.map((s) => String(s).trim().toLowerCase()).filter(Boolean)
         : [];
-      return { ...t, owner, ownerEmail, visibility, sharedWith };
+      return stripImagesIfBlocked({ ...t, owner, ownerEmail, visibility, sharedWith, hiddenFromShares: !!t.hiddenFromShares, soloPrivate: !!t.soloPrivate });
     };
 
     for (const s of stored.locations) {

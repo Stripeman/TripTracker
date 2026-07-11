@@ -52,7 +52,9 @@
     .tt-detailcard { left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
     .tt-metrics { top: 104px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
     .tt-config { top: 68px !important; left: 10px !important; right: 10px !important; width: auto !important; max-height: calc(100vh - 84px) !important; }
-    .tt-form { width: 100vw !important; }
+    .tt-form { width: 100vw !important; max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
+    .tt-fammodal { width: 100vw !important; height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; flex-direction: column !important; }
+    .tt-famsidebar { width: 100% !important; flex: none !important; max-height: 34vh !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; }
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
@@ -669,8 +671,8 @@
     <!-- Family Management (top-level view: sidebar of my families + detail panel) -->
     <sc-if value="{{ familyMgmtOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeFamilyMgmt }}" style="position:fixed; inset:0; z-index:78; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; pointer-events:auto; animation:vl-fade 0.2s ease;">
-        <div onClick="{{ stop }}" style="width:min(860px,94vw); height:min(640px,86vh); display:flex; background:rgba(8,14,24,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
-          <div style="width:230px; flex:none; background:rgba(255,255,255,0.02); border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; padding:16px 12px; overflow-y:auto;">
+        <div onClick="{{ stop }}" class="tt-fammodal" style="width:min(860px,94vw); height:min(640px,86vh); display:flex; background:rgba(8,14,24,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <div class="tt-famsidebar" style="width:230px; flex:none; background:rgba(255,255,255,0.02); border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; padding:16px 12px; overflow-y:auto;">
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; padding:0 4px 12px;">PEOPLE &amp; FAMILIES</div>
             <div style="display:flex; flex-direction:column; gap:5px;">
               <div onClick="{{ setFamMgmtViewFamilies }}" style="{{ famMgmtNavFamiliesStyle }}"><span>My Family Management</span></div>
@@ -980,6 +982,20 @@
                 </div>
               </sc-if>
 
+              <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 12px; margin-bottom:16px;">
+                  <div>
+                    <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c8d2e0;">Photo uploads for this family</div>
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ familyImageUploadsHint }}</div>
+                  </div>
+                  <div style="display:flex; gap:5px; flex:none;">
+                    <button onClick="{{ setFamilyImagesInherit }}" style="{{ familyImagesInheritStyle }}">Site default</button>
+                    <button onClick="{{ setFamilyImagesOn }}" style="{{ familyImagesOnStyle }}">On</button>
+                    <button onClick="{{ setFamilyImagesOff }}" style="{{ familyImagesOffStyle }}">Off</button>
+                  </div>
+                </div>
+              </sc-if>
+
               <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
                   <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94;">OWNER · <span style="color:#bcd2e6; letter-spacing:0;">{{ ownerLabel }}</span></div>
@@ -1180,6 +1196,22 @@
                     <button onClick="{{ sh.onRemove }}" title="Remove access" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
                   </div>
                 </sc-for>
+                <sc-if value="{{ noOutgoingShares }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">No other family can see ours yet.</div>
+                </sc-if>
+              </div>
+
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin:18px 0 8px;">FAMILIES WE CAN SEE</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; margin-bottom:9px; line-height:1.5;">Granted by them — only they can revoke it.</div>
+              <div style="display:flex; flex-direction:column; gap:7px;">
+                <sc-for list="{{ myIncomingShares }}" as="sh" hint-placeholder-count="1">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 10px;">
+                    <span>{{ sh.label }}</span>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ noIncomingShares }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">No other family has shared with us yet.</div>
+                </sc-if>
               </div>
 
             </sc-if>
@@ -1191,6 +1223,18 @@
                 <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Auto-approve new families</div>
                 <button onClick="{{ toggleAutoApproveFamilies }}" style="{{ autoApproveToggleStyle }}">{{ autoApproveToggleLabel }}</button>
               </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Photo uploads (site-wide default)</div>
+                <button onClick="{{ toggleImageUploadsSite }}" style="{{ imageUploadsSiteToggleStyle }}">{{ imageUploadsSiteToggleLabel }}</button>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:16px;">Families can still override this for themselves below.</div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">"Public" sharing tier (everyone signed in)</div>
+                <button onClick="{{ togglePublicSharingSite }}" style="{{ publicSharingSiteToggleStyle }}">{{ publicSharingSiteToggleLabel }}</button>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:16px;">Off hides the Public option in every trip's permissions and quietly downgrades any trip currently set to it.</div>
 
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ALL FAMILIES</div>
               <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:18px;">
@@ -1534,6 +1578,9 @@
                 <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ selected.familyBadge.color }}; flex:none;"></span>{{ selected.familyBadge.label }}</span>
                 </sc-if>
+                <sc-if value="{{ selected.hiddenFromSharesBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.hiddenFromSharesBadge.color }};">{{ selected.hiddenFromSharesBadge.label }}</span>
+                </sc-if>
                 </sc-if>
               </div>
             </sc-if>
@@ -1573,6 +1620,9 @@
                 <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ selected.familyBadge.color }}; flex:none;"></span>{{ selected.familyBadge.label }}</span>
                 </sc-if>
+                <sc-if value="{{ selected.hiddenFromSharesBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.hiddenFromSharesBadge.color }};">{{ selected.hiddenFromSharesBadge.label }}</span>
+                </sc-if>
               </sc-if>
             </div>
           </sc-if>
@@ -1595,6 +1645,9 @@
                     <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
                 <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ selected.familyBadge.color }}; flex:none;"></span>{{ selected.familyBadge.label }}</span>
+                </sc-if>
+                <sc-if value="{{ selected.hiddenFromSharesBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.hiddenFromSharesBadge.color }};">{{ selected.hiddenFromSharesBadge.label }}</span>
                 </sc-if>
                   </sc-if>
                 </div>
@@ -1636,6 +1689,9 @@
                 <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ selected.familyBadge.color }}; flex:none;"></span>{{ selected.familyBadge.label }}</span>
                 </sc-if>
+                <sc-if value="{{ selected.hiddenFromSharesBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.hiddenFromSharesBadge.color }};">{{ selected.hiddenFromSharesBadge.label }}</span>
+                </sc-if>
                 </sc-if>
               </div>
             </sc-if>
@@ -1653,24 +1709,6 @@
             <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
           </div>
         </div>
-        </sc-if>
-        <sc-if value="{{ permOpen }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:13px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.22); border-radius:11px; padding:11px 12px;">
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.16em; color:#7fb4d8; margin-bottom:8px;">WHO CAN SEE THIS</div>
-            <div style="display:flex; gap:6px;">
-              <button onClick="{{ setPermPrivate }}" style="{{ permVisPrivateStyle }}">Private</button>
-              <button onClick="{{ setPermAll }}" style="{{ permVisAllStyle }}">All users</button>
-              <button onClick="{{ setPermShared }}" style="{{ permVisSharedStyle }}">People</button>
-            </div>
-            <sc-if value="{{ permShowPeople }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:11px;">
-                <sc-for list="{{ permPeople }}" as="p" hint-placeholder-count="4">
-                  <button onClick="{{ p.onToggle }}" title="{{ p.title }}" style="{{ p.style }}">{{ p.letter }}</button>
-                </sc-for>
-              </div>
-            </sc-if>
-            <div style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; line-height:1.5;">Saved instantly · becomes the default for your next new trip.</div>
-          </div>
         </sc-if>
         <div style="display:flex; gap:14px; margin-top:14px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7d90a8;">
           <div><div style="color:#506075; font-size:9px; letter-spacing:0.12em;">{{ selected.coordsLabel }}</div><div style="margin-top:3px; color:#a9bace;">{{ selected.coordsText }}</div></div>
@@ -1697,6 +1735,22 @@
         </sc-if>
         <sc-if value="{{ selected.notes }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08); font-family:'Space Grotesk',sans-serif; font-size:13px; line-height:1.55; color:#c2cfde; white-space:pre-wrap;">{{ selected.notes }}</div>
+        </sc-if>
+        <sc-if value="{{ selected.hasGallery }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
+            <button onClick="{{ selected.openGallery }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:10px 12px; cursor:pointer;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10.5" r="1.5"></circle><path d="M21 15l-5-5L5 19"></path></svg>
+              View gallery <span style="color:#7fb4d8;">· {{ selected.galleryCount }}</span>
+            </button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ selected.hasItinerary }}" hint-placeholder-val="{{ false }}">
+          <div style="{{ selected.itineraryWrapStyle }}">
+            <button onClick="{{ selected.openItinerary }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:10px 12px; cursor:pointer;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18M8 2v4M16 2v4"></path></svg>
+              View itinerary <span style="color:#7fb4d8;">· {{ selected.itineraryDayCount }} day{{ selected.itineraryDayPlural }}</span>
+            </button>
+          </div>
         </sc-if>
         <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex; gap:9px; margin-top:16px;">
@@ -2187,6 +2241,90 @@
       </div>
     </sc-if>
 
+    <!-- unified permissions modal: quick-edit from the card's lock icon, or from the form's picker -->
+    <sc-if value="{{ pmOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ pmClose }}" style="position:fixed; inset:0; z-index:98; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center;">
+        <div onClick="{{ stop }}" style="width:380px; max-width:92vw; max-height:82vh; overflow:auto; background:#0b1420; border:1px solid rgba(125,200,245,0.28); border-radius:16px; box-shadow:0 24px 60px rgba(0,0,0,0.55);">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 18px 0;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; color:#eaf2fb; display:flex; align-items:center; gap:8px;">🔒 Permissions</div>
+            <button onClick="{{ pmClose }}" title="Close" style="width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14); color:#c8d2e0; cursor:pointer; font-size:14px; line-height:1;">×</button>
+          </div>
+          <div style="display:flex; gap:0; margin:14px 18px 0; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <button onClick="{{ pmGoVis }}" style="{{ pmTabVisStyle }}">VISIBILITY</button>
+            <button onClick="{{ pmGoPeople }}" style="{{ pmTabPeopleStyle }}">SPECIFIC PEOPLE<sc-if value="{{ pmPeopleCount }}" hint-placeholder-val="{{ false }}"> ({{ pmPeopleCount }})</sc-if></button>
+          </div>
+          <div style="padding:16px 18px 18px;">
+            <sc-if value="{{ pmTabIsVis }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ pmIsQuick }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5; margin-bottom:12px;">Applies instantly, and becomes the default for your next new trip.</div>
+              </sc-if>
+              <sc-for list="{{ pmTiers }}" as="tier" hint-placeholder-count="4">
+                <button onClick="{{ tier.onPick }}" style="{{ tier.style }}">
+                  <span style="font-size:17px; line-height:1.3;">{{ tier.icon }}</span>
+                  <span style="flex:1;">
+                    <span style="display:block; font-weight:600; font-size:13px; color:#eaf2fb;">{{ tier.label }}</span>
+                    <span style="display:block; margin-top:2px; font-size:11px; color:#8093aa; line-height:1.4;">{{ tier.desc }}</span>
+                  </span>
+                </button>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ pmTabIsPeople }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5; margin-bottom:10px;">Additive — these people can always see it, on top of whichever tier you picked under Visibility.</div>
+              <div style="display:flex; flex-wrap:wrap; gap:7px;">
+                <sc-for list="{{ pmPeople }}" as="chip" hint-placeholder-count="4">
+                  <button onClick="{{ chip.onToggle }}" disabled="{{ chip.disabled }}" title="{{ chip.title }}" style="{{ chip.style }}">{{ chip.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ pmHasNoEmailPeople }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#caa34e; line-height:1.5;">Greyed names have no email yet — add one in ⚙ → Settings → Travelers to share with them.</div>
+              </sc-if>
+              <input value="{{ pmEmailText }}" onChange="{{ pmSetEmailText }}" onBlur="{{ pmEmailBlur }}" placeholder="+ other email (someone not in the list)" style="width:100%; box-sizing:border-box; margin-top:10px; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:10px 12px; outline:none;">
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- trip itinerary viewer -->
+    <sc-if value="{{ itineraryModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeItineraryModal }}" style="position:fixed; inset:0; z-index:80; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; animation:vl-fade 0.2s ease;">
+        <div onClick="{{ stop }}" style="width:min(520px,94vw); max-height:80vh; display:flex; flex-direction:column; background:rgba(8,14,24,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <div>
+              <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.14em; color:#e8f3ff;">ITINERARY</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ itineraryModalPlace }}</div>
+            </div>
+            <button onClick="{{ closeItineraryModal }}" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:17px; line-height:1;">×</button>
+          </div>
+          <div style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px;">
+            <sc-for list="{{ itineraryModalDays }}" as="d" hint-placeholder-count="2">
+              <div style="margin-bottom:14px;">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:#7fb4d8; margin-bottom:5px;">{{ d.label }}</div>
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#cdd9e6; line-height:1.55; white-space:pre-wrap;">{{ d.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- gallery lightbox -->
+    <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeLightbox }}" style="position:fixed; inset:0; z-index:97; pointer-events:auto; background:rgba(2,6,14,0.85); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; animation:vl-fade 0.2s ease;">
+        <button onClick="{{ closeLightbox }}" title="Close" style="position:absolute; top:20px; right:22px; width:34px; height:34px; border-radius:9px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#e8eef6; font-size:16px; cursor:pointer;">×</button>
+        <sc-if value="{{ lightboxHasMulti }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ lightboxPrevClick }}" title="Previous" style="position:absolute; left:18px; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.18); color:#e8eef6; font-size:18px; cursor:pointer;">‹</button>
+          <button onClick="{{ lightboxNextClick }}" title="Next" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.18); color:#e8eef6; font-size:18px; cursor:pointer;">›</button>
+        </sc-if>
+        <div onClick="{{ stop }}" style="max-width:90vw; max-height:86vh; display:flex; flex-direction:column; align-items:center; gap:10px;">
+          <img ref="{{ setLightboxImg }}" style="width:90vw; height:78vh; object-fit:contain; border-radius:12px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <sc-if value="{{ lightboxHasMulti }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; color:#8093aa;">{{ lightboxPosLabel }}</div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- trips calendar view -->
     <sc-if value="{{ calendarOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeCalendarView }}" style="position:fixed; inset:0; z-index:80; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; pointer-events:auto; animation:vl-fade 0.2s ease;">
@@ -2292,8 +2430,10 @@
       </div>
     </sc-if>
 
-    <!-- slide-in form -->
-    <div class="tt-form" style="position:absolute; top:0; right:0; bottom:0; width:388px; pointer-events:auto; background:rgba(7,12,21,0.92); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-left:1px solid rgba(56,189,248,0.2); box-shadow:-20px 0 60px rgba(0,0,0,0.55); transition:transform 0.42s cubic-bezier(0.16,1,0.3,1); transform:{{ panelTransform }}; display:flex; flex-direction:column;">
+    <!-- trip form popup -->
+    <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeForm }}" style="position:fixed; inset:0; z-index:90; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; padding:24px;">
+    <div onClick="{{ stop }}" class="tt-form" style="width:min(640px,94vw); max-height:88vh; pointer-events:auto; background:rgba(8,14,24,0.97); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(56,189,248,0.22); border-radius:18px; box-shadow:0 30px 90px rgba(0,0,0,0.6); display:flex; flex-direction:column;">
       <div style="display:flex; justify-content:space-between; align-items:center; padding:24px 26px 18px; border-bottom:1px solid rgba(56,189,248,0.12);">
         <div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088;">{{ formMode }}</div>
@@ -2318,7 +2458,15 @@
         </div>
       </sc-if>
 
+      <div style="display:flex; gap:2px; flex:none; padding:0 26px; border-bottom:1px solid rgba(255,255,255,0.08);">
+        <button onClick="{{ setFormTabDetails }}" style="{{ formTabDetailsStyle }}">Details</button>
+        <button onClick="{{ setFormTabNotes }}" style="{{ formTabNotesStyle }}">Notes &amp; photos</button>
+        <button onClick="{{ setFormTabItinerary }}" style="{{ formTabItineraryStyle }}">Itinerary</button>
+        <button onClick="{{ setFormTabSharing }}" style="{{ formTabSharingStyle }}">Permissions</button>
+      </div>
+
       <div style="flex:1; overflow-y:auto; padding:22px 26px;">
+        <sc-if value="{{ formTabIsDetails }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; gap:12px; margin-bottom:18px;">
           <div style="flex:1;">
             <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin-bottom:7px;">COUNTRY</label>
@@ -2428,10 +2576,13 @@
             </div>
           </div>
         </sc-if>
+        </sc-if>
 
-        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 7px;">NOTES <span style="color:#445;">·opt</span></label>
+        <sc-if value="{{ formTabIsNotes }}" hint-placeholder-val="{{ false }}">
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:0 0 7px;">NOTES <span style="color:#445;">·opt</span></label>
         <textarea name="notes" value="{{ form.notes }}" onChange="{{ onField }}" placeholder="Anything to remember — hotels, highlights, who you went with…" rows="3" style="width:100%; resize:vertical; min-height:74px; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.5; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:11px 13px; outline:none;"></textarea>
 
+        <sc-if value="{{ formImagesAllowed }}" hint-placeholder-val="{{ true }}">
         <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:18px 0 7px;">PHOTO <span style="color:#445;">·opt</span></label>
         <input ref="{{ setPhotoInputRef }}" type="file" accept="image/*" onChange="{{ onPhotoPick }}" style="display:none;">
         <div style="display:flex; align-items:center; gap:13px;">
@@ -2463,25 +2614,60 @@
           </div>
         </sc-if>
 
-        <sc-if value="{{ showVisibility }}" hint-placeholder-val="{{ false }}">
-          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 8px;">WHO CAN SEE THIS</label>
-          <div style="display:flex; gap:7px;">
-            <button onClick="{{ setVisPrivate }}" style="{{ visPrivateStyle }}">🔒 Only me</button>
-            <button onClick="{{ setVisAll }}" style="{{ visAllStyle }}">👥 All users</button>
-            <button onClick="{{ setVisShared }}" style="{{ visSharedStyle }}">✉ Specific people</button>
-          </div>
-          <sc-if value="{{ visIsShared }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#586a82; margin-bottom:7px;">PEOPLE</div>
-            <div style="display:flex; flex-wrap:wrap; gap:7px;">
-              <sc-for list="{{ shareTravelerChips }}" as="chip" hint-placeholder-count="4">
-                <button onClick="{{ chip.onToggle }}" disabled="{{ chip.disabled }}" title="{{ chip.title }}" style="{{ chip.style }}">{{ chip.label }}</button>
-              </sc-for>
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:18px 0 7px;">GALLERY <span style="color:#445;">·opt</span></label>
+        <input ref="{{ setGalleryInputRef }}" type="file" accept="image/*" multiple="{{ true }}" onChange="{{ onGalleryPick }}" style="display:none;">
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <sc-for list="{{ formGalleryItems }}" as="g" hint-placeholder-count="0">
+            <div style="position:relative; width:56px; height:56px; flex:none;">
+              <img ref="{{ g.setRef }}" style="width:56px; height:56px; object-fit:cover; border-radius:9px; border:1px solid rgba(125,200,245,0.32); display:block;">
+              <button onClick="{{ g.remove }}" title="Remove" style="position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; background:#161f2e; border:1px solid rgba(255,255,255,0.18); color:#c2cfde; font-size:10px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
             </div>
-            <sc-if value="{{ hasTravelerNoEmail }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-top:7px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#caa34e; line-height:1.5;">Greyed names have no email yet — add one in ⚙ → Settings → Travelers to share with them.</div>
+          </sc-for>
+          <button onClick="{{ triggerGalleryPick }}" style="width:56px; height:56px; flex:none; border-radius:9px; border:1px dashed rgba(125,200,245,0.4); background:rgba(255,255,255,0.02); color:#7fb4d8; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+            <span style="font-size:16px; line-height:1;">+</span>
+          </button>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5; margin-top:7px;">Extra photos beyond the cover — shown in a gallery on the trip detail. Pick several at once.</div>
+        </sc-if>
+        <sc-if value="{{ formImagesBlocked }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:18px 0; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7c8ea6; line-height:1.5; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:10px 12px;">📷 Photo uploads are turned off for this family right now. A family admin can re-enable them in People &amp; Family Management.</div>
+        </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ formTabIsItinerary }}" hint-placeholder-val="{{ false }}">
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:0 0 7px;">ITINERARY <span style="color:#445;">·opt</span></label>
+        <sc-if value="{{ itineraryPanelOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <sc-for list="{{ itineraryDays }}" as="d" hint-placeholder-count="0">
+              <div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7fb4d8; margin-bottom:4px;">{{ d.label }}</div>
+                <textarea value="{{ d.value }}" onChange="{{ d.onChange }}" placeholder="Plans, reservations, notes for this day…" rows="2" style="width:100%; box-sizing:border-box; resize:vertical; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e8eef6; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:9px; padding:9px 11px; line-height:1.5;"></textarea>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noItineraryDays }}" hint-placeholder-val="{{ true }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5;">Pick a trip date above to add day-by-day notes.</div>
             </sc-if>
-            <input name="sharedWithText" value="{{ form.sharedWithText }}" onChange="{{ onField }}" placeholder="+ other email (someone not in the list)" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:10px 12px; outline:none;">
-          </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ itineraryPanelClosed }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ toggleItineraryPanel }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fd6f0; background:rgba(255,255,255,0.03); border:1px dashed rgba(125,200,245,0.35); border-radius:9px; padding:9px 12px; cursor:pointer;">+ Add day-by-day notes</button>
+        </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ formTabIsSharing }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ showVisibilityHidden }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#7c8ea6; line-height:1.5; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:11px 13px;">Permissions apply once this family is synced to Cloud storage. In Local/Demo mode, trips are only ever visible on this device.</div>
+        </sc-if>
+        <sc-if value="{{ showVisibility }}" hint-placeholder-val="{{ false }}">
+          <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:0 0 8px;">PERMISSIONS</label>
+          <button onClick="{{ openPermForm }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.32); border-radius:10px; padding:11px 13px; cursor:pointer; text-align:left;">
+            <span style="font-size:15px;">{{ permFormTierIcon }}</span>
+            <span style="flex:1;">{{ permFormTierLabel }}</span>
+            <sc-if value="{{ permFormPeopleCount }}" hint-placeholder-val="{{ false }}">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7fb4d8;">+{{ permFormPeopleCount }} people</span>
+            </sc-if>
+            <span style="color:#5a6d85;">›</span>
+          </button>
         </sc-if>
 
         <sc-if value="{{ showCreated }}" hint-placeholder-val="{{ false }}">
@@ -2491,6 +2677,7 @@
         <sc-if value="{{ showModified }}" hint-placeholder-val="{{ false }}">
           <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:14px 0 7px;">LAST MODIFIED <span style="color:#445;">·read-only</span></label>
           <div style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8093aa; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:11px 13px;">{{ modifiedText }}</div>
+        </sc-if>
         </sc-if>
       </div>
 
@@ -2512,6 +2699,8 @@
         </div>
       </div>
     </div>
+    </div>
+    </sc-if>
 
   </div>
 </div>
@@ -2561,7 +2750,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.17-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.15.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2733,14 +2922,13 @@ class Component extends DCLogic {
       accessMsgOk: false,
       selectedId: null,
       formOpen: false,
+      formTab: 'details',
       editingId: null,
       dateText: null,
       dateEndText: null,
       form: this.blankForm(),
       formError: '',
-      permOpen: false,
-      permVis: 'private',
-      permShareKeys: [],
+      pm: null,
       paneOpen: true,
       calOpen: false,
       calY: now.getFullYear(),
@@ -2799,6 +2987,8 @@ class Component extends DCLogic {
       reqDraftFamily: {},
       mySiteAdmin: false,
       autoApproveFamilies: false,
+      cfgImageUploadsEnabledSite: true,
+      cfgPublicSharingEnabledSite: true,
       newFamilyName: '',
       newFamilyModalOpen: false,
       addPersonModalOpen: false,
@@ -2844,6 +3034,10 @@ class Component extends DCLogic {
       helpError: '',
       geocoding: false,
       dupMode: false,
+      itineraryPanelOpen: false,
+      itineraryModalOpen: false,
+      itineraryModalDays: [],
+      itineraryModalPlace: '',
       sortDir: cfgSort,
       ready: false,
     };
@@ -2872,12 +3066,28 @@ class Component extends DCLogic {
     this.setImportInput = (el) => { this.importInput = el; };
   }
 
+  PERM_TIERS = [
+    { key: 'onlyme', icon: '🔒', label: 'Only me', desc: 'Hidden from everyone, even your own family.' },
+    { key: 'onlyfamily', icon: '👪', label: 'Only my family', desc: "Visible to your family's members only." },
+    { key: 'sharedfamilies', icon: '🤝', label: 'All shared families', desc: 'Your family, plus every family you\u2019ve linked with. Default.' },
+    { key: 'public', icon: '🌐', label: 'Public', desc: 'Any signed-in user of the app.' },
+  ];
+  tierOfLoc(l) {
+    l = l || {};
+    if (l.soloPrivate) return 'onlyme';
+    if (l.hiddenFromShares) return 'onlyfamily';
+    if (l.visibility === 'all') return 'public';
+    return 'sharedfamilies';
+  }
+  flagsFromTier(tier) {
+    return { soloPrivate: tier === 'onlyme', hiddenFromShares: tier === 'onlyfamily', visibility: tier === 'public' ? 'all' : 'private' };
+  }
   blankForm() {
     // New trips inherit the last permission you chose via the card's quick editor.
     const d = this._permDefault || {};
-    const vis = ['private','shared','all'].indexOf(d.vis) >= 0 ? d.vis : 'private';
+    const tier = ['onlyme','onlyfamily','sharedfamilies','public'].indexOf(d.tier) >= 0 ? d.tier : 'sharedfamilies';
     const shareTravelers = Array.isArray(d.keys) ? d.keys.slice() : [];
-    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', photo:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers, familyId: this.state.activeFamilyId || '' }; }
+    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', photo:'', gallery:[], itinerary:{}, visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', ...this.flagsFromTier(tier), sharedWith:[], sharedWithText:'', shareTravelers, familyId: this.state.activeFamilyId || '' }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -3305,6 +3515,8 @@ class Component extends DCLogic {
         cfgExtraSiteAdmins: j.extraSiteAdmins || [],
         cfgFamilyColors: j.familyColors || [],
         autoApproveFamilies: !!j.autoApproveFamilies,
+        cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false,
+        cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false,
         pendingFamiliesList: j.pendingFamilies || [],
         activeFamilyId: active,
         cfgTravelersServer: j.travelers || [],
@@ -3590,6 +3802,24 @@ class Component extends DCLogic {
     const j = await this.familiesAction('setAutoApprove', { value: !this.state.autoApproveFamilies });
     if (j) this.toast(j.autoApproveFamilies ? 'Auto-approve is ON' : 'Auto-approve is OFF');
   }
+  async toggleImageUploadsSite() {
+    const j = await this.familiesAction('setImageUploadsEnabled', { value: !this.state.cfgImageUploadsEnabledSite });
+    if (j) { this.setState({ cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false }); this.toast(j.imageUploadsEnabled !== false ? 'Site-wide image uploads are ON' : 'Site-wide image uploads are OFF'); }
+  }
+  async togglePublicSharingSite() {
+    const j = await this.familiesAction('setPublicSharingEnabled', { value: !this.state.cfgPublicSharingEnabledSite });
+    if (j) { this.setState({ cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false }); this.toast(j.publicSharingEnabled !== false ? 'Public sharing is ON' : 'Public sharing is OFF'); }
+  }
+  // familyImages: undefined = inherit the site default, true/false = this family's override.
+  async setFamilyImageUploads(familyId, value) {
+    const j = await this.familiesAction('setFamilyImageUploads', { familyId, value });
+    if (j) { this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => f.id === familyId ? { ...f, imagesEnabled: value } : f) })); this.toast('Updated'); }
+  }
+  familyImagesEffective(familyId) {
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
+    if (fam && fam.imagesEnabled !== undefined && fam.imagesEnabled !== null) return !!fam.imagesEnabled;
+    return this.state.cfgImageUploadsEnabledSite !== false;
+  }
   setAssignEmail(e) { this.setState({ assignEmail: e.target.value }); }
   setAssignFamilyId(e) { this.setState({ assignFamilyId: e.target.value }); }
   setAssignRole(e) { this.setState({ assignRole: e.target.value }); }
@@ -3754,6 +3984,9 @@ class Component extends DCLogic {
       label: (byId[sh.toFamilyId] ? byId[sh.toFamilyId].name : sh.toFamilyId) + ' — ' + shareRoleLabel(sh.role),
       onRemove: () => this.removeFamilyShare(sh.fromFamilyId, sh.toFamilyId),
     }));
+    const myIncomingShares = (s.cfgShares || []).filter((sh) => sh.toFamilyId === viewFamilyId).map((sh) => ({
+      label: (byId[sh.fromFamilyId] ? byId[sh.fromFamilyId].name : sh.fromFamilyId) + ' — ' + shareRoleLabel(sh.role),
+    }));
     const pendingList = s.pendingFamiliesList || [];
     const myFamilyIdsArr = [...myFamilyIds];
     const familyViewOptions = [];
@@ -3768,6 +4001,7 @@ class Component extends DCLogic {
     const myActiveMembership = activeMembers.find(m => m.email === s.cloudUserEmail);
     const isActiveFamilyAdmin = !!s.mySiteAdmin || (myActiveMembership && myActiveMembership.role === 'admin');
     const activeFamObj = byId[viewFamilyId];
+    const famImgSegStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 8px; border-radius:7px; cursor:pointer; transition:all .15s; " + (on ? "color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;" : "color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);");
     const isFamilyOwner = !!s.mySiteAdmin || (activeFamObj && activeFamObj.createdBy === s.cloudUserEmail);
     const ownerMember = activeFamObj && activeMembers.find(m => m.email === activeFamObj.createdBy);
     const transferTargetOptions = activeMembers
@@ -3826,11 +4060,22 @@ class Component extends DCLogic {
       otherFamilyOptions,
       inviteFamilyShare: () => this.inviteFamilyShare(),
       myOutgoingShares,
+      noOutgoingShares: myOutgoingShares.length === 0,
+      myIncomingShares,
+      noIncomingShares: myIncomingShares.length === 0,
       mySiteAdmin: !!s.mySiteAdmin,
       autoApproveToggleLabel: s.autoApproveFamilies ? 'ON' : 'OFF',
       autoApproveToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.autoApproveFamilies ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
       toggleAutoApproveFamilies: () => this.toggleAutoApproveFamilies(),
+      imageUploadsSiteToggleLabel: s.cfgImageUploadsEnabledSite !== false ? 'ON' : 'OFF',
+      imageUploadsSiteToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
+        (s.cfgImageUploadsEnabledSite !== false ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
+      toggleImageUploadsSite: () => this.toggleImageUploadsSite(),
+      publicSharingSiteToggleLabel: s.cfgPublicSharingEnabledSite !== false ? 'ON' : 'OFF',
+      publicSharingSiteToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
+        (s.cfgPublicSharingEnabledSite !== false ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
+      togglePublicSharingSite: () => this.togglePublicSharingSite(),
       hasPendingFamilies: pendingList.length > 0,
       pendingFamilyRows: pendingList.map((f) => ({ name: f.name, onApprove: () => this.approveFamily(f.id) })),
       pendingFamiliesCount: pendingList.length,
@@ -3934,6 +4179,15 @@ class Component extends DCLogic {
       activeFamilyMemberRows,
       activeFamilyPeopleRows: this.computePeopleRows(viewFamilyId),
       isActiveFamilyAdmin,
+      familyImageUploadsHint: (activeFamObj && activeFamObj.imagesEnabled !== undefined && activeFamObj.imagesEnabled !== null)
+        ? (activeFamObj.imagesEnabled ? 'Explicitly ON for this family' : 'Explicitly OFF for this family')
+        : ('Following the site default (' + (s.cfgImageUploadsEnabledSite !== false ? 'ON' : 'OFF') + ')'),
+      setFamilyImagesInherit: () => this.setFamilyImageUploads(viewFamilyId, null),
+      setFamilyImagesOn: () => this.setFamilyImageUploads(viewFamilyId, true),
+      setFamilyImagesOff: () => this.setFamilyImageUploads(viewFamilyId, false),
+      familyImagesInheritStyle: famImgSegStyle(!activeFamObj || activeFamObj.imagesEnabled === undefined || activeFamObj.imagesEnabled === null),
+      familyImagesOnStyle: famImgSegStyle(!!activeFamObj && activeFamObj.imagesEnabled === true),
+      familyImagesOffStyle: famImgSegStyle(!!activeFamObj && activeFamObj.imagesEnabled === false),
       newNonAccountName: s.newNonAccountName || '',
       setNewNonAccountName: (e) => this.setNewNonAccountName(e),
       addNonAccountMemberClick: () => this.addNonAccountMemberClick(),
@@ -4385,7 +4639,7 @@ class Component extends DCLogic {
 
   selectLocation(id) {
     const loc = this.state.locations.find(l => l.id === id);
-    this.setState({ selectedId: id, permOpen: false });
+    this.setState({ selectedId: id, pm: null });
     // If the edit pane is open, switch it to the trip just clicked.
     if (this.state.formOpen && this.state.editingId != null && loc) this.editSelected(id);
     if (loc) {
@@ -5220,19 +5474,34 @@ class Component extends DCLogic {
     used.add(name);
     return name;
   }
+  // All exportable image entries for one trip: cover photo (if any) plus every
+  // gallery photo, numbered when there's more than one for the same trip.
+  _photoEntriesForTrip(l, used) {
+    const urls = [];
+    if (l.photo) urls.push(l.photo);
+    if (Array.isArray(l.gallery)) urls.push(...l.gallery);
+    return urls.map((url, i) => {
+      const place = [l.city, l.country].filter(Boolean).join(', ') || l.place || 'trip';
+      let base = (place + (l.date ? ' — ' + l.date : '') + (urls.length > 1 ? ' (' + (i + 1) + ')' : '')).replace(/[\\/:*?"<>|]/g, '-').trim();
+      let name = base + '.jpg', n = 2;
+      while (used.has(name)) { name = base + ' v' + n + '.jpg'; n++; }
+      used.add(name);
+      return { name, bytes: Component._dataUrlToBytes(url) };
+    });
+  }
   // Admin/editor: export trip photos as a .zip. scope 'mine' → just your own trips'
   // photos, flat. scope 'everyone' → every trip you can see, grouped by owner — the
   // outer zip contains one inner .zip per person (a zip of zips), plus any unassigned
   // photos flat at the top level.
   exportImages() {
     const allowed = this.backupFilteredLocations();
-    const withPhoto = allowed.filter(l => l.photo);
+    const withPhoto = allowed.filter(l => l.photo || (Array.isArray(l.gallery) && l.gallery.length));
     if (!withPhoto.length) { this.setState({ storageMsg: 'No trip photos to export.' }); return; }
     const stamp = new Date().toISOString().slice(0, 10);
     const distinctOwners = new Set(withPhoto.map(l => (l.ownerEmail || '').toLowerCase().trim() || 'unassigned'));
     if (this.state.cfgDataSource !== 'cloud' || distinctOwners.size <= 1) {
       const used = new Set();
-      const entries = withPhoto.map(l => ({ name: this._photoFileName(l, used), bytes: Component._dataUrlToBytes(l.photo) }));
+      const entries = withPhoto.flatMap(l => this._photoEntriesForTrip(l, used));
       const zip = Component._buildZip(entries);
       this._downloadBytes(zip, 'trip-photos-' + stamp + '.zip');
       this.toast('Exported ' + entries.length + ' photo' + (entries.length === 1 ? '' : 's'));
@@ -5248,7 +5517,7 @@ class Component extends DCLogic {
     const outerUsed = new Set();
     const outerEntries = Object.keys(groups).sort().map(label => {
       const used = new Set();
-      const inner = groups[label].map(l => ({ name: this._photoFileName(l, used), bytes: Component._dataUrlToBytes(l.photo) }));
+      const inner = groups[label].flatMap(l => this._photoEntriesForTrip(l, used));
       const innerZip = Component._buildZip(inner);
       let base = label.replace(/[\\/:*?"<>|]/g, '-').trim() || 'user', name = base + '.zip', n = 2;
       while (outerUsed.has(name)) { name = base + ' (' + n + ').zip'; n++; }
@@ -5798,7 +6067,7 @@ class Component extends DCLogic {
   openAdd() {
     const n = new Date();
     const todayISO = n.toISOString().slice(0, 10);
-    this.setState({ formOpen: true, editingId: null, dateText: null, dateEndText: null, form: { ...this.blankForm(), date: todayISO }, formError: '', selectedId: null, calOpen: false, calY: n.getFullYear(), calM: n.getMonth(), settingsOpen: false, detailsOpen: this.state.cfgDetailsFormDefault, photoSuggestion: null });
+    this.setState({ formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, form: { ...this.blankForm(), date: todayISO }, formError: '', selectedId: null, calOpen: false, calY: n.getFullYear(), calM: n.getMonth(), settingsOpen: false, detailsOpen: this.state.cfgDetailsFormDefault, photoSuggestion: null, itineraryPanelOpen: false });
   }
   // Instant duplicate from the edit form: opens a fresh (unsaved) new-trip form
   // pre-filled with everything from the trip currently being edited, except its
@@ -5808,11 +6077,12 @@ class Component extends DCLogic {
       const f = s.form || {};
       const dup = { ...f, date: '', dateEnd: '' };
       delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
-      return { formOpen: true, editingId: null, dateText: null, dateEndText: null, formError: '', form: dup, selectedId: null, calOpen: false };
+      return { formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, formError: '', form: dup, selectedId: null, calOpen: false };
     });
     this.toast('Duplicated — pick a new date');
   }
   closeForm() { this.setState({ formOpen: false, editingId: null, formError: '' }); }
+  setFormTab(tab) { this.setState({ formTab: tab }); }
 
   editSelected(id) {
     const useId = (typeof id === 'number' || typeof id === 'string') ? id : this.state.selectedId;
@@ -5824,42 +6094,64 @@ class Component extends DCLogic {
     (this.state.cfgTravelers || []).forEach(t => { if (t.email) travByEmail[t.email] = t.key; });
     const shareTravelers = [], leftover = [];
     shared.forEach(e => { if (travByEmail[e]) shareTravelers.push(travByEmail[e]); else leftover.push(e); });
-    this.setState({ formOpen: true, editingId: loc.id, dateText: null, dateEndText: null, formError: '', photoSuggestion: null, detailsOpen: this.state.cfgDetailsFormDefault, form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [], visibility: loc.visibility || 'private', sharedWith: loc.sharedWith || [], shareTravelers, sharedWithText: leftover.join(', ') } });
+    this.setState({ formOpen: true, formTab: 'details', editingId: loc.id, dateText: null, dateEndText: null, formError: '', photoSuggestion: null, detailsOpen: this.state.cfgDetailsFormDefault, itineraryPanelOpen: !!(loc.itinerary && Object.keys(loc.itinerary).some(k => loc.itinerary[k])), form: { ...this.blankForm(), ...loc, lat: loc.lat || '', lon: loc.lon || '', visitTypes: loc.visitTypes || [], tripTypes: loc.tripTypes || ['vacation'], travelers: loc.travelers || [], visibility: loc.visibility || 'private', sharedWith: loc.sharedWith || [], shareTravelers, sharedWithText: leftover.join(', ') } });
   }
 
   toggleDetails() { this.setState(s => ({ detailsOpen: !s.detailsOpen })); }
-  setVisibility(v) { this.setState(s => ({ form: { ...s.form, visibility: v } })); }  toggleShareTraveler(key) {
-    this.setState(s => { const cur = s.form.shareTravelers || []; return { form: { ...s.form, shareTravelers: cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key] } }; });
-  }
 
   // ---- quick per-trip permission editor (the lock button on the detail card) ----
-  togglePermPanel() {
-    this.setState(s => {
-      if (s.permOpen) return { permOpen: false };
-      const loc = (s.locations || []).find(l => l.id === s.selectedId);
-      if (!loc) return { permOpen: false };
-      const vis = ['private','shared','all'].indexOf(loc.visibility) >= 0 ? loc.visibility : 'private';
+  openPermModal(mode) {
+    if (mode === 'quick') {
+      const loc = (this.state.locations || []).find(l => l.id === this.state.selectedId);
+      if (!loc) return;
       const emails = Array.isArray(loc.sharedWith) ? loc.sharedWith.map(e => String(e).toLowerCase()) : [];
-      const keys = (s.cfgTravelers || []).filter(t => t.email && emails.includes(String(t.email).toLowerCase())).map(t => t.key);
-      return { permOpen: true, permVis: vis, permShareKeys: keys };
-    });
+      const keys = (this.state.cfgTravelers || []).filter(t => t.email && emails.includes(String(t.email).toLowerCase())).map(t => t.key);
+      const extraEmails = emails.filter(e => !(this.state.cfgTravelers || []).some(t => t.email && String(t.email).toLowerCase() === e));
+      this.setState({ pm: { mode: 'quick', tab: 'visibility', tier: this.tierOfLoc(loc), keys, email: extraEmails.join(', ') } });
+    } else {
+      const f = this.state.form;
+      this.setState({ pm: { mode: 'form', tab: 'visibility', tier: this.tierOfLoc(f), keys: (f.shareTravelers || []).slice(), email: f.sharedWithText || '' } });
+    }
   }
-  setPermVis(v) { this.applyPerm(v, this.state.permShareKeys || []); }
-  togglePermShare(key) {
-    const cur = this.state.permShareKeys || [];
+  closePermModal() {
+    const pm = this.state.pm;
+    if (pm && pm.mode === 'form') {
+      const flags = this.flagsFromTier(pm.tier);
+      this.setState(s => ({ form: { ...s.form, ...flags, shareTravelers: pm.keys.slice(), sharedWithText: pm.email }, pm: null }));
+    } else {
+      this.setState({ pm: null });
+    }
+  }
+  setPermTab(tab) { this.setState(s => ({ pm: { ...s.pm, tab } })); }
+  choosePermTier(tier) {
+    this.setState(s => ({ pm: { ...s.pm, tier } }));
+    if (this.state.pm && this.state.pm.mode === 'quick') this.applyPermNow(tier, this.state.pm.keys, this.state.pm.email);
+  }
+  togglePermPersonKey(key) {
+    const cur = (this.state.pm && this.state.pm.keys) || [];
     const keys = cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key];
-    this.applyPerm(this.state.permVis || 'private', keys);
+    this.setState(s => ({ pm: { ...s.pm, keys } }));
+    if (this.state.pm && this.state.pm.mode === 'quick') this.applyPermNow(this.state.pm.tier, keys, this.state.pm.email);
+  }
+  setPermEmailText(text) {
+    this.setState(s => ({ pm: { ...s.pm, email: text } }));
+  }
+  applyPermEmailText() {
+    if (this.state.pm && this.state.pm.mode === 'quick') this.applyPermNow(this.state.pm.tier, this.state.pm.keys, this.state.pm.email);
   }
   // Apply the chosen permission to the selected trip immediately (saves), and remember it
   // as the default for the next NEW trip you create.
-  applyPerm(vis, keys) {
+  applyPermNow(tier, keys, emailText) {
     const id = this.state.selectedId;
     if (id == null) return;
-    const emails = (vis === 'shared') ? [...new Set(keys.map(k => this.travelerEmail(k)).filter(Boolean))] : [];
-    const list = this.state.locations.map(l => l.id === id ? { ...l, visibility: vis, sharedWith: emails, modifiedAt: new Date().toISOString() } : l);
-    this._permDefault = { vis, keys: keys.slice() };
+    const flags = this.flagsFromTier(tier);
+    const fromTravelers = keys.map(k => this.travelerEmail(k)).filter(Boolean);
+    const fromText = String(emailText || '').split(/[,;\n]/).map(x => x.trim().toLowerCase()).filter(Boolean);
+    const emails = [...new Set([...fromTravelers, ...fromText])];
+    const list = this.state.locations.map(l => l.id === id ? { ...l, ...flags, sharedWith: emails, modifiedAt: new Date().toISOString() } : l);
+    this._permDefault = { tier, keys: keys.slice() };
     this.persist(list);
-    this.setState({ locations: list, permVis: vis, permShareKeys: keys });
+    this.setState({ locations: list });
     this.toast('Sharing updated');
   }
   // Card badges describing ownership + who can see a trip (cloud mode only).
@@ -5895,6 +6187,13 @@ class Component extends DCLogic {
     if (l.visibility === 'all') return { label: '👥 All users', color: '#5fd3ff' };
     if (l.visibility === 'shared') return { label: '✉ Shared', color: '#fbbf24' };
     return { label: '🔒 Private', color: '#9fb6cf' };
+  }
+  // Shown alongside visBadge when this trip has been kept out of cross-family shares
+  // even though the owning family has shared broadly with another family.
+  hiddenFromSharesBadge(l) {
+    if (this.state.cfgDataSource !== 'cloud' || !l || !l.hiddenFromShares) return null;
+    if (!(this.state.cfgShares || []).some(sh => sh.fromFamilyId === l.familyId)) return null;
+    return { label: '🚫 Not shared out', color: '#f0a6a6' };
   }
   toggleDup() { this.setState(s => ({ dupMode: !s.dupMode })); }
   // Build a full statistics snapshot over ALL trips (unfiltered) for the metrics panel.
@@ -6437,7 +6736,7 @@ class Component extends DCLogic {
     if (em) {
       const locs = this.state.locations || [];
       const owned = locs.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === em);
-      const photoCount = owned.filter(l => l.photo).length;
+      const photoCount = owned.reduce((n, l) => n + (l.photo ? 1 : 0) + (Array.isArray(l.gallery) ? l.gallery.length : 0), 0);
       rows += '<div style="color:#9fb3c8; margin-top:3px;">Thumbnails on their trips: <span style="color:#eaf4fd;">' + photoCount + '</span></div>';
       if (trav) {
         const taggedIn = locs.filter(l => Array.isArray(l.travelers) && l.travelers.includes(trav.key) && String(l.ownerEmail || '').toLowerCase().trim() !== em);
@@ -6745,7 +7044,7 @@ class Component extends DCLogic {
       const locsAll = this.state.locations || [];
       const ownedLocs = email ? locsAll.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === email) : [];
       const statsOwned = ownedLocs.length;
-      const statsPhotos = ownedLocs.filter(l => l.photo).length;
+      const statsPhotos = ownedLocs.reduce((n, l) => n + (l.photo ? 1 : 0) + (Array.isArray(l.gallery) ? l.gallery.length : 0), 0);
       const statsCountries = new Set(ownedLocs.map(l => (l.country || '').trim()).filter(Boolean)).size;
       const yearCounts = {};
       ownedLocs.forEach(l => { const y = (l.date || '').slice(0, 4); if (y) yearCounts[y] = (yearCounts[y] || 0) + 1; });
@@ -7148,7 +7447,7 @@ class Component extends DCLogic {
     this.toast('Trip deleted');
   }
 
-  deselect() { this.setState({ selectedId: null, permOpen: false }); this.expandedKey = null; }
+  deselect() { this.setState({ selectedId: null, pm: null }); this.expandedKey = null; }
 
   togglePane() { this.setState(s => ({ paneOpen: !s.paneOpen })); }
 
@@ -7253,7 +7552,7 @@ class Component extends DCLogic {
   askRemoveAllPhotos = () => { this.setState({ confirmRemovePhotos: true }); };
   cancelRemoveAllPhotos = () => { this.setState({ confirmRemovePhotos: false }); };
   removeAllMyPhotos = () => {
-    const list = this.state.locations.map(l => (this.tripIsMine(l) && l.photo) ? { ...l, photo: '', modifiedAt: new Date().toISOString() } : l);
+    const list = this.state.locations.map(l => (this.tripIsMine(l) && (l.photo || (Array.isArray(l.gallery) && l.gallery.length))) ? { ...l, photo: '', gallery: [], modifiedAt: new Date().toISOString() } : l);
     const n = list.filter((l, i) => l !== this.state.locations[i]).length;
     this.setState({ confirmRemovePhotos: false });
     this.persist(list);
@@ -7280,6 +7579,14 @@ class Component extends DCLogic {
       const src = (this.state.pendingTripDelete && this.state.pendingTripDelete.photo) || '';
       if (this._deletePhotoImg.src !== src) this._deletePhotoImg.src = src;
     }
+    (this.state.form.gallery || []).forEach((url, i) => {
+      const el = this._formGalleryRefs && this._formGalleryRefs[i];
+      if (el && el.src !== url) el.src = url;
+    });
+    if (this._lightboxImg) {
+      const src = this.state.lightbox ? this.state.lightbox.images[this.state.lightbox.index] : '';
+      if (this._lightboxImg.src !== src) this._lightboxImg.src = src;
+    }
   }
   onPhotoPick = (e) => {
     const file = e.target.files && e.target.files[0];
@@ -7303,6 +7610,79 @@ class Component extends DCLogic {
       img.src = reader.result;
     };
     reader.readAsDataURL(file);
+  };
+  setGalleryInputRef = (el) => { this._galleryInput = el; };
+  triggerGalleryPick = () => { if (this._galleryInput) { this._galleryInput.value = ''; this._galleryInput.click(); } };
+  openLightbox = (images, index) => { this.setState({ lightbox: { images: images || [], index: index || 0 } }); };
+  closeLightbox = () => { this.setState({ lightbox: null }); };
+  lightboxNext = () => { this.setState(s => { if (!s.lightbox) return null; const n = s.lightbox.images.length; return { lightbox: { ...s.lightbox, index: (s.lightbox.index + 1) % n } }; }); };
+  lightboxPrev = () => { this.setState(s => { if (!s.lightbox) return null; const n = s.lightbox.images.length; return { lightbox: { ...s.lightbox, index: (s.lightbox.index - 1 + n) % n } }; }); };
+  // Inclusive list of ISO date strings from a trip's date to dateEnd (or just the one day).
+  _itineraryDayList(date, dateEnd) {
+    if (!date) return [];
+    const out = [date];
+    if (!dateEnd || dateEnd <= date) return out;
+    let d = new Date(date + 'T00:00');
+    const end = new Date(dateEnd + 'T00:00');
+    while (d < end) {
+      d = new Date(d.getTime() + 86400000);
+      out.push(d.toISOString().slice(0, 10));
+      if (out.length > 60) break; // sanity cap on absurdly long ranges
+    }
+    return out;
+  }
+  _itineraryDayLabel(dt, i) {
+    let nice = dt;
+    try { nice = new Date(dt + 'T00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } catch (e) {}
+    return 'DAY ' + (i + 1) + ' — ' + nice;
+  }
+  toggleItineraryPanel = () => { this.setState(s => ({ itineraryPanelOpen: !s.itineraryPanelOpen })); };
+  setItineraryDay = (date, text) => {
+    this.setState(s => ({ form: { ...s.form, itinerary: { ...(s.form.itinerary || {}), [date]: text } } }));
+  };
+  openItineraryModal = (loc) => {
+    const days = this._itineraryDayList(loc.date, loc.dateEnd);
+    const it = loc.itinerary || {};
+    const modalDays = days.map((dt, i) => ({ label: this._itineraryDayLabel(dt, i), text: it[dt] || '(no notes for this day)' }));
+    this.setState({ itineraryModalOpen: true, itineraryModalDays: modalDays, itineraryModalPlace: [loc.city, loc.country].filter(Boolean).join(', ') });
+  };
+  closeItineraryModal = () => { this.setState({ itineraryModalOpen: false }); };
+  removeGalleryPhoto = (idx) => {
+    this.setState(s => ({ form: { ...s.form, gallery: (s.form.gallery || []).filter((_, i) => i !== idx) } }));
+  };
+  // Resize one File to a compact square dataURL, same approach as the cover photo.
+  _resizeToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const SIZE = 480;
+          const canvas = document.createElement('canvas');
+          canvas.width = SIZE; canvas.height = SIZE;
+          const ctx = canvas.getContext('2d');
+          const side = Math.min(img.width, img.height);
+          const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+          let q = 0.82, dataUrl = canvas.toDataURL('image/jpeg', q);
+          while (dataUrl.length > 140000 && q > 0.35) { q -= 0.12; dataUrl = canvas.toDataURL('image/jpeg', q); }
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject(new Error('img'));
+        img.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error('read'));
+      reader.readAsDataURL(file);
+    });
+  }
+  onGalleryPick = async (e) => {
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    const results = [];
+    for (const file of files) {
+      try { results.push(await this._resizeToDataUrl(file)); } catch (err) { /* skip unreadable file */ }
+    }
+    if (results.length) this.setState(s => ({ form: { ...s.form, gallery: [...(s.form.gallery || []), ...results] } }));
   };
   setCalScrollRef = (el) => { this._calScroll = el; this.scrollCalToAnchor(); };
   setCalAnchorRef = (el) => { this._calAnchor = el; this.scrollCalToAnchor(); };
@@ -7349,14 +7729,21 @@ class Component extends DCLogic {
     }
     // A range must run forwards; otherwise treat it as a single day.
     if (f.date && f.dateEnd && f.dateEnd < f.date) f.dateEnd = '';
-    // Normalize visibility + sharedWith (sharedWithText is the editable mirror).
-    if (['private','shared','all'].indexOf(f.visibility) === -1) f.visibility = 'private';
-    if (f.visibility === 'shared') {
+    // Prune itinerary notes to just the days in range, dropping empties.
+    if (f.itinerary) {
+      const days = new Set(this._itineraryDayList(f.date, f.dateEnd));
+      const pruned = {};
+      Object.keys(f.itinerary).forEach(k => { if (days.has(k) && f.itinerary[k] && f.itinerary[k].trim()) pruned[k] = f.itinerary[k]; });
+      f.itinerary = pruned;
+    }
+    // Normalize visibility + sharedWith (sharedWithText is the editable mirror). sharedWith
+    // is ADDITIVE — it applies on top of whichever base tier (soloPrivate/hiddenFromShares/
+    // visibility) the permissions modal set, so it's always computed regardless of tier.
+    if (['private','all'].indexOf(f.visibility) === -1) f.visibility = 'private';
+    {
       const fromTravelers = (f.shareTravelers || []).map(k => this.travelerEmail(k)).filter(Boolean);
       const fromText = String(f.sharedWithText || '').split(/[,;\n]/).map(x => x.trim().toLowerCase()).filter(Boolean);
       f.sharedWith = [...new Set([...fromTravelers, ...fromText])];
-    } else {
-      f.sharedWith = [];
     }
     delete f.sharedWithText; delete f.shareTravelers;
     // Stamp ownership (cloud identity if known; harmless in local mode).
@@ -7375,7 +7762,7 @@ class Component extends DCLogic {
     if (this.state.dupMode) {
       const dup = { ...f, date: '', dateEnd: '', sharedWithText: (f.sharedWith || []).filter(e => !(this.state.cfgTravelers || []).some(t => t.email === e)).join(', '), shareTravelers: (this.state.form.shareTravelers || []) };
       delete dup.id; delete dup.createdAt; delete dup.modifiedAt;
-      this.setState({ locations: list, formOpen: true, editingId: null, dateText: null, dateEndText: null, formError: '', selectedId: savedId, form: dup, calOpen: false });
+      this.setState({ locations: list, formOpen: true, formTab: 'details', editingId: null, dateText: null, dateEndText: null, formError: '', selectedId: savedId, form: dup, calOpen: false });
     } else {
       this.setState({ locations: list, formOpen: false, editingId: null, formError: '', selectedId: savedId });
     }
@@ -7547,6 +7934,7 @@ class Component extends DCLogic {
         dateText,
         ownerBadge: this.ownerBadge(sl),
         visBadge: this.visBadge(sl),
+        hiddenFromSharesBadge: this.hiddenFromSharesBadge(sl),
         familyBadge: this.familyBadge(sl),
         hasPhoto: !!(this.state.cfgShowThumbs && sl.photo),
         noPhoto: !(this.state.cfgShowThumbs && sl.photo),
@@ -7556,6 +7944,14 @@ class Component extends DCLogic {
         travelerKeys: sl.travelers || [],
         onStatsHover: (e) => this.showCardStat(e, 'trip:' + sl.id),
         onStatsLeave: () => this.hideCardStat(),
+        hasGallery: Array.isArray(sl.gallery) && sl.gallery.length > 0,
+        galleryCount: (sl.gallery || []).length,
+        openGallery: () => this.openLightbox(sl.gallery, 0),
+        hasItinerary: !!(sl.itinerary && Object.keys(sl.itinerary).some(k => sl.itinerary[k])),
+        itineraryDayCount: this._itineraryDayList(sl.date, sl.dateEnd).length,
+        itineraryDayPlural: this._itineraryDayList(sl.date, sl.dateEnd).length === 1 ? '' : 's',
+        itineraryWrapStyle: 'margin-top:14px; ' + ((Array.isArray(sl.gallery) && sl.gallery.length > 0) ? '' : 'padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);'),
+        openItinerary: () => this.openItineraryModal(sl),
       };
     }
     const meId = this.state.cloudUserId || '';
@@ -7585,6 +7981,8 @@ class Component extends DCLogic {
     const tripTypeChips = this.state.cfgTripTypes.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftt.includes(o.key)), onToggle: () => this.toggleType('tripTypes', o.key) }));
     const ftr = form.travelers || [];
     const travelerChips = this.state.cfgTravelers.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftr.includes(o.key)), onToggle: () => this.toggleType('travelers', o.key) }));
+    const pmTabStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; padding:9px 6px; border-radius:9px 9px 0 0; cursor:pointer; transition:all .15s; " + (on ? "color:#bfeaff; background:rgba(56,189,248,0.12); border-bottom:2px solid #5fd3ff;" : "color:#7d90a8; background:transparent; border-bottom:2px solid transparent;");
+    const pmTierStyle = (on) => "display:flex; align-items:flex-start; gap:11px; width:100%; text-align:left; font-family:'Space Grotesk',sans-serif; padding:11px 13px; border-radius:11px; cursor:pointer; transition:all .15s; margin-bottom:8px; " + (on ? "background:rgba(56,189,248,0.12); border:1px solid rgba(95,211,255,0.55);" : "background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);");
     const visSeg = (on, color) => "flex:1; text-align:center; font-family:'Space Grotesk',sans-serif; font-size:11.5px; padding:9px 6px; border-radius:9px; cursor:pointer; transition:all .15s; " + (on ? ('color:' + color + '; font-weight:600; background:' + color + '1f; border:1px solid ' + color + '; box-shadow:0 0 9px ' + color + '30;') : ('color:#9fb0c6; background:rgba(255,255,255,0.03); border:1px solid ' + color + '44;'));
     const ownerSeg = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.02em; padding:7px 5px; border-radius:8px; cursor:pointer; transition:all .15s; " + (on ? ('color:' + color + '; font-weight:600; background:' + color + '1f; border:1px solid ' + color + '; box-shadow:0 0 9px ' + color + '30;') : ('color:#9fb0c6; background:rgba(255,255,255,0.03); border:1px solid ' + color + '44;'));
     const segStyle = (on, color) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 4px; border-radius:7px; cursor:pointer; transition:all .15s; " + (on ? `color:${color}; background:${color}1f; border:1px solid ${color}; font-weight:600; box-shadow:0 0 9px ${color}30;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
@@ -7681,6 +8079,18 @@ class Component extends DCLogic {
       noLocations: mapped.length === 0,
       calendarOpen: this.state.calendarOpen,
       closeCalendarView: () => this.closeCalendarView(),
+      itineraryModalOpen: this.state.itineraryModalOpen,
+      itineraryModalDays: this.state.itineraryModalDays || [],
+      itineraryModalPlace: this.state.itineraryModalPlace || '',
+      closeItineraryModal: this.closeItineraryModal,
+      lightboxOpen: !!this.state.lightbox,
+      lightboxSrc: this.state.lightbox ? this.state.lightbox.images[this.state.lightbox.index] : '',
+      lightboxHasMulti: !!(this.state.lightbox && this.state.lightbox.images.length > 1),
+      lightboxPosLabel: this.state.lightbox ? (this.state.lightbox.index + 1) + ' / ' + this.state.lightbox.images.length : '',
+      closeLightbox: () => this.closeLightbox(),
+      setLightboxImg: (el) => { this._lightboxImg = el; const src = this.state.lightbox ? this.state.lightbox.images[this.state.lightbox.index] : ''; if (el && el.src !== src) el.src = src; },
+      lightboxNextClick: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.lightboxNext(); },
+      lightboxPrevClick: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.lightboxPrev(); },
       ...this.calendarRenderVals(mapped),
       showFamilyGroups: familyGroups.length > 1,
       showFlatList: familyGroups.length <= 1,
@@ -7771,27 +8181,13 @@ class Component extends DCLogic {
       tripTypeChips,
       travelerChips,
       showVisibility: this.state.cfgDataSource === 'cloud',
-      visIsShared: (form.visibility || 'private') === 'shared',
-      visPrivateStyle: visSeg((form.visibility || 'private') === 'private', '#9fb6cf'),
-      visAllStyle: visSeg(form.visibility === 'all', '#5fd3ff'),
-      visSharedStyle: visSeg(form.visibility === 'shared', '#fbbf24'),
-      setVisPrivate: () => this.setVisibility('private'),
-      setVisAll: () => this.setVisibility('all'),
-      setVisShared: () => this.setVisibility('shared'),
-      shareTravelerChips: (this.state.cfgTravelers || []).map(o => {
-        const sel = (form.shareTravelers || []).includes(o.key);
-        const hasEmail = !!o.email;
-        const me = this.state.cloudUserEmail && o.email === this.state.cloudUserEmail;
-        return {
-          key: o.key,
-          label: me ? (o.label + ' (you)') : o.label,
-          disabled: !hasEmail || me,
-          title: me ? "That's you — you always see your own trips" : (hasEmail ? ('Share with ' + (o.email)) : 'No email set for ' + o.label),
-          style: chipStyle(o.color, sel) + (!hasEmail || me ? 'opacity:0.4; cursor:not-allowed;' : ''),
-          onToggle: () => { if (hasEmail && !me) this.toggleShareTraveler(o.key); },
-        };
-      }),
-      hasTravelerNoEmail: (this.state.cfgTravelers || []).some(o => !o.email),
+      showVisibilityHidden: this.state.cfgDataSource !== 'cloud',
+      formImagesAllowed: this.state.cfgDataSource !== 'cloud' || this.familyImagesEffective(form.familyId || this.state.activeFamilyId),
+      formImagesBlocked: this.state.cfgDataSource === 'cloud' && !this.familyImagesEffective(form.familyId || this.state.activeFamilyId),
+      permFormTierLabel: (this.PERM_TIERS.find(t => t.key === this.tierOfLoc(form)) || this.PERM_TIERS[2]).label,
+      permFormTierIcon: (this.PERM_TIERS.find(t => t.key === this.tierOfLoc(form)) || this.PERM_TIERS[2]).icon,
+      permFormPeopleCount: (form.shareTravelers || []).length + (String(form.sharedWithText || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean).length),
+      openPermForm: () => this.openPermModal('form'),
       detailsOpen: this.state.detailsOpen,
       detailsArrow: this.state.detailsOpen ? '▾' : '▸',
       toggleDetails: () => this.toggleDetails(),
@@ -8021,6 +8417,20 @@ class Component extends DCLogic {
       triggerPhotoPick: this.triggerPhotoPick,
       onPhotoPick: this.onPhotoPick,
       removePhoto: this.removePhoto,
+      formGalleryItems: (this.state.form.gallery || []).map((url, i) => ({ url, remove: () => this.removeGalleryPhoto(i), setRef: (el) => { this._formGalleryRefs = this._formGalleryRefs || {}; this._formGalleryRefs[i] = el; if (el && el.src !== url) el.src = url; } })),
+      setGalleryInputRef: this.setGalleryInputRef,
+      triggerGalleryPick: this.triggerGalleryPick,
+      onGalleryPick: this.onGalleryPick,
+      itineraryPanelOpen: this.state.itineraryPanelOpen,
+      itineraryPanelClosed: !this.state.itineraryPanelOpen,
+      toggleItineraryPanel: this.toggleItineraryPanel,
+      itineraryDays: this._itineraryDayList(form.date, form.dateEnd).map((dt, i) => ({
+        date: dt,
+        label: this._itineraryDayLabel(dt, i),
+        value: (form.itinerary || {})[dt] || '',
+        onChange: (e) => this.setItineraryDay(dt, e.target.value),
+      })),
+      noItineraryDays: this._itineraryDayList(form.date, form.dateEnd).length === 0,
       autoLocate: () => this.autoLocate(),
       geocoding: this.state.geocoding,
       autoLocateLabel: this.state.geocoding ? 'Locating…' : '⌖  Auto-locate from city / country',
@@ -8053,7 +8463,7 @@ class Component extends DCLogic {
           profileOwned: mine.length,
           profilePrivate: mine.filter(l => (l.visibility || 'private') === 'private').length,
           profileShared: mine.filter(l => l.visibility === 'shared' || l.visibility === 'all').length,
-          profilePhotoCount: mine.filter(l => l.photo).length,
+          profilePhotoCount: mine.reduce((n, l) => n + (l.photo ? 1 : 0) + (Array.isArray(l.gallery) ? l.gallery.length : 0), 0),
           profileAssociated: assoc,
         };
       })(),
@@ -8109,31 +8519,47 @@ class Component extends DCLogic {
       }),
       canEditSelected,
       canPermSelected: this.state.cfgDataSource === 'cloud' && canEditSelected,
-      permOpen: this.state.permOpen,
-      togglePerm: () => this.togglePermPanel(),
-      permBtnStyle: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; ' + (this.state.permOpen ? 'background:rgba(56,189,248,0.22); border:1px solid rgba(56,189,248,0.6); color:#bfeaff;' : 'background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); color:#7fd6f5;'),
+      togglePerm: () => this.openPermModal('quick'),
+      permBtnStyle: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25);',
       // Banner layout sits the button over a photo, so it uses the same neutral
       // dark chip style as its sibling buttons there instead of the sky-blue tint
       // (which read poorly against varied photo backgrounds).
-      permBtnStyleBanner: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; ' + (this.state.permOpen ? 'background:rgba(8,14,24,0.85); border:1px solid rgba(255,255,255,0.42); color:#eaf4fd;' : 'background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2;'),
-      permVisPrivateStyle: visSeg(this.state.permVis === 'private', '#9fb0c6'),
-      permVisAllStyle: visSeg(this.state.permVis === 'all', '#5fd3ff'),
-      permVisSharedStyle: visSeg(this.state.permVis === 'shared', '#fbbf24'),
-      setPermPrivate: () => this.setPermVis('private'),
-      setPermAll: () => this.setPermVis('all'),
-      setPermShared: () => this.setPermVis('shared'),
-      permShowPeople: this.state.permVis === 'shared',
-      permPeople: (this.state.cfgTravelers || []).map(o => {
-        const sel = (this.state.permShareKeys || []).includes(o.key);
+      permBtnStyleBanner: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; color:#e8eef6; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.18);',
+      // Unified permissions modal (drives both the trip-card quick-edit and the form's picker)
+      pmOpen: !!this.state.pm,
+      pmTab: this.state.pm ? this.state.pm.tab : 'visibility',
+      pmTabIsVis: !this.state.pm || this.state.pm.tab !== 'people',
+      pmTabIsPeople: !!this.state.pm && this.state.pm.tab === 'people',
+      pmIsQuick: this.state.pm && this.state.pm.mode === 'quick',
+      pmClose: () => this.closePermModal(),
+      pmTabVisStyle: pmTabStyle(!this.state.pm || this.state.pm.tab === 'visibility'),
+      pmTabPeopleStyle: pmTabStyle(this.state.pm && this.state.pm.tab === 'people'),
+      pmGoVis: () => this.setPermTab('visibility'),
+      pmGoPeople: () => this.setPermTab('people'),
+      pmPeopleCount: this.state.pm ? this.state.pm.keys.length + String(this.state.pm.email || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean).length : 0,
+      pmTiers: this.PERM_TIERS.filter(t => t.key !== 'public' || this.state.cfgPublicSharingEnabledSite !== false).map(t => ({
+        key: t.key, icon: t.icon, label: t.label, desc: t.desc,
+        selected: this.state.pm && this.state.pm.tier === t.key,
+        style: pmTierStyle(this.state.pm && this.state.pm.tier === t.key),
+        onPick: () => this.choosePermTier(t.key),
+      })),
+      pmPeople: (this.state.cfgTravelers || []).map(o => {
+        const sel = this.state.pm && (this.state.pm.keys || []).includes(o.key);
         const hasEmail = !!o.email;
-        const letter = String(o.label || '?').trim().charAt(0).toUpperCase();
-        const base = "width:30px; height:30px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; cursor:pointer; transition:all .15s; ";
-        const style = base + (sel
-          ? ('background:' + o.color + '; color:#06121d; border:2px solid ' + o.color + '; box-shadow:0 0 10px ' + o.color + '88;')
-          : ('background:rgba(255,255,255,0.04); color:' + o.color + '; border:1px solid ' + o.color + '66;'))
-          + (hasEmail ? '' : 'opacity:0.35; cursor:not-allowed;');
-        return { key: o.key, letter, title: o.label + (hasEmail ? ' · ' + o.email : ' · no email set'), style, onToggle: () => { if (hasEmail) this.togglePermShare(o.key); } };
+        const me = this.state.cloudUserEmail && o.email === this.state.cloudUserEmail;
+        return {
+          key: o.key,
+          label: me ? (o.label + ' (you)') : o.label,
+          disabled: !hasEmail || me,
+          title: me ? "That's you — you always see your own trips" : (hasEmail ? ('Share with ' + o.email) : 'No email set for ' + o.label),
+          style: chipStyle(o.color, sel) + (!hasEmail || me ? 'opacity:0.4; cursor:not-allowed;' : ''),
+          onToggle: () => { if (hasEmail && !me) this.togglePermPersonKey(o.key); },
+        };
       }),
+      pmHasNoEmailPeople: (this.state.cfgTravelers || []).some(o => !o.email),
+      pmEmailText: this.state.pm ? this.state.pm.email : '',
+      pmSetEmailText: (e) => this.setPermEmailText(e.target.value),
+      pmEmailBlur: () => this.applyPermEmailText(),
       selectedReadOnly: !!selected && !canEditSelected && (this.state.cloudRoles || []).includes('editor'),
       canAdmin: this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin,
       showAccessAdmin: this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin,
@@ -8214,7 +8640,7 @@ class Component extends DCLogic {
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
-      appUpdated: 'July 10, 2026',
+      appUpdated: 'July 11, 2026',
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
       latestVersion: this.state.latestVersion,
@@ -8285,6 +8711,18 @@ class Component extends DCLogic {
         onToggle: () => this.toggleMyBackupDupe(d.id),
       })),
       formOpen,
+      formTabIsDetails: (this.state.formTab || 'details') === 'details',
+      formTabIsNotes: this.state.formTab === 'notes',
+      formTabIsItinerary: this.state.formTab === 'itinerary',
+      formTabIsSharing: this.state.formTab === 'sharing',
+      formTabDetailsStyle: tabBtnStyle((this.state.formTab || 'details') === 'details'),
+      formTabNotesStyle: tabBtnStyle(this.state.formTab === 'notes'),
+      formTabItineraryStyle: tabBtnStyle(this.state.formTab === 'itinerary'),
+      formTabSharingStyle: tabBtnStyle(this.state.formTab === 'sharing'),
+      setFormTabDetails: () => this.setFormTab('details'),
+      setFormTabNotes: () => this.setFormTab('notes'),
+      setFormTabItinerary: () => this.setFormTab('itinerary'),
+      setFormTabSharing: () => this.setFormTab('sharing'),
       formError: this.state.formError,
       cityHint: (form.city && form.city.trim()) ? '' : '·required',
       dateHint: form.date ? '' : '·required',

@@ -158,7 +158,9 @@ module.exports = async function (context, req) {
     let families = await readJsonBlob(container, FAMILIES_BLOB, []);
     let members = await readJsonBlob(container, MEMBERS_BLOB, []);
     let shares = await readJsonBlob(container, SHARES_BLOB, []);
-    let settings = await readJsonBlob(container, "family-settings.json", { autoApproveFamilies: false });
+    let settings = await readJsonBlob(container, "family-settings.json", { autoApproveFamilies: false, imageUploadsEnabled: true, publicSharingEnabled: true });
+    if (settings.imageUploadsEnabled === undefined) settings.imageUploadsEnabled = true;
+    if (settings.publicSharingEnabled === undefined) settings.publicSharingEnabled = true;
     const travelersBlobExists = await container.getBlockBlobClient(TRAVELERS_BLOB).exists();
     let travelers = travelersBlobExists ? await readJsonBlob(container, TRAVELERS_BLOB, []) : [];
     if (!Array.isArray(travelers)) travelers = [];
@@ -186,6 +188,8 @@ module.exports = async function (context, req) {
         primaryAdminEmails: meIsSiteAdmin ? primaryAdminEmailList() : undefined,
         extraSiteAdmins: meIsSiteAdmin ? extraSiteAdmins : undefined,
         autoApproveFamilies: !!settings.autoApproveFamilies,
+        imageUploadsEnabled: settings.imageUploadsEnabled !== false,
+        publicSharingEnabled: settings.publicSharingEnabled !== false,
         pendingFamilies: meIsSiteAdmin ? families.filter((f) => !f.approved) : undefined,
         accessRequests: meIsSiteAdmin ? (await readJsonBlob(container, ACCESS_REQUESTS_BLOB, [])) : undefined,
       });
@@ -287,6 +291,37 @@ module.exports = async function (context, req) {
       settings = { ...settings, autoApproveFamilies: !!body.value };
       await writeJsonBlob(container, "family-settings.json", settings);
       json(200, { ok: true, autoApproveFamilies: settings.autoApproveFamilies });
+      return;
+    }
+
+    // Site-wide kill switch for photo/gallery uploads — site admin only. A family admin
+    // can still override this for their OWN family via setFamilyImageUploads below; this
+    // just sets the default every family inherits until it explicitly opts in/out.
+    // Site-wide kill switch for the "Public (everyone)" visibility tier — site admin only.
+    if (action === "setPublicSharingEnabled") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, publicSharingEnabled: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, publicSharingEnabled: settings.publicSharingEnabled });
+      return;
+    }
+
+    if (action === "setImageUploadsEnabled") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, imageUploadsEnabled: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, imageUploadsEnabled: settings.imageUploadsEnabled });
+      return;
+    }
+
+    // Per-family override of the site-wide image-uploads setting. value: true | false | null
+    // (null clears the override so the family goes back to inheriting the site default).
+    if (action === "setFamilyImageUploads") {
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const value = body.value === null ? null : !!body.value;
+      families = families.map((f) => f.id === body.familyId ? { ...f, imagesEnabled: value } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      json(200, { ok: true });
       return;
     }
 

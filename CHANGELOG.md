@@ -4,6 +4,73 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.15.1-beta — Permissions tab
+
+### Changed
+- Renamed the trip form's "Sharing" tab to "Permissions" — same lock-icon permissions modal as the trip card. In Local/Demo mode it now shows an explanatory note instead of appearing empty.
+
+## 1.15.0-beta — Tabs inside the trip form
+
+### Changed
+- The trip popup now has 4 tabs — Details, Notes & photos, Itinerary, Sharing — instead of one long scroll. Permissions ("Who can see this") lives on its own Sharing tab, separate from photos.
+
+## 1.14.0-beta — Trip form is now a popup
+
+### Changed
+- The Add/Edit trip form was a 388px panel slid in from the right edge of the screen; it's now a centered popup modal (like the Family and Permissions modals), 640px wide with its own backdrop, so the growing set of sections (photo, gallery, itinerary, permissions) has more room to breathe instead of being crammed into a narrow strip.
+
+## 1.13.0-beta — Phase 3: reworked sharing permissions + image-upload controls
+
+### Added
+- **Unified Permissions modal**: the lock icon on a trip card (and a new picker button in the trip form's "Who can see this" section) now opens one popup with two tabs — Visibility and Specific people — instead of the old cramped inline row of buttons.
+- **Two new visibility tiers**: "Only me" (hidden from literally everyone, including your own family — new, requires nothing else to be shared) and "Only my family" (promoted from the old "keep private from shares" checkbox into a first-class tier). Combined with the existing "All shared families" (now the explicit default) and "Public" (renamed from "All users"), that's the full four-tier model end to end.
+- **"Specific people" is explicitly additive** — picking people always layers on top of whichever visibility tier is selected (even "Only me"), and the modal says so.
+- **Site-wide + per-family image-upload controls**: a site admin can turn photo/gallery uploads off for the whole app (Settings → Site Family Management); each family's admin can override that default for their own family (People & Family Management → their family panel). The trip form hides the Photo/Gallery sections (with an explanation) when uploads are off for the trip's family, and the server strips any photo/gallery on save if uploads are disabled for that family — enforced both places.
+
+### Changed
+- Server-side (`api/trips`): added `soloPrivate` (true = visible to nobody but the owner, overriding even family membership) alongside the existing `hiddenFromShares`; `sharedWith` is now always additive regardless of the base tier, rather than only applying under a "shared" visibility value.
+
+## 1.12.0-beta — Phase 3: richer trip content (item 3.2 — itinerary) + lightbox fixes
+
+### Added
+- **Day-by-day itinerary**: an optional "+ Add day-by-day notes" section on the trip form generates one note field per day in the trip's date range (capped at 60 days). Notes are pruned to the current range and saved keyed by date.
+- Detail card shows a "View itinerary · N days" button (same collapsed-behind-a-button pattern as the gallery) opening a read-only modal listing each day's notes.
+
+### Fixed
+- **Gallery lightbox was non-interactive** — the close button, prev/next arrows, and backdrop-click didn't respond to clicks; they all sat under an app-wide overlay that intentionally sets `pointer-events:none` so clicks reach the 3D globe through the gaps, and the lightbox (and the new itinerary modal) forgot to opt back in with `pointer-events:auto`. Fixed on both.
+- Lightbox images were rendering at their native pixel size instead of filling the viewing area (only `max-width`/`max-height` were set, which cap size but don't grow a smaller image to fill it). Now sized to fill 90vw × 78vh with `object-fit:contain`.
+
+## 1.11.1-beta — Phase 3: gallery follow-up fixes
+
+### Fixed
+- Multi-select on the gallery file picker wasn't actually enabling (a boolean attribute rendered as a literal empty string) — you could only add one photo at a time. Now picks multiple at once.
+- Detail card's gallery could push the card's top off-screen when a trip had many photos (the card grows upward, anchored to its bottom-fixed position, with no scroll). Replaced the inline thumbnail strip with a single "View gallery · N" button that opens the lightbox — card height no longer depends on gallery size.
+- Gallery photos were stored at a very small resolution (200px), so the full-screen lightbox view looked blurry/tiny. Bumped to 480px.
+
+## 1.11.0-beta — Phase 3: richer trip content (item 3.1 — photo gallery)
+
+### Added
+- Trips can now hold multiple photos: a new **Gallery** section on the trip form under the cover photo, accepting multi-select and adding thumbnails as tiles you can remove individually.
+- Trip detail card shows a **Gallery** strip below the notes when a trip has extra photos; clicking one opens a full-screen **lightbox** with prev/next nav and a position counter.
+- Photo counts (profile bubble, per-person management view, metrics) and the "remove all my photos" bulk action now include gallery photos alongside the cover photo.
+- Photo `.zip` export now includes every gallery image per trip (numbered when a trip has more than one), not just the cover.
+
+## 1.10.1-beta — Phase 3: mobile polish (item 2, partial)
+
+### Fixed
+- People & Family Management's sidebar+detail split layout (fixed 230px sidebar) didn't fit small screens at all. On ≤720px it now goes full-screen and stacks vertically — sidebar becomes a scrollable strip capped at 34vh, detail panel takes the rest.
+- Audited all other modals (help, calendar, delete confirmations, add-person, new-family) — all already use `min(Npx, vw%)` sizing and were already mobile-safe.
+
+---
+
+## 1.10.0-beta — Phase 3: cross-family sharing UX (item 1)
+
+### Added
+- **"Families we can see"** list in My Family Management, alongside the existing "Families that can see ours" — two-sided visibility into cross-family shares instead of a one-way outgoing list. Incoming shares are read-only here (only the granting family can revoke).
+- **Per-trip visibility override**: a new "Keep private even from families we've shared with" checkbox on the trip form. Even when your family broadly shares with another family, individual trips can opt out — enforced server-side in both view and edit checks, not just hidden in the UI. Shown as a "🚫 Not shared out" badge on the trip when applicable.
+
+---
+
 ## 1.9.17-beta — Delete my own account
 
 ### Added
