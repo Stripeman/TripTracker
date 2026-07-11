@@ -4,6 +4,27 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.0-beta — Traveler storage, phase 2 (cutover)
+
+### Added
+- **Per-family traveler storage is now live** (after running the one-time backfill).
+  People are read from and saved to the new server-enforced `travelers.json` instead of
+  the old shared `settings.travelers` — every add/edit/delete/move now goes through a
+  family-admin-gated API action, closing the gap where a raw API call could set any
+  `familyId`. Deleting a traveler is now also blocked server-side if they're still
+  tagged on a trip.
+- Site Management → Site Family Management shows a **migrated / not migrated** badge
+  next to the backfill button.
+
+### Notes
+- Fully backward compatible: an unmigrated deployment behaves exactly as before. Once
+  a site admin clicks "Backfill travelers → per-family storage", the app switches over
+  automatically — no other user-facing change.
+- See `TRAVELER-STORAGE-PLAN.md` for the full status, including the couple of
+  deliberately-deferred rough edges (stale `settings.travelers` left in place as inert
+  dead weight; the raw settings-debug-JSON `travelers` field no longer round-trips
+  once migrated).
+
 ## 1.8.3-beta
 
 ### Bug

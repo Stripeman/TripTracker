@@ -2,24 +2,56 @@
 
 ## Status
 
-- ✅ **Backend foundation shipped** (`api/families/index.js`): new `travelers.json` blob,
-  `addTraveler` / `updateTraveler` / `moveTraveler` / `deleteTraveler` actions (all
-  family-admin gated, same pattern as `setFamilyColor`/`rename`), and `GET` now returns
-  a scoped `travelers` array alongside `families`/`memberships`.
-- ✅ **One-time backfill action shipped**: `migrateTravelers` (site admin only) copies
-  `settings.travelers` into `travelers.json`, resolving each row's `familyId` from its
-  email's (or creator's) membership, falling back to the first family. Idempotent —
-  safe to re-run. Does **not** touch or remove `settings.travelers`.
-- ✅ **Frontend**: `loadFamilies()` now stores the new list as `cfgTravelersServer`, and
-  Site Administration has a **"Backfill travelers → per-family storage"** button to
-  trigger it.
-- ⬜ **Not done yet**: the app still reads/writes travelers through
-  `settings.travelers`/`cfgTravelers` exclusively. `cfgTravelersServer` is populated but
-  inert — nothing renders from it, and none of the mutation call sites (`addPerson`,
-  `dataItemLabel/Color/Email`, `personSetRole/Active/Remove/Parent/Family`) call the
-  new actions yet. That cutover is the remaining, riskier step below — it touches every
-  place the Users tab and traveler pickers write data, and needs to be rolled out
-  carefully (dual-read, verify, then flip).
+- ✅ **Backend foundation shipped** (`api/families/index.js`): `travelers.json` blob,
+  keyed by `key` (the SAME identifier trips already reference in `location.travelers[]`
+  — preserved verbatim through migration, so cutting storage over never breaks existing
+  trip tags). `addTraveler` / `updateTraveler` / `moveTraveler` / `deleteTraveler`
+  actions (all family-admin gated), and `GET` returns a scoped `travelers` array plus a
+  `travelersMigrated` flag (true once the blob has been created at all, even if empty —
+  lets the frontend tell "not migrated yet" apart from "migrated, zero travelers").
+- ✅ **`deleteTraveler` is now trip-usage-guarded server-side** (checks the trips blob
+  for any location still tagging that key before allowing the delete) — closes the gap
+  flagged in the previous status.
+- ✅ **Migration action** (`migrateTravelers`, site admin only): copies
+  `settings.travelers` into `travelers.json`, preserving each row's original `key`.
+  Idempotent — skips rows already migrated (matched by `key`).
+- ✅ **Frontend cutover shipped.** `loadFamilies()` now sets `cfgTravelers` straight from
+  the server travelers list once `travelersMigrated` is true (dual-read: before that,
+  it leaves whatever came from `settings.travelers` alone — zero behavior change for
+  an unmigrated deployment). Every mutation path branches on
+  `this.state.travelersMigrated`:
+  - `addPerson`/`addPersonDone` — local optimistic row, committed via `addTraveler` on
+    the "Add" click; rolled back locally (no server call) if the request fails.
+  - `donePerson` (edit save) — commits the current label/color/email via
+    `updateTraveler`.
+  - `cancelPerson` — nothing was ever committed server-side (commit happens on Save),
+    so cancelling is a pure local revert.
+  - `personSetFamily` — calls `moveTraveler` in addition to the existing `assignFamily`
+    membership sync.
+  - `personSetParent` — commits via `updateTraveler` immediately (it's a discrete
+    dropdown pick, not free typing).
+  - `personRemove` — calls `deleteTraveler`; a request that was never saved (Add →
+    Cancel) skips the network call entirely.
+  - `confirmUserDelete` (the "Delete user…" impact-confirm flow) — also calls
+    `deleteTraveler` alongside its existing `/api/trips?mode=deleteUser` call.
+  - `editPerson`'s synthetic-`acct:`-row materialization (a signed-in account with no
+    traveler row yet) now creates the real row via `addTraveler` instead of a local-only
+    write.
+  - Free typing in the label/color/email fields stays pure local state either way (no
+    per-keystroke network calls) — only the explicit Save/Add commits.
+  - Site Management → Site Family Management shows a live **migrated / not migrated**
+    badge next to the backfill button.
+- ⬜ **Known rough edges, deliberately deferred:**
+  - `settings.travelers` (in the trips blob) still exists and is still written
+    incidentally by the generic settings-save pipeline (`dataItemLabel/Color/Email` →
+    `persistConfigNoBump` → eventual settings save) — it's just never read from once
+    migrated. Harmless dead weight until a later release drops the field entirely.
+  - Editing the **raw settings debug JSON**'s `travelers` array still works, but on a
+    migrated deployment the next `loadFamilies()` refresh (periodic + on tab focus)
+    will overwrite it back to server truth — an import/raw-edit of that one field is
+    effectively a no-op once migrated. Not fixed; a niche admin power-tool path.
+  - `setTravelerRole`/`setTravelerActive` were intentionally never added — role/active
+    stay a membership concept (`invitePerson`/`assignFamily`), unchanged by this cutover.
 
 ## Where things stand today (after the interim fixes)
 

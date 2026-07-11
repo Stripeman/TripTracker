@@ -1187,8 +1187,11 @@
               <button onClick="{{ migrateLegacyFamilies }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Migrate legacy data → default family</button>
 
               <div style="margin-top:14px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; padding:2px 7px; border-radius:5px; {{ travelersMigratedBadgeStyle }}">{{ travelersMigratedBadgeLabel }}</span>
+                </div>
                 <button onClick="{{ migrateTravelers }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Backfill travelers → per-family storage</button>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:6px; line-height:1.5;">One-time, safe to click more than once. Copies today's shared traveler list into the new per-family storage (doesn't remove or change the current list — the app keeps using it until a later release cuts over).</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:6px; line-height:1.5;">Safe to click more than once. {{ travelersMigratedHint }}</div>
               </div>
 
               <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
@@ -2436,7 +2439,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.8.3-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2669,6 +2672,7 @@ class Component extends DCLogic {
       cfgShares: [],
       cfgAccessRequests: [],
       cfgTravelersServer: [],
+      travelersMigrated: false,
       reqDraftRole: {},
       reqDraftFamily: {},
       mySiteAdmin: false,
@@ -3134,7 +3138,8 @@ class Component extends DCLogic {
         const adminRow = mine.find((m) => m.role === 'admin');
         active = (adminRow || mine[0] || {}).familyId || '';
       }
-      this.setState({
+      const migrated = !!j.travelersMigrated;
+      this.setState(s => ({
         cfgFamilies: j.families || [],
         cfgMemberships: j.memberships || [],
         cfgShares: j.shares || [],
@@ -3148,8 +3153,13 @@ class Component extends DCLogic {
         autoApproveFamilies: !!j.autoApproveFamilies,
         pendingFamiliesList: j.pendingFamilies || [],
         activeFamilyId: active,
-        cfgTravelersServer: j.travelers || [], // new per-family storage; not yet wired into the UI — see TRAVELER-STORAGE-PLAN.md
-      });
+        cfgTravelersServer: j.travelers || [],
+        travelersMigrated: migrated,
+        // Once migrated, travelers.json is the single source of truth — always take
+        // the fresh server copy. Before migration, leave whatever came from settings
+        // (via /api/trips) alone; loadFamilies doesn't know about that path.
+        cfgTravelers: migrated ? (j.travelers || []) : s.cfgTravelers,
+      }));
       // First-ever login with no family memberships yet: take them straight to
       // People & Family, prompted to create one (they become its admin automatically).
       if (mine.length === 0 && !this.state.onboardPromptShown) {
@@ -3633,6 +3643,11 @@ class Component extends DCLogic {
       assignUserToFamily: () => this.assignUserToFamily(),
       migrateLegacyFamilies: () => this.migrateLegacyFamilies(),
       migrateTravelers: () => this.migrateTravelers(),
+      travelersMigratedBadgeLabel: s.travelersMigrated ? 'LIVE — PER-FAMILY STORAGE ACTIVE' : 'NOT YET MIGRATED',
+      travelersMigratedBadgeStyle: s.travelersMigrated ? 'color:#7ee0a8; background:rgba(126,224,168,0.12); border:1px solid rgba(126,224,168,0.3);' : 'color:#f0c96a; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.3);',
+      travelersMigratedHint: s.travelersMigrated
+        ? 'Every person is now read from and saved to per-family storage. This button re-copies any straggler rows still only in the old shared list.'
+        : 'Copies today\'s shared traveler list into the new per-family storage. Click it to switch the app over to reading/writing people per-family (server-enforced).',
       showFamilySwitcher: s.cfgDataSource === 'cloud' && familyViewOptions.length > 1,
       familyViewOptions,
       familySwitcherStyle: 'width:100%; margin-top:9px; font-family:\'IBM Plex Mono\',monospace; font-size:10.5px; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid ' + ((activeFam && activeFam.color) || 'rgba(56,189,248,0.24)') + '; border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;',
@@ -6255,6 +6270,19 @@ class Component extends DCLogic {
   // Add a person under the current user (createdBy stamps ownership for delete rules),
   // and open it straight into edit mode.
   addPerson() {
+    if (this.state.travelersMigrated) {
+      this.setState(s => {
+        let key = 'p', i = 1;
+        const taken = new Set(s.cfgTravelers.map(o => o.key));
+        while (taken.has(key)) { key = 'p' + (++i); }
+        const palette = ['#5fd3ff', '#fb7185', '#c084fc', '#22d3ee', '#fbbf24', '#fb923c', '#a78bfa', '#4ade80', '#e879f9'];
+        const color = palette[s.cfgTravelers.length % palette.length];
+        const createdBy = (s.cloudUserEmail || '').toLowerCase().trim();
+        const item = { key, label: 'New person', color, email: '', createdBy, familyId: s.activeFamilyId || '' };
+        return { cfgTravelers: [...s.cfgTravelers, item], editingPersonKey: key, addingPersonKey: key };
+      });
+      return;
+    }
     this.setState(s => {
       let key = 'p', i = 1;
       const taken = new Set(s.cfgTravelers.map(o => o.key));
@@ -6267,7 +6295,23 @@ class Component extends DCLogic {
     });
   }
   // Confirm a freshly-added person (the Add button).
-  addPersonDone() { this._personSnapshot = null; this.setState({ editingPersonKey: null, addingPersonKey: null }); this.toast('User added'); }
+  addPersonDone() {
+    this._personSnapshot = null;
+    if (this.state.travelersMigrated) {
+      const p = (this.state.cfgTravelers || []).find(o => o.key === this.state.addingPersonKey);
+      const addingKey = this.state.addingPersonKey;
+      this.setState({ editingPersonKey: null, addingPersonKey: null });
+      if (p) {
+        this.familiesAction('addTraveler', { key: p.key, familyId: p.familyId, label: p.label, color: p.color, email: p.email || '' }).then(j => {
+          if (j) this.toast('User added');
+          else this.setState(s => ({ cfgTravelers: (s.cfgTravelers || []).filter(o => o.key !== addingKey) })); // never made it to the server — drop the local placeholder
+        });
+      }
+      return;
+    }
+    this.setState({ editingPersonKey: null, addingPersonKey: null });
+    this.toast('User added');
+  }
   // Cancel an add → remove the just-created person.
   addPersonCancel(key) { this.setState({ addingPersonKey: null }); this.personRemove(key); }
   // Every row for the People/Users UI: cfgTravelers plus synthesized rows for any
@@ -6482,22 +6526,46 @@ class Component extends DCLogic {
       while (taken.has(newKey)) { i++; newKey = 'p' + i; }
       const row = { key: newKey, label, color, email, createdBy: '', familyId: m.familyId };
       this._personSnapshot = { key: newKey, label, color, email, createdBy: '', familyId: m.familyId };
-      this.setState(s => ({ ...this.persistConfig(s, { cfgTravelers: [...(s.cfgTravelers || []), row] }), editingPersonKey: newKey }));
+      if (this.state.travelersMigrated) {
+        this.familiesAction('addTraveler', { key: newKey, familyId: m.familyId, label, color, email }).then(j => {
+          if (j) this.setState({ editingPersonKey: newKey });
+        });
+      } else {
+        this.setState(s => ({ ...this.persistConfig(s, { cfgTravelers: [...(s.cfgTravelers || []), row] }), editingPersonKey: newKey }));
+      }
       return;
     }
     const p = (this.state.cfgTravelers || []).find(o => o.key === key);
     this._personSnapshot = p ? { key, label: p.label, color: p.color, email: p.email || '', createdBy: p.createdBy || '', familyId: p.familyId || '' } : null;
     this.setState({ editingPersonKey: key });
   }
-  donePerson() { this._personSnapshot = null; this.setState({ editingPersonKey: null, addingPersonKey: null }); this.toast('User saved'); }
+  donePerson() {
+    const snap = this._personSnapshot;
+    this._personSnapshot = null;
+    if (this.state.travelersMigrated && snap && !this.state.addingPersonKey) {
+      const p = (this.state.cfgTravelers || []).find(o => o.key === snap.key);
+      if (p) {
+        this.familiesAction('updateTraveler', { key: p.key, patch: { label: p.label, color: p.color, email: p.email || '' } }).then(j => { if (j) this.toast('User saved'); });
+      }
+    } else {
+      this.toast('User saved');
+    }
+    this.setState({ editingPersonKey: null, addingPersonKey: null });
+  }
   cancelPerson() {
     const snap = this._personSnapshot;
     this._personSnapshot = null;
     if (snap) {
-      this.setState(s => {
-        const list = (s.cfgTravelers || []).map(o => o.key === snap.key ? { ...o, label: snap.label, color: snap.color, email: snap.email, createdBy: snap.createdBy, familyId: snap.familyId } : o);
-        return this.persistConfig(s, { cfgTravelers: list });
-      }, () => this.setState({ editingPersonKey: null }));
+      if (this.state.travelersMigrated) {
+        // Nothing was committed server-side yet (commits happen on Save) — just revert
+        // the in-progress local edit.
+        this.setState(s => ({ cfgTravelers: (s.cfgTravelers || []).map(o => o.key === snap.key ? { ...o, label: snap.label, color: snap.color, email: snap.email, createdBy: snap.createdBy, familyId: snap.familyId } : o), editingPersonKey: null }));
+      } else {
+        this.setState(s => {
+          const list = (s.cfgTravelers || []).map(o => o.key === snap.key ? { ...o, label: snap.label, color: snap.color, email: snap.email, createdBy: snap.createdBy, familyId: snap.familyId } : o);
+          return this.persistConfig(s, { cfgTravelers: list });
+        }, () => this.setState({ editingPersonKey: null }));
+      }
     } else {
       this.setState({ editingPersonKey: null });
     }
@@ -6508,6 +6576,11 @@ class Component extends DCLogic {
   // to that user's email. This is who "owns"/manages the traveler.
   personSetParent(key, parentEmail) {
     const pe = String(parentEmail || '').toLowerCase().trim();
+    if (this.state.travelersMigrated) {
+      this.setState(s => ({ cfgTravelers: (s.cfgTravelers || []).map(o => o.key === key ? { ...o, createdBy: pe } : o) }));
+      this.familiesAction('updateTraveler', { key, patch: { createdBy: pe } }).then(j => { if (j) this.toast('Updated.'); });
+      return;
+    }
     this.setState(s => {
       const list = s.cfgTravelers.map(o => o.key === key ? { ...o, createdBy: pe } : o);
       return this.persistConfig(s, { cfgTravelers: list });
@@ -6521,15 +6594,20 @@ class Component extends DCLogic {
     if (!familyId) return;
     const trav = (this.state.cfgTravelers || []).find(o => o.key === key);
     if (!trav) return;
-    this.setState(s => {
-      const list = (s.cfgTravelers || []).map(o => o.key === key ? { ...o, familyId } : o);
-      return this.persistConfig(s, { cfgTravelers: list });
-    });
+    if (this.state.travelersMigrated) {
+      this.setState(s => ({ cfgTravelers: (s.cfgTravelers || []).map(o => o.key === key ? { ...o, familyId } : o) }));
+      this.familiesAction('moveTraveler', { key, familyId }).then(j => { if (j) this.toast('Moved to that family.'); });
+    } else {
+      this.setState(s => {
+        const list = (s.cfgTravelers || []).map(o => o.key === key ? { ...o, familyId } : o);
+        return this.persistConfig(s, { cfgTravelers: list });
+      });
+    }
     const email = String(trav.email || '').trim().toLowerCase();
     if (!email) return;
     const existing = (this.state.cfgMemberships || []).find(m => m.email === email && m.active !== false);
     const role = (existing && existing.role) || 'reader';
-    this.familiesAction('assignFamily', { email, familyId, role }).then(j => { if (j) this.toast('Moved to that family.'); });
+    this.familiesAction('assignFamily', { email, familyId, role }).then(j => { if (j && !this.state.travelersMigrated) this.toast('Moved to that family.'); });
   }
   // Admin toggle: auto-claim ownership of unowned trips. Turning it on claims immediately.
   toggleAutoClaim() {
@@ -6637,6 +6715,7 @@ class Component extends DCLogic {
       fetch('/api/trips?mode=deleteUser', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: pd.email, key: pd.key, deleteTrips: !!deleteTrips }) })
         .then(() => { this._cloudSynced = false; this.cloudLoad(); }).catch(() => {});
     }
+    if (this.state.travelersMigrated) this.familiesAction('deleteTraveler', { key: pd.key }); // best-effort; loadFamilies() inside it refreshes cfgTravelers
     this.setState(s => {
       const cfgTravelers = (s.cfgTravelers || []).filter(o => o.key !== pd.key);
       const accessList = (s.accessList || []).filter(r => String(r.email || '').toLowerCase().trim() !== pd.email);
@@ -6648,7 +6727,8 @@ class Component extends DCLogic {
         if (pd.email && String((n.ownerEmail || '')).toLowerCase().trim() === pd.email) n = { ...n, ownerEmail: '', owner: '' };
         return n;
       });
-      return { ...this.persistConfig(s, { cfgTravelers, accessList }), locations, pendingUserDelete: null, editingPersonKey: null };
+      const ns = this.state.travelersMigrated ? { cfgTravelers, accessList, cfgVersion: (s.cfgVersion || 1) } : this.persistConfig(s, { cfgTravelers, accessList });
+      return { ...ns, locations, pendingUserDelete: null, editingPersonKey: null };
     }, () => { if (this.saveAccess) this.saveAccess(); this.persistLocal(this.state.locations); this.toast('User deleted'); });
   }
   personRemove(key) {
@@ -6660,10 +6740,16 @@ class Component extends DCLogic {
     const meEmail = (this.state.cloudUserEmail || '').toLowerCase().trim();
     const mine = !p.createdBy || String(p.createdBy).toLowerCase().trim() === meEmail;
     if (this.state.cfgDataSource === 'cloud' && !isAdmin && !mine) return; // not yours
-    this.setState(s => {
-      const list = s.cfgTravelers.filter(o => o.key !== key);
-      return { ...this.persistConfig(s, { cfgTravelers: list }), editingPersonKey: null };
-    });
+    if (this.state.travelersMigrated) {
+      const neverSaved = this.state.addingPersonKey === key; // local-only add being cancelled — nothing to delete server-side
+      this.setState(s => ({ cfgTravelers: s.cfgTravelers.filter(o => o.key !== key), editingPersonKey: null }));
+      if (!neverSaved) this.familiesAction('deleteTraveler', { key }).then(j => { if (!j) this.loadFamilies(); }); // failed — reload to restore true state
+    } else {
+      this.setState(s => {
+        const list = s.cfgTravelers.filter(o => o.key !== key);
+        return { ...this.persistConfig(s, { cfgTravelers: list }), editingPersonKey: null };
+      });
+    }
     // if this person had an access role, drop it too (admin)
     if (isAdmin && p.email) this.personSetRole(p.email, '');
   }
