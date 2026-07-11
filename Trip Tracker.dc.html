@@ -1180,6 +1180,22 @@
                     <button onClick="{{ sh.onRemove }}" title="Remove access" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
                   </div>
                 </sc-for>
+                <sc-if value="{{ noOutgoingShares }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">No other family can see ours yet.</div>
+                </sc-if>
+              </div>
+
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin:18px 0 8px;">FAMILIES WE CAN SEE</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; margin-bottom:9px; line-height:1.5;">Granted by them — only they can revoke it.</div>
+              <div style="display:flex; flex-direction:column; gap:7px;">
+                <sc-for list="{{ myIncomingShares }}" as="sh" hint-placeholder-count="1">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 10px;">
+                    <span>{{ sh.label }}</span>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ noIncomingShares }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">No other family has shared with us yet.</div>
+                </sc-if>
               </div>
 
             </sc-if>
@@ -1534,6 +1550,9 @@
                 <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ selected.familyBadge.color }}; flex:none;"></span>{{ selected.familyBadge.label }}</span>
                 </sc-if>
+                <sc-if value="{{ selected.hiddenFromSharesBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.hiddenFromSharesBadge.color }};">{{ selected.hiddenFromSharesBadge.label }}</span>
+                </sc-if>
                 </sc-if>
               </div>
             </sc-if>
@@ -1573,6 +1592,9 @@
                 <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ selected.familyBadge.color }}; flex:none;"></span>{{ selected.familyBadge.label }}</span>
                 </sc-if>
+                <sc-if value="{{ selected.hiddenFromSharesBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.hiddenFromSharesBadge.color }};">{{ selected.hiddenFromSharesBadge.label }}</span>
+                </sc-if>
               </sc-if>
             </div>
           </sc-if>
@@ -1595,6 +1617,9 @@
                     <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
                 <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ selected.familyBadge.color }}; flex:none;"></span>{{ selected.familyBadge.label }}</span>
+                </sc-if>
+                <sc-if value="{{ selected.hiddenFromSharesBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.hiddenFromSharesBadge.color }};">{{ selected.hiddenFromSharesBadge.label }}</span>
                 </sc-if>
                   </sc-if>
                 </div>
@@ -1635,6 +1660,9 @@
                   <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.visBadge.color }};">{{ selected.visBadge.label }}</span>
                 <sc-if value="{{ selected.familyBadge }}" hint-placeholder-val="{{ null }}">
                   <span style="display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:#c9a6f2; background:rgba(196,164,242,0.1); border:1px solid rgba(196,164,242,0.28); border-radius:6px; padding:2px 6px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ selected.familyBadge.color }}; flex:none;"></span>{{ selected.familyBadge.label }}</span>
+                </sc-if>
+                <sc-if value="{{ selected.hiddenFromSharesBadge }}" hint-placeholder-val="{{ null }}">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.04em; color:{{ selected.hiddenFromSharesBadge.color }};">{{ selected.hiddenFromSharesBadge.label }}</span>
                 </sc-if>
                 </sc-if>
               </div>
@@ -2482,6 +2510,13 @@
             </sc-if>
             <input name="sharedWithText" value="{{ form.sharedWithText }}" onChange="{{ onField }}" placeholder="+ other email (someone not in the list)" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:10px; padding:10px 12px; outline:none;">
           </sc-if>
+          <sc-if value="{{ showHideFromShares }}" hint-placeholder-val="{{ false }}">
+            <label style="display:flex; align-items:center; gap:9px; margin-top:12px; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c8d2e0; cursor:pointer;">
+              <input type="checkbox" checked="{{ form.hiddenFromShares }}" onChange="{{ toggleHiddenFromShares }}" style="flex:none; width:15px; height:15px; accent-color:#fbbf24;"/>
+              <span style="flex:1;">Keep private even from families we've shared with</span>
+            </label>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:4px; margin-left:24px; line-height:1.5;">Your own family still sees it — this only excludes families your family has granted access to.</div>
+          </sc-if>
         </sc-if>
 
         <sc-if value="{{ showCreated }}" hint-placeholder-val="{{ false }}">
@@ -2561,7 +2596,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.17-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.10.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2877,7 +2912,7 @@ class Component extends DCLogic {
     const d = this._permDefault || {};
     const vis = ['private','shared','all'].indexOf(d.vis) >= 0 ? d.vis : 'private';
     const shareTravelers = Array.isArray(d.keys) ? d.keys.slice() : [];
-    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', photo:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers, familyId: this.state.activeFamilyId || '' }; }
+    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', photo:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers, hiddenFromShares:false, familyId: this.state.activeFamilyId || '' }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -3754,6 +3789,9 @@ class Component extends DCLogic {
       label: (byId[sh.toFamilyId] ? byId[sh.toFamilyId].name : sh.toFamilyId) + ' — ' + shareRoleLabel(sh.role),
       onRemove: () => this.removeFamilyShare(sh.fromFamilyId, sh.toFamilyId),
     }));
+    const myIncomingShares = (s.cfgShares || []).filter((sh) => sh.toFamilyId === viewFamilyId).map((sh) => ({
+      label: (byId[sh.fromFamilyId] ? byId[sh.fromFamilyId].name : sh.fromFamilyId) + ' — ' + shareRoleLabel(sh.role),
+    }));
     const pendingList = s.pendingFamiliesList || [];
     const myFamilyIdsArr = [...myFamilyIds];
     const familyViewOptions = [];
@@ -3826,6 +3864,9 @@ class Component extends DCLogic {
       otherFamilyOptions,
       inviteFamilyShare: () => this.inviteFamilyShare(),
       myOutgoingShares,
+      noOutgoingShares: myOutgoingShares.length === 0,
+      myIncomingShares,
+      noIncomingShares: myIncomingShares.length === 0,
       mySiteAdmin: !!s.mySiteAdmin,
       autoApproveToggleLabel: s.autoApproveFamilies ? 'ON' : 'OFF',
       autoApproveToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
@@ -5896,6 +5937,13 @@ class Component extends DCLogic {
     if (l.visibility === 'shared') return { label: '✉ Shared', color: '#fbbf24' };
     return { label: '🔒 Private', color: '#9fb6cf' };
   }
+  // Shown alongside visBadge when this trip has been kept out of cross-family shares
+  // even though the owning family has shared broadly with another family.
+  hiddenFromSharesBadge(l) {
+    if (this.state.cfgDataSource !== 'cloud' || !l || !l.hiddenFromShares) return null;
+    if (!(this.state.cfgShares || []).some(sh => sh.fromFamilyId === l.familyId)) return null;
+    return { label: '🚫 Not shared out', color: '#f0a6a6' };
+  }
   toggleDup() { this.setState(s => ({ dupMode: !s.dupMode })); }
   // Build a full statistics snapshot over ALL trips (unfiltered) for the metrics panel.
   // Every family this user can see trips for: families they're a member of, PLUS any
@@ -7547,6 +7595,7 @@ class Component extends DCLogic {
         dateText,
         ownerBadge: this.ownerBadge(sl),
         visBadge: this.visBadge(sl),
+        hiddenFromSharesBadge: this.hiddenFromSharesBadge(sl),
         familyBadge: this.familyBadge(sl),
         hasPhoto: !!(this.state.cfgShowThumbs && sl.photo),
         noPhoto: !(this.state.cfgShowThumbs && sl.photo),
@@ -7771,6 +7820,8 @@ class Component extends DCLogic {
       tripTypeChips,
       travelerChips,
       showVisibility: this.state.cfgDataSource === 'cloud',
+      showHideFromShares: this.state.cfgDataSource === 'cloud' && (this.state.cfgShares || []).some(sh => sh.fromFamilyId === (form.familyId || this.state.activeFamilyId)),
+      toggleHiddenFromShares: (e) => this.setState(s => ({ form: { ...s.form, hiddenFromShares: e.target.checked } })),
       visIsShared: (form.visibility || 'private') === 'shared',
       visPrivateStyle: visSeg((form.visibility || 'private') === 'private', '#9fb6cf'),
       visAllStyle: visSeg(form.visibility === 'all', '#5fd3ff'),

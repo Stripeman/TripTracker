@@ -69,7 +69,10 @@ function canView(trip, me) {
   }
   if (me.familyRoles.has(trip.familyId)) return true; // any role in the owning family sees it
   const shareRole = me.sharesIn.get(trip.familyId);
-  if (shareRole) return true; // another family shared their whole family's trips with mine
+  // A family share grants visibility into that family's trips — UNLESS this specific
+  // trip has been marked private-even-when-shared (a per-trip override so one family
+  // can share broadly while still keeping a handful of trips out of it).
+  if (shareRole && !trip.hiddenFromShares) return true;
   if (trip.visibility === "all") return true;
   if (trip.visibility === "shared" && Array.isArray(trip.sharedWith)) {
     if (trip.sharedWith.map((s) => String(s).toLowerCase()).includes(me.email)) return true;
@@ -85,6 +88,7 @@ function canEdit(trip, me) {
   const myRole = me.familyRoles.get(trip.familyId);
   if (myRole === "editor" || myRole === "admin") return true;
   const shareRole = me.sharesIn.get(trip.familyId);
+  if (shareRole && trip.hiddenFromShares) return false; // per-trip override also blocks edit via a share
   if (shareRole === "editor" || shareRole === "admin-no-delete") return true;
   return false;
 }

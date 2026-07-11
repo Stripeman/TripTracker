@@ -12,11 +12,10 @@ legal/rate-limit/launch-hardening work. Target scale: ~320 families comfortably.
 ### 1. Cross-family sharing UX
 Shares already exist server-side (invite a family, grant read/edit/admin, never delete)
 but the UX around them is bare-bones. Needed:
-- A view of **"families who can see us"** vs **"families we can see"** — two-sided
-  visibility, not just a flat share list.
-- **Per-trip visibility overrides** — a shared family currently sees everything or
-  nothing; need the ability to keep specific trips private even when the whole family
-  is shared.
+- ✅ **DONE (1.10.0-beta)** — A view of **"families who can see us"** vs **"families we
+  can see"** — two-sided visibility, not just a flat share list.
+- ✅ **DONE (1.10.0-beta)** — **Per-trip visibility overrides** — a per-trip "keep
+  private even from shares" checkbox, enforced server-side.
 
 ### 2. Mobile / responsive polish
 No specifics given yet — general pass across the app (left panel, forms, modals,

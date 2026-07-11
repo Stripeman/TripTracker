@@ -4,6 +4,14 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.10.0-beta — Phase 3: cross-family sharing UX (item 1)
+
+### Added
+- **"Families we can see"** list in My Family Management, alongside the existing "Families that can see ours" — two-sided visibility into cross-family shares instead of a one-way outgoing list. Incoming shares are read-only here (only the granting family can revoke).
+- **Per-trip visibility override**: a new "Keep private even from families we've shared with" checkbox on the trip form. Even when your family broadly shares with another family, individual trips can opt out — enforced server-side in both view and edit checks, not just hidden in the UI. Shown as a "🚫 Not shared out" badge on the trip when applicable.
+
+---
+
 ## 1.9.17-beta — Delete my own account
 
 ### Added
