@@ -1728,6 +1728,16 @@
         <sc-if value="{{ selected.notes }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08); font-family:'Space Grotesk',sans-serif; font-size:13px; line-height:1.55; color:#c2cfde; white-space:pre-wrap;">{{ selected.notes }}</div>
         </sc-if>
+        <sc-if value="{{ selected.hasGallery }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">GALLERY</div>
+            <div style="display:flex; flex-wrap:wrap; gap:7px;">
+              <sc-for list="{{ selected.galleryItems }}" as="g" hint-placeholder-count="0">
+                <img ref="{{ g.setRef }}" onClick="{{ g.open }}" style="width:58px; height:58px; object-fit:cover; border-radius:9px; border:1px solid rgba(255,255,255,0.12); cursor:pointer; display:block;">
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
         <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex; gap:9px; margin-top:16px;">
             <button onClick="{{ editSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 18px rgba(251,191,36,0.35);">Edit</button>
@@ -2217,6 +2227,23 @@
       </div>
     </sc-if>
 
+    <!-- gallery lightbox -->
+    <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeLightbox }}" style="position:fixed; inset:0; z-index:97; background:rgba(2,6,14,0.85); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; animation:vl-fade 0.2s ease;">
+        <button onClick="{{ closeLightbox }}" title="Close" style="position:absolute; top:20px; right:22px; width:34px; height:34px; border-radius:9px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#e8eef6; font-size:16px; cursor:pointer;">×</button>
+        <sc-if value="{{ lightboxHasMulti }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ lightboxPrevClick }}" title="Previous" style="position:absolute; left:18px; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.18); color:#e8eef6; font-size:18px; cursor:pointer;">‹</button>
+          <button onClick="{{ lightboxNextClick }}" title="Next" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.18); color:#e8eef6; font-size:18px; cursor:pointer;">›</button>
+        </sc-if>
+        <div onClick="{{ stop }}" style="max-width:90vw; max-height:86vh; display:flex; flex-direction:column; align-items:center; gap:10px;">
+          <img ref="{{ setLightboxImg }}" style="max-width:90vw; max-height:78vh; object-fit:contain; border-radius:12px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <sc-if value="{{ lightboxHasMulti }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; color:#8093aa;">{{ lightboxPosLabel }}</div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- trips calendar view -->
     <sc-if value="{{ calendarOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeCalendarView }}" style="position:fixed; inset:0; z-index:80; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; pointer-events:auto; animation:vl-fade 0.2s ease;">
@@ -2493,6 +2520,21 @@
           </div>
         </sc-if>
 
+        <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:18px 0 7px;">GALLERY <span style="color:#445;">·opt</span></label>
+        <input ref="{{ setGalleryInputRef }}" type="file" accept="image/*" multiple="" onChange="{{ onGalleryPick }}" style="display:none;">
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <sc-for list="{{ formGalleryItems }}" as="g" hint-placeholder-count="0">
+            <div style="position:relative; width:56px; height:56px; flex:none;">
+              <img ref="{{ g.setRef }}" style="width:56px; height:56px; object-fit:cover; border-radius:9px; border:1px solid rgba(125,200,245,0.32); display:block;">
+              <button onClick="{{ g.remove }}" title="Remove" style="position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; background:#161f2e; border:1px solid rgba(255,255,255,0.18); color:#c2cfde; font-size:10px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
+            </div>
+          </sc-for>
+          <button onClick="{{ triggerGalleryPick }}" style="width:56px; height:56px; flex:none; border-radius:9px; border:1px dashed rgba(125,200,245,0.4); background:rgba(255,255,255,0.02); color:#7fb4d8; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+            <span style="font-size:16px; line-height:1;">+</span>
+          </button>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5; margin-top:7px;">Extra photos beyond the cover — shown in a gallery on the trip detail. Pick several at once.</div>
+
         <sc-if value="{{ showVisibility }}" hint-placeholder-val="{{ false }}">
           <label style="display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; color:#6b7c93; margin:20px 0 8px;">WHO CAN SEE THIS</label>
           <div style="display:flex; gap:7px;">
@@ -2598,7 +2640,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.10.1-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.11.0-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -2914,7 +2956,7 @@ class Component extends DCLogic {
     const d = this._permDefault || {};
     const vis = ['private','shared','all'].indexOf(d.vis) >= 0 ? d.vis : 'private';
     const shareTravelers = Array.isArray(d.keys) ? d.keys.slice() : [];
-    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', photo:'', visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers, hiddenFromShares:false, familyId: this.state.activeFamilyId || '' }; }
+    return { city:'', state:'', country:'', lat:'', lon:'', date:'', dateEnd:'', status:'planned', notes:'', photo:'', gallery:[], visitTypes:[], tripTypes:['vacation'], travelers:[], createdAt:'', visibility:vis, sharedWith:[], sharedWithText:'', shareTravelers, hiddenFromShares:false, familyId: this.state.activeFamilyId || '' }; }
 
   seed() {
     // [city, state, country, lon, lat, date, dateEnd, status, notes]
@@ -5263,19 +5305,34 @@ class Component extends DCLogic {
     used.add(name);
     return name;
   }
+  // All exportable image entries for one trip: cover photo (if any) plus every
+  // gallery photo, numbered when there's more than one for the same trip.
+  _photoEntriesForTrip(l, used) {
+    const urls = [];
+    if (l.photo) urls.push(l.photo);
+    if (Array.isArray(l.gallery)) urls.push(...l.gallery);
+    return urls.map((url, i) => {
+      const place = [l.city, l.country].filter(Boolean).join(', ') || l.place || 'trip';
+      let base = (place + (l.date ? ' — ' + l.date : '') + (urls.length > 1 ? ' (' + (i + 1) + ')' : '')).replace(/[\\/:*?"<>|]/g, '-').trim();
+      let name = base + '.jpg', n = 2;
+      while (used.has(name)) { name = base + ' v' + n + '.jpg'; n++; }
+      used.add(name);
+      return { name, bytes: Component._dataUrlToBytes(url) };
+    });
+  }
   // Admin/editor: export trip photos as a .zip. scope 'mine' → just your own trips'
   // photos, flat. scope 'everyone' → every trip you can see, grouped by owner — the
   // outer zip contains one inner .zip per person (a zip of zips), plus any unassigned
   // photos flat at the top level.
   exportImages() {
     const allowed = this.backupFilteredLocations();
-    const withPhoto = allowed.filter(l => l.photo);
+    const withPhoto = allowed.filter(l => l.photo || (Array.isArray(l.gallery) && l.gallery.length));
     if (!withPhoto.length) { this.setState({ storageMsg: 'No trip photos to export.' }); return; }
     const stamp = new Date().toISOString().slice(0, 10);
     const distinctOwners = new Set(withPhoto.map(l => (l.ownerEmail || '').toLowerCase().trim() || 'unassigned'));
     if (this.state.cfgDataSource !== 'cloud' || distinctOwners.size <= 1) {
       const used = new Set();
-      const entries = withPhoto.map(l => ({ name: this._photoFileName(l, used), bytes: Component._dataUrlToBytes(l.photo) }));
+      const entries = withPhoto.flatMap(l => this._photoEntriesForTrip(l, used));
       const zip = Component._buildZip(entries);
       this._downloadBytes(zip, 'trip-photos-' + stamp + '.zip');
       this.toast('Exported ' + entries.length + ' photo' + (entries.length === 1 ? '' : 's'));
@@ -5291,7 +5348,7 @@ class Component extends DCLogic {
     const outerUsed = new Set();
     const outerEntries = Object.keys(groups).sort().map(label => {
       const used = new Set();
-      const inner = groups[label].map(l => ({ name: this._photoFileName(l, used), bytes: Component._dataUrlToBytes(l.photo) }));
+      const inner = groups[label].flatMap(l => this._photoEntriesForTrip(l, used));
       const innerZip = Component._buildZip(inner);
       let base = label.replace(/[\\/:*?"<>|]/g, '-').trim() || 'user', name = base + '.zip', n = 2;
       while (outerUsed.has(name)) { name = base + ' (' + n + ').zip'; n++; }
@@ -6487,7 +6544,7 @@ class Component extends DCLogic {
     if (em) {
       const locs = this.state.locations || [];
       const owned = locs.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === em);
-      const photoCount = owned.filter(l => l.photo).length;
+      const photoCount = owned.reduce((n, l) => n + (l.photo ? 1 : 0) + (Array.isArray(l.gallery) ? l.gallery.length : 0), 0);
       rows += '<div style="color:#9fb3c8; margin-top:3px;">Thumbnails on their trips: <span style="color:#eaf4fd;">' + photoCount + '</span></div>';
       if (trav) {
         const taggedIn = locs.filter(l => Array.isArray(l.travelers) && l.travelers.includes(trav.key) && String(l.ownerEmail || '').toLowerCase().trim() !== em);
@@ -6795,7 +6852,7 @@ class Component extends DCLogic {
       const locsAll = this.state.locations || [];
       const ownedLocs = email ? locsAll.filter(l => String(l.ownerEmail || '').toLowerCase().trim() === email) : [];
       const statsOwned = ownedLocs.length;
-      const statsPhotos = ownedLocs.filter(l => l.photo).length;
+      const statsPhotos = ownedLocs.reduce((n, l) => n + (l.photo ? 1 : 0) + (Array.isArray(l.gallery) ? l.gallery.length : 0), 0);
       const statsCountries = new Set(ownedLocs.map(l => (l.country || '').trim()).filter(Boolean)).size;
       const yearCounts = {};
       ownedLocs.forEach(l => { const y = (l.date || '').slice(0, 4); if (y) yearCounts[y] = (yearCounts[y] || 0) + 1; });
@@ -7303,7 +7360,7 @@ class Component extends DCLogic {
   askRemoveAllPhotos = () => { this.setState({ confirmRemovePhotos: true }); };
   cancelRemoveAllPhotos = () => { this.setState({ confirmRemovePhotos: false }); };
   removeAllMyPhotos = () => {
-    const list = this.state.locations.map(l => (this.tripIsMine(l) && l.photo) ? { ...l, photo: '', modifiedAt: new Date().toISOString() } : l);
+    const list = this.state.locations.map(l => (this.tripIsMine(l) && (l.photo || (Array.isArray(l.gallery) && l.gallery.length))) ? { ...l, photo: '', gallery: [], modifiedAt: new Date().toISOString() } : l);
     const n = list.filter((l, i) => l !== this.state.locations[i]).length;
     this.setState({ confirmRemovePhotos: false });
     this.persist(list);
@@ -7330,6 +7387,21 @@ class Component extends DCLogic {
       const src = (this.state.pendingTripDelete && this.state.pendingTripDelete.photo) || '';
       if (this._deletePhotoImg.src !== src) this._deletePhotoImg.src = src;
     }
+    (this.state.form.gallery || []).forEach((url, i) => {
+      const el = this._formGalleryRefs && this._formGalleryRefs[i];
+      if (el && el.src !== url) el.src = url;
+    });
+    if (this._detailGalleryRefs) {
+      const sl = this.state.locations.find(l => l.id === this.state.selectedId);
+      (sl && sl.gallery || []).forEach((url, i) => {
+        const el = this._detailGalleryRefs[i];
+        if (el && el.src !== url) el.src = url;
+      });
+    }
+    if (this._lightboxImg) {
+      const src = this.state.lightbox ? this.state.lightbox.images[this.state.lightbox.index] : '';
+      if (this._lightboxImg.src !== src) this._lightboxImg.src = src;
+    }
   }
   onPhotoPick = (e) => {
     const file = e.target.files && e.target.files[0];
@@ -7353,6 +7425,49 @@ class Component extends DCLogic {
       img.src = reader.result;
     };
     reader.readAsDataURL(file);
+  };
+  setGalleryInputRef = (el) => { this._galleryInput = el; };
+  triggerGalleryPick = () => { if (this._galleryInput) { this._galleryInput.value = ''; this._galleryInput.click(); } };
+  openLightbox = (images, index) => { this.setState({ lightbox: { images: images || [], index: index || 0 } }); };
+  closeLightbox = () => { this.setState({ lightbox: null }); };
+  lightboxNext = () => { this.setState(s => { if (!s.lightbox) return null; const n = s.lightbox.images.length; return { lightbox: { ...s.lightbox, index: (s.lightbox.index + 1) % n } }; }); };
+  lightboxPrev = () => { this.setState(s => { if (!s.lightbox) return null; const n = s.lightbox.images.length; return { lightbox: { ...s.lightbox, index: (s.lightbox.index - 1 + n) % n } }; }); };
+  removeGalleryPhoto = (idx) => {
+    this.setState(s => ({ form: { ...s.form, gallery: (s.form.gallery || []).filter((_, i) => i !== idx) } }));
+  };
+  // Resize one File to a compact square dataURL, same approach as the cover photo.
+  _resizeToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const SIZE = 200;
+          const canvas = document.createElement('canvas');
+          canvas.width = SIZE; canvas.height = SIZE;
+          const ctx = canvas.getContext('2d');
+          const side = Math.min(img.width, img.height);
+          const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, SIZE, SIZE);
+          let q = 0.8, dataUrl = canvas.toDataURL('image/jpeg', q);
+          while (dataUrl.length > 40000 && q > 0.35) { q -= 0.12; dataUrl = canvas.toDataURL('image/jpeg', q); }
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject(new Error('img'));
+        img.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error('read'));
+      reader.readAsDataURL(file);
+    });
+  }
+  onGalleryPick = async (e) => {
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    const results = [];
+    for (const file of files) {
+      try { results.push(await this._resizeToDataUrl(file)); } catch (err) { /* skip unreadable file */ }
+    }
+    if (results.length) this.setState(s => ({ form: { ...s.form, gallery: [...(s.form.gallery || []), ...results] } }));
   };
   setCalScrollRef = (el) => { this._calScroll = el; this.scrollCalToAnchor(); };
   setCalAnchorRef = (el) => { this._calAnchor = el; this.scrollCalToAnchor(); };
@@ -7607,6 +7722,8 @@ class Component extends DCLogic {
         travelerKeys: sl.travelers || [],
         onStatsHover: (e) => this.showCardStat(e, 'trip:' + sl.id),
         onStatsLeave: () => this.hideCardStat(),
+        hasGallery: Array.isArray(sl.gallery) && sl.gallery.length > 0,
+        galleryItems: (sl.gallery || []).map((url, i) => ({ url, open: () => this.openLightbox(sl.gallery, i), setRef: (el) => { this._detailGalleryRefs = this._detailGalleryRefs || {}; this._detailGalleryRefs[i] = el; if (el && el.src !== url) el.src = url; } })),
       };
     }
     const meId = this.state.cloudUserId || '';
@@ -7732,6 +7849,14 @@ class Component extends DCLogic {
       noLocations: mapped.length === 0,
       calendarOpen: this.state.calendarOpen,
       closeCalendarView: () => this.closeCalendarView(),
+      lightboxOpen: !!this.state.lightbox,
+      lightboxSrc: this.state.lightbox ? this.state.lightbox.images[this.state.lightbox.index] : '',
+      lightboxHasMulti: !!(this.state.lightbox && this.state.lightbox.images.length > 1),
+      lightboxPosLabel: this.state.lightbox ? (this.state.lightbox.index + 1) + ' / ' + this.state.lightbox.images.length : '',
+      closeLightbox: () => this.closeLightbox(),
+      setLightboxImg: (el) => { this._lightboxImg = el; const src = this.state.lightbox ? this.state.lightbox.images[this.state.lightbox.index] : ''; if (el && el.src !== src) el.src = src; },
+      lightboxNextClick: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.lightboxNext(); },
+      lightboxPrevClick: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.lightboxPrev(); },
       ...this.calendarRenderVals(mapped),
       showFamilyGroups: familyGroups.length > 1,
       showFlatList: familyGroups.length <= 1,
@@ -8074,6 +8199,10 @@ class Component extends DCLogic {
       triggerPhotoPick: this.triggerPhotoPick,
       onPhotoPick: this.onPhotoPick,
       removePhoto: this.removePhoto,
+      formGalleryItems: (this.state.form.gallery || []).map((url, i) => ({ url, remove: () => this.removeGalleryPhoto(i), setRef: (el) => { this._formGalleryRefs = this._formGalleryRefs || {}; this._formGalleryRefs[i] = el; if (el && el.src !== url) el.src = url; } })),
+      setGalleryInputRef: this.setGalleryInputRef,
+      triggerGalleryPick: this.triggerGalleryPick,
+      onGalleryPick: this.onGalleryPick,
       autoLocate: () => this.autoLocate(),
       geocoding: this.state.geocoding,
       autoLocateLabel: this.state.geocoding ? 'Locating…' : '⌖  Auto-locate from city / country',
@@ -8106,7 +8235,7 @@ class Component extends DCLogic {
           profileOwned: mine.length,
           profilePrivate: mine.filter(l => (l.visibility || 'private') === 'private').length,
           profileShared: mine.filter(l => l.visibility === 'shared' || l.visibility === 'all').length,
-          profilePhotoCount: mine.filter(l => l.photo).length,
+          profilePhotoCount: mine.reduce((n, l) => n + (l.photo ? 1 : 0) + (Array.isArray(l.gallery) ? l.gallery.length : 0), 0),
           profileAssociated: assoc,
         };
       })(),
@@ -8267,7 +8396,7 @@ class Component extends DCLogic {
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
-      appUpdated: 'July 10, 2026',
+      appUpdated: 'July 11, 2026',
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
       latestVersion: this.state.latestVersion,

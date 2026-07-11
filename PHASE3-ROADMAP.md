@@ -26,7 +26,9 @@ metrics) for small screens.
 
 ### 3. Richer trip content
 In priority order:
-1. Multiple photos per trip (gallery) — today a trip has one photo.
+1. ✅ **DONE (1.11.0-beta)** — Multiple photos per trip (gallery), with a lightbox
+   viewer on the detail card. Cover photo stays the card thumbnail; gallery photos
+   are extra.
 2. Itinerary / day-by-day notes.
 3. Comments/discussion per trip.
 4. Attachments (tickets, confirmations).

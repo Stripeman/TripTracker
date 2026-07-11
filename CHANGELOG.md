@@ -4,6 +4,14 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.11.0-beta — Phase 3: richer trip content (item 3.1 — photo gallery)
+
+### Added
+- Trips can now hold multiple photos: a new **Gallery** section on the trip form under the cover photo, accepting multi-select and adding thumbnails as tiles you can remove individually.
+- Trip detail card shows a **Gallery** strip below the notes when a trip has extra photos; clicking one opens a full-screen **lightbox** with prev/next nav and a position counter.
+- Photo counts (profile bubble, per-person management view, metrics) and the "remove all my photos" bulk action now include gallery photos alongside the cover photo.
+- Photo `.zip` export now includes every gallery image per trip (numbered when a trip has more than one), not just the cover.
+
 ## 1.10.1-beta — Phase 3: mobile polish (item 2, partial)
 
 ### Fixed
