@@ -20,6 +20,9 @@ but the UX around them is bare-bones. Needed:
 ### 2. Mobile / responsive polish
 No specifics given yet — general pass across the app (left panel, forms, modals,
 metrics) for small screens.
+- ✅ **DONE (1.10.1-beta)** — left panel, form, config panel, detail card, and metrics
+  already had a ≤720px treatment; the People & Family Management modal (sidebar+detail
+  split) was the one gap, now fixed. All other modals were already responsive.
 
 ### 3. Richer trip content
 In priority order:

@@ -4,6 +4,14 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.10.1-beta — Phase 3: mobile polish (item 2, partial)
+
+### Fixed
+- People & Family Management's sidebar+detail split layout (fixed 230px sidebar) didn't fit small screens at all. On ≤720px it now goes full-screen and stacks vertically — sidebar becomes a scrollable strip capped at 34vh, detail panel takes the rest.
+- Audited all other modals (help, calendar, delete confirmations, add-person, new-family) — all already use `min(Npx, vw%)` sizing and were already mobile-safe.
+
+---
+
 ## 1.10.0-beta — Phase 3: cross-family sharing UX (item 1)
 
 ### Added
