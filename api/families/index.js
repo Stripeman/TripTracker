@@ -159,7 +159,8 @@ module.exports = async function (context, req) {
     let members = await readJsonBlob(container, MEMBERS_BLOB, []);
     let shares = await readJsonBlob(container, SHARES_BLOB, []);
     let settings = await readJsonBlob(container, "family-settings.json", { autoApproveFamilies: false });
-    let travelers = await readJsonBlob(container, TRAVELERS_BLOB, []);
+    const travelersBlobExists = await container.getBlockBlobClient(TRAVELERS_BLOB).exists();
+    let travelers = travelersBlobExists ? await readJsonBlob(container, TRAVELERS_BLOB, []) : [];
     if (!Array.isArray(travelers)) travelers = [];
 
     const myMemberships = members.filter((m) => m.email === me.email && m.active !== false);
@@ -176,6 +177,7 @@ module.exports = async function (context, req) {
         memberships: visibleMembers,
         shares: visibleShares,
         travelers: visibleTravelers,
+        travelersMigrated: travelersBlobExists,
         myMemberships,
         familyColors: FAMILY_COLORS,
         siteAdmin: meIsSiteAdmin,
@@ -643,18 +645,40 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // A person picks ONE of their own families as the default that loads on sign-in —
+    // purely a per-user preference, stored as a flag on their own membership rows (only
+    // ever touches rows for the CALLER's own email, never anyone else's).
+    if (action === "setDefaultFamily") {
+      const familyId = body.familyId;
+      if (!familyId) { json(400, { error: "familyId required." }); return; }
+      const mine = members.filter((m) => m.email === me.email && m.active !== false);
+      if (!mine.some((m) => m.familyId === familyId)) { json(403, { error: "You're not a member of that family." }); return; }
+      members = members.map((m) => m.email === me.email ? { ...m, isDefault: m.familyId === familyId } : m);
+      await writeJsonBlob(container, MEMBERS_BLOB, members);
+      json(200, { ok: true });
+      return;
+    }
+
     // ---- Per-family traveler storage (new — see TRAVELER-STORAGE-PLAN.md) ----
-    // Row shape: { id, familyId, label, color, email, createdBy, createdAt }. This is
-    // additive: settings.travelers (in the trips blob) keeps working as the fallback
-    // source until the frontend fully cuts over and a later release drops it.
+    // Row shape: { key, familyId, label, color, email, createdBy, createdAt }. `key` is
+    // the SAME identifier trips reference in location.travelers[] — preserved verbatim
+    // through migration — so cutting storage over never breaks existing trip tags.
+    // This is additive: settings.travelers (in the trips blob) keeps working as the
+    // fallback source until the frontend fully cuts over and a later release drops it.
     if (action === "addTraveler") {
       const familyId = body.familyId;
       if (!familyId) { json(400, { error: "familyId required." }); return; }
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      let key = String(body.key || "").trim() || genId("trav");
+      // If the client's proposed short key ("p", "p1"...) collides with one already in
+      // storage (e.g. it was generated against a stale/locally-scoped view of the
+      // list), don't hard-fail the add — just make it unique. Key uniqueness is what
+      // matters, not the specific short form.
+      if (travelers.some((t) => t.key === key)) key = key + "-" + genId("x");
       const label = String(body.label || "New person").trim() || "New person";
       const color = String(body.color || "#5fd3ff");
       const email = String(body.email || "").toLowerCase().trim();
-      const row = { id: genId("trav"), familyId, label, color, email, createdBy: me.email, createdAt: new Date().toISOString() };
+      const row = { key, familyId, label, color, email, createdBy: me.email, createdAt: new Date().toISOString() };
       travelers.push(row);
       await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
       json(200, { ok: true, traveler: row });
@@ -662,8 +686,8 @@ module.exports = async function (context, req) {
     }
 
     if (action === "updateTraveler") {
-      const id = body.id;
-      const idx = travelers.findIndex((t) => t.id === id);
+      const key = body.key;
+      const idx = travelers.findIndex((t) => t.key === key);
       if (idx === -1) { json(404, { error: "Traveler not found." }); return; }
       const row = travelers[idx];
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(row.familyId)) { json(403, { error: "Family admin required." }); return; }
@@ -672,6 +696,7 @@ module.exports = async function (context, req) {
       if (typeof patch.label === "string") next.label = patch.label.trim() || row.label;
       if (typeof patch.color === "string") next.color = patch.color;
       if (typeof patch.email === "string") next.email = patch.email.toLowerCase().trim();
+      if (typeof patch.createdBy === "string") next.createdBy = patch.createdBy.toLowerCase().trim();
       travelers[idx] = next;
       await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
       json(200, { ok: true, traveler: next });
@@ -681,9 +706,9 @@ module.exports = async function (context, req) {
     // Move a traveler tag to a different family. Requires admin of the TARGET family
     // (mirrors assignFamily) — site admin bypasses.
     if (action === "moveTraveler") {
-      const id = body.id;
+      const key = body.key;
       const familyId = body.familyId;
-      const idx = travelers.findIndex((t) => t.id === id);
+      const idx = travelers.findIndex((t) => t.key === key);
       if (idx === -1) { json(404, { error: "Traveler not found." }); return; }
       if (!familyId) { json(400, { error: "familyId required." }); return; }
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Admin of that family required." }); return; }
@@ -694,11 +719,29 @@ module.exports = async function (context, req) {
     }
 
     if (action === "deleteTraveler") {
-      const id = body.id;
-      const row = travelers.find((t) => t.id === id);
+      const key = body.key;
+      const row = travelers.find((t) => t.key === key);
       if (!row) { json(200, { ok: true }); return; } // already gone
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(row.familyId)) { json(403, { error: "Family admin required." }); return; }
-      travelers = travelers.filter((t) => t.id !== id);
+      // Guard against deleting a traveler still tagged on a trip (mirrors the client-side
+      // personUsedOnTrip check, enforced here so a raw API call can't bypass it) — unless
+      // the caller passes force:true, used only by the admin "Delete user…" confirm flow,
+      // which already showed the trip impact and disassociates them from those trips as
+      // part of the same confirmed operation.
+      if (!body.force) {
+        try {
+          const tripsBlobName = process.env.TRIPS_BLOB || "trip-tracker.json";
+          const tripsData = await readJsonBlob(container, tripsBlobName, null);
+          const locations = (tripsData && Array.isArray(tripsData.locations)) ? tripsData.locations : [];
+          const usedOnTrip = locations.some((l) => Array.isArray(l.travelers) && l.travelers.includes(key));
+          if (usedOnTrip) { json(409, { error: "Tagged on one or more trips — remove it from those first." }); return; }
+        } catch (e) {
+          // If the trips blob can't be read, fail safe by refusing the delete rather than
+          // silently allowing an orphaned reference.
+          json(409, { error: "Could not verify trip usage — try again." }); return;
+        }
+      }
+      travelers = travelers.filter((t) => t.key !== key);
       await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
       json(200, { ok: true });
       return;
@@ -706,9 +749,10 @@ module.exports = async function (context, req) {
 
     // One-time, idempotent backfill: copy settings.travelers (in the trips blob) into
     // the new per-family travelers.json, resolving a familyId for each row that lacks
-    // one. Safe to re-run — skips rows already migrated (matched by deterministic id).
-    // Does NOT touch or remove settings.travelers; the frontend still reads from there
-    // until a later release cuts it over.
+    // one. Safe to re-run — skips rows already migrated (matched by their original
+    // `key`, preserved verbatim so existing trip tags never break). Does NOT touch or
+    // remove settings.travelers; the frontend still reads from there until a later
+    // release cuts it over.
     if (action === "migrateTravelers") {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
       const tripsBlobName = process.env.TRIPS_BLOB || "trip-tracker.json";
@@ -720,17 +764,17 @@ module.exports = async function (context, req) {
         if (!membershipFamilyByEmail[e]) membershipFamilyByEmail[e] = m.familyId;
       });
       const fallbackFamilyId = body.fallbackFamilyId || (families[0] && families[0].id) || null;
-      const existingIds = new Set(travelers.map((t) => t.id));
+      const existingKeys = new Set(travelers.map((t) => t.key));
       let migrated = 0, skipped = 0, unresolved = 0;
       settingsTravelers.forEach((o) => {
-        const id = "trav-legacy-" + String(o.key || "");
-        if (!o.key || existingIds.has(id)) { skipped++; return; }
+        const key = String(o.key || "");
+        if (!key || existingKeys.has(key)) { skipped++; return; }
         const email = String(o.email || "").toLowerCase().trim();
         const createdBy = String(o.createdBy || "").toLowerCase().trim();
-        let familyId = (email && membershipFamilyByEmail[email]) || (createdBy && membershipFamilyByEmail[createdBy]) || fallbackFamilyId;
+        let familyId = o.familyId || (email && membershipFamilyByEmail[email]) || (createdBy && membershipFamilyByEmail[createdBy]) || fallbackFamilyId;
         if (!familyId) { unresolved++; return; }
-        travelers.push({ id, familyId, label: o.label || "Unnamed", color: o.color || "#5fd3ff", email, createdBy, createdAt: new Date().toISOString() });
-        existingIds.add(id);
+        travelers.push({ key, familyId, label: o.label || "Unnamed", color: o.color || "#5fd3ff", email, createdBy, createdAt: new Date().toISOString() });
+        existingKeys.add(key);
         migrated++;
       });
       await writeJsonBlob(container, TRAVELERS_BLOB, travelers);

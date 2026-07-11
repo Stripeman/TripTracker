@@ -4,6 +4,168 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.11-beta — Backup list was missing account-only people
+
+### Fixed
+- The backup "include these users" list only read `cfgTravelers`, but the People & Family panel actually shows a merged list — `cfgTravelers` plus a synthesized row for every membership/account that signed in or was approved but was never explicitly added as a "person." Those accounts (and their families) were invisible in the backup list even though they own trips. The backup list now uses the same merged source.
+
+---
+
+## 1.9.10-beta — Code review pass
+
+### Fixed
+- `myTravelerKey()` was defined twice in the logic class. The second, weaker definition (no email trim/case-safety) silently overrode the first, more robust one — removed the duplicate.
+
+---
+
+## 1.9.9-beta — Backup checkboxes now family-scoped
+
+### Fixed
+- The backup-list checkbox identity was still the bare traveler `key`, so two people in different families sharing the same legacy key toggled the same checkbox and the same trip-inclusion logic — a real gap given this is now a multi-family app. Row identity and trip-tag matching are now scoped by `key + familyId` end-to-end, so families with colliding legacy keys are handled correctly and independently.
+
+---
+
+## 1.9.8-beta — Backup list regression fix
+
+### Fixed
+- The 1.9.7 fix deduped backup-list rows by traveler `key` alone. Some legacy people (created before a key-collision fix shipped this session) share the same short key across different families — deduping by key alone silently dropped one of two real people with an email from the list. Now dedupes by key+familyId instead.
+
+---
+
+## 1.9.7-beta — Backup user list now reflects real trip tagging
+
+### Fixed
+- **Backup "include these users" list** only showed people with an email set, because it only recognized `ownerEmail`. Trips are actually tagged to people via a `travelers[]` array (which includes name-only people) — the list now has one row per traveler (email or not), keyed by their traveler key.
+- **Which trips a checkbox controls** now matches reality: a trip is included if *either* its owner or *any* tagged traveler is checked, not just the owner.
+
+---
+
+## 1.9.6-beta — Migration buttons hide once run
+
+### Changed
+- **"Migrate legacy data → default family"** button now hides itself once every trip has a `familyId` (nothing left to migrate).
+- **"Backfill travelers → per-family storage"** button now hides once the deployment is fully migrated (badge already showed "LIVE"; the button was redundant past that point).
+- Dropped `settings.travelers` entirely — people are now read/written exclusively via per-family `travelers.json`, with no legacy fallback branch. Backup export/import updated to carry people alongside data/settings so this didn't create a gap in backups.
+
+---
+
+## 1.9.5-beta — Unified delete confirmation
+
+### Added
+- **Deleting any person now shows a confirmation** with trip impact — trips owned,
+  trips tagged, and a **per-family breakdown** of how many trips are affected in each
+  family — instead of the old behavior where a name-only person tagged on a trip
+  couldn't be deleted at all (hard-blocked) while an account holder got a confirm
+  dialog with no family breakdown. Both flows are now the same modal, with button
+  wording adapted for whether the person has an account.
+
+### Fixed
+- The confirm-then-delete flow could still be rejected server-side because the trip
+  data update (disassociating the person) and the traveler-record deletion weren't
+  sequenced against the server's own trip-usage guard — the confirmed flow now tells
+  the server this is a reviewed, confirmed deletion.
+
+## 1.9.4-beta — Explicit default family + add-person popup
+
+### Added
+- **"Set as default family"** — a star button on each row in "My Families" lets you
+  explicitly pick which family loads by default at sign-in (only one can be default;
+  picking a new one clears the old). The sign-in default now prefers this explicit
+  choice over the previous guess-by-ownership/admin-role logic, which could pick the
+  wrong family for someone who owns or administers more than one.
+- **"+ Add person" is now a popup** (name, color, optional email) instead of an inline
+  editable row — clearer, and removes a subtle race in the old inline-add flow.
+
+### Fixed
+- **Duplicate "add a person" entry points.** A legacy "Add family member (no email)"
+  input existed separately from "+ Add person" and wrote to a different, no-longer-
+  displayed backend concept — removed; "+ Add person" already supports no-email
+  entries.
+- **Adding a person could silently fail to save** if a short auto-generated key (`p`,
+  `p1`...) collided with one already in storage from earlier testing — the server now
+  resolves the collision instead of rejecting the add.
+- **A leftover reference to a renamed variable** (`activeFam` → `activeFamObj`) in the
+  family switcher's style crashed `renderVals()` on load in some cases.
+- **Transfer-ownership dropdown pre-selected the first member**, so clicking Transfer
+  without touching the dropdown could transfer to the wrong person by accident. It now
+  requires an explicit choice (blank by default; button disabled until one is picked).
+
+## 1.9.3-beta — "Viewing a family" vs. "your active family" decoupled
+
+### Bug
+- **Browsing a family under "My Families" silently changed your active family**,
+  which drove the left panel's trip-family filter/dropdown — clicking a family row
+  just to look at it would reshuffle what trips you saw. Viewing a family's details in
+  People & Family Management is now fully separate from your app-wide active family; a
+  small "Use this"/"Active" pill on each row lets you deliberately switch instead.
+- **The whole family detail panel (rename, color, logo, members, invites, sharing,
+  transfer ownership, delete, "+ Add person", role/active toggles, last-admin checks)
+  was silently keyed to your TRUE active family**, not whichever family you were
+  actually viewing — so most of it broke or silently no-oped the moment you looked at
+  a family other than your own. Every action in that panel now consistently targets
+  the family actually on screen.
+- **"Create a new family" appeared once per family** in the detail panel (looked like
+  it belonged to whichever family you were viewing). Moved to a single "+ New" button
+  next to the "MY FAMILIES" header.
+
+## 1.9.2-beta — Staging bugfixes, round 2
+
+### Bug
+- **Transfer ownership button did nothing on first click.** The dropdown's displayed
+  default (first available person) only lived in the render's fallback logic, not
+  actual state — clicking Transfer without first touching the dropdown read an empty
+  value and silently no-opped. The handler now mirrors the same default.
+- **"My Families" didn't list your own family first.** Now sorted with your home
+  family at the top.
+- **"+ Add person" in My Family Management could still add to the wrong family.** It
+  was reusing Site User Management's logic, which could pick up a stale "specific
+  family" selection left over from browsing there. It now always targets the family
+  panel you're actually viewing.
+
+## 1.9.1-beta — Staging bugfixes (post phase-2 cutover)
+
+### Bug
+- **Adding a person went to the wrong family.** "+ Add person" in Site User
+  Management always used the left panel's active family, not whichever family you'd
+  browsed to via that screen's own FAMILY dropdown — so a site admin viewing "The
+  Smiths" could silently add a new person to their own family instead.
+- **No way to add a person from "My Family Management".** That per-family panel had no
+  "+ Add person" button at all — it only ever existed on Site User Management, which
+  is now gated behind Site Management (site-admin only), leaving regular family admins
+  with no way to add anyone. Added an "+ Add person" button directly to the family
+  detail panel, scoped to the family being viewed.
+- **Can't reassign a person's family from "My Family Management".** The FAMILY (and
+  OWNED BY) picker only existed in the Site User Management copy of the person editor
+  — the condensed version built for the per-family panel was missing both sections
+  entirely. Added them, so family admins can now move/reassign people from their own
+  family panel too, not just Site Management.
+- **A new name-only person showed no owner.** "OWNED BY" only listed people who
+  already had a materialized traveler record, so the person who actually created the
+  entry (the current admin) often didn't appear as an option — even though `createdBy`
+  was set correctly underneath, it looked unassigned. Owner options are now built from
+  real family memberships, so the creator always shows up.
+
+## 1.9.0-beta — Traveler storage, phase 2 (cutover)
+
+### Added
+- **Per-family traveler storage is now live** (after running the one-time backfill).
+  People are read from and saved to the new server-enforced `travelers.json` instead of
+  the old shared `settings.travelers` — every add/edit/delete/move now goes through a
+  family-admin-gated API action, closing the gap where a raw API call could set any
+  `familyId`. Deleting a traveler is now also blocked server-side if they're still
+  tagged on a trip.
+- Site Management → Site Family Management shows a **migrated / not migrated** badge
+  next to the backfill button.
+
+### Notes
+- Fully backward compatible: an unmigrated deployment behaves exactly as before. Once
+  a site admin clicks "Backfill travelers → per-family storage", the app switches over
+  automatically — no other user-facing change.
+- See `TRAVELER-STORAGE-PLAN.md` for the full status, including the couple of
+  deliberately-deferred rough edges (stale `settings.travelers` left in place as inert
+  dead weight; the raw settings-debug-JSON `travelers` field no longer round-trips
+  once migrated).
+
 ## 1.8.3-beta
 
 ### Bug

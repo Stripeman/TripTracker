@@ -117,6 +117,30 @@ Each provider is the same shape: register an "app" on that provider, copy its **
 
 After saving env vars, a redeploy (a minute or two) picks them up.
 
+### Testing on a staging/preview branch? Add its URL too
+
+If you push to a non-`main` branch and open a **pull request**, Azure automatically
+deploys a separate **preview environment** with its own unique URL (e.g.
+`https://<your-app>-3.<region>.azurestaticapps.net` — find it under your Static Web
+App → **Environments** → the row for that PR → **Browse**). Each sign-in provider only
+accepts redirect URIs you've explicitly registered, so signing in on a preview URL
+**will fail** ("Error 400: redirect_uri_mismatch" for Google, or an equivalent error for
+Microsoft/Yahoo) until you add that preview's callback URL alongside your production
+one, in the same places as above:
+
+- **Google:** console.cloud.google.com → **APIs & Services → Credentials** → open your
+  OAuth client → **Authorized redirect URIs** → **+ Add URI** →
+  `https://<preview-url>/.auth/login/google/callback` → **Save**.
+- **Microsoft:** Entra ID → **App registrations** → your app → **Authentication** →
+  **Add URI** → `https://<preview-url>/.auth/login/aad/callback` → **Save**.
+- **Yahoo:** developer.yahoo.com → your app → add
+  `https://<preview-url>/.auth/login/yahoo/callback` as an additional redirect URI.
+
+Each new pull request gets a **different** random URL suffix, so you'll need to repeat
+this for each new PR you want to sign in on — reusing the same PR (pushing more commits
+to it instead of opening a new one) keeps the same preview URL for your whole testing
+session, so you only have to do this once per round of testing.
+
 ---
 
 ## Step 4 — Give yourself (and others) access — managed inside the app
@@ -217,6 +241,9 @@ The behind-the-scenes API didn't deploy. This is almost always because the build
 
 **I signed in but see "No access".**
 Your account hasn't been given a role yet, or you changed roles and need to sign out and back in. Do Step 4.
+
+**"Error 400: redirect_uri_mismatch" (or similar) when signing in on a staging/preview URL.**
+That preview environment's callback URL isn't registered with the sign-in provider yet — see "Testing on a staging/preview branch?" in Step 3.5 above.
 
 ---
 

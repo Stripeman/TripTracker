@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.8.3--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.9.5--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -28,7 +28,11 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
   Metrics/Help/Profile/⚙) with a **sidebar of your families** and a detail panel for
   whichever one is selected: members and roles, invites, branding, sharing, and a
   guarded delete. Site admins get an additional "Site administration" sidebar entry
-  covering every family, approvals, and the site-admin roster.
+  covering every family, approvals, and the site-admin roster. Clicking a family in the
+  sidebar only shows its details here — it never changes your active family or the left
+  panel's trip filter. A **"Use this"** pill on each row explicitly switches your active
+  family; a **star** button sets which family loads by default at sign-in (only one can
+  be default — picking a new one clears the old).
 - **Ownership & transfer** — a family's detail panel shows its **Owner**. The current
   owner (or a site admin) can **transfer ownership** to any other active member, who's
   promoted to admin automatically if they weren't already.
@@ -187,7 +191,8 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 
 **Site User Management** (People & Family Management → Site Management → Site User Management, site admins only) — the unified **People** list, scoped to your own family: you only see people who share a family with you (or yourself); everyone else is invisible, and only a site admin or an admin of that person's family can edit their role, activate/deactivate, or delete them. Site admins see everyone, **grouped by family** (with a "No family" group for anyone unassigned). Each person always has a **name + colour**; an **email is optional** — give someone an email and they can sign in, at which point a **role** and a **presence dot** appear. People without an email are simply names you can pick. Each row has an **Edit** button (so you can't fat‑finger an email just by clicking a field), and **+ Add person** at the top. In Cloud mode an **admin** sets emails and roles (Reader / Editor / Admin, cumulative) and, for a name‑only person, an **Owned by** parent user; a regular **editor** can add name‑only people under themselves and can delete **only** people they added that aren't tagged on any trip. The Users tab is hidden for read‑only (`reader`) accounts.
 - **Active / Inactive** — an admin can mark a user **Inactive** (keeps the record and role but revokes access until reactivated), shown as a coloured badge, and filter the list by **All / Active / Inactive**. The last remaining active admin can't be deactivated or deleted (buttons hidden, with a notice) — there's always at least one admin.nactive**.
-- **Delete user…** — an admin can remove a user; a confirmation first warns how many trips they **own** (deletable, or kept and unassigned) and how many they're **tagged on** (disassociated).
+- **Delete anyone** — a family/site admin can remove a person (account or name-only); a confirmation first shows how many trips they **own** (deletable, or kept and unassigned), how many they're **tagged on** (disassociated), and a **per-family breakdown** of the trips affected.
+- **"+ Add person"** opens a small popup (name, color, optional email) instead of an inline row.
 - **FAMILY picker** — a family admin (or site admin) can assign/move a person into any family they administer (site admins: any family). New people default to your active family and you as owner. "Owned by" (for name-only people) is scoped to the same family.
 - **Rename any user you administer** — family admins for their own families, site admins for anyone; the Edit button itself only shows for people you're allowed to manage. A signed-in account with no traveler record yet (e.g. a brand-new user) gets one created automatically the moment you edit it.
 - **Family-scope dropdown** (same pattern as Trip Metrics) — site admins can filter to one specific family or see everyone; other users see their own family plus every family they have access to.
