@@ -4,6 +4,15 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.9.6-beta — Migration buttons hide once run
+
+### Changed
+- **"Migrate legacy data → default family"** button now hides itself once every trip has a `familyId` (nothing left to migrate).
+- **"Backfill travelers → per-family storage"** button now hides once the deployment is fully migrated (badge already showed "LIVE"; the button was redundant past that point).
+- Dropped `settings.travelers` entirely — people are now read/written exclusively via per-family `travelers.json`, with no legacy fallback branch. Backup export/import updated to carry people alongside data/settings so this didn't create a gap in backups.
+
+---
+
 ## 1.9.5-beta — Unified delete confirmation
 
 ### Added

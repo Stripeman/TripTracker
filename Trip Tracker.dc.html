@@ -1216,14 +1216,18 @@
                 <button onClick="{{ assignUserToFamily }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Assign</button>
               </div>
 
-              <button onClick="{{ migrateLegacyFamilies }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Migrate legacy data → default family</button>
+              <sc-if value="{{ hasLegacyTrips }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ migrateLegacyFamilies }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Migrate legacy data → default family</button>
+              </sc-if>
 
               <div style="margin-top:14px;">
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
                   <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; padding:2px 7px; border-radius:5px; {{ travelersMigratedBadgeStyle }}">{{ travelersMigratedBadgeLabel }}</span>
                 </div>
-                <button onClick="{{ migrateTravelers }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Backfill travelers → per-family storage</button>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:6px; line-height:1.5;">Safe to click more than once. {{ travelersMigratedHint }}</div>
+                <sc-if value="{{ travelersNotMigrated }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ migrateTravelers }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:9px 13px; cursor:pointer;">Backfill travelers → per-family storage</button>
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#586a82; margin-top:6px; line-height:1.5;">Safe to click more than once. {{ travelersMigratedHint }}</div>
+                </sc-if>
               </div>
 
               <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
@@ -1791,7 +1795,7 @@
 
     <!-- delete-user confirmation (admin) -->
     <sc-if value="{{ pendingUserDelete }}" hint-placeholder-val="{{ null }}">
-      <div style="position:fixed; inset:0; z-index:62; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+      <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
         <div style="width:380px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
           <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
             <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
@@ -1822,7 +1826,7 @@
 
     <!-- delete-family confirmation (family admin or site admin) -->
     <sc-if value="{{ pendingFamilyDelete }}" hint-placeholder-val="{{ null }}">
-      <div style="position:fixed; inset:0; z-index:62; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
+      <div style="position:fixed; inset:0; z-index:95; display:flex; align-items:center; justify-content:center; background:rgba(4,8,15,0.62); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); pointer-events:auto; animation:vl-fade 0.15s ease;">
         <div style="width:400px; max-width:92vw; background:rgba(12,18,28,0.98); border:1px solid rgba(239,68,68,0.34); border-radius:14px; padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
           <div style="display:flex; align-items:center; gap:9px; margin-bottom:13px;">
             <span style="width:30px; height:30px; flex:none; border-radius:8px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.34); color:#f0a6a6; display:flex; align-items:center; justify-content:center; font-size:15px;">⚠</span>
@@ -2499,7 +2503,7 @@ class Component extends DCLogic {
     this.STORE = 'vacation-location:locations:v4'; // localStorage key: the trips array
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
-    this.APP_VERSION = '1.9.5-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.9.6-beta';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3227,9 +3231,9 @@ class Component extends DCLogic {
         cfgTravelersServer: j.travelers || [],
         travelersMigrated: migrated,
         // Once migrated, travelers.json is the single source of truth — always take
-        // the fresh server copy. Before migration, leave whatever came from settings
-        // (via /api/trips) alone; loadFamilies doesn't know about that path.
-        cfgTravelers: migrated ? (j.travelers || []) : s.cfgTravelers,
+        // travelers.json is now the single source of truth — always take the fresh
+        // server copy (settings.travelers has been fully retired as a data source).
+        cfgTravelers: j.travelers || [],
       }));
       // First-ever login with no family memberships yet: take them straight to
       // People & Family, prompted to create one (they become its admin automatically).
@@ -3745,9 +3749,11 @@ class Component extends DCLogic {
       setAssignRole: (e) => this.setAssignRole(e),
       assignUserToFamily: () => this.assignUserToFamily(),
       migrateLegacyFamilies: () => this.migrateLegacyFamilies(),
+      hasLegacyTrips: (s.locations || []).some((l) => !l.familyId),
       migrateTravelers: () => this.migrateTravelers(),
       travelersMigratedBadgeLabel: s.travelersMigrated ? 'LIVE — PER-FAMILY STORAGE ACTIVE' : 'NOT YET MIGRATED',
       travelersMigratedBadgeStyle: s.travelersMigrated ? 'color:#7ee0a8; background:rgba(126,224,168,0.12); border:1px solid rgba(126,224,168,0.3);' : 'color:#f0c96a; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.3);',
+      travelersNotMigrated: !s.travelersMigrated,
       travelersMigratedHint: s.travelersMigrated
         ? 'Every person is now read from and saved to per-family storage. This button re-copies any straggler rows still only in the old shared list.'
         : 'Copies today\'s shared traveler list into the new per-family storage. Click it to switch the app over to reading/writing people per-family (server-enforced).',
@@ -4723,7 +4729,7 @@ class Component extends DCLogic {
   // Maps the friendly key names shown in the settings debug JSON back onto the
   // cfg* state fields cfgObject() reads them from.
   settingsKeyMap() {
-    return { version: 'cfgVersion', detailsFormDefault: 'cfgDetailsFormDefault', detailsCard: 'cfgDetailsCard', statusCard: 'cfgStatusCard', showThumbs: 'cfgShowThumbs', cardLayout: 'cfgCardLayout', spin: 'cfgSpin', debugMode: 'cfgDebugMode', stateBorders: 'cfgStateBorders', autoClaim: 'cfgAutoClaim', updateFreqMin: 'cfgUpdateFreqMin', theme: 'cfgTheme', defaultYear: 'cfgDefaultYear', defaultTrip: 'cfgDefaultTrip', defaultStatus: 'cfgDefaultStatus', defaultTraveler: 'cfgDefaultTraveler', defaultVisit: 'cfgDefaultVisit', sortDir: 'sortDir', dataSource: 'cfgDataSource', accessEmail: 'cfgAccessEmail', visitTypes: 'cfgVisitTypes', tripTypes: 'cfgTripTypes', travelers: 'cfgTravelers', statuses: 'cfgStatuses' };
+    return { version: 'cfgVersion', detailsFormDefault: 'cfgDetailsFormDefault', detailsCard: 'cfgDetailsCard', statusCard: 'cfgStatusCard', showThumbs: 'cfgShowThumbs', cardLayout: 'cfgCardLayout', spin: 'cfgSpin', debugMode: 'cfgDebugMode', stateBorders: 'cfgStateBorders', autoClaim: 'cfgAutoClaim', updateFreqMin: 'cfgUpdateFreqMin', theme: 'cfgTheme', defaultYear: 'cfgDefaultYear', defaultTrip: 'cfgDefaultTrip', defaultStatus: 'cfgDefaultStatus', defaultTraveler: 'cfgDefaultTraveler', defaultVisit: 'cfgDefaultVisit', sortDir: 'sortDir', dataSource: 'cfgDataSource', accessEmail: 'cfgAccessEmail', visitTypes: 'cfgVisitTypes', tripTypes: 'cfgTripTypes', statuses: 'cfgStatuses' };
   }
   confirmDebugJsonSave() {
     const target = this.state.debugJsonTarget || 'trip';
@@ -4951,7 +4957,7 @@ class Component extends DCLogic {
    * number; persistConfigNoBump is used mid-typing in the data editor so the
    * version only ticks once on blur. Any config change also schedules a cloud push. */
   cfgObject(s) {
-    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, cardLayout: s.cfgCardLayout, spin: s.cfgSpin, debugMode: s.cfgDebugMode, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, updateFreqMin: s.cfgUpdateFreqMin, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, travelers: s.cfgTravelers, statuses: s.cfgStatuses };
+    return { version: s.cfgVersion, detailsFormDefault: s.cfgDetailsFormDefault, detailsCard: s.cfgDetailsCard, statusCard: s.cfgStatusCard, showThumbs: s.cfgShowThumbs, cardLayout: s.cfgCardLayout, spin: s.cfgSpin, debugMode: s.cfgDebugMode, stateBorders: s.cfgStateBorders, autoClaim: s.cfgAutoClaim, updateFreqMin: s.cfgUpdateFreqMin, theme: s.cfgTheme, defaultYear: s.cfgDefaultYear, defaultTrip: s.cfgDefaultTrip, defaultStatus: s.cfgDefaultStatus, defaultTraveler: s.cfgDefaultTraveler, defaultVisit: s.cfgDefaultVisit, sortDir: s.sortDir, dataSource: s.cfgDataSource, accessEmail: s.cfgAccessEmail, visitTypes: s.cfgVisitTypes, tripTypes: s.cfgTripTypes, statuses: s.cfgStatuses };
   }
   // Central config write: bumps the version number and persists to localStorage.
   persistConfig(s, ns) {
@@ -5147,6 +5153,10 @@ class Component extends DCLogic {
     const o = { app: 'vacation-location', version: 1, exportedAt: new Date().toISOString() };
     if (kind === 'data' || kind === 'both') o.locations = this.backupFilteredLocations();
     if (kind === 'settings' || kind === 'both') o.settings = this.appSettings();
+    // People (travelers.json) live outside both `data` and `settings` since the phase-2
+    // cutover, but a backup is meaningless without them (trip tags, owners, names all
+    // reference this list) — always include the current one, on every export kind.
+    o.travelers = this.state.cfgTravelers || [];
     const names = { data: 'trip-locations.json', settings: 'trip-settings.json', both: 'trip-tracker.json' };
     this.downloadJson(o, names[kind]);
   }
@@ -5332,9 +5342,9 @@ class Component extends DCLogic {
     rdr.onload = () => {
       try {
         const data = JSON.parse(rdr.result);
-        let locs = null, settings = null;
+        let locs = null, settings = null, travelers = null;
         if (Array.isArray(data)) locs = data;
-        else if (data && typeof data === 'object') { if (Array.isArray(data.locations)) locs = data.locations; if (data.settings) settings = data.settings; }
+        else if (data && typeof data === 'object') { if (Array.isArray(data.locations)) locs = data.locations; if (data.settings) settings = data.settings; if (Array.isArray(data.travelers)) travelers = data.travelers; }
         if (locs) locs = this.ensureIds(locs);
 
         const next = {};
@@ -5343,6 +5353,22 @@ class Component extends DCLogic {
         if (wantSettings && settings) {
           Object.assign(next, this.applySettings(settings));
           done.push('settings');
+        }
+        // People (travelers.json) live outside data/settings — restore them alongside
+        // data (import ordinarily happens as one unit) via an upsert per row: update if
+        // the key already exists, add if not. Server-side admin gating still applies
+        // per row, so any family you don't administer is silently skipped.
+        if (wantData && travelers && travelers.length && this.state.travelersMigrated) {
+          const existingKeys = new Set((this.state.cfgTravelers || []).map(t => t.key));
+          let restored = 0;
+          Promise.all(travelers.map(t => {
+            if (!t || !t.key || !t.familyId) return null;
+            const action = existingKeys.has(t.key) ? 'updateTraveler' : 'addTraveler';
+            const body = action === 'updateTraveler'
+              ? { key: t.key, patch: { label: t.label, color: t.color, email: t.email || '', createdBy: t.createdBy || '' } }
+              : { key: t.key, familyId: t.familyId, label: t.label, color: t.color, email: t.email || '' };
+            return this.familiesActionSilent(action, body).then(j => { if (j) restored++; });
+          })).then(() => { this.toast('Restored ' + restored + ' of ' + travelers.length + ' people.'); });
         }
 
         let msg;
