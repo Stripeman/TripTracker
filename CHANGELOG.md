@@ -4,6 +4,13 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.23.1-beta — Sign-in redirected back to landing page after auth
+
+### Fixed
+- After completing sign-in, Google/Microsoft/Yahoo redirected to `/` — which, once a landing-page variant is active, bounces straight back to the landing page instead of into the app. All auth links now redirect to the app itself post-login.
+
+---
+
 ## 1.23.0-beta — Mobile responsive pass; fixed landing-page sign-in loop
 
 ### Fixed
