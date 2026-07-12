@@ -2919,7 +2919,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.17.0';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.20.0';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -9257,7 +9257,7 @@ class Component extends DCLogic {
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
-      appUpdated: 'July 11, 2026',
+      appUpdated: 'July 12, 2026',
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
       latestVersion: this.state.latestVersion,
