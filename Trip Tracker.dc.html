@@ -324,24 +324,27 @@
             </div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5;">Off by default — hides pricing until you're ready to show it.</div>
           </sc-if>
-        </div>
-        </sc-if>
-        <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">PUBLIC LANDING PAGE (SITE ADMIN)</div>
-        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">What unauthenticated visitors see first. Switch it up any time.</div>
-          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
-            <sc-for list="{{ landingVariantOptions }}" as="lv" hint-placeholder-count="4">
-              <button onClick="{{ lv.onSelect }}" style="{{ lv.style }}">
-                <span>{{ lv.label }}</span>
-                <span style="{{ lv.descStyle }}">{{ lv.desc }}</span>
-              </button>
-            </sc-for>
-          </div>
           <sc-if value="{{ showPricingVariantNote }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
-              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Pricing section on landing page</span>
-              <button onClick="{{ togglePricingSection }}" style="{{ pricingSectionToggleStyle }}">{{ pricingSectionToggleLabel }}</button>
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Testimonials section on landing page</span>
+              <button onClick="{{ toggleTestimonials }}" style="{{ testimonialsToggleStyle }}">{{ testimonialsToggleLabel }}</button>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">Off by default — add quotes below, then turn it on. Hidden automatically if the list is empty.</div>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;">
+              <sc-for list="{{ testimonialEditRows }}" as="tm" hint-placeholder-count="1">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:9px; padding:10px;">
+                  <textarea value="{{ tm.quote }}" onChange="{{ tm.onQuote }}" placeholder="Quote" rows="2" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#dce8f4; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:8px; margin-bottom:6px; resize:vertical;"></textarea>
+                  <div style="display:flex; gap:6px;">
+                    <input value="{{ tm.name }}" onChange="{{ tm.onName }}" placeholder="Name" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#dce8f4; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:7px 9px;">
+                    <input value="{{ tm.family }}" onChange="{{ tm.onFamily }}" placeholder="Family (optional)" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#dce8f4; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:7px 9px;">
+                    <button onClick="{{ tm.onRemove }}" title="Remove" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ addTestimonialRow }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fd6f0; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.3); border-radius:8px; padding:7px 12px; cursor:pointer;">+ Add testimonial</button>
+              <button onClick="{{ saveTestimonials }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none; border-radius:8px; padding:7px 14px; cursor:pointer;">Save testimonials</button>
             </div>
           </sc-if>
         </div>
@@ -1334,22 +1337,6 @@
                 <button onClick="{{ togglePublicSharingSite }}" style="{{ publicSharingSiteToggleStyle }}">{{ publicSharingSiteToggleLabel }}</button>
               </div>
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:16px;">Off hides the Public option in every trip's permissions and quietly downgrades any trip currently set to it.</div>
-
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Public landing page</div>
-              </div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">Which layout the public site shows before sign-in. Switch it up any time.</div>
-              <div style="display:flex; gap:8px; margin-bottom:18px;">
-                <sc-for list="{{ landingVariantOptions }}" as="lv" hint-placeholder-count="3">
-                  <button onClick="{{ lv.onSelect }}" style="{{ lv.style }}">{{ lv.label }}</button>
-                </sc-for>
-              </div>
-
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px;">
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Pricing section on landing page</div>
-                <button onClick="{{ togglePricingSection }}" style="{{ pricingSectionToggleStyle }}">{{ pricingSectionToggleLabel }}</button>
-              </div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:16px;">Off by default \u2014 hides pricing from the public site until you're ready to show it.</div>
 
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ALL FAMILIES</div>
               <div style="display:flex; flex-direction:column; gap:7px; margin-bottom:18px;">
@@ -2960,7 +2947,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.21.0';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.22.0';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3228,6 +3215,8 @@ class Component extends DCLogic {
       cfgImageUploadsEnabledSite: true,
       cfgPublicSharingEnabledSite: true,
       cfgShowPricingSection: false,
+      cfgShowTestimonials: false,
+      cfgTestimonials: [],
       cfgLandingVariant: 'signin',
       newFamilyName: '',
       newFamilyModalOpen: false,
@@ -3763,6 +3752,8 @@ class Component extends DCLogic {
         cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false,
         cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false,
         cfgShowPricingSection: !!j.showPricingSection,
+        cfgShowTestimonials: !!j.showTestimonials,
+        cfgTestimonials: j.testimonials || [],
         cfgLandingVariant: ['signin', 'a', 'b', 'c'].includes(j.landingVariant) ? j.landingVariant : 'signin',
         pendingFamiliesList: j.pendingFamilies || [],
         activityFeed: j.activity || [],
@@ -4065,6 +4056,24 @@ class Component extends DCLogic {
     const j = await this.familiesAction('setShowPricingSection', { value: !this.state.cfgShowPricingSection });
     if (j) { this.setState({ cfgShowPricingSection: !!j.showPricingSection }); this.toast(j.showPricingSection ? 'Pricing section is ON' : 'Pricing section is OFF'); }
   }
+  async toggleTestimonials() {
+    const j = await this.familiesAction('setShowTestimonials', { value: !this.state.cfgShowTestimonials });
+    if (j) { this.setState({ cfgShowTestimonials: !!j.showTestimonials }); this.toast(j.showTestimonials ? 'Testimonials are ON' : 'Testimonials are OFF'); }
+  }
+  addTestimonialRow() {
+    this.setState(s => ({ cfgTestimonials: [...(s.cfgTestimonials || []), { quote: '', name: '', family: '' }] }));
+  }
+  editTestimonialField(i, field, value) {
+    this.setState(s => ({ cfgTestimonials: (s.cfgTestimonials || []).map((t, idx) => idx === i ? { ...t, [field]: value } : t) }));
+  }
+  removeTestimonialRow(i) {
+    this.setState(s => ({ cfgTestimonials: (s.cfgTestimonials || []).filter((_, idx) => idx !== i) }));
+  }
+  async saveTestimonials() {
+    const list = (this.state.cfgTestimonials || []).filter(t => (t.quote || '').trim());
+    const j = await this.familiesAction('setTestimonials', { value: list });
+    if (j) { this.setState({ cfgTestimonials: j.testimonials || [] }); this.toast('Testimonials saved.'); }
+  }
   async setLandingVariant(v) {
     const j = await this.familiesAction('setLandingVariant', { value: v });
     if (j) { this.setState({ cfgLandingVariant: j.landingVariant || 'signin' }); this.toast('Landing page set to \u201c' + this.landingVariantLabel(j.landingVariant) + '\u201d'); }
@@ -4359,6 +4368,18 @@ class Component extends DCLogic {
       pricingSectionToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.cfgShowPricingSection ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);'),
       togglePricingSection: () => this.togglePricingSection(),
+      testimonialsToggleLabel: s.cfgShowTestimonials ? 'ON' : 'OFF',
+      testimonialsToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
+        (s.cfgShowTestimonials ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);'),
+      testimonialEditRows: (s.cfgTestimonials || []).map((t, i) => ({
+        quote: t.quote || '', name: t.name || '', family: t.family || '',
+        onQuote: (e) => this.editTestimonialField(i, 'quote', e.target.value),
+        onName: (e) => this.editTestimonialField(i, 'name', e.target.value),
+        onFamily: (e) => this.editTestimonialField(i, 'family', e.target.value),
+        onRemove: () => this.removeTestimonialRow(i),
+      })),
+      addTestimonialRow: () => this.addTestimonialRow(),
+      saveTestimonials: () => this.saveTestimonials(),
       hasPendingFamilies: pendingList.length > 0,
       pendingFamilyRows: pendingList.map((f) => ({ name: f.name, onApprove: () => this.approveFamily(f.id) })),
       pendingFamiliesCount: pendingList.length,

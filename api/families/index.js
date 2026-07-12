@@ -241,6 +241,8 @@ module.exports = async function (context, req) {
         publicSharingEnabled: settings.publicSharingEnabled !== false,
         landingVariant: ["signin", "a", "b", "c"].includes(settings.landingVariant) ? settings.landingVariant : "signin",
         showPricingSection: !!settings.showPricingSection,
+        showTestimonials: !!settings.showTestimonials,
+        testimonials: Array.isArray(settings.testimonials) ? settings.testimonials : [],
         pendingFamilies: meIsSiteAdmin ? families.filter((f) => !f.approved) : undefined,
         accessRequests: meIsSiteAdmin ? (await readJsonBlob(container, ACCESS_REQUESTS_BLOB, [])) : undefined,
         activity: (await readJsonBlob(container, ACTIVITY_BLOB, []))
@@ -377,6 +379,30 @@ module.exports = async function (context, req) {
       settings = { ...settings, landingVariant: v };
       await writeJsonBlob(container, "family-settings.json", settings);
       json(200, { ok: true, landingVariant: v });
+      return;
+    }
+
+    // Whether the public landing page shows a testimonials section — site admin only.
+    if (action === "setShowTestimonials") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, showTestimonials: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, showTestimonials: settings.showTestimonials });
+      return;
+    }
+
+    // Replace the full testimonials list shown on the public landing page — site admin only.
+    // Each: { quote, name, family }. Landing.dc.html reads these back via /api/site-settings.
+    if (action === "setTestimonials") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const list = Array.isArray(body.value) ? body.value.slice(0, 12).map((t) => ({
+        quote: String((t && t.quote) || "").slice(0, 500),
+        name: String((t && t.name) || "").slice(0, 80),
+        family: String((t && t.family) || "").slice(0, 80),
+      })).filter((t) => t.quote) : [];
+      settings = { ...settings, testimonials: list };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, testimonials: list });
       return;
     }
 

@@ -4,6 +4,17 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.22.0 — Merged "How it works" into Features; added testimonials
+
+### Changed
+- **Removed the separate "How it works" section** from the landing page — its 3 steps (start your family / log a trip / share it) are now part of the single **Features** section/link, so there's one clear scroll target instead of two thin ones. Applies to all three landing variants.
+
+### Added
+- **Customer testimonials section** on the public landing page — off by default. Site admin adds/edits quotes (with name + family, optional) from ⚙ Settings → System → Public Landing Page, and flips it on once there's at least one. Hidden automatically if the list is empty.
+- New `/api/site-settings` fields `showTestimonials`/`testimonials`; new `/api/families` actions `setShowTestimonials` / `setTestimonials` (site admin only).
+
+---
+
 ## 1.21.0 — Landing page control moved to System settings; fixed broken picker
 
 ### Fixed
