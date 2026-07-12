@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#04070e; }
+  .card { width:308px; background:rgba(8,14,24,0.9); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,0.5); font-family:'Space Grotesk',sans-serif; color:#c8d2e0; overflow:hidden; }
+  .banner { height:126px; background:linear-gradient(135deg,rgba(29,74,94,0.5),rgba(14,42,54,0.6) 60%), url('https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=500&h=300&fit=crop&q=80'); background-size:cover; background-position:center; position:relative; }
+  .bannerfade { position:absolute; inset:0; background:linear-gradient(180deg,rgba(8,14,24,0) 40%,rgba(8,14,24,0.95) 100%); }
+  .bannertext { position:absolute; left:16px; bottom:10px; right:16px; }
+  .body { padding:16px 18px; }
+  .iconbtn { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8fa4bc; position:relative; }
+  .badge { position:absolute; top:-5px; right:-5px; min-width:15px; height:15px; padding:0 4px; border-radius:999px; background:#fbbf24; color:#04111e; font-family:'IBM Plex Mono',monospace; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .rowbtns { display:flex; gap:8px; margin-top:12px; }
+  .label { font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#5d7088; }
+  .opttitle { font-family:'Orbitron',sans-serif; font-weight:700; font-size:15px; color:#eaf4fd; margin-bottom:4px; }
+  .optdesc { font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#8ea0b8; line-height:1.5; margin-bottom:16px; max-width:308px; }
+  .badgeid { display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700; color:#04111e; background:#fbbf24; border-radius:6px; padding:3px 9px; margin-bottom:10px; text-decoration:none; }
+  .modal { width:340px; background:rgba(10,16,26,0.98); border:1px solid rgba(56,189,248,0.28); border-radius:14px; box-shadow:0 24px 70px rgba(0,0,0,0.6); font-family:'Space Grotesk',sans-serif; color:#c8d2e0; overflow:hidden; }
+  .modalhead { padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; }
+  .tabs { display:flex; gap:4px; padding:10px 12px 0; }
+  .tab { font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; padding:8px 10px; border-radius:8px 8px 0 0; color:#8fa4bc; position:relative; }
+  .tabon { color:#5fd3ff; background:rgba(95,211,255,0.1); }
+  .tabbadge { display:inline-flex; align-items:center; justify-content:center; min-width:14px; height:14px; padding:0 3px; margin-left:5px; border-radius:999px; background:#fbbf24; color:#04111e; font-size:8.5px; font-weight:700; }
+  .modalbody { padding:14px 16px; min-height:120px; }
+  .commentrow { display:flex; gap:8px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .avatar { width:24px; height:24px; border-radius:50%; background:rgba(56,189,248,0.2); flex:none; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#9fd6f0; }
+  .sheet { width:340px; background:rgba(10,16,26,0.98); border:1px solid rgba(56,189,248,0.28); border-radius:20px 20px 0 0; box-shadow:0 24px 70px rgba(0,0,0,0.6); font-family:'Space Grotesk',sans-serif; color:#c8d2e0; overflow:hidden; }
+  .accordion { border-bottom:1px solid rgba(255,255,255,0.06); }
+  .acctitle { padding:13px 16px; display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:600; color:#dce8f4; }
+</style>
+</helmet>
+
+<div style="min-height:100vh; padding:60px; display:flex; flex-direction:column; gap:70px;">
+
+  <div id="1d">
+    <a href="#1d" class="badgeid">1d</a>
+    <div class="opttitle">D · Bottom sheet / drawer (mobile-friendly)</div>
+    <div class="optdesc">One "Details" icon opens a slide-up sheet with all sections as stacked accordions instead of tabs — no tab bar to cram on narrow screens, everything reachable by scroll.</div>
+    <div class="sheet">
+      <div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:700; font-size:14px; color:#eaf4fd;">Rio de Janeiro — Details</div>
+        <div style="width:26px; height:26px; border-radius:7px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; color:#8fa4bc;">✕</div>
+      </div>
+      <div class="accordion">
+        <div class="acctitle"><span>📷 Gallery <span class="tabbadge">4</span></span><span style="color:#5fd3ff;">▾</span></div>
+        <div style="padding:0 16px 14px; display:flex; gap:6px;">
+          <div style="width:56px; height:56px; border-radius:8px; background:url('https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=200&h=200&fit=crop&q=80') center/cover;"></div>
+          <div style="width:56px; height:56px; border-radius:8px; background:url('https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=200&h=200&fit=crop&q=80') center/cover;"></div>
+          <div style="width:56px; height:56px; border-radius:8px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5d7088;">+2</div>
+        </div>
+      </div>
+      <div class="accordion">
+        <div class="acctitle"><span>🗓️ Itinerary</span><span style="color:#5d7088;">▸</span></div>
+      </div>
+      <div class="accordion">
+        <div class="acctitle"><span>💬 Comments <span class="tabbadge">2</span></span><span style="color:#5d7088;">▸</span></div>
+      </div>
+      <div class="accordion" style="border-bottom:none;">
+        <div class="acctitle"><span>📎 Attachments <span class="tabbadge">1</span></span><span style="color:#5d7088;">▸</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="1c">
+    <a href="#1c" class="badgeid">1c</a>
+    <div class="opttitle">C · Add a 5th "Details" shortcut icon</div>
+    <div class="optdesc">Keeps the 4 existing buttons as-is; adds one more icon that opens the same tabbed modal, defaulted to whichever tab has the most recent activity. Least disruptive, but doesn't reduce clutter.</div>
+    <div class="card">
+      <div class="banner"><div class="bannerfade"></div><div class="bannertext"><div style="font-size:16px; font-weight:600; color:#fff;">Rio de Janeiro</div></div></div>
+      <div class="body">
+        <div class="label">MAR 14 – MAR 22 · ALVAREZ FAMILY</div>
+        <div class="rowbtns">
+          <div class="iconbtn">📷<span class="badge">4</span></div>
+          <div class="iconbtn">🗓️</div>
+          <div class="iconbtn">💬<span class="badge">2</span></div>
+          <div class="iconbtn">📎<span class="badge">1</span></div>
+          <div class="iconbtn" style="border-color:rgba(251,191,36,0.4); color:#fbbf24;">☰<span class="badge">new</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="1b">
+    <a href="#1b" class="badgeid">1b</a>
+    <div class="opttitle">B · Merge into the Gallery lightbox</div>
+    <div class="optdesc">Itinerary stays separate; Comments + Attachments become side tabs next to the photo viewer in the existing lightbox — you're already looking at the trip's photos while discussing it.</div>
+    <div style="width:520px; background:#04070e; border:1px solid rgba(56,189,248,0.22); border-radius:14px; overflow:hidden; display:flex; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+      <div style="flex:1; min-height:220px; background:url('https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=500&h=400&fit=crop&q=80') center/cover; position:relative;">
+        <div style="position:absolute; top:8px; left:8px; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#fff; background:rgba(0,0,0,0.4); border-radius:6px; padding:3px 7px;">1 / 4</div>
+      </div>
+      <div style="width:200px; border-left:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column;">
+        <div class="tabs" style="padding:10px 10px 0;">
+          <div class="tab tabon">💬 <span class="tabbadge">2</span></div>
+          <div class="tab">📎 <span class="tabbadge">1</span></div>
+        </div>
+        <div style="padding:12px; flex:1;">
+          <div class="commentrow"><div class="avatar">M</div><div style="font-size:11.5px;">Can't wait to see the rest!</div></div>
+          <div class="commentrow" style="border-bottom:none;"><div class="avatar">J</div><div style="font-size:11.5px;">This looks amazing 🌴</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="1a">
+    <a href="#1a" class="badgeid">1a</a>
+    <div class="opttitle">A · Single "Details" icon → tabbed modal (recommended)</div>
+    <div class="optdesc">Replaces the 4 separate buttons with one "Details" icon. Opens a modal with Gallery / Itinerary / Comments / Attachments as tabs — one predictable place, badge counts on each tab, easy to extend later.</div>
+    <div style="display:flex; gap:40px; align-items:flex-start; flex-wrap:wrap;">
+      <div class="card">
+        <div class="banner"><div class="bannerfade"></div><div class="bannertext"><div style="font-size:16px; font-weight:600; color:#fff;">Rio de Janeiro</div></div></div>
+        <div class="body">
+          <div class="label">MAR 14 – MAR 22 · ALVAREZ FAMILY</div>
+          <div class="rowbtns">
+            <div class="iconbtn" style="border-color:rgba(95,211,255,0.4); color:#5fd3ff; width:auto; padding:0 12px; gap:6px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600;">☰ Details<span class="badge" style="position:static; margin-left:2px;">7</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal">
+        <div class="modalhead">
+          <div style="font-weight:700; font-size:14px; color:#eaf4fd;">Rio de Janeiro</div>
+          <div style="width:26px; height:26px; border-radius:7px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; color:#8fa4bc;">✕</div>
+        </div>
+        <div class="tabs">
+          <div class="tab tabon">Gallery<span class="tabbadge">4</span></div>
+          <div class="tab">Itinerary</div>
+          <div class="tab">Comments<span class="tabbadge">2</span></div>
+          <div class="tab">Files<span class="tabbadge">1</span></div>
+        </div>
+        <div class="modalbody">
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <div style="width:70px; height:70px; border-radius:8px; background:url('https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=200&h=200&fit=crop&q=80') center/cover;"></div>
+            <div style="width:70px; height:70px; border-radius:8px; background:url('https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?w=200&h=200&fit=crop&q=80') center/cover;"></div>
+            <div style="width:70px; height:70px; border-radius:8px; background:rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#5d7088;">+2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+</body>
+</html>

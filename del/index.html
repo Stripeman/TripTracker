@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trip Tracker</title>
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<link rel="mask-icon" href="./favicon.svg" color="#38bdf8">
+<style>html,body{margin:0;height:100%;background:#04070e;color:#7fd6f5;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center}</style>
+</head>
+<body>
+<p>Loading Trip Tracker… <a id="fallback" style="color:#7fd6f5" href="./Trip%20Tracker.dc.html">Open</a></p>
+<script>
+// Site admin can choose, in-app (⚙ System tab), whether unauthenticated visitors
+// land straight on the sign-in prompt ("signin", the original/default behavior)
+// or on the public marketing landing page (variants a/b/c) — see /api/site-settings.
+fetch('/api/site-settings', { cache: 'no-store' })
+  .then(function (r) { return r.ok ? r.json() : { landingVariant: 'signin' }; })
+  .then(function (j) {
+    var dest = (j && j.landingVariant && j.landingVariant !== 'signin') ? './Landing.dc.html' : './Trip%20Tracker.dc.html';
+    document.getElementById('fallback').href = dest;
+    location.replace(dest);
+  })
+  .catch(function () { location.replace('./Trip%20Tracker.dc.html'); });
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+{
+  "app": "vacation-location",
+  "version": 1,
+  "exportedAt": "2026-06-19T13:48:07.884Z",
+  "settings": {
+    "detailsFormDefault": true,
+    "detailsCard": true,
+    "statusCard": true,
+    "cardLayout": "banner",
+    "showThumbs": true,
+    "spin": true
+  },
+  "locations": [
+    {
+      "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+      "familyId": "",
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "lon": "2.3522",
+      "lat": "48.8566",
+      "date": "2026-06-19",
+      "dateEnd": "2026-06-28",
+      "status": "visited",
+      "notes": "Spring on the Canal Saint-Martin",
+      "visitTypes": ["city", "family"],
+      "tripTypes": ["vacation"],
+      "travelers": ["terry"],
+      "visibility": "private",
+      "sharedWith": [],
+      "owner": "",
+      "ownerEmail": "",
+      "createdAt": "2026-06-19T13:48:07.884Z",
+      "modifiedAt": "2026-06-19T13:48:07.884Z"
+    },
+    {
+      "id": "0c4a6f2a-8e2b-4b6a-9a3d-2b7f9c1d6e42",
+      "familyId": "",
+      "city": "Kyoto",
+      "state": "",
+      "country": "Japan",
+      "lon": "135.7681",
+      "lat": "35.0116",
+      "date": "2025-04-03",
+      "dateEnd": "2025-04-11",
+      "status": "visited",
+      "notes": "Cherry blossoms along the Philosopher's Path",
+      "visitTypes": ["city", "cultural"],
+      "tripTypes": ["vacation"],
+      "travelers": ["terry"],
+      "visibility": "private",
+      "sharedWith": [],
+      "owner": "",
+      "ownerEmail": "",
+      "createdAt": "2026-06-19T13:48:07.884Z",
+      "modifiedAt": "2026-06-19T13:48:07.884Z"
+    }
+  ]
+}
