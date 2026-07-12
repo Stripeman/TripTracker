@@ -54,13 +54,30 @@
     .tt-addbtn { padding: 10px 14px !important; font-size: 12.5px !important; }
     .tt-panetoggle { top: 156px !important; left: 14px !important; right: auto !important; transition: none !important; }
     .tt-leftpanel { top: 156px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: auto !important; max-height: 36vh !important; }
+    .tt-topbar { padding: 14px 14px !important; flex-wrap: wrap !important; row-gap: 10px !important; padding-top: max(14px, env(safe-area-inset-top)) !important; }
+    .tt-title { font-size: 15px !important; letter-spacing: 0.16em !important; }
+    .tt-tagline { display: none !important; }
+    .tt-iconrow { gap: 8px !important; }
+    .tt-iconbtn { width: 40px !important; height: 40px !important; }
+    .tt-addbtn { padding: 10px 14px !important; font-size: 12.5px !important; }
+    .tt-panetoggle { top: 156px !important; left: 14px !important; right: auto !important; transition: none !important; }
+    .tt-leftpanel { top: 156px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: auto !important; max-height: 36vh !important; }
     .tt-leftpanel.tt-paneclosed { transform: translateY(-165%) !important; }
+    .tt-detailcard { left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; max-height: 62vh !important; overflow-y: auto !important; }
+    .tt-metrics { top: 156px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
+    .tt-config { top: 120px !important; left: 10px !important; right: 10px !important; width: auto !important; max-height: calc(100vh - 136px) !important; }
     .tt-detailcard { left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; max-height: 62vh !important; overflow-y: auto !important; }
     .tt-metrics { top: 156px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
     .tt-config { top: 120px !important; left: 10px !important; right: 10px !important; width: auto !important; max-height: calc(100vh - 136px) !important; }
     .tt-form { width: 100vw !important; max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
     .tt-fammodal { width: 100vw !important; height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; flex-direction: column !important; }
     .tt-famsidebar { width: 100% !important; flex: none !important; max-height: 34vh !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; }
+  }
+  @media (max-width: 420px) {
+    .tt-addbtn-label { display: none; }
+    .tt-addbtn { padding: 10px 12px !important; }
+    .tt-iconbtn { width: 34px !important; height: 34px !important; }
+    .tt-iconrow { gap: 6px !important; }
   }
   @media (max-width: 420px) {
     .tt-addbtn-label { display: none; }
@@ -101,6 +118,7 @@
       <div>
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
           <div class="tt-title" style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.32em; color:#e8f3ff; text-shadow:0 0 24px rgba(56,189,248,0.45);">MULTI&nbsp;FAMILY&nbsp;TRIP&nbsp;TRACKER</div>
+          <div class="tt-title" style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.32em; color:#e8f3ff; text-shadow:0 0 24px rgba(56,189,248,0.45);">MULTI&nbsp;FAMILY&nbsp;TRIP&nbsp;TRACKER</div>
           <sc-if value="{{ updateAvailable }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ reloadApp }}" title="Reload to update" style="pointer-events:auto; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:9px; font-weight:600; letter-spacing:0.14em; color:#1a1304; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:999px; padding:4px 10px; cursor:pointer; animation:vl-upulse 2.4s ease-in-out infinite;">
               <span style="width:5px; height:5px; border-radius:50%; background:#7a4d00;"></span>UPDATE AVAILABLE
@@ -108,9 +126,13 @@
           </sc-if>
         </div>
         <div class="tt-tagline" style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; margin-top:7px; color:#5d7088;">PLOT EVERY JOURNEY — PAST, PRESENT &amp; DREAMED</div>
+        <div class="tt-tagline" style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; margin-top:7px; color:#5d7088;">PLOT EVERY JOURNEY — PAST, PRESENT &amp; DREAMED</div>
       </div>
       <div class="tt-iconrow" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end;">
+      <div class="tt-iconrow" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end;">
         <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openAdd }}" class="tt-addbtn" style="pointer-events:auto; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.04em; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:10px; padding:11px 18px; cursor:pointer; transition:all .15s; box-shadow:0 0 14px rgba(95,211,255,0.25);">
+            <span style="font-size:16px; line-height:1;">+</span> <span class="tt-addbtn-label">Add location</span>
           <button onClick="{{ openAdd }}" class="tt-addbtn" style="pointer-events:auto; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.04em; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:10px; padding:11px 18px; cursor:pointer; transition:all .15s; box-shadow:0 0 14px rgba(95,211,255,0.25);">
             <span style="font-size:16px; line-height:1;">+</span> <span class="tt-addbtn-label">Add location</span>
           </button>
@@ -118,11 +140,15 @@
         <sc-if value="{{ showFamMgmtBtn }}" hint-placeholder-val="{{ false }}">
           <div style="position:relative; pointer-events:auto;">
             <button onClick="{{ openFamilyMgmt }}" title="People &amp; family management" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"></circle><path d="M2 20c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5"></path><circle cx="17.5" cy="8" r="2.3"></circle><path d="M15 14.3c2.6.4 4.8 1.9 4.8 5.7"></path></svg></button>
+            <button onClick="{{ openFamilyMgmt }}" title="People &amp; family management" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"></circle><path d="M2 20c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5"></path><circle cx="17.5" cy="8" r="2.3"></circle><path d="M15 14.3c2.6.4 4.8 1.9 4.8 5.7"></path></svg></button>
             <sc-if value="{{ famMgmtPendingCount }}" hint-placeholder-val="{{ false }}">
               <span style="position:absolute; top:-4px; right:-4px; min-width:16px; height:16px; padding:0 4px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:9.5px; font-weight:700; color:#04111e; background:#fbbf24; border-radius:999px; box-shadow:0 0 0 2px rgba(8,14,24,0.9);">{{ famMgmtPendingCount }}</span>
             </sc-if>
           </div>
         </sc-if>
+        <button onClick="{{ toggleMetrics }}" title="Trip metrics" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
+        <button onClick="{{ toggleCalendarView }}" title="Trips calendar" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
+        <button onClick="{{ openHelp }}" title="Help &amp; guide" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>
         <button onClick="{{ toggleMetrics }}" title="Trip metrics" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
         <button onClick="{{ toggleCalendarView }}" title="Trips calendar" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
         <button onClick="{{ openHelp }}" title="Help &amp; guide" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>
@@ -136,9 +162,19 @@
         </sc-if>
         <sc-if value="{{ showProfileBtn }}" hint-placeholder-val="{{ false }}">
           <button onClick="{{ toggleProfile }}" title="Your profile" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
+          <button onClick="{{ toggleActivity }}" title="Activity" class="tt-iconbtn" style="pointer-events:auto; position:relative; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <sc-if value="{{ activityUnreadCount }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute; top:5px; right:5px; width:8px; height:8px; border-radius:50%; background:#fbbf24; box-shadow:0 0 6px 1px rgba(251,191,36,0.7);"></span>
+            </sc-if>
+          </button>
+        </sc-if>
+        <sc-if value="{{ showProfileBtn }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleProfile }}" title="Your profile" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg>
           </button>
         </sc-if>
+        <button onClick="{{ toggleSettings }}" title="Data &amp; storage settings" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; font-size:17px; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">⚙</button>
         <button onClick="{{ toggleSettings }}" title="Data &amp; storage settings" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; font-size:17px; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">⚙</button>
       </div>
     </div>
@@ -163,6 +199,26 @@
     <!-- admin login-stats bubble — positioned to the BOTTOM-LEFT of the cursor so it never covers the row you're editing -->
     <div ref="{{ setStatRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; min-width:170px; background:rgba(9,15,25,0.97); border:1px solid rgba(95,211,255,0.38); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.55; padding:9px 11px; border-radius:9px; box-shadow:0 8px 22px rgba(0,0,0,0.5);"></div>
     <div ref="{{ setCardStatRef }}" style="position:fixed; display:none; left:0; top:0; z-index:90; pointer-events:none; min-width:170px; background:rgba(9,15,25,0.97); border:1px solid rgba(95,211,255,0.38); color:#cfe6f5; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.55; padding:9px 11px; border-radius:9px; box-shadow:0 8px 22px rgba(0,0,0,0.5);"></div>
+    <!-- activity feed dropdown -->
+    <sc-if value="{{ activityOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeActivity }}" style="position:fixed; inset:0; z-index:70; display:flex; align-items:flex-start; justify-content:flex-end; padding:78px 30px 30px; background:rgba(4,8,15,0.45); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); pointer-events:auto;">
+        <div onClick="{{ stop }}" style="width:360px; max-width:calc(100vw - 60px); max-height:70vh; display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(12,19,30,0.98), rgba(7,12,20,0.98)); border:1px solid rgba(56,189,248,0.28); border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,0.6); overflow:hidden;">
+          <div style="padding:16px 20px; border-bottom:1px solid rgba(56,189,248,0.12); font-family:'Orbitron',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.14em; color:#e8f3ff;">ACTIVITY</div>
+          <div style="flex:1; min-height:0; overflow-y:auto; padding:8px 12px;">
+            <sc-for list="{{ activityItems }}" as="ev" hint-placeholder-count="0">
+              <div style="padding:11px 8px; border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; line-height:1.5;">{{ ev.message }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ ev.when }}</div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ activityEmpty }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:30px 8px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#586a82;">No activity yet.</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- activity feed dropdown -->
     <sc-if value="{{ activityOpen }}" hint-placeholder-val="{{ false }}">
       <div onClick="{{ closeActivity }}" style="position:fixed; inset:0; z-index:70; display:flex; align-items:flex-start; justify-content:flex-end; padding:78px 30px 30px; background:rgba(4,8,15,0.45); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); pointer-events:auto;">
@@ -316,6 +372,50 @@
             </div>
           </sc-if>
         </div>
+        <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">PUBLIC LANDING PAGE <span style="color:#caa34e;">· SITE ADMIN</span></div>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">What unauthenticated visitors see before signing in. Switch it up any time.</div>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
+            <sc-for list="{{ landingVariantOptions }}" as="lv" hint-placeholder-count="4">
+              <button onClick="{{ lv.onSelect }}" style="{{ lv.style }}">
+                <span>{{ lv.label }}</span>
+                <span style="{{ lv.descStyle }}">{{ lv.desc }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ showPricingVariantNote }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Pricing section on landing page</span>
+              <button onClick="{{ togglePricingSection }}" style="{{ pricingSectionToggleStyle }}">{{ pricingSectionToggleLabel }}</button>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5;">Off by default — hides pricing until you're ready to show it.</div>
+          </sc-if>
+          <sc-if value="{{ showPricingVariantNote }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Testimonials section on landing page</span>
+              <button onClick="{{ toggleTestimonials }}" style="{{ testimonialsToggleStyle }}">{{ testimonialsToggleLabel }}</button>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">Off by default — add quotes below, then turn it on. Hidden automatically if the list is empty.</div>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;">
+              <sc-for list="{{ testimonialEditRows }}" as="tm" hint-placeholder-count="1">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:9px; padding:10px;">
+                  <textarea value="{{ tm.quote }}" onChange="{{ tm.onQuote }}" placeholder="Quote" rows="2" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#dce8f4; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:8px; margin-bottom:6px; resize:vertical;"></textarea>
+                  <div style="display:flex; gap:6px;">
+                    <input value="{{ tm.name }}" onChange="{{ tm.onName }}" placeholder="Name" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#dce8f4; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:7px 9px;">
+                    <input value="{{ tm.family }}" onChange="{{ tm.onFamily }}" placeholder="Family (optional)" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#dce8f4; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:7px 9px;">
+                    <button onClick="{{ tm.onRemove }}" title="Remove" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ addTestimonialRow }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#9fd6f0; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.3); border-radius:8px; padding:7px 12px; cursor:pointer;">+ Add testimonial</button>
+              <button onClick="{{ saveTestimonials }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none; border-radius:8px; padding:7px 14px; cursor:pointer;">Save testimonials</button>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
         <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">PUBLIC LANDING PAGE <span style="color:#caa34e;">· SITE ADMIN</span></div>
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
@@ -2335,6 +2435,9 @@
               <a href="/.auth/login/google?post_login_redirect_uri=/Trip%20Tracker.dc.html" style="display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#eaf4fd; background:rgba(95,211,255,0.09); border:1px solid rgba(95,211,255,0.45); box-shadow:0 6px 22px rgba(34,174,230,0.14); border-radius:12px; padding:11px 14px; text-decoration:none; transition:background 0.15s ease, border-color 0.15s ease;" style-hover="background:rgba(95,211,255,0.16); border-color:rgba(95,211,255,0.7);"><span style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:#fff; border-radius:8px; flex:none;"><svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18c-.44-1.32-.69-2.73-.69-4.18s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg></span><span style="flex:1; text-align:left;">Continue with Google</span><span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.12em; color:#8fe0ff; border:1px solid rgba(95,211,255,0.4); border-radius:5px; padding:3px 6px;">DEFAULT</span></a>
               <a href="/.auth/login/aad?post_login_redirect_uri=/Trip%20Tracker.dc.html" style="display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#cdd9e8; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.10); border-radius:12px; padding:11px 14px; text-decoration:none; transition:background 0.15s ease, border-color 0.15s ease;" style-hover="background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.22);"><span style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:rgba(255,255,255,0.06); border-radius:8px; flex:none;"><svg width="16" height="16" viewBox="0 0 23 23" aria-hidden="true"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M12 1h10v10H12z"/><path fill="#00A4EF" d="M1 12h10v10H1z"/><path fill="#FFB900" d="M12 12h10v10H12z"/></svg></span><span style="flex:1; text-align:left;">Continue with Microsoft</span></a>
               <a href="/.auth/login/yahoo?post_login_redirect_uri=/Trip%20Tracker.dc.html" style="display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#cdd9e8; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.10); border-radius:12px; padding:11px 14px; text-decoration:none; transition:background 0.15s ease, border-color 0.15s ease;" style-hover="background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.22);"><span style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:rgba(255,255,255,0.06); border-radius:8px; flex:none;"><svg width="17" height="17" viewBox="0 0 32 32" aria-hidden="true"><path fill="#6001D2" d="M2 6h6.8l4.2 7.6L17.3 6H24l-8.2 14v6H10v-6z"/><circle fill="#6001D2" cx="26" cy="23" r="3"/></svg></span><span style="flex:1; text-align:left;">Continue with Yahoo</span></a>
+              <a href="/.auth/login/google?post_login_redirect_uri=/Trip%20Tracker.dc.html" style="display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#eaf4fd; background:rgba(95,211,255,0.09); border:1px solid rgba(95,211,255,0.45); box-shadow:0 6px 22px rgba(34,174,230,0.14); border-radius:12px; padding:11px 14px; text-decoration:none; transition:background 0.15s ease, border-color 0.15s ease;" style-hover="background:rgba(95,211,255,0.16); border-color:rgba(95,211,255,0.7);"><span style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:#fff; border-radius:8px; flex:none;"><svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18c-.44-1.32-.69-2.73-.69-4.18s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg></span><span style="flex:1; text-align:left;">Continue with Google</span><span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.12em; color:#8fe0ff; border:1px solid rgba(95,211,255,0.4); border-radius:5px; padding:3px 6px;">DEFAULT</span></a>
+              <a href="/.auth/login/aad?post_login_redirect_uri=/Trip%20Tracker.dc.html" style="display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#cdd9e8; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.10); border-radius:12px; padding:11px 14px; text-decoration:none; transition:background 0.15s ease, border-color 0.15s ease;" style-hover="background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.22);"><span style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:rgba(255,255,255,0.06); border-radius:8px; flex:none;"><svg width="16" height="16" viewBox="0 0 23 23" aria-hidden="true"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M12 1h10v10H12z"/><path fill="#00A4EF" d="M1 12h10v10H1z"/><path fill="#FFB900" d="M12 12h10v10H12z"/></svg></span><span style="flex:1; text-align:left;">Continue with Microsoft</span></a>
+              <a href="/.auth/login/yahoo?post_login_redirect_uri=/Trip%20Tracker.dc.html" style="display:flex; align-items:center; gap:12px; width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:#cdd9e8; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.10); border-radius:12px; padding:11px 14px; text-decoration:none; transition:background 0.15s ease, border-color 0.15s ease;" style-hover="background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.22);"><span style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:rgba(255,255,255,0.06); border-radius:8px; flex:none;"><svg width="17" height="17" viewBox="0 0 32 32" aria-hidden="true"><path fill="#6001D2" d="M2 6h6.8l4.2 7.6L17.3 6H24l-8.2 14v6H10v-6z"/><circle fill="#6001D2" cx="26" cy="23" r="3"/></svg></span><span style="flex:1; text-align:left;">Continue with Yahoo</span></a>
             </div>
           </sc-if>
           <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
@@ -2508,6 +2611,84 @@
                 <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#cdd9e6; line-height:1.55; white-space:pre-wrap;">{{ d.text }}</div>
               </div>
             </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- comments -->
+    <sc-if value="{{ commentsModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeCommentsModal }}" style="position:fixed; inset:0; z-index:80; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; animation:vl-fade 0.2s ease;">
+        <div onClick="{{ stop }}" style="width:min(480px,94vw); max-height:80vh; display:flex; flex-direction:column; background:rgba(8,14,24,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,0.08); flex:none;">
+            <div>
+              <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.14em; color:#e8f3ff;">COMMENTS</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ selected.city }} · {{ selected.commentCount }}</div>
+            </div>
+            <button onClick="{{ closeCommentsModal }}" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:17px; line-height:1;">×</button>
+          </div>
+          <div style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px;">
+            <sc-for list="{{ selected.comments }}" as="c" hint-placeholder-count="0">
+              <div style="display:flex; gap:8px; margin-bottom:14px;">
+                <div style="flex:none; width:22px; height:22px; border-radius:50%; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:#9fd6f0; font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">{{ c.initial }}</div>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; align-items:baseline; gap:6px;">
+                    <span style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#cfe0f0;">{{ c.authorName }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#4d5e76;">{{ c.when }}</span>
+                    <sc-if value="{{ c.canDelete }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ c.onDelete }}" style="margin-left:auto; flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; background:none; border:none; cursor:pointer; padding:0;">delete</button>
+                    </sc-if>
+                  </div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c2cfde; line-height:1.5; white-space:pre-wrap; margin-top:2px;">{{ c.text }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ selected.noComments }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#586a82;">No comments yet.</div>
+            </sc-if>
+          </div>
+          <div style="display:flex; gap:8px; padding:14px 22px; border-top:1px solid rgba(255,255,255,0.08); flex:none;">
+            <input value="{{ commentDraft }}" onInput="{{ setCommentDraft }}" placeholder="Add a comment…" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 11px;" />
+            <button onClick="{{ postComment }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Post</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- attachments -->
+    <sc-if value="{{ attachmentsModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeAttachmentsModal }}" style="position:fixed; inset:0; z-index:80; pointer-events:auto; background:rgba(2,6,14,0.62); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; animation:vl-fade 0.2s ease;">
+        <div onClick="{{ stop }}" style="width:min(480px,94vw); max-height:80vh; display:flex; flex-direction:column; background:rgba(8,14,24,0.97); border:1px solid rgba(56,189,248,0.22); border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,0.6);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 22px; border-bottom:1px solid rgba(255,255,255,0.08); flex:none;">
+            <div>
+              <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.14em; color:#e8f3ff;">ATTACHMENTS</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ selected.city }} · {{ selected.attachmentCount }}</div>
+            </div>
+            <button onClick="{{ closeAttachmentsModal }}" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:17px; line-height:1;">×</button>
+          </div>
+          <div style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px;">
+            <sc-for list="{{ selected.attachments }}" as="a" hint-placeholder-count="0">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <div style="flex:none; width:26px; height:26px; border-radius:7px; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); color:#7fb4d8; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:700;">{{ a.ext }}</div>
+                <a href="{{ a.downloadHref }}" target="_blank" rel="noopener" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ a.name }}</a>
+                <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#4d5e76;">{{ a.sizeLabel }}</span>
+                <sc-if value="{{ a.canDelete }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ a.onDelete }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; background:none; border:none; cursor:pointer; padding:0;">delete</button>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ selected.noAttachments }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#586a82; margin-bottom:4px;">No attachments yet.</div>
+            </sc-if>
+          </div>
+          <div style="padding:14px 22px; border-top:1px solid rgba(255,255,255,0.08); flex:none;">
+            <sc-if value="{{ selected.canAddAttachments }}" hint-placeholder-val="{{ false }}">
+              <input ref="{{ setAttachmentInputRef }}" type="file" multiple="true" accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" onChange="{{ selected.onAttachmentPick }}" style="display:none;">
+              <button onClick="{{ selected.triggerAttachmentPick }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#9fd6f0; background:rgba(255,255,255,0.03); border:1px dashed rgba(125,200,245,0.35); border-radius:8px; padding:8px; cursor:pointer;">{{ selected.attachmentButtonLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ selected.attachmentError }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#f38ba0; margin-top:6px;">{{ selected.attachmentError }}</div>
+            </sc-if>
           </div>
         </div>
       </div>
@@ -3275,6 +3456,8 @@ class Component extends DCLogic {
       profileOpen: false,
       activityOpen: false,
       activityFeed: [],
+      activityOpen: false,
+      activityFeed: [],
       dataMode: 'browser',
       confirmLocal: false,
       cloudSeed: 0,
@@ -3301,6 +3484,10 @@ class Component extends DCLogic {
       autoApproveFamilies: false,
       cfgImageUploadsEnabledSite: true,
       cfgPublicSharingEnabledSite: true,
+      cfgShowPricingSection: false,
+      cfgShowTestimonials: false,
+      cfgTestimonials: [],
+      cfgLandingVariant: 'signin',
       cfgShowPricingSection: false,
       cfgShowTestimonials: false,
       cfgTestimonials: [],
@@ -3352,6 +3539,10 @@ class Component extends DCLogic {
       dupMode: false,
       itineraryPanelOpen: false,
       commentDraft: '',
+      attachmentBusyTripId: null,
+      attachmentError: '',
+      commentsModalOpen: false,
+      attachmentsModalOpen: false,
       attachmentBusyTripId: null,
       attachmentError: '',
       commentsModalOpen: false,
@@ -3844,7 +4035,12 @@ class Component extends DCLogic {
         cfgShowTestimonials: !!j.showTestimonials,
         cfgTestimonials: j.testimonials || [],
         cfgLandingVariant: ['signin', 'a', 'b', 'c'].includes(j.landingVariant) ? j.landingVariant : 'signin',
+        cfgShowPricingSection: !!j.showPricingSection,
+        cfgShowTestimonials: !!j.showTestimonials,
+        cfgTestimonials: j.testimonials || [],
+        cfgLandingVariant: ['signin', 'a', 'b', 'c'].includes(j.landingVariant) ? j.landingVariant : 'signin',
         pendingFamiliesList: j.pendingFamilies || [],
+        activityFeed: j.activity || [],
         activityFeed: j.activity || [],
         activeFamilyId: active,
         cfgTravelersServer: j.travelers || [],
@@ -4167,6 +4363,35 @@ class Component extends DCLogic {
     const j = await this.familiesAction('setLandingVariant', { value: v });
     if (j) { this.setState({ cfgLandingVariant: j.landingVariant || 'signin' }); this.toast('Landing page set to \u201c' + this.landingVariantLabel(j.landingVariant) + '\u201d'); }
   }
+  landingVariantLabel(v) {
+    return { signin: 'Sign-in only', a: 'Classic Split', b: 'Centered Globe', c: 'Family Showcase' }[v] || 'Sign-in only';
+  }
+  async togglePricingSection() {
+    const j = await this.familiesAction('setShowPricingSection', { value: !this.state.cfgShowPricingSection });
+    if (j) { this.setState({ cfgShowPricingSection: !!j.showPricingSection }); this.toast(j.showPricingSection ? 'Pricing section is ON' : 'Pricing section is OFF'); }
+  }
+  async toggleTestimonials() {
+    const j = await this.familiesAction('setShowTestimonials', { value: !this.state.cfgShowTestimonials });
+    if (j) { this.setState({ cfgShowTestimonials: !!j.showTestimonials }); this.toast(j.showTestimonials ? 'Testimonials are ON' : 'Testimonials are OFF'); }
+  }
+  addTestimonialRow() {
+    this.setState(s => ({ cfgTestimonials: [...(s.cfgTestimonials || []), { quote: '', name: '', family: '' }] }));
+  }
+  editTestimonialField(i, field, value) {
+    this.setState(s => ({ cfgTestimonials: (s.cfgTestimonials || []).map((t, idx) => idx === i ? { ...t, [field]: value } : t) }));
+  }
+  removeTestimonialRow(i) {
+    this.setState(s => ({ cfgTestimonials: (s.cfgTestimonials || []).filter((_, idx) => idx !== i) }));
+  }
+  async saveTestimonials() {
+    const list = (this.state.cfgTestimonials || []).filter(t => (t.quote || '').trim());
+    const j = await this.familiesAction('setTestimonials', { value: list });
+    if (j) { this.setState({ cfgTestimonials: j.testimonials || [] }); this.toast('Testimonials saved.'); }
+  }
+  async setLandingVariant(v) {
+    const j = await this.familiesAction('setLandingVariant', { value: v });
+    if (j) { this.setState({ cfgLandingVariant: j.landingVariant || 'signin' }); this.toast('Landing page set to \u201c' + this.landingVariantLabel(j.landingVariant) + '\u201d'); }
+  }
   // familyImages: undefined = inherit the site default, true/false = this family's override.
   async setFamilyImageUploads(familyId, value) {
     const j = await this.familiesAction('setFamilyImageUploads', { familyId, value });
@@ -4433,6 +4658,42 @@ class Component extends DCLogic {
       publicSharingSiteToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.cfgPublicSharingEnabledSite !== false ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
       togglePublicSharingSite: () => this.togglePublicSharingSite(),
+      landingVariantOptions: (() => {
+        const opts = [
+          { v: 'signin', label: 'Sign-in only', desc: 'No landing page — visitors go straight to sign-in (default).' },
+          { v: 'a', label: 'Classic Split', desc: 'Headline + copy on the left, globe on the right.' },
+          { v: 'b', label: 'Centered Globe', desc: 'Big centered headline with the globe behind it.' },
+          { v: 'c', label: 'Family Showcase', desc: 'Pitch on the left, live family-list preview on the right.' },
+        ];
+        return opts.map(o => {
+          const on = (s.cfgLandingVariant || 'signin') === o.v;
+          return {
+            onSelect: () => this.setLandingVariant(o.v),
+            label: o.label,
+            desc: o.desc,
+            descStyle: 'display:block; font-family:\'IBM Plex Mono\',monospace; font-size:10px; margin-top:2px; font-weight:400; ' + (on ? 'color:#04361f;' : 'color:#7c8ea6;'),
+            style: 'text-align:left; width:100%; font-family:\'Space Grotesk\',sans-serif; font-size:12.5px; font-weight:600; border-radius:9px; padding:9px 12px; cursor:pointer; ' +
+              (on ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#c2cfde; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1);'),
+          };
+        });
+      })(),
+      showPricingVariantNote: (s.cfgLandingVariant || 'signin') !== 'signin',
+      pricingSectionToggleLabel: s.cfgShowPricingSection ? 'ON' : 'OFF',
+      pricingSectionToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
+        (s.cfgShowPricingSection ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);'),
+      togglePricingSection: () => this.togglePricingSection(),
+      testimonialsToggleLabel: s.cfgShowTestimonials ? 'ON' : 'OFF',
+      testimonialsToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
+        (s.cfgShowTestimonials ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);'),
+      testimonialEditRows: (s.cfgTestimonials || []).map((t, i) => ({
+        quote: t.quote || '', name: t.name || '', family: t.family || '',
+        onQuote: (e) => this.editTestimonialField(i, 'quote', e.target.value),
+        onName: (e) => this.editTestimonialField(i, 'name', e.target.value),
+        onFamily: (e) => this.editTestimonialField(i, 'family', e.target.value),
+        onRemove: () => this.removeTestimonialRow(i),
+      })),
+      addTestimonialRow: () => this.addTestimonialRow(),
+      saveTestimonials: () => this.saveTestimonials(),
       landingVariantOptions: (() => {
         const opts = [
           { v: 'signin', label: 'Sign-in only', desc: 'No landing page — visitors go straight to sign-in (default).' },
@@ -6525,6 +6786,14 @@ class Component extends DCLogic {
     });
   }
   closeActivity() { this.setState({ activityOpen: false }); }
+  toggleActivity() {
+    this.setState(s => {
+      const opening = !s.activityOpen;
+      if (opening) { try { localStorage.setItem('vl-activity-seen', new Date().toISOString()); } catch (e) {} }
+      return { activityOpen: opening };
+    });
+  }
+  closeActivity() { this.setState({ activityOpen: false }); }
   async askDeleteMyAccount() {
     const j = await this.familiesActionSilent('myAccountDeleteImpact', {});
     if (!j) return;
@@ -8381,6 +8650,75 @@ class Component extends DCLogic {
     if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
+  // ---- per-trip attachments (tickets, confirmations — real files, stored in Blob
+  // Storage server-side via /api/attachments; only lightweight metadata lives on the
+  // trip itself). Mirrors the comments pattern: immediate server round-trip rather
+  // than staged in the edit form, since it needs an existing trip id. ----
+  setAttachmentInputRef = (el) => { this._attachmentInput = el; };
+  triggerAttachmentPick(tripId) {
+    this._attachmentTargetTrip = tripId;
+    if (this._attachmentInput) { this._attachmentInput.value = ''; this._attachmentInput.click(); }
+  }
+  onAttachmentPick = async (e) => {
+    const files = Array.from(e.target.files || []);
+    const tripId = this._attachmentTargetTrip;
+    if (!files.length || tripId == null) return;
+    const MAX = 25 * 1024 * 1024;
+    this.setState({ attachmentBusyTripId: tripId, attachmentError: '' });
+    for (const file of files) {
+      if (file.size > MAX) { this.setState({ attachmentError: '"' + file.name + '" is over 25MB — skipped.' }); continue; }
+      try {
+        const dataBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+          reader.onerror = () => reject(new Error('read'));
+          reader.readAsDataURL(file);
+        });
+        const r = await fetch('/api/attachments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tripId, filename: file.name, mimeType: file.type || 'application/octet-stream', dataBase64 }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) { this.setState({ attachmentError: (j && j.error) || ('Upload of "' + file.name + '" failed.') }); continue; }
+        this.setState(s => ({ locations: s.locations.map(l => l.id === tripId ? { ...l, attachments: [...(l.attachments || []), j.attachment] } : l) }));
+      } catch (err) {
+        this.setState({ attachmentError: 'Upload of "' + file.name + '" failed — check your connection.' });
+      }
+    }
+    this.setState({ attachmentBusyTripId: null });
+  };
+  async deleteAttachment(tripId, id) {
+    const trip = (this.state.locations || []).find(l => l.id === tripId);
+    if (!trip) return;
+    const att = (trip.attachments || []).find(a => a.id === id);
+    if (!att) return;
+    const email = (this.state.cloudUserEmail || '').toLowerCase().trim();
+    const mine = (att.uploadedByEmail || '').toLowerCase().trim() === email;
+    if (!mine && !this.tripIsMine(trip) && !this.state.mySiteAdmin) return;
+    // optimistic remove, roll back on failure
+    const prev = this.state.locations;
+    this.setState({ locations: this.state.locations.map(l => l.id === tripId ? { ...l, attachments: (l.attachments || []).filter(a => a.id !== id) } : l) });
+    try {
+      const r = await fetch('/api/attachments', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', tripId, id }),
+      });
+      if (!r.ok) { this.setState({ locations: prev }); this.toast('Could not delete — try again.'); }
+    } catch (e) { this.setState({ locations: prev }); this.toast('Could not delete — try again.'); }
+  }
+  _attachmentExt(att) {
+    const fromName = (att.name || '').split('.').pop();
+    if (fromName && fromName.length <= 4) return fromName.toUpperCase();
+    if ((att.mimeType || '').includes('pdf')) return 'PDF';
+    if ((att.mimeType || '').includes('image')) return 'IMG';
+    return 'FILE';
+  }
+  _attachmentSizeLabel(bytes) {
+    if (!bytes) return '';
+    if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
   setGalleryInputRef = (el) => { this._galleryInput = el; };
   triggerGalleryPick = () => { if (this._galleryInput) { this._galleryInput.value = ''; this._galleryInput.click(); } };
   openLightbox = (images, index) => { this.setState({ lightbox: { images: images || [], index: index || 0 } }); };
@@ -9302,6 +9640,19 @@ class Component extends DCLogic {
         try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
         return { id: a.id, message: a.message || '', when };
       }),
+      activityOpen: this.state.activityOpen,
+      toggleActivity: () => this.toggleActivity(),
+      closeActivity: () => this.closeActivity(),
+      activityUnreadCount: (() => {
+        let seen = ''; try { seen = localStorage.getItem('vl-activity-seen') || ''; } catch (e) {}
+        return (this.state.activityFeed || []).some(a => a.createdAt > seen);
+      })(),
+      activityEmpty: !(this.state.activityFeed || []).length,
+      activityItems: (this.state.activityFeed || []).map(a => {
+        let when = '';
+        try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
+        return { id: a.id, message: a.message || '', when };
+      }),
       pendingAccountDelete: this.state.pendingAccountDelete,
       askDeleteMyAccount: () => this.askDeleteMyAccount(),
       cancelAccountDelete: () => this.cancelAccountDelete(),
@@ -9395,6 +9746,11 @@ class Component extends DCLogic {
       closeCommentsModal: () => this.closeCommentsModal(),
       attachmentsModalOpen: this.state.attachmentsModalOpen && !!selected,
       closeAttachmentsModal: () => this.closeAttachmentsModal(),
+      setAttachmentInputRef: this.setAttachmentInputRef,
+      commentsModalOpen: this.state.commentsModalOpen && !!selected,
+      closeCommentsModal: () => this.closeCommentsModal(),
+      attachmentsModalOpen: this.state.attachmentsModalOpen && !!selected,
+      closeAttachmentsModal: () => this.closeAttachmentsModal(),
       togglePerm: () => this.openPermModal('quick'),
       permBtnStyle: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25);',
       // Banner layout sits the button over a photo, so it uses the same neutral
@@ -9469,6 +9825,7 @@ class Component extends DCLogic {
         : 'This data is private. Sign in with an authorized account to view it, or request access below.',
       cloudBlockAction: this.state.cloudState === 'denied' ? 'Sign out' : 'Sign in',
       cloudBlockHref: this.state.cloudState === 'denied' ? '/.auth/logout' : '/.auth/login/google?post_login_redirect_uri=/Trip%20Tracker.dc.html',
+      cloudBlockHref: this.state.cloudState === 'denied' ? '/.auth/logout' : '/.auth/login/google?post_login_redirect_uri=/Trip%20Tracker.dc.html',
       cloudDenied: this.state.cloudState === 'denied',
       cloudNeedsSignin: this.state.cloudState !== 'denied',
       cloudUseLocal: () => this.setDataSource('local'),
@@ -9498,6 +9855,7 @@ class Component extends DCLogic {
       doSignOut: () => this.signOut(),
       cloudAuthColor: this.state.cloudAuth ? '#7ee0a8' : '#fcd34d',
       cloudAuthAction: this.state.cloudAuth ? 'Sign out' : 'Sign in',
+      cloudAuthHref: this.state.cloudAuth ? '/.auth/logout' : '/.auth/login/google?post_login_redirect_uri=/Trip%20Tracker.dc.html',
       cloudAuthHref: this.state.cloudAuth ? '/.auth/logout' : '/.auth/login/google?post_login_redirect_uri=/Trip%20Tracker.dc.html',
       isFileMode: this.state.dataMode === 'file',
       fsSupported: this.state.fsSupported,
