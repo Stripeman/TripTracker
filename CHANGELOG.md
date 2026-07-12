@@ -4,6 +4,13 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.24.1 — Edit/Stats/Debug consolidated into the detail card's action row
+
+### Changed
+- Trip detail card: Edit, Traveler Stats, and Debug buttons moved out of the top-right corner (across all header layouts — banner, thumbnail, framed, no-photo) into the single bottom action row, alongside Gallery/Itinerary/Comments/Attachments/Permissions. Edit is the leftmost button in that row. Only the × (close) button remains up top.
+
+---
+
 ## 1.24.0 — Trip card action row cleanup; landing page polish
 
 ### Changed
