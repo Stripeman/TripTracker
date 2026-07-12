@@ -4,7 +4,18 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
-## 1.22.0 — Merged "How it works" into Features; added testimonials
+## 1.23.0-beta — Mobile responsive pass; fixed landing-page sign-in loop
+
+### Fixed
+- **"Sign in" / "Get started" / pricing CTA buttons on the landing page looped back to itself** instead of reaching the app — they linked to `/`, which (once a landing variant is active) redirects back to the landing page. Now they link straight to the app.
+- Landing page footer version was a hardcoded string that would drift; it now reads the live `APP_VERSION` straight out of the app file at load, so it can never go stale.
+
+### Changed
+- **Responsive pass on the main app** for phones/small tablets: top bar now wraps instead of overflowing (title shrinks, tagline hides), icon buttons resize down at narrower widths, "Add location" collapses to icon-only under 420px, and left panel/detail card/metrics/config panel positions adjust to clear the taller wrapped header. Added safe-area-inset padding for notched phones.
+
+---
+
+## 1.22.0-beta — Merged "How it works" into Features; added testimonials
 
 ### Changed
 - **Removed the separate "How it works" section** from the landing page — its 3 steps (start your family / log a trip / share it) are now part of the single **Features** section/link, so there's one clear scroll target instead of two thin ones. Applies to all three landing variants.

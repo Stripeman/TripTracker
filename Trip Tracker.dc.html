@@ -46,16 +46,27 @@
      override below carries !important. On small screens those panels collapse to
      full-width sheets stacked over the globe. ---- */
   @media (max-width: 720px) {
-    .tt-topbar { padding: 14px 14px !important; }
-    .tt-panetoggle { top: 60px !important; left: 14px !important; right: auto !important; transition: none !important; }
-    .tt-leftpanel { top: 104px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: auto !important; max-height: 40vh !important; }
+    .tt-topbar { padding: 14px 14px !important; flex-wrap: wrap !important; row-gap: 10px !important; padding-top: max(14px, env(safe-area-inset-top)) !important; }
+    .tt-title { font-size: 15px !important; letter-spacing: 0.16em !important; }
+    .tt-tagline { display: none !important; }
+    .tt-iconrow { gap: 8px !important; }
+    .tt-iconbtn { width: 40px !important; height: 40px !important; }
+    .tt-addbtn { padding: 10px 14px !important; font-size: 12.5px !important; }
+    .tt-panetoggle { top: 156px !important; left: 14px !important; right: auto !important; transition: none !important; }
+    .tt-leftpanel { top: 156px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: auto !important; max-height: 36vh !important; }
     .tt-leftpanel.tt-paneclosed { transform: translateY(-165%) !important; }
-    .tt-detailcard { left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
-    .tt-metrics { top: 104px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
-    .tt-config { top: 68px !important; left: 10px !important; right: 10px !important; width: auto !important; max-height: calc(100vh - 84px) !important; }
+    .tt-detailcard { left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; max-height: 62vh !important; overflow-y: auto !important; }
+    .tt-metrics { top: 156px !important; left: 10px !important; right: 10px !important; width: auto !important; bottom: 12px !important; }
+    .tt-config { top: 120px !important; left: 10px !important; right: 10px !important; width: auto !important; max-height: calc(100vh - 136px) !important; }
     .tt-form { width: 100vw !important; max-width: 100vw !important; max-height: 100vh !important; height: 100vh !important; border-radius: 0 !important; }
     .tt-fammodal { width: 100vw !important; height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; flex-direction: column !important; }
     .tt-famsidebar { width: 100% !important; flex: none !important; max-height: 34vh !important; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; }
+  }
+  @media (max-width: 420px) {
+    .tt-addbtn-label { display: none; }
+    .tt-addbtn { padding: 10px 12px !important; }
+    .tt-iconbtn { width: 34px !important; height: 34px !important; }
+    .tt-iconrow { gap: 6px !important; }
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
@@ -89,34 +100,34 @@
     <div class="tt-topbar" style="position:absolute; top:0; left:0; right:0; display:flex; align-items:flex-start; justify-content:space-between; padding:26px 30px;">
       <div>
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-          <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.32em; color:#e8f3ff; text-shadow:0 0 24px rgba(56,189,248,0.45);">MULTI&nbsp;FAMILY&nbsp;TRIP&nbsp;TRACKER</div>
+          <div class="tt-title" style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:20px; letter-spacing:0.32em; color:#e8f3ff; text-shadow:0 0 24px rgba(56,189,248,0.45);">MULTI&nbsp;FAMILY&nbsp;TRIP&nbsp;TRACKER</div>
           <sc-if value="{{ updateAvailable }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ reloadApp }}" title="Reload to update" style="pointer-events:auto; display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:9px; font-weight:600; letter-spacing:0.14em; color:#1a1304; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:999px; padding:4px 10px; cursor:pointer; animation:vl-upulse 2.4s ease-in-out infinite;">
               <span style="width:5px; height:5px; border-radius:50%; background:#7a4d00;"></span>UPDATE AVAILABLE
             </button>
           </sc-if>
         </div>
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; margin-top:7px; color:#5d7088;">PLOT EVERY JOURNEY — PAST, PRESENT &amp; DREAMED</div>
+        <div class="tt-tagline" style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.18em; margin-top:7px; color:#5d7088;">PLOT EVERY JOURNEY — PAST, PRESENT &amp; DREAMED</div>
       </div>
-      <div style="display:flex; align-items:center; gap:12px;">
+      <div class="tt-iconrow" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end;">
         <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
-          <button onClick="{{ openAdd }}" style="pointer-events:auto; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.04em; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:10px; padding:11px 18px; cursor:pointer; transition:all .15s; box-shadow:0 0 14px rgba(95,211,255,0.25);">
-            <span style="font-size:16px; line-height:1;">+</span> Add location
+          <button onClick="{{ openAdd }}" class="tt-addbtn" style="pointer-events:auto; display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.04em; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:10px; padding:11px 18px; cursor:pointer; transition:all .15s; box-shadow:0 0 14px rgba(95,211,255,0.25);">
+            <span style="font-size:16px; line-height:1;">+</span> <span class="tt-addbtn-label">Add location</span>
           </button>
         </sc-if>
         <sc-if value="{{ showFamMgmtBtn }}" hint-placeholder-val="{{ false }}">
           <div style="position:relative; pointer-events:auto;">
-            <button onClick="{{ openFamilyMgmt }}" title="People &amp; family management" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"></circle><path d="M2 20c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5"></path><circle cx="17.5" cy="8" r="2.3"></circle><path d="M15 14.3c2.6.4 4.8 1.9 4.8 5.7"></path></svg></button>
+            <button onClick="{{ openFamilyMgmt }}" title="People &amp; family management" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"></circle><path d="M2 20c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5"></path><circle cx="17.5" cy="8" r="2.3"></circle><path d="M15 14.3c2.6.4 4.8 1.9 4.8 5.7"></path></svg></button>
             <sc-if value="{{ famMgmtPendingCount }}" hint-placeholder-val="{{ false }}">
               <span style="position:absolute; top:-4px; right:-4px; min-width:16px; height:16px; padding:0 4px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:9.5px; font-weight:700; color:#04111e; background:#fbbf24; border-radius:999px; box-shadow:0 0 0 2px rgba(8,14,24,0.9);">{{ famMgmtPendingCount }}</span>
             </sc-if>
           </div>
         </sc-if>
-        <button onClick="{{ toggleMetrics }}" title="Trip metrics" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
-        <button onClick="{{ toggleCalendarView }}" title="Trips calendar" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
-        <button onClick="{{ openHelp }}" title="Help &amp; guide" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>
+        <button onClick="{{ toggleMetrics }}" title="Trip metrics" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
+        <button onClick="{{ toggleCalendarView }}" title="Trips calendar" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button>
+        <button onClick="{{ openHelp }}" title="Help &amp; guide" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>
         <sc-if value="{{ showProfileBtn }}" hint-placeholder-val="{{ false }}">
-          <button onClick="{{ toggleActivity }}" title="Activity" style="pointer-events:auto; position:relative; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
+          <button onClick="{{ toggleActivity }}" title="Activity" class="tt-iconbtn" style="pointer-events:auto; position:relative; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             <sc-if value="{{ activityUnreadCount }}" hint-placeholder-val="{{ false }}">
               <span style="position:absolute; top:5px; right:5px; width:8px; height:8px; border-radius:50%; background:#fbbf24; box-shadow:0 0 6px 1px rgba(251,191,36,0.7);"></span>
@@ -124,11 +135,11 @@
           </button>
         </sc-if>
         <sc-if value="{{ showProfileBtn }}" hint-placeholder-val="{{ false }}">
-          <button onClick="{{ toggleProfile }}" title="Your profile" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
+          <button onClick="{{ toggleProfile }}" title="Your profile" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"></path></svg>
           </button>
         </sc-if>
-        <button onClick="{{ toggleSettings }}" title="Data &amp; storage settings" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; font-size:17px; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">⚙</button>
+        <button onClick="{{ toggleSettings }}" title="Data &amp; storage settings" class="tt-iconbtn" style="pointer-events:auto; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(8,14,24,0.5); border:1px solid rgba(56,189,248,0.18); border-radius:10px; color:#6f8298; cursor:pointer; font-size:17px; line-height:1;" style-hover="color:#9fd6f0; border-color:rgba(56,189,248,0.4);">⚙</button>
       </div>
     </div>
 
@@ -2947,7 +2958,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.22.0';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.23.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
