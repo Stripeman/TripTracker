@@ -32,16 +32,25 @@ In priority order:
 2. ✅ **DONE (1.12.0-beta)** — Itinerary / day-by-day notes, with a per-day note
    field on the form (auto-generated from the trip's date range) and a read-only
    itinerary viewer on the detail card.
-3. Comments/discussion per trip.
-4. Attachments (tickets, confirmations).
+3. ✅ **DONE (unreleased)** — Comments/discussion per trip.
+4. ✅ **DONE (unreleased)** — Attachments (tickets, confirmations) — PDF/image/Word/Excel up to
+   25MB, stored in Blob Storage, gated by the same view/edit rules as trips.
 
 ### 4. Public-facing polish
-Landing page, terms/privacy, rate limiting — lower urgency since we're staying
-invite-only for now, but flagged as a phase-3 interest.
+- ✅ **DONE (unreleased)** — Landing page (`Landing Page.dc.html`, two options) and a
+  draft Terms of Service (`Terms.dc.html` — placeholders for entity name/contact/
+  jurisdiction still need filling in before real use).
+- ✅ **DONE (unreleased)** — Basic per-user API rate limiting on `/api/trips`,
+  `/api/attachments`, `/api/request-access` (in-memory, per-instance — not a hard
+  guarantee at scale, but blunts retry storms/casual abuse).
+- ⬜ Privacy Policy page — not written yet.
 
 ### 5. Notifications
-- Email when someone shares/invites your family.
-- In-app activity feed / bell icon.
+- ✅ **DONE (unreleased)** — Email when someone shares/invites your family (Resend;
+  covers person-invite courtesy emails, access-approval emails, and now whole-family
+  share notifications to the receiving family's admins).
+- ✅ **DONE (unreleased)** — In-app activity feed / bell icon — header bell shows a
+  dot for unseen events, dropdown lists recent invites/shares/approvals.
 (Explicitly skipped: per-trip-edit emails, weekly digest.)
 
 ## Out of scope for now

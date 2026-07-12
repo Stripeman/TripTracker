@@ -4,6 +4,78 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.23.1-beta — Sign-in redirected back to landing page after auth
+
+### Fixed
+- After completing sign-in, Google/Microsoft/Yahoo redirected to `/` — which, once a landing-page variant is active, bounces straight back to the landing page instead of into the app. All auth links now redirect to the app itself post-login.
+
+---
+
+## 1.23.0-beta — Mobile responsive pass; fixed landing-page sign-in loop
+
+### Fixed
+- **"Sign in" / "Get started" / pricing CTA buttons on the landing page looped back to itself** instead of reaching the app — they linked to `/`, which (once a landing variant is active) redirects back to the landing page. Now they link straight to the app.
+- Landing page footer version was a hardcoded string that would drift; it now reads the live `APP_VERSION` straight out of the app file at load, so it can never go stale.
+
+### Changed
+- **Responsive pass on the main app** for phones/small tablets: top bar now wraps instead of overflowing (title shrinks, tagline hides), icon buttons resize down at narrower widths, "Add location" collapses to icon-only under 420px, and left panel/detail card/metrics/config panel positions adjust to clear the taller wrapped header. Added safe-area-inset padding for notched phones.
+
+---
+
+## 1.22.0-beta — Merged "How it works" into Features; added testimonials
+
+### Changed
+- **Removed the separate "How it works" section** from the landing page — its 3 steps (start your family / log a trip / share it) are now part of the single **Features** section/link, so there's one clear scroll target instead of two thin ones. Applies to all three landing variants.
+
+### Added
+- **Customer testimonials section** on the public landing page — off by default. Site admin adds/edits quotes (with name + family, optional) from ⚙ Settings → System → Public Landing Page, and flips it on once there's at least one. Hidden automatically if the list is empty.
+- New `/api/site-settings` fields `showTestimonials`/`testimonials`; new `/api/families` actions `setShowTestimonials` / `setTestimonials` (site admin only).
+
+---
+
+## 1.21.0 — Landing page control moved to System settings; fixed broken picker
+
+### Fixed
+- The public-landing-page variant picker was silently broken since 1.19.0 (missing wiring — no options ever rendered). Rebuilt it from scratch.
+
+### Changed
+- **Moved the landing-page picker out of Site Family Management into ⚙ Settings → System** (site-admin only), grouped with the other global toggles instead of family admin.
+- Added a real 4th option, **"Sign-in only"** — the original behavior where unauthenticated visitors go straight to the sign-in prompt with no marketing page. This is now the default (unchanged behavior for existing deployments). The other three are named **Classic Split**, **Centered Globe**, and **Family Showcase** (previously just "A/B/C").
+- `index.html` now checks the site setting before redirecting: "Sign-in only" → straight to the app; any other variant → the public landing page.
+- Pricing-section toggle only shows once a landing variant (not "Sign-in only") is selected, since it has nothing to attach to otherwise.
+
+---
+
+## 1.20.0 — Comments & attachments moved to modals, multi-file upload
+
+### Changed
+- **Comments** and **Attachments** are no longer shown inline on the trip detail card — each now has its own button (with a live count) that opens a modal, matching the existing Gallery/Itinerary pattern. Keeps the card compact for trips with a lot of discussion or files.
+- **Attachment upload now accepts multiple files at once** (select or drag several) instead of one at a time; each uploads and reports errors independently, so one oversized or failed file doesn't block the rest.
+
+---
+
+## 1.19.0 — Landing page pricing section
+
+### Added
+- **Pricing section on the public landing page** (all three layout variants) — three tiers (Solo Family / Extended Family / Whole Clan). Off by default; a site admin turns it on from Site Family Management → "Pricing section on landing page", same on/off control style as the existing site-wide toggles.
+- New `/api/site-settings` field `showPricingSection` (public, read-only) and `/api/families` action `setShowPricingSection` (site admin only) to control it.
+
+---
+
+## 1.18.0 — Attachments, notifications, rate limiting, public pages
+
+### Added
+- **Attachments per trip (Cloud mode):** attach real files — PDF, images, Word, Excel — up to 25MB, stored in Blob Storage (metadata only on the trip itself). Shown under the detail card's Comments section, with download and delete (uploader, trip owner, or site admin).
+- **In-app activity feed:** a bell icon in the header (badge dot for unseen events) opens a dropdown of recent invites, family shares, and access approvals.
+- **Family-share email:** inviting another whole family now emails that family's admins (via Resend, same setup as existing invite emails) in addition to the existing person-invite and access-approval emails.
+- **Basic API rate limiting:** per-user limits on `/api/trips`, `/api/attachments`, and per-email limits on `/api/request-access`, to blunt retry storms/scripted abuse. In-memory/per-instance — a first layer, not a hard guarantee at scale.
+- **Public-facing pages:** a marketing landing page (two layout options) and a draft Terms of Service page (placeholders for entity name/contact/jurisdiction — needs review before real use).
+
+### Changed
+- `DEPLOY-azure.md`: noted that custom domains added via DNS (e.g. a GoDaddy-parked domain) need their own Authorized redirect URI added in each OAuth provider, same as preview slots.
+
+---
+
 ## 1.17.0 — Light/Dark mode, globe realism, and modal polish
 
 ### Added
