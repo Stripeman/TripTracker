@@ -44,6 +44,8 @@
     { "route": "/api/families", "allowedRoles": ["authenticated"] },
     { "route": "/api/trips", "methods": ["GET"], "allowedRoles": ["reader", "editor"] },
     { "route": "/api/trips", "methods": ["POST", "PUT"], "allowedRoles": ["editor"] },
+    { "route": "/api/attachments", "methods": ["GET"], "allowedRoles": ["reader", "editor"] },
+    { "route": "/api/attachments", "methods": ["POST"], "allowedRoles": ["editor"] },
     { "route": "/api/presence", "methods": ["GET", "POST"], "allowedRoles": ["reader", "editor"] }
   ],
   "responseOverrides": {

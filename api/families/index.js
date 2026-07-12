@@ -45,6 +45,8 @@ const MEMBERS_BLOB = process.env.MEMBERSHIPS_BLOB || "memberships.json";
 const SHARES_BLOB = process.env.FAMILY_SHARES_BLOB || "family-shares.json";
 const ACCESS_REQUESTS_BLOB = process.env.ACCESS_REQUESTS_BLOB || "access-requests.json";
 const TRAVELERS_BLOB = process.env.TRAVELERS_BLOB || "travelers.json";
+const ACTIVITY_BLOB = process.env.ACTIVITY_BLOB || "activity.json";
+const ACTIVITY_MAX = 300; // bounded ring buffer — old entries drop off, no admin UI needed
 const VALID_ROLES = ["reader", "editor", "admin"];
 const SHARE_ROLES = ["reader", "editor", "admin-no-delete"];
 const FAMILY_COLORS = ["#38bdf8", "#fb7185", "#fbbf24", "#4ade80", "#a78bfa", "#fb923c", "#22d3ee", "#e879f9", "#f87171", "#34d399"];
@@ -110,6 +112,30 @@ function genId(prefix) {
   return prefix + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
+// In-app activity feed — a small, bounded, best-effort log of share/invite/approval
+// events. `visibleTo` names which familyIds should see the entry (usually the acting
+// family, plus the other side of an invite/share). Read back and filtered in the GET
+// handler below; never throws — a logging hiccup shouldn't break the action it's
+// attached to.
+async function logActivity(container, { type, familyId, visibleTo, actor, message }) {
+  try {
+    let list = await readJsonBlob(container, ACTIVITY_BLOB, []);
+    if (!Array.isArray(list)) list = [];
+    list.push({
+      id: genId("act"),
+      type,
+      familyId: familyId || null,
+      visibleTo: Array.isArray(visibleTo) ? visibleTo.filter(Boolean) : [familyId].filter(Boolean),
+      actor: actor || "",
+      message: message || "",
+      createdAt: new Date().toISOString(),
+    });
+    if (list.length > ACTIVITY_MAX) list = list.slice(list.length - ACTIVITY_MAX);
+    await writeJsonBlob(container, ACTIVITY_BLOB, list);
+  } catch (e) { /* best-effort — never blocks the calling action */ }
+}
+
+
 // Best-effort courtesy email when a site admin approves a pending access request.
 // Uses the same Resend env vars as /api/request-access; silently no-ops if unset
 // or if the send fails — approval itself already succeeded via the membership write.
@@ -140,6 +166,29 @@ async function notifyApproved(email, familyName, role, isNewFamily) {
   } catch (e) {
     // best-effort only
   }
+}
+
+// Best-effort courtesy email when one family shares their trips with another
+// (inviteFamily). Notifies every admin of the RECEIVING family. Silently no-ops if
+// Resend isn't configured — the share itself already succeeded via the blob write.
+async function notifyFamilyShare(members, toFamily, fromFamily, role) {
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM;
+  if (!key || !from || !toFamily) return;
+  const admins = members.filter((m) => m.familyId === toFamily.id && m.role === "admin" && m.active !== false && m.email);
+  if (!admins.length) return;
+  const roleLabel = role === "admin-no-delete" ? "Admin (no delete)" : role === "editor" ? "Editor" : "Reader";
+  const site = process.env.SITE_URL || "";
+  let body = (fromFamily ? fromFamily.name : "Another family") + " just shared their trips with " + toFamily.name
+    + ".\n\nYour access level: " + roleLabel + "\n\nSign in to see their trips on your globe.";
+  if (site) body += "\n\n" + site;
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: admins.map((a) => a.email), subject: (fromFamily ? fromFamily.name : "A family") + " shared their trips with you", text: body }),
+    });
+  } catch (e) { /* best-effort only */ }
 }
 
 module.exports = async function (context, req) {
@@ -190,8 +239,16 @@ module.exports = async function (context, req) {
         autoApproveFamilies: !!settings.autoApproveFamilies,
         imageUploadsEnabled: settings.imageUploadsEnabled !== false,
         publicSharingEnabled: settings.publicSharingEnabled !== false,
+        landingVariant: ["signin", "a", "b", "c"].includes(settings.landingVariant) ? settings.landingVariant : "signin",
+        showPricingSection: !!settings.showPricingSection,
+        showTestimonials: !!settings.showTestimonials,
+        testimonials: Array.isArray(settings.testimonials) ? settings.testimonials : [],
         pendingFamilies: meIsSiteAdmin ? families.filter((f) => !f.approved) : undefined,
         accessRequests: meIsSiteAdmin ? (await readJsonBlob(container, ACCESS_REQUESTS_BLOB, [])) : undefined,
+        activity: (await readJsonBlob(container, ACTIVITY_BLOB, []))
+          .filter((a) => meIsSiteAdmin || (Array.isArray(a.visibleTo) && a.visibleTo.some((fid) => myFamilyIds.has(fid))))
+          .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+          .slice(0, 30),
       });
       return;
     }
@@ -314,6 +371,51 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Which landing-page variant (a/b/c) the public site shows — site admin picks,
+    // Landing.dc.html reads it back via the anonymous /api/site-settings endpoint.
+    if (action === "setLandingVariant") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const v = ["signin", "a", "b", "c"].includes(body.value) ? body.value : "signin";
+      settings = { ...settings, landingVariant: v };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, landingVariant: v });
+      return;
+    }
+
+    // Whether the public landing page shows a testimonials section — site admin only.
+    if (action === "setShowTestimonials") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, showTestimonials: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, showTestimonials: settings.showTestimonials });
+      return;
+    }
+
+    // Replace the full testimonials list shown on the public landing page — site admin only.
+    // Each: { quote, name, family }. Landing.dc.html reads these back via /api/site-settings.
+    if (action === "setTestimonials") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const list = Array.isArray(body.value) ? body.value.slice(0, 12).map((t) => ({
+        quote: String((t && t.quote) || "").slice(0, 500),
+        name: String((t && t.name) || "").slice(0, 80),
+        family: String((t && t.family) || "").slice(0, 80),
+      })).filter((t) => t.quote) : [];
+      settings = { ...settings, testimonials: list };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, testimonials: list });
+      return;
+    }
+
+    // Whether the public landing page shows its pricing section — site admin only.
+    // Landing.dc.html reads it back via the anonymous /api/site-settings endpoint.
+    if (action === "setShowPricingSection") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, showPricingSection: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, showPricingSection: settings.showPricingSection });
+      return;
+    }
+
     // Per-family override of the site-wide image-uploads setting. value: true | false | null
     // (null clears the override so the family goes back to inheriting the site default).
     if (action === "setFamilyImageUploads") {
@@ -337,6 +439,8 @@ module.exports = async function (context, req) {
       if (idx >= 0) members[idx] = { ...members[idx], role, active };
       else members.push({ email, familyId, role, active, createdAt: new Date().toISOString() });
       await writeJsonBlob(container, MEMBERS_BLOB, members);
+      const fam0 = families.find((f) => f.id === familyId);
+      logActivity(container, { type: "invitePerson", familyId, visibleTo: [familyId], actor: me.email, message: me.email + " added " + email + " to " + (fam0 ? fam0.name : "the family") + " as " + role });
       json(200, { ok: true });
       return;
     }
@@ -670,6 +774,14 @@ module.exports = async function (context, req) {
       const row = { fromFamilyId, toFamilyId, role, createdAt: new Date().toISOString(), createdBy: me.email };
       if (idx >= 0) shares[idx] = row; else shares.push(row);
       await writeJsonBlob(container, SHARES_BLOB, shares);
+      const famFrom = families.find((f) => f.id === fromFamilyId), famTo = families.find((f) => f.id === toFamilyId);
+      logActivity(container, {
+        type: "inviteFamily", familyId: fromFamilyId, visibleTo: [fromFamilyId, toFamilyId], actor: me.email,
+        message: (famFrom ? famFrom.name : "A family") + " shared their trips with " + (famTo ? famTo.name : "another family") + " (" + role + ")",
+      });
+      // Courtesy email to the invited family's admins, same Resend env vars as the
+      // rest of the app. Access is granted immediately regardless of delivery.
+      notifyFamilyShare(members, famTo, famFrom, role).catch(() => {});
       json(200, { ok: true });
       return;
     }
@@ -715,6 +827,7 @@ module.exports = async function (context, req) {
       await writeJsonBlob(container, ACCESS_REQUESTS_BLOB, requests);
       const fam = newFam || families.find((f) => f.id === familyId);
       notifyApproved(email, fam ? fam.name : "", role, !!newFam); // fire-and-forget, best-effort
+      logActivity(container, { type: "approveAccess", familyId: fam ? fam.id : null, visibleTo: [fam ? fam.id : null], actor: me.email, message: email + " was granted access (" + role + ")" + (fam ? " to " + fam.name : "") });
       json(200, { ok: true });
       return;
     }
