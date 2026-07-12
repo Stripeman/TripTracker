@@ -4,6 +4,19 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.21.0 — Landing page control moved to System settings; fixed broken picker
+
+### Fixed
+- The public-landing-page variant picker was silently broken since 1.19.0 (missing wiring — no options ever rendered). Rebuilt it from scratch.
+
+### Changed
+- **Moved the landing-page picker out of Site Family Management into ⚙ Settings → System** (site-admin only), grouped with the other global toggles instead of family admin.
+- Added a real 4th option, **"Sign-in only"** — the original behavior where unauthenticated visitors go straight to the sign-in prompt with no marketing page. This is now the default (unchanged behavior for existing deployments). The other three are named **Classic Split**, **Centered Globe**, and **Family Showcase** (previously just "A/B/C").
+- `index.html` now checks the site setting before redirecting: "Sign-in only" → straight to the app; any other variant → the public landing page.
+- Pricing-section toggle only shows once a landing variant (not "Sign-in only") is selected, since it has nothing to attach to otherwise.
+
+---
+
 ## 1.20.0 — Comments & attachments moved to modals, multi-file upload
 
 ### Changed

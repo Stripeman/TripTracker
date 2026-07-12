@@ -211,7 +211,7 @@ class Component extends DCLogic {
   state = { variant: 'a', showPricing: false };
   componentDidMount() {
     fetch('/api/site-settings').then(r => r.ok ? r.json() : null).then(j => {
-      if (j && j.landingVariant) this.setState({ variant: j.landingVariant });
+      if (j && ['a', 'b', 'c'].includes(j.landingVariant)) this.setState({ variant: j.landingVariant });
       if (j) this.setState({ showPricing: !!j.showPricingSection });
     }).catch(() => {});
   }

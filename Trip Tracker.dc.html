@@ -305,6 +305,47 @@
             </div>
           </sc-if>
         </div>
+        <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">PUBLIC LANDING PAGE <span style="color:#caa34e;">· SITE ADMIN</span></div>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">What unauthenticated visitors see before signing in. Switch it up any time.</div>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
+            <sc-for list="{{ landingVariantOptions }}" as="lv" hint-placeholder-count="4">
+              <button onClick="{{ lv.onSelect }}" style="{{ lv.style }}">
+                <span>{{ lv.label }}</span>
+                <span style="{{ lv.descStyle }}">{{ lv.desc }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ showPricingVariantNote }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Pricing section on landing page</span>
+              <button onClick="{{ togglePricingSection }}" style="{{ pricingSectionToggleStyle }}">{{ pricingSectionToggleLabel }}</button>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5;">Off by default — hides pricing until you're ready to show it.</div>
+          </sc-if>
+        </div>
+        </sc-if>
+        <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">PUBLIC LANDING PAGE (SITE ADMIN)</div>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">What unauthenticated visitors see first. Switch it up any time.</div>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
+            <sc-for list="{{ landingVariantOptions }}" as="lv" hint-placeholder-count="4">
+              <button onClick="{{ lv.onSelect }}" style="{{ lv.style }}">
+                <span>{{ lv.label }}</span>
+                <span style="{{ lv.descStyle }}">{{ lv.desc }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ showPricingVariantNote }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid rgba(255,255,255,0.06);">
+              <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Pricing section on landing page</span>
+              <button onClick="{{ togglePricingSection }}" style="{{ pricingSectionToggleStyle }}">{{ pricingSectionToggleLabel }}</button>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
         <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">GLOBE</div>
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:4px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
@@ -2919,7 +2960,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.20.0';                       // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.21.0';                       // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3187,6 +3228,7 @@ class Component extends DCLogic {
       cfgImageUploadsEnabledSite: true,
       cfgPublicSharingEnabledSite: true,
       cfgShowPricingSection: false,
+      cfgLandingVariant: 'signin',
       newFamilyName: '',
       newFamilyModalOpen: false,
       addPersonModalOpen: false,
@@ -3721,6 +3763,7 @@ class Component extends DCLogic {
         cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false,
         cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false,
         cfgShowPricingSection: !!j.showPricingSection,
+        cfgLandingVariant: ['signin', 'a', 'b', 'c'].includes(j.landingVariant) ? j.landingVariant : 'signin',
         pendingFamiliesList: j.pendingFamilies || [],
         activityFeed: j.activity || [],
         activeFamilyId: active,
@@ -4015,13 +4058,16 @@ class Component extends DCLogic {
     const j = await this.familiesAction('setPublicSharingEnabled', { value: !this.state.cfgPublicSharingEnabledSite });
     if (j) { this.setState({ cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false }); this.toast(j.publicSharingEnabled !== false ? 'Public sharing is ON' : 'Public sharing is OFF'); }
   }
+  landingVariantLabel(v) {
+    return { signin: 'Sign-in only', a: 'Classic Split', b: 'Centered Globe', c: 'Family Showcase' }[v] || 'Sign-in only';
+  }
   async togglePricingSection() {
     const j = await this.familiesAction('setShowPricingSection', { value: !this.state.cfgShowPricingSection });
     if (j) { this.setState({ cfgShowPricingSection: !!j.showPricingSection }); this.toast(j.showPricingSection ? 'Pricing section is ON' : 'Pricing section is OFF'); }
   }
   async setLandingVariant(v) {
     const j = await this.familiesAction('setLandingVariant', { value: v });
-    if (j) { this.setState({ cfgLandingVariant: j.landingVariant || 'a' }); this.toast('Landing page set to option ' + (j.landingVariant || 'a').toUpperCase()); }
+    if (j) { this.setState({ cfgLandingVariant: j.landingVariant || 'signin' }); this.toast('Landing page set to \u201c' + this.landingVariantLabel(j.landingVariant) + '\u201d'); }
   }
   // familyImages: undefined = inherit the site default, true/false = this family's override.
   async setFamilyImageUploads(familyId, value) {
@@ -4289,6 +4335,26 @@ class Component extends DCLogic {
       publicSharingSiteToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.cfgPublicSharingEnabledSite !== false ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
       togglePublicSharingSite: () => this.togglePublicSharingSite(),
+      landingVariantOptions: (() => {
+        const opts = [
+          { v: 'signin', label: 'Sign-in only', desc: 'No landing page — visitors go straight to sign-in (default).' },
+          { v: 'a', label: 'Classic Split', desc: 'Headline + copy on the left, globe on the right.' },
+          { v: 'b', label: 'Centered Globe', desc: 'Big centered headline with the globe behind it.' },
+          { v: 'c', label: 'Family Showcase', desc: 'Pitch on the left, live family-list preview on the right.' },
+        ];
+        return opts.map(o => {
+          const on = (s.cfgLandingVariant || 'signin') === o.v;
+          return {
+            onSelect: () => this.setLandingVariant(o.v),
+            label: o.label,
+            desc: o.desc,
+            descStyle: 'display:block; font-family:\'IBM Plex Mono\',monospace; font-size:10px; margin-top:2px; font-weight:400; ' + (on ? 'color:#04361f;' : 'color:#7c8ea6;'),
+            style: 'text-align:left; width:100%; font-family:\'Space Grotesk\',sans-serif; font-size:12.5px; font-weight:600; border-radius:9px; padding:9px 12px; cursor:pointer; ' +
+              (on ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#c2cfde; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1);'),
+          };
+        });
+      })(),
+      showPricingVariantNote: (s.cfgLandingVariant || 'signin') !== 'signin',
       pricingSectionToggleLabel: s.cfgShowPricingSection ? 'ON' : 'OFF',
       pricingSectionToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.cfgShowPricingSection ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);'),

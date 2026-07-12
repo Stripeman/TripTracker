@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.20.0-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.21.0-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 

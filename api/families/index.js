@@ -239,7 +239,7 @@ module.exports = async function (context, req) {
         autoApproveFamilies: !!settings.autoApproveFamilies,
         imageUploadsEnabled: settings.imageUploadsEnabled !== false,
         publicSharingEnabled: settings.publicSharingEnabled !== false,
-        landingVariant: settings.landingVariant || "a",
+        landingVariant: ["signin", "a", "b", "c"].includes(settings.landingVariant) ? settings.landingVariant : "signin",
         showPricingSection: !!settings.showPricingSection,
         pendingFamilies: meIsSiteAdmin ? families.filter((f) => !f.approved) : undefined,
         accessRequests: meIsSiteAdmin ? (await readJsonBlob(container, ACCESS_REQUESTS_BLOB, [])) : undefined,
@@ -373,7 +373,7 @@ module.exports = async function (context, req) {
     // Landing.dc.html reads it back via the anonymous /api/site-settings endpoint.
     if (action === "setLandingVariant") {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
-      const v = ["a", "b", "c"].includes(body.value) ? body.value : "a";
+      const v = ["signin", "a", "b", "c"].includes(body.value) ? body.value : "signin";
       settings = { ...settings, landingVariant: v };
       await writeJsonBlob(container, "family-settings.json", settings);
       json(200, { ok: true, landingVariant: v });

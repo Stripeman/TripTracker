@@ -5,7 +5,8 @@ const { checkRateLimit } = require("../_shared/rateLimit");
 // Deliberately exposes only non-sensitive fields — never trip data, emails, or
 // anything that requires a role. Everything else stays behind /api/families.
 //
-// GET → { landingVariant: "a"|"b"|"c", showPricingSection: boolean }
+// GET → { landingVariant: "signin"|"a"|"b"|"c", showPricingSection: boolean }
+// "signin" = skip the landing page entirely; unauthenticated visitors go straight to the sign-in prompt (previous/default behavior).
 
 const CONTAINER = process.env.TRIPS_CONTAINER || "data";
 
@@ -25,17 +26,17 @@ module.exports = async function (context, req) {
     if (!rl.ok) { json(429, { error: "Too many requests." }); return; }
 
     const conn = process.env.AZURE_STORAGE_CONNECTION_STRING;
-    if (!conn) { json(200, { landingVariant: "a", showPricingSection: false }); return; }
+    if (!conn) { json(200, { landingVariant: "signin", showPricingSection: false }); return; }
     const svc = BlobServiceClient.fromConnectionString(conn);
     const container = svc.getContainerClient(CONTAINER);
     const blob = container.getBlockBlobClient("family-settings.json");
-    if (!(await blob.exists())) { json(200, { landingVariant: "a", showPricingSection: false }); return; }
+    if (!(await blob.exists())) { json(200, { landingVariant: "signin", showPricingSection: false }); return; }
     const dl = await blob.download();
     const text = await streamToString(dl.readableStreamBody);
     let settings = {};
     try { settings = JSON.parse(text); } catch (e) { settings = {}; }
-    json(200, { landingVariant: ["a", "b", "c"].includes(settings.landingVariant) ? settings.landingVariant : "a", showPricingSection: !!settings.showPricingSection });
+    json(200, { landingVariant: ["signin", "a", "b", "c"].includes(settings.landingVariant) ? settings.landingVariant : "signin", showPricingSection: !!settings.showPricingSection });
   } catch (err) {
-    json(200, { landingVariant: "a", showPricingSection: false });
+    json(200, { landingVariant: "signin", showPricingSection: false });
   }
 };
