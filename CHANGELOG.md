@@ -4,6 +4,43 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.28.5-beta — Real email for Comments/Trip edits/Trip deletes; kill-switch lock on family toggles; activity feed cap; family-scoped bulk editor
+
+### Added
+- **Family-scoped Trips tab** (My Families → [family] → Trips, that family's admin or a site admin): the same bulk-edit tool as Settings → Trips tab, but locked to just this one family's own trips — no family picker needed since the scope is implicit, and a family admin can never reach another family's trips through it. Fulfills the follow-up noted in 1.28.4.
+- **Email now fires for Comments, Trip edits, and Trip deletes**, matching the other four event types (Category changes, Attachment uploads, Ownership transfers, New trips). All 7 Notifications toggles now do something real — previously these three only had working Toast/Bell, and the Email toggle was a no-op. Like the others, email doesn't require Audit log detail to be "Detailed" — only the Bell (Activity Log) entry does; email fires independent of that setting, subject to the per-family pref and the site-wide kill switch.
+- **The site-wide email kill switch now visibly locks every family's Email toggle**: while it's on, every family's Email chip in My Families → Notifications shows off and clicking it explains why instead of toggling. Turning the kill switch back off doesn't change anything underneath — each family's actual stored preference (on or off, whatever it was) reappears exactly as it was, now editable again.
+- **Activity bell dropdown capped at 200 rows** (most recent first) with a "View all (N more)" link when the feed is longer, opening a popup that lists every entry grouped into Today / Yesterday / This week / Earlier sections — no cap there.
+
+### Fixed
+- **Attachments & Storage showed twice on the Family Management Overview tab** — a leftover duplicate block from an earlier edit. Removed; the People section and everything else in Overview is unaffected.
+
+### Tested
+- 9-scenario matrix confirming the new email hookups: fires correctly per pref/kill-switch, independent of Bell's `auditDetailed` requirement, and never fires for legacy/unassigned trips.
+- 5-scenario matrix confirming the family-scoped Trips tab: a family admin only ever sees their own family's trips through it (never another family's, even by trying), a site admin can use it for any family, and it's cleanly independent from the system-wide Trips tab's own family filter.
+
+---
+
+## 1.28.4-beta — Trips-tab bulk editor is now site-admin-only, sees every trip
+
+### Fixed
+- **Settings → Trips tab bulk editor only ever showed trips matching whatever the left search panel happened to be filtered to**, and was reachable by any user with an "editor" role, not just site admins — so a site admin whose left panel was scoped to their own family saw only their own family's trips in what was meant to be a system-wide tool. The tab (and its bulk-edit target set) is now strictly site-admin-only, pulls from every trip in the system by default, and gets its own independent family filter dropdown ("All families" or a specific one) instead of reusing the main list's filter.
+
+### Noted
+- A separate, family-scoped version of this same bulk-edit tool (a family admin bulk-editing just their own family's trips, from within My Families) is a reasonable follow-up — not built yet, flagged for a future pass.
+
+---
+
+## 1.28.3-beta — Bulk reset of every family's email notifications
+
+### Added
+- **Reset every family's email notifications** (⚙ → Preferences → Site Administration): "Turn ON for everyone" / "Turn OFF for everyone" rewrites the Email toggle across all 7 event types for every existing family in one shot (confirmation prompt first). Unlike the kill switch, this is a one-time reset, not a standing override — families can still fine-tune their own Email toggles afterward in My Families → Notifications. Toast and Bell are untouched. New `resetAllFamilyEmailPrefs` action, site admin only, logged once to the activity feed.
+
+### Tested
+- 9-scenario matrix: auth gate, correct per-family/per-key email rewrite while leaving toast/bell untouched, families with no prior prefs at all get every key set correctly, and toggling back on works for all families.
+
+---
+
 ## 1.28.2-beta — Site-wide notification defaults + email kill switch
 
 ### Added

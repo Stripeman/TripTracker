@@ -495,6 +495,26 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Bulk override: force EVERY existing family's email channel (all 7 notification
+    // keys) to on or off in one shot. Unlike the kill switch (a temporary blanket
+    // suppression) this actually rewrites each family's own notifPrefs, so it's a
+    // one-time reset they can still fine-tune afterward per-family. Toast/bell are
+    // untouched. Site admin only; logged once to the site-wide activity feed.
+    if (action === "resetAllFamilyEmailPrefs") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const value = !!body.value;
+      const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
+      families = families.map((f) => {
+        const notifPrefs = { ...(f.notifPrefs || {}) };
+        NOTIF_KEYS.forEach((k) => { notifPrefs[k] = { ...(notifPrefs[k] || {}), email: value }; });
+        return { ...f, notifPrefs };
+      });
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      logActivity(container, { type: "resetAllFamilyEmailPrefs", familyId: null, visibleTo: families.map((f) => f.id), actor: me.email, message: me.email + " turned email notifications " + (value ? "ON" : "OFF") + " for every family (site-wide reset)" });
+      json(200, { ok: true, families });
+      return;
+    }
+
     if (action === "setFamilyNotifPrefs") {
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
       const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
