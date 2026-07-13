@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.29.5--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.29.7--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -82,10 +82,11 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
   more than one family is in view; with a single family it stays a flat list.
 - **Metrics scope** — the Trip Metrics header gets a scope dropdown (My family / All
   families I have access to / each individually-accessible family by name, including
-  ones shared with you / Every family for site admins) that drives the dashboard
-  and every export format (CSV/JSON/PDF). Picking one specific shared family isolates
-  metrics to just that family's trips. The default is a stable "home
-  family", independent of whichever family is selected in the left panel.
+  ones shared with you / for site admins, every family in the system individually
+  plus "Every family") that drives the dashboard and every export format
+  (CSV/JSON/PDF). Picking one specific family isolates metrics to just that
+  family's trips. The default is a stable "home family", independent of whichever
+  family is selected in the left panel.
 - **Transfer family ownership** — from a family's detail panel, the current owner (or a
   site admin) can hand ownership to another active member of that family.
 - **Upgrading existing data** — a site admin runs "Migrate legacy data → default

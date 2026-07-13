@@ -3518,7 +3518,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.29.5-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.29.7-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -8049,7 +8049,11 @@ class Component extends DCLogic {
   closeMetrics() { this.setState({ metricsOpen: false, metricsExportOpen: false }); }
   toggleMetricsExport() { this.setState(s => ({ metricsExportOpen: !s.metricsExportOpen })); }
   toggleMetricsFilters() { this.setState(s => ({ metricsFiltersOpen: !s.metricsFiltersOpen })); }
-  setMetricsFamilyScope(e) { this.setState({ metricsFamilyScope: e.target.value }); }
+  // Switching which family's trips Metrics shows also clears the dimension filters
+  // (travelers/visit/trip/status/year) — they're easy to leave set from browsing a
+  // DIFFERENT family (e.g. a traveler chip that only exists on that family's trips),
+  // which would otherwise silently zero out every trip in the newly-selected scope.
+  setMetricsFamilyScope(e) { this.setState({ metricsFamilyScope: e.target.value, metricsFilter: { year: 'all', statuses: [], visit: [], trip: [], travelers: [] } }); }
   // Metrics dashboard has its OWN filter set (independent of the left search filters).
   // Empty = all trips in the system. Mirrors the same dimensions you filter trips by.
   metricsPassesFilter(l) {
@@ -10004,9 +10008,16 @@ class Component extends DCLogic {
       metricsFamilyScope: this.state.metricsFamilyScope || 'mine',
       setMetricsFamilyScope: (e) => this.setMetricsFamilyScope(e),
       metricsFamilyScopeOptions: (() => {
-        const opts = this.baseFamilyScopeOptions();
-        if (this.state.mySiteAdmin) opts.push({ value: 'all', label: 'Every family (site admin)' });
-        return opts;
+        if (this.state.mySiteAdmin) {
+          const homeId = this.myHomeFamilyId();
+          const homeFam = (this.state.cfgFamilies || []).find(f => f.id === homeId);
+          return [
+            { value: 'mine', label: (homeFam && homeFam.name) || 'My family' },
+            { value: 'all', label: 'Every family (site admin)' },
+            ...(this.state.cfgFamilies || []).filter(f => f.id !== homeId).map(f => ({ value: f.id, label: f.name })),
+          ];
+        }
+        return this.baseFamilyScopeOptions();
       })(),
       metrics: this.state.metricsOpen ? this.computeMetrics(this.state.metricsScope) : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], countriesByTraveler: [], topCountries: [], topCities: [], byYear: [] },
       metricsFiltersOpen: this.state.metricsFiltersOpen,

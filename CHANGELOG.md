@@ -4,6 +4,28 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.29.7-beta — Fixed: switching Metrics family scope left stale filters behind (showed 0 trips)
+
+### Fixed
+- **Switching Metrics' family scope didn't reset the dimension filters (travelers/visit/trip/status/year)** — if you had a traveler chip toggled on while viewing one family (e.g. hers), then switched scope to a different family (e.g. "My family"), that leftover traveler filter stayed active. Since your own trips don't have her family's traveler tagged, every one of your trips got filtered out — showing "no trips" despite having 55. Switching scope now clears all Metrics filters, exactly like the existing "Clear filters" button does.
+- **1.29.6 accidentally dropped the "My family" option for site admins** when adding the every-family list — site admins now get "My family" (their own, by name) back at the top, ahead of "Every family" and the individual per-family list.
+
+### Tested
+- 8‑scenario check confirming: site admins have "My family" back, the individual/bundle options are unaffected, and — reproducing the exact reported sequence — a leftover traveler filter from a different family now gets cleared on scope switch instead of silently zeroing out an otherwise-correct 55-trip result.
+- Deep re-audit of every permission gate after this whole session's changes: 22 trip-level scenarios (view/edit/delete across soloPrivate, family roles, shares, floors, hiddenFromShares), 9 family-scoped bulk-edit scenarios (including multi-family admins switching between families they administer), and 8 family/traveler-visibility + notification-routing scenarios (accessible-family sets, site-admin bypass, kill-switch gates) — all 39 passing, no regressions found from the family-visibility and Metrics fixes earlier in this release.
+
+---
+
+## 1.29.6-beta — Fixed: Metrics scope for site admins didn't list every family individually
+
+### Fixed
+- **Site admins only saw "My family" and "Every family (site admin)" in the Metrics scope picker** — no way to isolate metrics to one specific other family, even though a site admin can see all of them. The picker used `baseFamilyScopeOptions()`, which only lists families reachable through actual membership or a family-to-family share — a family visible to a site admin purely by virtue of being a site admin (no share relationship at all) was never listed. Metrics now mirrors the People/Users tab's existing site-admin behavior: every family in the system appears individually, plus the "Every family" bundle.
+
+### Tested
+- 6‑scenario matrix: site admin sees the bundle option, their own family, a family actually shared with them, and (the reported bug) a family with no share relationship at all — all listed individually with correct names; non‑admin behavior confirmed unchanged.
+
+---
+
 ## 1.29.5-beta — Fixed: shared family's own record was invisible too (deeper follow-up)
 
 ### Fixed
