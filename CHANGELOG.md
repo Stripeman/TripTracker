@@ -4,6 +4,22 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.29.1-beta — Family detail tab bar redesigned as icons; new Sharing tab
+
+### Changed
+- **Family detail tab bar (My Families → [family]) now uses icons for most tabs** instead of text labels, with a hover tooltip: Permissions (lock), Categories (tag), Trips → renamed **Bulk Edit** (checklist), Notifications (bell), Owner (gear). Overview and Audit stay as text.
+- **New "Family Settings & Sharing" tab** (share/network icon): the "Families that can see ours" and "Families we can see" sections moved here out of Permissions, which now covers only the edit/attachment/comment/delete floors.
+
+---
+
+## 1.29.0-beta — Reorganized the ⚙ Configuration panel
+
+### Changed
+- **New "Site Admin" tab** in the ⚙ Configuration panel, visible to site admins only. The whole Site Administration section (Audit log detail, Per‑family category limit, Disable all email notifications, Default notifications for new families, Primary/Additional site admins) moved out of the System tab into this dedicated tab.
+- **System tab reordered**: Clear data now sits above the backup sections instead of after them, so System Backup (Export/Restore selected) and My Backup (export/restore just your own data) are the last things in the tab, as intended.
+
+---
+
 ## 1.28.7-beta — Fixed: kill switch was restoring family email settings instead of leaving them off
 
 ### Fixed

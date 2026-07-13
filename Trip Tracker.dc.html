@@ -307,6 +307,9 @@
               <button onClick="{{ setTabTrips }}" style="{{ tabTripsStyle }}">Trips</button>
             </sc-if>
             <button onClick="{{ setTabStorage }}" style="{{ tabStorageStyle }}">System</button>
+            <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ setTabSiteAdmin }}" style="{{ tabSiteAdminStyle }}">Site Admin</button>
+            </sc-if>
           </div>
           <div style="flex:1; min-width:0; overflow-y:auto; padding-right:2px;">
 
@@ -552,6 +555,76 @@
           </div>
         </sc-if>
 
+        <sc-if value="{{ showSiteAdminTab }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:14px;">SITE ADMINISTRATION</div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Audit log detail</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ auditLevelHint }}</div>
+            </div>
+            <div style="display:flex; gap:5px; flex:none;">
+              <button onClick="{{ setAuditEssential }}" style="{{ auditEssentialStyle }}">Essential</button>
+              <button onClick="{{ setAuditDetailed }}" style="{{ auditDetailedStyle }}">Detailed</button>
+              <button onClick="{{ setAuditVerbose }}" style="{{ auditVerboseStyle }}">Verbose</button>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Per-family category limit</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Max items a family's custom Visit Type / Trip Type / Status list can hold.</div>
+            </div>
+            <input type="number" min="1" max="200" defaultValue="{{ cfgFamilyCatLimit }}" onBlur="{{ onFamilyCatLimitBlur }}" style="flex:none; width:64px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 8px; outline:none; text-align:center;">
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; background:{{ emailKillSwitchBg }}; border:1px solid {{ emailKillSwitchBorder }}; border-radius:10px; padding:11px 12px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Disable all email notifications</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Turning this OFF sets every family's Email toggle to off and locks it (no family can turn it back on). Turning this back ON only unlocks the toggles — it doesn't force any family's setting back on; each family keeps whatever they last had and can choose for themselves. Toasts and the Activity Log still work either way.</div>
+            </div>
+            <button onClick="{{ toggleEmailKillSwitch }}" style="{{ emailKillSwitchToggleStyle }}">{{ emailKillSwitchToggleLabel }}</button>
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0; margin-bottom:2px;">Default notifications for new families</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-bottom:10px;">Applied once, at creation time, to every brand-new family. Doesn't change existing families — those are edited per-family in My Families → Notifications.</div>
+            <sc-for list="{{ defaultNotifRows }}" as="dnr" hint-placeholder-count="4">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:8px 0; border-top:1px solid rgba(255,255,255,0.06);">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9fb3c8; min-width:150px;">{{ dnr.label }}</div>
+                <div style="display:flex; gap:6px; flex:none;">
+                  <button onClick="{{ dnr.toast.onClick }}" style="{{ dnr.toast.style }}">{{ dnr.toast.label }}</button>
+                  <button onClick="{{ dnr.bell.onClick }}" style="{{ dnr.bell.style }}">{{ dnr.bell.label }}</button>
+                  <button onClick="{{ dnr.email.onClick }}" style="{{ dnr.email.style }}">{{ dnr.email.label }}</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PRIMARY ADMIN(S)</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#eaf4fd; margin-bottom:16px;">{{ primaryAdminEmailsText }}</div>
+
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ADDITIONAL SITE ADMINS</div>
+          <sc-if value="{{ hasExtraSiteAdmins }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+              <sc-for list="{{ extraSiteAdminRows }}" as="sa" hint-placeholder-count="1">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px;">
+                  <span>{{ sa.email }}</span>
+                  <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ sa.onRemove }}" title="Remove site admin" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; gap:8px;">
+              <input value="{{ newSiteAdminEmail }}" onChange="{{ setNewSiteAdminEmail }}" placeholder="new-admin@example.com" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
+              <button onClick="{{ addSiteAdminClick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Add admin</button>
+            </div>
+          </sc-if>
+        </sc-if>
+
         <sc-if value="{{ showFiltersTab }}" hint-placeholder-val="{{ true }}">
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:11px;">FILTERS</div>
 
@@ -790,6 +863,23 @@
             </sc-if>
           </div>
         </sc-if>
+        <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
+          <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ notConfirmClear }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ askClear }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear data…</button>
+            </sc-if>
+          </sc-if>
+        </div>
+        <sc-if value="{{ confirmClear }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:10px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#f3c0c0; line-height:1.5; margin-bottom:11px;">Delete <b>all</b> destinations? A dated backup file downloads automatically first.</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ cancelClear }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
+              <button onClick="{{ confirmClearDb }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:9px; padding:9px; cursor:pointer;">Delete all</button>
+            </div>
+          </div>
+        </sc-if>
+
         <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">SYSTEM BACKUP — INCLUDE</div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px;">
@@ -878,96 +968,6 @@
                   <button onClick="{{ cancelMyBackup }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
                   <button onClick="{{ myBackupMergeApply }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:rgba(95,211,255,0.92); border:none; border-radius:9px; padding:9px; cursor:pointer;">Apply merge</button>
                 </div>
-              </div>
-            </sc-if>
-          </div>
-        </sc-if>
-
-
-        <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
-          <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
-            <sc-if value="{{ notConfirmClear }}" hint-placeholder-val="{{ true }}">
-              <button onClick="{{ askClear }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear data…</button>
-            </sc-if>
-          </sc-if>
-        </div>
-        <sc-if value="{{ confirmClear }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:10px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px;">
-            <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#f3c0c0; line-height:1.5; margin-bottom:11px;">Delete <b>all</b> destinations? A dated backup file downloads automatically first.</div>
-            <div style="display:flex; gap:8px;">
-              <button onClick="{{ cancelClear }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
-              <button onClick="{{ confirmClearDb }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:9px; padding:9px; cursor:pointer;">Delete all</button>
-            </div>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:14px;">SITE ADMINISTRATION</div>
-
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
-              <div>
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Audit log detail</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ auditLevelHint }}</div>
-              </div>
-              <div style="display:flex; gap:5px; flex:none;">
-                <button onClick="{{ setAuditEssential }}" style="{{ auditEssentialStyle }}">Essential</button>
-                <button onClick="{{ setAuditDetailed }}" style="{{ auditDetailedStyle }}">Detailed</button>
-                <button onClick="{{ setAuditVerbose }}" style="{{ auditVerboseStyle }}">Verbose</button>
-              </div>
-            </div>
-
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
-              <div>
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Per-family category limit</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Max items a family's custom Visit Type / Trip Type / Status list can hold.</div>
-              </div>
-              <input type="number" min="1" max="200" defaultValue="{{ cfgFamilyCatLimit }}" onBlur="{{ onFamilyCatLimitBlur }}" style="flex:none; width:64px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 8px; outline:none; text-align:center;">
-            </div>
-
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; background:{{ emailKillSwitchBg }}; border:1px solid {{ emailKillSwitchBorder }}; border-radius:10px; padding:11px 12px;">
-              <div>
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Disable all email notifications</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Turning this OFF sets every family's Email toggle to off and locks it (no family can turn it back on). Turning this back ON only unlocks the toggles — it doesn't force any family's setting back on; each family keeps whatever they last had and can choose for themselves. Toasts and the Activity Log still work either way.</div>
-              </div>
-              <button onClick="{{ toggleEmailKillSwitch }}" style="{{ emailKillSwitchToggleStyle }}">{{ emailKillSwitchToggleLabel }}</button>
-            </div>
-
-            <div style="margin-bottom:16px;">
-              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0; margin-bottom:2px;">Default notifications for new families</div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-bottom:10px;">Applied once, at creation time, to every brand-new family. Doesn't change existing families — those are edited per-family in My Families → Notifications.</div>
-              <sc-for list="{{ defaultNotifRows }}" as="dnr" hint-placeholder-count="4">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:8px 0; border-top:1px solid rgba(255,255,255,0.06);">
-                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9fb3c8; min-width:150px;">{{ dnr.label }}</div>
-                  <div style="display:flex; gap:6px; flex:none;">
-                    <button onClick="{{ dnr.toast.onClick }}" style="{{ dnr.toast.style }}">{{ dnr.toast.label }}</button>
-                    <button onClick="{{ dnr.bell.onClick }}" style="{{ dnr.bell.style }}">{{ dnr.bell.label }}</button>
-                    <button onClick="{{ dnr.email.onClick }}" style="{{ dnr.email.style }}">{{ dnr.email.label }}</button>
-                  </div>
-                </div>
-              </sc-for>
-            </div>
-
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PRIMARY ADMIN(S)</div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#eaf4fd; margin-bottom:16px;">{{ primaryAdminEmailsText }}</div>
-
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ADDITIONAL SITE ADMINS</div>
-            <sc-if value="{{ hasExtraSiteAdmins }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
-                <sc-for list="{{ extraSiteAdminRows }}" as="sa" hint-placeholder-count="1">
-                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px;">
-                    <span>{{ sa.email }}</span>
-                    <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ sa.onRemove }}" title="Remove site admin" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
-                    </sc-if>
-                  </div>
-                </sc-for>
-              </div>
-            </sc-if>
-            <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex; gap:8px;">
-                <input value="{{ newSiteAdminEmail }}" onChange="{{ setNewSiteAdminEmail }}" placeholder="new-admin@example.com" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
-                <button onClick="{{ addSiteAdminClick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Add admin</button>
               </div>
             </sc-if>
           </div>
@@ -1279,13 +1279,14 @@
               <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex; gap:2px; flex:none; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:14px;">
                   <button onClick="{{ setFamilyDetailTabOverview }}" style="{{ famTabOverviewStyle }}">Overview</button>
-                  <button onClick="{{ setFamilyDetailTabPermissions }}" style="{{ famTabPermissionsStyle }}">Permissions</button>
-                  <button onClick="{{ setFamilyDetailTabCategories }}" style="{{ famTabCategoriesStyle }}">Categories</button>
+                  <button onClick="{{ setFamilyDetailTabPermissions }}" title="Permissions" style="{{ famTabPermissionsStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></button>
+                  <button onClick="{{ setFamilyDetailTabCategories }}" title="Categories" style="{{ famTabCategoriesStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 12.7 12.7 20.6a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1-.6-1.4V4a2 2 0 0 1 2-2h6.9a2 2 0 0 1 1.4.6l8 8a2 2 0 0 1 0 2.8Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></button>
                   <button onClick="{{ setFamilyDetailTabAudit }}" style="{{ famTabAuditStyle }}">Audit</button>
-                  <button onClick="{{ setFamilyDetailTabTrips }}" style="{{ famTabTripsStyle }}">Trips</button>
-                  <button onClick="{{ setFamilyDetailTabNotifications }}" style="{{ famTabNotificationsStyle }}">Notifications</button>
+                  <button onClick="{{ setFamilyDetailTabTrips }}" title="Bulk Edit" style="{{ famTabTripsStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1"></rect><path d="M3 15h6v6H3z"></path><path d="M13 4h8"></path><path d="M13 9h8"></path><path d="M13 15h8"></path><path d="M13 20h8"></path></svg></button>
+                  <button onClick="{{ setFamilyDetailTabNotifications }}" title="Notifications" style="{{ famTabNotificationsStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+                  <button onClick="{{ setFamilyDetailTabSharing }}" title="Family Settings &amp; Sharing" style="{{ famTabSharingStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.5 15.4 6.5"></path><path d="M8.6 13.5 15.4 17.5"></path></svg></button>
                   <sc-if value="{{ isFamilyOwner }}" hint-placeholder-val="{{ false }}">
-                    <button onClick="{{ setFamilyDetailTabOwner }}" style="{{ famTabOwnerStyle }}">Owner</button>
+                    <button onClick="{{ setFamilyDetailTabOwner }}" title="Owner" style="{{ famTabOwnerStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></button>
                   </sc-if>
                 </div>
               </sc-if>
@@ -1824,7 +1825,8 @@
               </div>
               </sc-if>
 
-              <sc-if value="{{ showFamPermissionsTab }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ showFamSharingTab }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-bottom:6px; line-height:1.5;">Share this family's trips with another family, or see who's shared with you.</div>
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin:18px 0 8px;">FAMILIES THAT CAN SEE OURS</div>
               <div style="display:flex; gap:8px; margin-bottom:10px;">
                 <select value="{{ shareTargetFamilyId }}" onChange="{{ setShareTargetFamilyId }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:8px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
@@ -3498,7 +3500,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.28.7-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.29.1-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -5342,6 +5344,7 @@ class Component extends DCLogic {
       setFamilyDetailTabAudit: () => this.setFamilyDetailTab('audit'),
       setFamilyDetailTabTrips: () => this.setFamilyDetailTab('trips'),
       setFamilyDetailTabNotifications: () => this.setFamilyDetailTab('notifications'),
+      setFamilyDetailTabSharing: () => this.setFamilyDetailTab('sharing'),
       setFamilyDetailTabOwner: () => this.setFamilyDetailTab('owner'),
       famTabOverviewStyle: tabBtnStyle((s.familyDetailTab || 'overview') === 'overview'),
       famTabPermissionsStyle: tabBtnStyle(s.familyDetailTab === 'permissions'),
@@ -5349,11 +5352,13 @@ class Component extends DCLogic {
       famTabAuditStyle: tabBtnStyle(s.familyDetailTab === 'audit'),
       famTabTripsStyle: tabBtnStyle(s.familyDetailTab === 'trips'),
       famTabNotificationsStyle: tabBtnStyle(s.familyDetailTab === 'notifications'),
+      famTabSharingStyle: tabBtnStyle(s.familyDetailTab === 'sharing'),
       famTabOwnerStyle: tabBtnStyle(s.familyDetailTab === 'owner'),
-      showFamOverviewTab: !isActiveFamilyAdmin || (s.familyDetailTab || 'overview') === 'overview',
+      showFamOverviewTab: !isActiveFamilyAdmin || (s.familyDetailTab || 'overview') === 'overview' || (s.familyDetailTab === 'owner' && !isFamilyOwner),
       showFamPermissionsTab: isActiveFamilyAdmin && s.familyDetailTab === 'permissions',
       showFamCategoriesTab: isActiveFamilyAdmin && s.familyDetailTab === 'categories',      showFamAuditTab: isActiveFamilyAdmin && s.familyDetailTab === 'audit',
       showFamNotificationsTab: isActiveFamilyAdmin && s.familyDetailTab === 'notifications',
+      showFamSharingTab: isActiveFamilyAdmin && s.familyDetailTab === 'sharing',
       showFamTripsTab: isActiveFamilyAdmin && s.familyDetailTab === 'trips',
       showFamOwnerTab: isFamilyOwner && s.familyDetailTab === 'owner',
       setFamilyDetailTabCategories: () => this.setFamilyDetailTab('categories'),
@@ -10096,6 +10101,7 @@ class Component extends DCLogic {
       tabSystemStyle: tabBtnStyle(this.state.settingsTab === 'system'),
       tabTripsStyle: tabBtnStyle(this.state.settingsTab === 'trips'),
       tabStorageStyle: tabBtnStyle(this.state.settingsTab === 'storage'),
+      tabSiteAdminStyle: tabBtnStyle(this.state.settingsTab === 'siteadmin'),
       showFiltersTab: this.state.settingsTab === 'filters',
       showSystemTab: this.state.settingsTab === 'system',
       canEditCloud: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('editor'),
@@ -10104,6 +10110,8 @@ class Component extends DCLogic {
       setTabTrips: () => this.setSettingsTab('trips'),
       ...this.familiesRenderVals(),
       showStorageTab: this.state.settingsTab === 'storage',
+      showSiteAdminTab: this.state.settingsTab === 'siteadmin' && this.state.mySiteAdmin,
+      setTabSiteAdmin: () => this.setSettingsTab('siteadmin'),
       setTabFilters: () => this.setSettingsTab('filters'),
       setTabSystem: () => this.setSettingsTab('system'),
       setTabStorage: () => this.setSettingsTab('storage'),
