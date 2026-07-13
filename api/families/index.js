@@ -442,6 +442,38 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Per-family override of the site's Visit Type / Trip Type / Status lists —
+    // family admin/owner only (site admin bypasses like everywhere else). cat is
+    // "visit" | "trip" | "status"; list is null to clear the override (family goes
+    // back to inheriting the site-wide default list) or an array of
+    // {key,label,color[,short]} to set a custom list for just this family.
+    if (action === "setFamilyCategories") {
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const cat = ["visit", "trip", "status"].includes(body.cat) ? body.cat : null;
+      if (!cat) { json(400, { error: "Invalid category." }); return; }
+      let list = null;
+      if (Array.isArray(body.list)) {
+        list = body.list.slice(0, 40).map((o) => {
+          const item = {
+            key: String((o && o.key) || "").slice(0, 60) || ("item" + Math.random().toString(36).slice(2, 8)),
+            label: String((o && o.label) || "").slice(0, 60),
+            color: /^#[0-9a-f]{3,8}$/i.test((o && o.color) || "") ? o.color : "#5fd3ff",
+          };
+          if (cat === "status" && o && o.short) item.short = String(o.short).slice(0, 20);
+          return item;
+        }).filter((o) => o.label);
+      }
+      const fam0 = families.find((f) => f.id === body.familyId);
+      const catOverrides = { ...(fam0 && fam0.catOverrides) || {} };
+      if (list && list.length) catOverrides[cat] = list; else delete catOverrides[cat];
+      families = families.map((f) => f.id === body.familyId ? { ...f, catOverrides } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      const CATLABEL = { visit: "visit types", trip: "trip types", status: "statuses" };
+      logActivity(container, { type: "setFamilyCategories", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: (list && list.length ? "Set a custom " : "Reverted ") + CATLABEL[cat] + " list for " + (fam0 ? fam0.name : "the family") + (list && list.length ? "" : " to the site default") });
+      json(200, { ok: true });
+      return;
+    }
+
     // Per-family trip-permission floors — controls who among THIS family's own
     // members (owner/admin always qualify) can edit trips, manage/view attachments,
     // and post comments on trips this family owns. Shared families never get edit/

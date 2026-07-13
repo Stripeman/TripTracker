@@ -4,6 +4,17 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.27.0-beta — Per-family Visit Type / Trip Type / Status lists; sharing moved under Permissions
+
+### Added
+- **Per-family category overrides**: each family can now run its own Visit Type, Trip Type, and Status lists instead of the site-wide defaults — gated to that family's owner/admin via a new **Categories** tab in My Families. Toggle "Use custom list" to start from a copy of the site default, edit/add/remove items freely, or "Revert to site default" to go back to inheriting. New trips for that family show its effective list; trips already tagged with a family-only type still resolve their label/color correctly everywhere (cards, filters, metrics, CSV export) via a merged lookup.
+- Backend: new `setFamilyCategories` action (family admin/owner or site admin only, same gating pattern as the other per-family settings), logged to the family's Audit tab.
+
+### Changed
+- **"Families that can see ours" / "Families we can see" moved into the Permissions tab** — previously shown under every tab in My Families, now scoped correctly with the rest of the sharing controls.
+
+---
+
 ## 1.26.0-beta — Family detail tabs; audit detail; Trips tab rebuilt
 
 ### Added

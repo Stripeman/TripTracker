@@ -1211,6 +1211,7 @@
                 <div style="display:flex; gap:2px; flex:none; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:14px;">
                   <button onClick="{{ setFamilyDetailTabOverview }}" style="{{ famTabOverviewStyle }}">Overview</button>
                   <button onClick="{{ setFamilyDetailTabPermissions }}" style="{{ famTabPermissionsStyle }}">Permissions</button>
+                  <button onClick="{{ setFamilyDetailTabCategories }}" style="{{ famTabCategoriesStyle }}">Categories</button>
                   <button onClick="{{ setFamilyDetailTabAudit }}" style="{{ famTabAuditStyle }}">Audit</button>
                   <sc-if value="{{ isFamilyOwner }}" hint-placeholder-val="{{ false }}">
                     <button onClick="{{ setFamilyDetailTabOwner }}" style="{{ famTabOwnerStyle }}">Owner</button>
@@ -1362,6 +1363,33 @@
                   <div style="margin-top:12px; padding:10px 12px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.18); border-radius:9px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#9fd6f0; line-height:1.6;">{{ deletePermSummary }}</div>
                 </div>
               </sc-if>
+              </sc-if>
+
+              <sc-if value="{{ showFamCategoriesTab }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-bottom:14px; line-height:1.5;">Give this family its own Visit Type, Trip Type, or Status lists — otherwise they inherit the site-wide defaults.</div>
+                <sc-for list="{{ familyCatSections }}" as="cs" hint-placeholder-count="3">
+                  <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94;">{{ cs.title }}</div>
+                      <button onClick="{{ cs.onToggleCustom }}" style="{{ cs.toggleStyle }}">{{ cs.toggleLabel }}</button>
+                    </div>
+                    <sc-if value="{{ cs.isCustom }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; flex-direction:column; gap:7px;">
+                        <sc-for list="{{ cs.items }}" as="it" hint-placeholder-count="2">
+                          <div style="display:flex; align-items:center; gap:7px;">
+                            <input type="color" defaultValue="{{ it.color }}" onChange="{{ it.onColor }}" style="width:26px; height:26px; flex:none; padding:0; border:1px solid rgba(255,255,255,0.14); border-radius:6px; background:none; cursor:pointer;">
+                            <input defaultValue="{{ it.label }}" onBlur="{{ it.onLabel }}" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 9px; outline:none;">
+                            <button onClick="{{ it.onRemove }}" title="Remove" style="flex:none; width:26px; height:26px; border-radius:6px; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.24); color:#e9a3a3; cursor:pointer;">✕</button>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <button onClick="{{ cs.onAdd }}" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">+ Add item</button>
+                    </sc-if>
+                    <sc-if value="{{ cs.notCustom }}" hint-placeholder-val="{{ true }}">
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">Inheriting the site default ({{ cs.siteCount }} items).</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
               </sc-if>
 
               <sc-if value="{{ showFamOverviewTab }}" hint-placeholder-val="{{ true }}">
@@ -1596,6 +1624,7 @@
               </div>
               </sc-if>
 
+              <sc-if value="{{ showFamPermissionsTab }}" hint-placeholder-val="{{ false }}">
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin:18px 0 8px;">FAMILIES THAT CAN SEE OURS</div>
               <div style="display:flex; gap:8px; margin-bottom:10px;">
                 <select value="{{ shareTargetFamilyId }}" onChange="{{ setShareTargetFamilyId }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:8px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
@@ -1635,6 +1664,7 @@
                   <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">No other family has shared with us yet.</div>
                 </sc-if>
               </div>
+              </sc-if>
 
             </sc-if>
 
@@ -3265,7 +3295,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.26.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.27.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4412,6 +4442,65 @@ class Component extends DCLogic {
     if (fam && fam.imagesEnabled !== undefined && fam.imagesEnabled !== null) return !!fam.imagesEnabled;
     return this.state.cfgImageUploadsEnabledSite !== false;
   }
+  // ---- per-family Visit Type / Trip Type / Status list overrides ----
+  // cat: 'visit' | 'trip' | 'status'. Falls back to the site-wide list when the
+  // family has no custom list (or an empty one) set for that category.
+  _catGlobalKey(cat) { return { visit: 'cfgVisitTypes', trip: 'cfgTripTypes', status: 'cfgStatuses' }[cat]; }
+  familyCatEffective(familyId, cat) {
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
+    const override = fam && fam.catOverrides && fam.catOverrides[cat];
+    if (Array.isArray(override) && override.length) return override;
+    return this.state[this._catGlobalKey(cat)] || [];
+  }
+  // Union of the site-wide list plus every family's override entries (by key) —
+  // used anywhere a label/color must resolve or a filter/metrics chip must exist
+  // for a type that's only defined on one family's custom list.
+  mergedCatList(cat) {
+    const seen = new Set();
+    const out = [];
+    (this.state[this._catGlobalKey(cat)] || []).forEach(o => { if (!seen.has(o.key)) { seen.add(o.key); out.push(o); } });
+    (this.state.cfgFamilies || []).forEach(f => {
+      const ov = f.catOverrides && f.catOverrides[cat];
+      if (Array.isArray(ov)) ov.forEach(o => { if (!seen.has(o.key)) { seen.add(o.key); out.push(o); } });
+    });
+    return out;
+  }
+  familyHasCustomCat(familyId, cat) {
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
+    return !!(fam && fam.catOverrides && Array.isArray(fam.catOverrides[cat]) && fam.catOverrides[cat].length);
+  }
+  toggleFamilyCatCustom(cat) {
+    const familyId = this.viewFamilyId();
+    if (this.familyHasCustomCat(familyId, cat)) {
+      this.familiesAction('setFamilyCategories', { familyId, cat, list: null }).then(j => { if (j) { this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => { if (f.id !== familyId) return f; const co = { ...(f.catOverrides || {}) }; delete co[cat]; return { ...f, catOverrides: co }; }) })); this.toast('Reverted to site default'); } });
+    } else {
+      const base = (this.state[this._catGlobalKey(cat)] || []).map(o => ({ ...o }));
+      this.familiesAction('setFamilyCategories', { familyId, cat, list: base }).then(j => { if (j) { this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => f.id === familyId ? { ...f, catOverrides: { ...(f.catOverrides || {}), [cat]: base } } : f) })); this.toast('Custom list started from site default'); } });
+    }
+  }
+  saveFamilyCatList(cat, list) {
+    const familyId = this.viewFamilyId();
+    this.familiesAction('setFamilyCategories', { familyId, cat, list }).then(j => { if (j) this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => f.id === familyId ? { ...f, catOverrides: { ...(f.catOverrides || {}), [cat]: list } } : f) })); });
+  }
+  addFamilyCatItem(cat) {
+    const familyId = this.viewFamilyId();
+    const list = this.familyCatEffective(familyId, cat).map(o => ({ ...o }));
+    const palette = ['#5fd3ff', '#38d99c', '#fbbf24', '#f0a6a6', '#c792ea', '#7fd4f5', '#9fd6f0'];
+    const key = 'custom_' + Math.random().toString(36).slice(2, 8);
+    const item = { key, label: 'New item', color: palette[list.length % palette.length] };
+    if (cat === 'status') item.short = item.label;
+    this.saveFamilyCatList(cat, [...list, item]);
+  }
+  updateFamilyCatItem(cat, key, patch) {
+    const familyId = this.viewFamilyId();
+    const list = this.familyCatEffective(familyId, cat).map(o => o.key === key ? { ...o, ...patch, ...(cat === 'status' && patch.label ? { short: patch.label } : {}) } : o);
+    this.saveFamilyCatList(cat, list);
+  }
+  removeFamilyCatItem(cat, key) {
+    const familyId = this.viewFamilyId();
+    const list = this.familyCatEffective(familyId, cat).filter(o => o.key !== key);
+    this.saveFamilyCatList(cat, list);
+  }
   // ---- per-family trip-permission floors (edit / attachments / comments) ----
   tripHideAttachments(sl) {
     if (!sl) return false;
@@ -4853,12 +4942,34 @@ class Component extends DCLogic {
       setFamilyDetailTabOwner: () => this.setFamilyDetailTab('owner'),
       famTabOverviewStyle: tabBtnStyle((s.familyDetailTab || 'overview') === 'overview'),
       famTabPermissionsStyle: tabBtnStyle(s.familyDetailTab === 'permissions'),
+      famTabCategoriesStyle: tabBtnStyle(s.familyDetailTab === 'categories'),
       famTabAuditStyle: tabBtnStyle(s.familyDetailTab === 'audit'),
       famTabOwnerStyle: tabBtnStyle(s.familyDetailTab === 'owner'),
       showFamOverviewTab: !isActiveFamilyAdmin || (s.familyDetailTab || 'overview') === 'overview',
       showFamPermissionsTab: isActiveFamilyAdmin && s.familyDetailTab === 'permissions',
+      showFamCategoriesTab: isActiveFamilyAdmin && s.familyDetailTab === 'categories',
       showFamAuditTab: isActiveFamilyAdmin && s.familyDetailTab === 'audit',
       showFamOwnerTab: isFamilyOwner && s.familyDetailTab === 'owner',
+      setFamilyDetailTabCategories: () => this.setFamilyDetailTab('categories'),
+      familyCatSections: ['visit', 'trip', 'status'].map(cat => {
+        const TITLES = { visit: 'VISIT TYPES', trip: 'TRIP TYPES', status: 'STATUSES' };
+        const isCustom = this.familyHasCustomCat(viewFamilyId, cat);
+        const items = isCustom ? this.familyCatEffective(viewFamilyId, cat).map(o => ({
+          key: o.key, label: o.label, color: o.color,
+          onLabel: (e) => this.updateFamilyCatItem(cat, o.key, { label: e.target.value }),
+          onColor: (e) => this.updateFamilyCatItem(cat, o.key, { color: e.target.value }),
+          onRemove: () => this.removeFamilyCatItem(cat, o.key),
+        })) : [];
+        return {
+          cat, title: TITLES[cat], isCustom, notCustom: !isCustom,
+          siteCount: (s[this._catGlobalKey(cat)] || []).length,
+          toggleLabel: isCustom ? 'Revert to site default' : 'Use custom list',
+          toggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:9.5px; letter-spacing:0.04em; padding:5px 9px; border-radius:7px; cursor:pointer; border:1px solid ' + (isCustom ? 'rgba(239,68,68,0.3); color:#e9a3a3; background:rgba(239,68,68,0.07);' : 'rgba(56,189,248,0.3); color:#9fd6f0; background:rgba(56,189,248,0.08);'),
+          onToggleCustom: () => this.toggleFamilyCatCustom(cat),
+          items,
+          onAdd: () => this.addFamilyCatItem(cat),
+        };
+      }),
       transferOwnerEmail: s.transferOwnerEmail || '',
       canAskTransferOwnership: !!s.transferOwnerEmail,
       notCanAskTransferOwnership: !s.transferOwnerEmail,
@@ -5604,11 +5715,26 @@ class Component extends DCLogic {
     const tt = lists.cfgTripTypes || this.DEF_TRIP_TYPES;
     const tr = lists.cfgTravelers || this.DEF_TRAVELERS;
     const st = lists.cfgStatuses || this.DEF_STATUSES;
+    // Layer in any family-only override entries so labels/colors for a type that
+    // exists ONLY on one family's custom list still resolve everywhere (cards,
+    // filters, metrics) — not just on that family's own trip form.
+    const withFamilyOverrides = (base, cat) => {
+      const seen = new Set(base.map(o => o.key));
+      const out = base.slice();
+      (this.state.cfgFamilies || []).forEach(f => {
+        const ov = f.catOverrides && f.catOverrides[cat];
+        if (Array.isArray(ov)) ov.forEach(o => { if (!seen.has(o.key)) { seen.add(o.key); out.push(o); } });
+      });
+      return out;
+    };
+    const vtM = withFamilyOverrides(vt, 'visit');
+    const ttM = withFamilyOverrides(tt, 'trip');
+    const stM = withFamilyOverrides(st, 'status');
     this.VISIT_TYPES = vt; this.TRIP_TYPES = tt; this.TRAVELERS = tr; this.STATUSES = st;
-    this.VTC = {}; this.VTL = {}; vt.forEach(o => { this.VTC[o.key] = o.color; this.VTL[o.key] = o.label; });
-    this.TTC = {}; this.TTL = {}; tt.forEach(o => { this.TTC[o.key] = o.color; this.TTL[o.key] = o.label; });
+    this.VTC = {}; this.VTL = {}; vtM.forEach(o => { this.VTC[o.key] = o.color; this.VTL[o.key] = o.label; });
+    this.TTC = {}; this.TTL = {}; ttM.forEach(o => { this.TTC[o.key] = o.color; this.TTL[o.key] = o.label; });
     this.TRC = {}; this.TRL = {}; tr.forEach(o => { this.TRC[o.key] = o.color; this.TRL[o.key] = o.label; });
-    this.META = {}; st.forEach(o => { this.META[o.key] = { label: o.label, short: o.short || o.label, color: o.color }; });
+    this.META = {}; stM.forEach(o => { this.META[o.key] = { label: o.label, short: o.short || o.label, color: o.color }; });
   }
 
   isUS(country) {
@@ -7472,9 +7598,9 @@ class Component extends DCLogic {
     const headers = ['Place', 'City', 'Country', 'Date', 'End Date', 'Status', 'Trip Type', 'Visit Type', 'Travelers', 'Owner'];
     const rows = locs.map(l => [
       l.place || '', l.city || '', l.country || '', l.date || '', l.dateEnd || '',
-      labelOf(this.state.cfgStatuses, l.status),
-      (l.tripTypes || []).map(k => labelOf(this.state.cfgTripTypes, k)).join('; '),
-      (l.visitTypes || []).map(k => labelOf(this.state.cfgVisitTypes, k)).join('; '),
+      labelOf(this.mergedCatList('status'), l.status),
+      (l.tripTypes || []).map(k => labelOf(this.mergedCatList('trip'), k)).join('; '),
+      (l.visitTypes || []).map(k => labelOf(this.mergedCatList('visit'), k)).join('; '),
       (l.travelers || []).map(nameOf).join('; '),
       this.travelerNameByEmail(l.ownerEmail) || l.ownerEmail || '',
     ]);
@@ -9021,9 +9147,9 @@ class Component extends DCLogic {
     const fStat = this.state.filterStatuses, fVis = this.state.filterVisit, fTrip = this.state.filterTrip, fTrav = this.state.filterTravelers;
     const filterChip = (color, on) => "display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.03em; padding:5px 9px; border-radius:7px; cursor:pointer; transition:all .15s; " + (on ? `color:${color}; background:${color}1f; border:1px solid ${color}; font-weight:600; box-shadow:0 0 9px ${color}30;` : `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const filterDot = (color, on) => `width:7px; height:7px; border-radius:50%; flex:none; background:${color};` + (on ? ` box-shadow:0 0 6px ${color};` : '');
-    const statusFilterChips = this.state.cfgStatuses.map(o => { const k = o.key; const on = fStat.includes(k); return { key: k, label: o.short || o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterStatuses', k) }; });
-    const visitFilterChips = this.state.cfgVisitTypes.map(o => { const on = fVis.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterVisit', o.key) }; });
-    const tripFilterChips = this.state.cfgTripTypes.map(o => { const on = fTrip.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterTrip', o.key) }; });
+    const statusFilterChips = this.mergedCatList('status').map(o => { const k = o.key; const on = fStat.includes(k); return { key: k, label: o.short || o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterStatuses', k) }; });
+    const visitFilterChips = this.mergedCatList('visit').map(o => { const on = fVis.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterVisit', o.key) }; });
+    const tripFilterChips = this.mergedCatList('trip').map(o => { const on = fTrip.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterTrip', o.key) }; });
     const travelerFilterChips = this.state.cfgTravelers.map(o => { const on = fTrav.includes(o.key); return { key: o.key, label: o.label, style: filterChip(o.color, on), dotStyle: filterDot(o.color, on), onToggle: () => this.toggleFilter('filterTravelers', o.key) }; });
     const activeFilterCount = fStat.length + fVis.length + fTrip.length + fTrav.length + (this.state.filterText.trim() ? 1 : 0) + this.state.filterCountries.length;
 
@@ -9158,7 +9284,7 @@ class Component extends DCLogic {
       return segBase + `color:#aebccd; background:rgba(255,255,255,0.03); border:1px solid ${m.color}55;`;
     };
     const segDot = (key) => { const m = meta[key]; const on = form.status === key; return `width:9px; height:9px; border-radius:50%; flex:none; background:${m.color}; box-shadow:${on ? '0 0 8px ' + m.color : 'none'};`; };
-    const statusFormChips = this.state.cfgStatuses.map(o => ({ key: o.key, label: o.label, style: seg(o.key), dotStyle: segDot(o.key), onSelect: () => this.setStatus(o.key) }));
+    const statusFormChips = this.familyCatEffective(form.familyId || this.state.activeFamilyId, 'status').map(o => ({ key: o.key, label: o.label, style: seg(o.key), dotStyle: segDot(o.key), onSelect: () => this.setStatus(o.key) }));
 
     const stateReq = this.isUS(form.country) && !!(form.city && form.city.trim()) && !(form.state && form.state.trim());
 
@@ -9166,8 +9292,8 @@ class Component extends DCLogic {
     const chipBase = "font-family:'Space Grotesk',sans-serif; font-size:12px; padding:7px 11px; border-radius:8px; cursor:pointer; transition:all .15s; ";
     const chipStyle = (color, on) => chipBase + (on ? `color:${color}; background:${color}1f; border:1px solid ${color}; font-weight:600; box-shadow:0 0 10px ${color}33;` : `color:#9fb0c6; background:rgba(255,255,255,0.03); border:1px solid ${color}55;`);
     const fvt = form.visitTypes || [], ftt = form.tripTypes || [];
-    const visitTypeChips = this.state.cfgVisitTypes.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, fvt.includes(o.key)), onToggle: () => this.toggleType('visitTypes', o.key) }));
-    const tripTypeChips = this.state.cfgTripTypes.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftt.includes(o.key)), onToggle: () => this.toggleType('tripTypes', o.key) }));
+    const visitTypeChips = this.familyCatEffective(form.familyId || this.state.activeFamilyId, 'visit').map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, fvt.includes(o.key)), onToggle: () => this.toggleType('visitTypes', o.key) }));
+    const tripTypeChips = this.familyCatEffective(form.familyId || this.state.activeFamilyId, 'trip').map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftt.includes(o.key)), onToggle: () => this.toggleType('tripTypes', o.key) }));
     const ftr = form.travelers || [];
     const travelerChips = this.state.cfgTravelers.map(o => ({ key: o.key, label: o.label, style: chipStyle(o.color, ftr.includes(o.key)), onToggle: () => this.toggleType('travelers', o.key) }));
     const pmTabStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; padding:9px 6px; border-radius:9px 9px 0 0; cursor:pointer; transition:all .15s; " + (on ? "color:#bfeaff; background:rgba(56,189,248,0.12); border-bottom:2px solid #5fd3ff;" : "color:#7d90a8; background:transparent; border-bottom:2px solid transparent;");
@@ -9354,9 +9480,9 @@ class Component extends DCLogic {
       metricsYearValue: String((this.state.metricsFilter && this.state.metricsFilter.year) || 'all'),
       onMetricsYear: (e) => this.setMetricsYear(e.target.value),
       metricsYears: [...new Set((this.state.locations || []).map(l => (l.date || '').slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a)).map(y => ({ value: y, label: y })),
-      metricsStatusChips: (this.state.cfgStatuses || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).statuses || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('statuses', o.key) })),
-      metricsVisitChips: (this.state.cfgVisitTypes || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).visit || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('visit', o.key) })),
-      metricsTripChips: (this.state.cfgTripTypes || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).trip || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('trip', o.key) })),
+      metricsStatusChips: this.mergedCatList('status').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).statuses || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('statuses', o.key) })),
+      metricsVisitChips: this.mergedCatList('visit').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).visit || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('visit', o.key) })),
+      metricsTripChips: this.mergedCatList('trip').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).trip || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('trip', o.key) })),
       metricsTravelerChips: (this.state.cfgTravelers || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.metricsFilter || {}).travelers || []).includes(o.key)), onToggle: () => this.toggleMetricsArr('travelers', o.key) })),
       heatTiles,
       heatHasData: heatTiles.length > 0,
@@ -9507,9 +9633,9 @@ class Component extends DCLogic {
       bulkOwner: this.state.bulk.owner,
       bulkNotes: this.state.bulk.notes,
       bulkOwnerOptions: (this.state.cfgTravelers || []).filter(t => t.email).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
-      bulkVisitChips: (this.state.cfgVisitTypes || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, (this.state.bulk.visit || []).includes(o.key)), onToggle: () => this.toggleBulkArr('visit', o.key) })),
+      bulkVisitChips: this.mergedCatList('visit').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, (this.state.bulk.visit || []).includes(o.key)), onToggle: () => this.toggleBulkArr('visit', o.key) })),
       bulkTravelerChips: (this.state.cfgTravelers || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, (this.state.bulk.travelers || []).includes(o.key)), onToggle: () => this.toggleBulkArr('travelers', o.key) })),
-      bulkTripChips: (this.state.cfgTripTypes || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, (this.state.bulk.trip || []).includes(o.key)), onToggle: () => this.toggleBulkArr('trip', o.key) })),
+      bulkTripChips: this.mergedCatList('trip').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, (this.state.bulk.trip || []).includes(o.key)), onToggle: () => this.toggleBulkArr('trip', o.key) })),
       bulkShareChips: (this.state.cfgTravelers || []).map(o => { const hasEmail = !!o.email; return { key: o.key, label: o.label, hasEmail, style: filterChip(hasEmail ? o.color : '#5d6b80', (this.state.bulk.shareKeys || []).includes(o.key)) + (hasEmail ? '' : 'opacity:0.5;'), onToggle: () => { if (hasEmail) this.toggleBulkArr('shareKeys', o.key); } }; }),
       bulkVisSeg: [
         { label: 'Private', style: visSeg(this.state.bulk.vis === 'private', '#9fb6cf'), onSelect: () => this.setBulkVal('vis', 'private') },
