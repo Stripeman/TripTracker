@@ -307,7 +307,7 @@ module.exports = async function (context, req) {
       families = families.map((f) => f.id === familyId ? { ...f, createdBy: toEmail } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       await writeJsonBlob(container, MEMBERS_BLOB, members);
-      logActivity(container, { type: "transferOwnership", familyId, visibleTo: [familyId], actor: me.email, message: me.email + " transferred ownership of " + fam.name + " to " + toEmail });
+      logActivity(container, { type: "transferOwnership", familyId, visibleTo: [familyId], actor: me.email, message: "Transferred ownership of " + fam.name + " to " + toEmail });
       json(200, { ok: true });
       return;
     }
@@ -451,6 +451,8 @@ module.exports = async function (context, req) {
     if (action === "setFamilyTripPerms") {
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
       const floor = (v) => (v === "admin" ? "admin" : "editor");
+      const famBefore = families.find((f) => f.id === body.familyId);
+      const before = famBefore && famBefore.permTrip ? famBefore.permTrip : {};
       const patch = {
         editFloor: floor(body.editFloor),
         attachFloor: floor(body.attachFloor),
@@ -460,10 +462,19 @@ module.exports = async function (context, req) {
         sharedCanDelete: !!body.sharedCanDelete,
         itineraryEditableShared: !!body.itineraryEditableShared,
       };
+      const LABELS = {
+        editFloor: "who can edit trips", attachFloor: "who can manage attachments",
+        commentFloor: "who can comment", attachVisibleShared: "attachments visible to shared families",
+        memberDeleteAny: "any member can delete trips", sharedCanDelete: "shared families can delete trips",
+        itineraryEditableShared: "shared families can edit itinerary",
+      };
+      const changes = Object.keys(patch).filter((k) => (before[k] === undefined ? (k === "attachVisibleShared" ? true : (k === "editFloor" || k === "attachFloor" || k === "commentFloor" ? "editor" : false)) : before[k]) !== patch[k])
+        .map((k) => LABELS[k] + " → " + (typeof patch[k] === "boolean" ? (patch[k] ? "on" : "off") : patch[k]));
       families = families.map((f) => f.id === body.familyId ? { ...f, permTrip: patch } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       const fam1 = families.find((f) => f.id === body.familyId);
-      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: me.email + " updated trip permissions for " + (fam1 ? fam1.name : "the family") });
+      const changeText = changes.length ? changes.join("; ") : "no change";
+      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: "Updated trip permissions for " + (fam1 ? fam1.name : "the family") + ": " + changeText });
       json(200, { ok: true });
       return;
     }
@@ -481,7 +492,7 @@ module.exports = async function (context, req) {
       else members.push({ email, familyId, role, active, createdAt: new Date().toISOString() });
       await writeJsonBlob(container, MEMBERS_BLOB, members);
       const fam0 = families.find((f) => f.id === familyId);
-      logActivity(container, { type: "invitePerson", familyId, visibleTo: [familyId], actor: me.email, message: me.email + " added " + email + " to " + (fam0 ? fam0.name : "the family") + " as " + role });
+      logActivity(container, { type: "invitePerson", familyId, visibleTo: [familyId], actor: me.email, message: "Added " + email + " to " + (fam0 ? fam0.name : "the family") + " as " + role });
       json(200, { ok: true });
       return;
     }

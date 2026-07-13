@@ -4,6 +4,21 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.26.0-beta — Family detail tabs; audit detail; Trips tab rebuilt
+
+### Added
+- **My Families detail panel now has tabs** (visible to family admins): **Overview** (branding, photo uploads, owner, attachments & storage summary, people), **Permissions** (the Trip Permissions block, moved out of Overview), **Audit** (the Activity Log, moved out of Overview), and **Owner** (Transfer Ownership, gated to the family's actual owner — admins who aren't owner don't see it).
+- **Activity Log entries now show who did it and what changed**: the actor's display name (falls back to email if they have no traveler profile) with a small ✉ link to email them, plus the trip-permission log message now lists the specific settings that changed (e.g. "who can edit trips → Admin only") instead of a generic "updated trip permissions."
+- **Rebuilt the Settings → Trips tab**, which had gone empty (its logic and data existed but no markup rendered it): unclaimed-trips list with per-trip owner assignment plus "claim all as me," and a bulk-edit tool (owner/notes/visit type/trip type/travelers/sharing) scoped to whatever the left-panel filters currently match.
+
+### Changed
+- De-duplicated the family-scope option builder used by the Metrics and People family-scope pickers into a single shared helper (`baseFamilyScopeOptions`) — no user-visible change.
+
+### Fixed
+- Confirmed the "activeTouches already declared" console error reported earlier was a stale hot-reload artifact from a mid-edit session, not a persisted bug — a fresh page load renders cleanly with no console errors (verified via full code review pass: no duplicate method names, no duplicate API action handlers, all routes correct).
+
+---
+
 ## 1.25.1-beta — Code cleanup
 
 ### Fixed

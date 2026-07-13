@@ -396,6 +396,124 @@
         </div>
         </sc-if>
 
+        <sc-if value="{{ showTripsTab }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">UNCLAIMED TRIPS</div>
+          <sc-if value="{{ showClaimAll }}" hint-placeholder-val="{{ false }}">
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:14px;">
+              <sc-if value="{{ noUnclaimed }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">No unclaimed trips — every trip has an owner.</div>
+              </sc-if>
+              <sc-if value="{{ unclaimedTrips.length }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-bottom:10px;">{{ unownedCount }} trip(s) have no owner. Assign one individually, or claim them all as yourself.</div>
+                <div style="display:flex; flex-direction:column; gap:7px; max-height:220px; overflow-y:auto; margin-bottom:10px;">
+                  <sc-for list="{{ unclaimedTrips }}" as="u" hint-placeholder-count="2">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 10px;">
+                      <div style="min-width:0;">
+                        <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ u.place }}</div>
+                        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:1px;">{{ u.dates }}</div>
+                      </div>
+                      <select onChange="{{ u.onAssign }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                        <option value="" style="background:#0a1422;">Assign to…</option>
+                        <sc-for list="{{ u.ownerOptions }}" as="oo" hint-placeholder-count="1">
+                          <option value="{{ oo.value }}" style="background:#0a1422;">{{ oo.label }}</option>
+                        </sc-for>
+                      </select>
+                    </div>
+                  </sc-for>
+                </div>
+                <button onClick="{{ askClaimAll }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none; border-radius:8px; padding:9px; cursor:pointer;">Claim all as me</button>
+                <sc-if value="{{ confirmClaim }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:9px; padding:10px 11px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.24); border-radius:8px;">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9fd6f0; margin-bottom:8px; line-height:1.5;">Claim {{ unownedCount }} trip(s) as yourself?</div>
+                    <div style="display:flex; gap:7px;">
+                      <button onClick="{{ claimAllUnowned }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none; border-radius:7px; padding:7px; cursor:pointer;">Confirm</button>
+                      <button onClick="{{ cancelClaimAll }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:7px; cursor:pointer;">Cancel</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">BULK EDIT ({{ bulkCount }} trip(s) match your left-panel filters)</div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:14px;">
+            <div style="display:flex; flex-direction:column; gap:9px;">
+              <sc-if value="{{ bulkCanOwner }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" checked="{{ bulkChkOwner }}" onChange="{{ toggleBulkOwner }}" style="flex:none; width:15px; height:15px; cursor:pointer;">
+                  <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c2cfde; flex:none; width:74px;">Owner</span>
+                  <select value="{{ bulkOwner }}" onChange="{{ setBulkOwner }}" disabled="{{ notBulkChkOwner }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                    <option value="" style="background:#0a1422;">Choose…</option>
+                    <sc-for list="{{ bulkOwnerOptions }}" as="bo" hint-placeholder-count="1">
+                      <option value="{{ bo.value }}" style="background:#0a1422;">{{ bo.label }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+              </sc-if>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" checked="{{ bulkChkNotes }}" onChange="{{ toggleBulkNotes }}" style="flex:none; width:15px; height:15px; cursor:pointer;">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c2cfde; flex:none; width:74px;">Notes</span>
+                <input value="{{ bulkNotes }}" onChange="{{ setBulkNotes }}" disabled="{{ notBulkChkNotes }}" placeholder="Replace notes with…" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 8px; outline:none;">
+              </div>
+              <div style="display:flex; align-items:flex-start; gap:8px;">
+                <input type="checkbox" checked="{{ bulkChkVisit }}" onChange="{{ toggleBulkVisit }}" style="flex:none; width:15px; height:15px; cursor:pointer; margin-top:2px;">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c2cfde; flex:none; width:74px; margin-top:2px;">Visit type</span>
+                <div style="flex:1; display:flex; flex-wrap:wrap; gap:6px;">
+                  <sc-for list="{{ bulkVisitChips }}" as="c" hint-placeholder-count="2">
+                    <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex; align-items:flex-start; gap:8px;">
+                <input type="checkbox" checked="{{ bulkChkTrip }}" onChange="{{ toggleBulkTrip }}" style="flex:none; width:15px; height:15px; cursor:pointer; margin-top:2px;">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c2cfde; flex:none; width:74px; margin-top:2px;">Trip type</span>
+                <div style="flex:1; display:flex; flex-wrap:wrap; gap:6px;">
+                  <sc-for list="{{ bulkTripChips }}" as="c" hint-placeholder-count="2">
+                    <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex; align-items:flex-start; gap:8px;">
+                <input type="checkbox" checked="{{ bulkChkTravelers }}" onChange="{{ toggleBulkTravelers }}" style="flex:none; width:15px; height:15px; cursor:pointer; margin-top:2px;">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c2cfde; flex:none; width:74px; margin-top:2px;">Travelers</span>
+                <div style="flex:1; display:flex; flex-wrap:wrap; gap:6px;">
+                  <sc-for list="{{ bulkTravelerChips }}" as="c" hint-placeholder-count="2">
+                    <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex; align-items:flex-start; gap:8px;">
+                <input type="checkbox" checked="{{ bulkChkVis }}" onChange="{{ toggleBulkVis }}" style="flex:none; width:15px; height:15px; cursor:pointer; margin-top:2px;">
+                <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c2cfde; flex:none; width:74px; margin-top:2px;">Sharing</span>
+                <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+                  <div style="display:flex; gap:2px;">
+                    <sc-for list="{{ bulkVisSeg }}" as="v" hint-placeholder-count="3">
+                      <button onClick="{{ v.onSelect }}" style="{{ v.style }}">{{ v.label }}</button>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ bulkVisShared }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                      <sc-for list="{{ bulkShareChips }}" as="c" hint-placeholder-count="2">
+                        <span onClick="{{ c.onToggle }}" style="{{ c.style }}" title="{{ c.hasEmail }}">{{ c.label }}</span>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+            <button onClick="{{ askBulk }}" disabled="{{ bulkApplyDisabled }}" style="width:100%; box-sizing:border-box; margin-top:12px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:8px; padding:9px; cursor:pointer; opacity:{{ bulkApplyOpacity }};">Apply to {{ bulkCount }} trip(s)</button>
+            <sc-if value="{{ bulkConfirm }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:9px; padding:10px 11px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.24); border-radius:8px;">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:8px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
+                <div style="display:flex; gap:7px;">
+                  <button onClick="{{ applyBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:7px; cursor:pointer;">Confirm</button>
+                  <button onClick="{{ cancelBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:7px; cursor:pointer;">Cancel</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
         <sc-if value="{{ showFiltersTab }}" hint-placeholder-val="{{ true }}">
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:11px;">FILTERS</div>
 
@@ -1088,6 +1206,44 @@
                 </div>
               </sc-if>
               <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#7c8ea6; margin-bottom:14px;">A family owns its own trips and travelers. Members share access at reader, editor or admin level.</div>
+
+              <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; gap:2px; flex:none; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:14px;">
+                  <button onClick="{{ setFamilyDetailTabOverview }}" style="{{ famTabOverviewStyle }}">Overview</button>
+                  <button onClick="{{ setFamilyDetailTabPermissions }}" style="{{ famTabPermissionsStyle }}">Permissions</button>
+                  <button onClick="{{ setFamilyDetailTabAudit }}" style="{{ famTabAuditStyle }}">Audit</button>
+                  <sc-if value="{{ isFamilyOwner }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ setFamilyDetailTabOwner }}" style="{{ famTabOwnerStyle }}">Owner</button>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ showFamOverviewTab }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">ATTACHMENTS &amp; STORAGE</div>
+                  <div style="display:flex; gap:18px; flex-wrap:wrap; margin-bottom:{{ attachStorageListGap }};">
+                    <div>
+                      <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:18px; color:#e8f3ff;">{{ attachStorageCount }}</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">files</div>
+                    </div>
+                    <div>
+                      <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:18px; color:#e8f3ff;">{{ attachStorageSize }}</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">used, 25MB max per file</div>
+                    </div>
+                  </div>
+                  <sc-if value="{{ attachStorageRows.length }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto;">
+                      <sc-for list="{{ attachStorageRows }}" as="a" hint-placeholder-count="0">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9fb0c6; padding:5px 0; border-top:1px solid rgba(255,255,255,0.05);">
+                          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ a.name }} · {{ a.place }}</span>
+                          <span style="flex:none; color:#6b7d94;">{{ a.sizeLabel }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
               <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
                 <input ref="{{ setLogoInputRef }}" type="file" accept="image/*" onChange="{{ onLogoPick }}" style="display:none;">
                 <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px; flex-wrap:wrap;">
@@ -1125,24 +1281,10 @@
                 <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
                   <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94;">OWNER · <span style="color:#bcd2e6; letter-spacing:0;">{{ ownerLabel }}</span></div>
                 </div>
-                <sc-if value="{{ isFamilyOwner }}" hint-placeholder-val="{{ false }}">
-                  <sc-if value="{{ hasTransferTargets }}" hint-placeholder-val="{{ false }}">
-                    <div style="display:flex; align-items:center; gap:7px; margin-top:9px; flex-wrap:wrap;">
-                      <select value="{{ transferOwnerEmail }}" onChange="{{ setTransferOwnerEmail }}" style="flex:1; min-width:160px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
-                        <option value="" style="background:#0a1422;">Choose a person…</option>
-                        <sc-for list="{{ transferTargetOptions }}" as="to" hint-placeholder-count="2">
-                          <option value="{{ to.value }}" style="background:#0a1422;">{{ to.label }}</option>
-                        </sc-for>
-                      </select>
-                      <button onClick="{{ askTransferOwnership }}" disabled="{{ notCanAskTransferOwnership }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:7px 12px; cursor:pointer; opacity:{{ transferBtnOpacity }};">Transfer ownership</button>
-                    </div>
-                  </sc-if>
-                  <sc-if value="{{ noTransferTargets }}" hint-placeholder-val="{{ true }}">
-                    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82; margin-top:8px;">Invite another member first to be able to transfer ownership to them.</div>
-                  </sc-if>
-                </sc-if>
               </div>
+              </sc-if>
 
+              <sc-if value="{{ showFamPermissionsTab }}" hint-placeholder-val="{{ false }}">
               <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
                 <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
                   <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:10px;">TRIP PERMISSIONS</div>
@@ -1220,7 +1362,9 @@
                   <div style="margin-top:12px; padding:10px 12px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.18); border-radius:9px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#9fd6f0; line-height:1.6;">{{ deletePermSummary }}</div>
                 </div>
               </sc-if>
+              </sc-if>
 
+              <sc-if value="{{ showFamOverviewTab }}" hint-placeholder-val="{{ true }}">
               <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
                 <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
                   <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">ATTACHMENTS &amp; STORAGE</div>
@@ -1246,8 +1390,9 @@
                   </sc-if>
                 </div>
               </sc-if>
+              </sc-if>
 
-              <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ showFamAuditTab }}" hint-placeholder-val="{{ false }}">
                 <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
                   <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">ACTIVITY LOG — {{ activeFamilyName }}</div>
                   <sc-if value="{{ familyActivityEmpty }}" hint-placeholder-val="{{ true }}">
@@ -1257,13 +1402,43 @@
                     <sc-for list="{{ familyActivityItems }}" as="a" hint-placeholder-count="0">
                       <div style="padding:7px 0; border-top:1px solid rgba(255,255,255,0.05);">
                         <div style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#c8d2e0; line-height:1.4;">{{ a.message }}</div>
-                        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ a.when }}</div>
+                        <div style="display:flex; align-items:center; gap:6px; margin-top:3px;">
+                          <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088;">{{ a.when }}</span>
+                          <sc-if value="{{ a.actorName }}" hint-placeholder-val="{{ false }}">
+                            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6b7d94;">·</span>
+                            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#7fb8d6;">{{ a.actorName }}</span>
+                            <sc-if value="{{ a.actorEmail }}" hint-placeholder-val="{{ false }}">
+                              <a href="{{ a.mailtoHref }}" title="{{ a.actorEmail }}" style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5fd3ff; text-decoration:none;">✉</a>
+                            </sc-if>
+                          </sc-if>
+                        </div>
                       </div>
                     </sc-for>
                   </div>
                 </div>
               </sc-if>
 
+              <sc-if value="{{ showFamOwnerTab }}" hint-placeholder-val="{{ false }}">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:10px;">TRANSFER OWNERSHIP</div>
+                  <sc-if value="{{ hasTransferTargets }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap;">
+                      <select value="{{ transferOwnerEmail }}" onChange="{{ setTransferOwnerEmail }}" style="flex:1; min-width:160px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                        <option value="" style="background:#0a1422;">Choose a person…</option>
+                        <sc-for list="{{ transferTargetOptions }}" as="to" hint-placeholder-count="2">
+                          <option value="{{ to.value }}" style="background:#0a1422;">{{ to.label }}</option>
+                        </sc-for>
+                      </select>
+                      <button onClick="{{ askTransferOwnership }}" disabled="{{ notCanAskTransferOwnership }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#9fd6f0; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:7px 12px; cursor:pointer; opacity:{{ transferBtnOpacity }};">Transfer ownership</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ noTransferTargets }}" hint-placeholder-val="{{ true }}">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82;">Invite another member first to be able to transfer ownership to them.</div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ showFamOverviewTab }}" hint-placeholder-val="{{ true }}">
               <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 15px; margin-bottom:16px;">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">PEOPLE IN {{ activeFamilyName }}</div>
                 <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
@@ -1419,6 +1594,7 @@
                   </div>
                 </sc-if>
               </div>
+              </sc-if>
 
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin:18px 0 8px;">FAMILIES THAT CAN SEE OURS</div>
               <div style="display:flex; gap:8px; margin-bottom:10px;">
@@ -3089,7 +3265,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.25.1-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.26.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4318,7 +4494,8 @@ class Component extends DCLogic {
   // Deliberately separate from activeFamilyId (the left panel's trip-family filter) —
   // browsing a family's details here must NEVER change what the main app shows.
   viewFamilyId() { return this.state.famDetailFamilyId || this.state.activeFamilyId; }
-  viewFamily(familyId) { this.setState({ famDetailFamilyId: familyId }); }
+  viewFamily(familyId) { this.setState({ famDetailFamilyId: familyId, familyDetailTab: 'overview' }); }
+  setFamilyDetailTab(tab) { this.setState({ familyDetailTab: tab }); }
   setFamMgmtView(v) { this.setState({ famMgmtView: v }); }
   setInviteEmail(e) { this.setState({ inviteEmail: e.target.value }); }
   setInviteRole(e) { this.setState({ inviteRole: e.target.value }); }
@@ -4480,6 +4657,7 @@ class Component extends DCLogic {
     const isActiveFamilyAdmin = !!s.mySiteAdmin || (myActiveMembership && myActiveMembership.role === 'admin');
     const activeFamObj = byId[viewFamilyId];
     const famImgSegStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 8px; border-radius:7px; cursor:pointer; transition:all .15s; " + (on ? "color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;" : "color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);");
+    const tabBtnStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; padding:9px 4px; margin-bottom:-1px; cursor:pointer; border:none; border-bottom:2px solid " + (on ? "#5fd3ff" : "transparent") + "; background:none; color:" + (on ? "#eaf4fd" : "#6b7d94") + ";";
     const isFamilyOwner = !!s.mySiteAdmin || (activeFamObj && activeFamObj.createdBy === s.cloudUserEmail);
     const activeTripPerms = this.tripPermsFor(viewFamilyId);
     const famAttachments = [];
@@ -4668,6 +4846,19 @@ class Component extends DCLogic {
       hasTransferTargets: transferTargetOptions.length > 0,
       noTransferTargets: transferTargetOptions.length === 0,
       transferTargetOptions,
+      familyDetailTab: s.familyDetailTab || 'overview',
+      setFamilyDetailTabOverview: () => this.setFamilyDetailTab('overview'),
+      setFamilyDetailTabPermissions: () => this.setFamilyDetailTab('permissions'),
+      setFamilyDetailTabAudit: () => this.setFamilyDetailTab('audit'),
+      setFamilyDetailTabOwner: () => this.setFamilyDetailTab('owner'),
+      famTabOverviewStyle: tabBtnStyle((s.familyDetailTab || 'overview') === 'overview'),
+      famTabPermissionsStyle: tabBtnStyle(s.familyDetailTab === 'permissions'),
+      famTabAuditStyle: tabBtnStyle(s.familyDetailTab === 'audit'),
+      famTabOwnerStyle: tabBtnStyle(s.familyDetailTab === 'owner'),
+      showFamOverviewTab: !isActiveFamilyAdmin || (s.familyDetailTab || 'overview') === 'overview',
+      showFamPermissionsTab: isActiveFamilyAdmin && s.familyDetailTab === 'permissions',
+      showFamAuditTab: isActiveFamilyAdmin && s.familyDetailTab === 'audit',
+      showFamOwnerTab: isFamilyOwner && s.familyDetailTab === 'owner',
       transferOwnerEmail: s.transferOwnerEmail || '',
       canAskTransferOwnership: !!s.transferOwnerEmail,
       notCanAskTransferOwnership: !s.transferOwnerEmail,
@@ -4758,7 +4949,10 @@ class Component extends DCLogic {
       familyActivityItems: (s.activityFeed || []).filter(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))).map(a => {
         let when = '';
         try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
-        return { id: a.id, message: a.message || '', when };
+        const actorEmail = String(a.actor || '').toLowerCase().trim();
+        const actorPerson = actorEmail ? (s.cfgTravelers || []).find(o => String(o.email || '').toLowerCase().trim() === actorEmail) : null;
+        const actorName = actorPerson ? actorPerson.label : (actorEmail || '');
+        return { id: a.id, message: a.message || '', when, actorName, actorEmail, mailtoHref: actorEmail ? ('mailto:' + actorEmail) : '' };
       }),
       familyActivityEmpty: !(s.activityFeed || []).some(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))),
       newNonAccountName: s.newNonAccountName || '',
@@ -9324,6 +9518,10 @@ class Component extends DCLogic {
       ],
       bulkVisShared: this.state.bulk.vis === 'shared',
       bulkChkOwner: this.state.bulk.fields.owner, bulkChkNotes: this.state.bulk.fields.notes, bulkChkVisit: this.state.bulk.fields.visit, bulkChkTravelers: this.state.bulk.fields.travelers, bulkChkTrip: this.state.bulk.fields.trip, bulkChkVis: this.state.bulk.fields.vis,
+      notBulkChkOwner: !this.state.bulk.fields.owner,
+      notBulkChkNotes: !this.state.bulk.fields.notes,
+      bulkApplyDisabled: !(this.bulkTargets().length && Object.values(this.state.bulk.fields).some(Boolean)),
+      bulkApplyOpacity: (this.bulkTargets().length && Object.values(this.state.bulk.fields).some(Boolean)) ? 1 : 0.5,
       bulkAnyField: Object.values(this.state.bulk.fields).some(Boolean),
       toggleBulkOwner: () => this.toggleBulkField('owner'),
       toggleBulkNotes: () => this.toggleBulkField('notes'),
