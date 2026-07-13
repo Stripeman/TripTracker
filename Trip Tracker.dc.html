@@ -408,8 +408,8 @@
                 <div style="display:flex; flex-direction:column; gap:7px; max-height:220px; overflow-y:auto; margin-bottom:10px;">
                   <sc-for list="{{ unclaimedTrips }}" as="u" hint-placeholder-count="2">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:7px 10px;">
-                      <div style="min-width:0;">
-                        <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ u.place }}</div>
+                      <div onClick="{{ u.onView }}" title="Click to view this trip" style="min-width:0; cursor:pointer;">
+                        <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#7fd4f5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-decoration:underline;">{{ u.place }}</div>
                         <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:1px;">{{ u.dates }}</div>
                       </div>
                       <select onChange="{{ u.onAssign }}" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
@@ -877,6 +877,14 @@
                 <button onClick="{{ setAuditDetailed }}" style="{{ auditDetailedStyle }}">Detailed</button>
                 <button onClick="{{ setAuditVerbose }}" style="{{ auditVerboseStyle }}">Verbose</button>
               </div>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
+              <div>
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Per-family category limit</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Max items a family's custom Visit Type / Trip Type / Status list can hold.</div>
+              </div>
+              <input type="number" min="1" max="200" defaultValue="{{ cfgFamilyCatLimit }}" onBlur="{{ onFamilyCatLimitBlur }}" style="flex:none; width:64px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 8px; outline:none; text-align:center;">
             </div>
 
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PRIMARY ADMIN(S)</div>
@@ -1384,6 +1392,7 @@
                         </sc-for>
                       </div>
                       <button onClick="{{ cs.onAdd }}" style="width:100%; box-sizing:border-box; margin-top:9px; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.36); border-radius:8px; padding:7px; cursor:pointer;">+ Add item</button>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:6px; text-align:center;">{{ cs.itemCountLabel }}</div>
                     </sc-if>
                     <sc-if value="{{ cs.notCustom }}" hint-placeholder-val="{{ true }}">
                       <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">Inheriting the site default ({{ cs.siteCount }} items).</div>
@@ -3561,6 +3570,7 @@ class Component extends DCLogic {
       mySiteAdmin: false,
       autoApproveFamilies: false,
       cfgAuditLevel: 'essential',
+      cfgFamilyCatLimit: 40,
       cfgImageUploadsEnabledSite: true,
       cfgPublicSharingEnabledSite: true,
       cfgShowPricingSection: false,
@@ -4099,6 +4109,7 @@ class Component extends DCLogic {
         cfgFamilyColors: j.familyColors || [],
         autoApproveFamilies: !!j.autoApproveFamilies,
         cfgAuditLevel: ['essential', 'detailed', 'verbose'].includes(j.auditLevel) ? j.auditLevel : 'essential',
+        cfgFamilyCatLimit: Number.isFinite(j.familyCatLimit) && j.familyCatLimit > 0 ? j.familyCatLimit : 40,
         cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false,
         cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false,
         cfgShowPricingSection: !!j.showPricingSection,
@@ -4395,6 +4406,12 @@ class Component extends DCLogic {
     const j = await this.familiesAction('setAuditLevel', { value: v });
     if (j) { this.setState({ cfgAuditLevel: j.auditLevel }); this.toast('Audit level: ' + j.auditLevel); }
   }
+  async setFamilyCatLimit(v) {
+    const raw = Number(v);
+    const n = Math.min(200, Math.max(1, Math.floor(Number.isFinite(raw) && raw > 0 ? raw : 40)));
+    const j = await this.familiesAction('setFamilyCatLimit', { value: n });
+    if (j) { this.setState({ cfgFamilyCatLimit: j.familyCatLimit }); this.toast('Category limit: ' + j.familyCatLimit); }
+  }
   async toggleImageUploadsSite() {
     const j = await this.familiesAction('setImageUploadsEnabled', { value: !this.state.cfgImageUploadsEnabledSite });
     if (j) { this.setState({ cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false }); this.toast(j.imageUploadsEnabled !== false ? 'Site-wide image uploads are ON' : 'Site-wide image uploads are OFF'); }
@@ -4485,6 +4502,8 @@ class Component extends DCLogic {
   addFamilyCatItem(cat) {
     const familyId = this.viewFamilyId();
     const list = this.familyCatEffective(familyId, cat).map(o => ({ ...o }));
+    const limit = this.state.cfgFamilyCatLimit || 40;
+    if (list.length >= limit) { this.toast('Limit reached (' + limit + ' items) — raise it in Site Administration.'); return; }
     const palette = ['#5fd3ff', '#38d99c', '#fbbf24', '#f0a6a6', '#c792ea', '#7fd4f5', '#9fd6f0'];
     const key = 'custom_' + Math.random().toString(36).slice(2, 8);
     const item = { key, label: 'New item', color: palette[list.length % palette.length] };
@@ -4833,6 +4852,8 @@ class Component extends DCLogic {
       auditLevelHint: s.cfgAuditLevel === 'verbose' ? 'Logs people/roles/permissions + trip create/edit/delete/comments + sign-ins.'
         : s.cfgAuditLevel === 'detailed' ? 'Logs people/roles/permissions + trip create/edit/delete/comments.'
         : 'Logs people/roles/family/permission changes only (default — lightest weight).',
+      cfgFamilyCatLimit: s.cfgFamilyCatLimit || 40,
+      onFamilyCatLimitBlur: (e) => this.setFamilyCatLimit(e.target.value),
       imageUploadsSiteToggleLabel: s.cfgImageUploadsEnabledSite !== false ? 'ON' : 'OFF',
       imageUploadsSiteToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.cfgImageUploadsEnabledSite !== false ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
@@ -4960,6 +4981,7 @@ class Component extends DCLogic {
           onColor: (e) => this.updateFamilyCatItem(cat, o.key, { color: e.target.value }),
           onRemove: () => this.removeFamilyCatItem(cat, o.key),
         })) : [];
+        const limit = s.cfgFamilyCatLimit || 40;
         return {
           cat, title: TITLES[cat], isCustom, notCustom: !isCustom,
           siteCount: (s[this._catGlobalKey(cat)] || []).length,
@@ -4967,6 +4989,7 @@ class Component extends DCLogic {
           toggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:9.5px; letter-spacing:0.04em; padding:5px 9px; border-radius:7px; cursor:pointer; border:1px solid ' + (isCustom ? 'rgba(239,68,68,0.3); color:#e9a3a3; background:rgba(239,68,68,0.07);' : 'rgba(56,189,248,0.3); color:#9fd6f0; background:rgba(56,189,248,0.08);'),
           onToggleCustom: () => this.toggleFamilyCatCustom(cat),
           items,
+          itemCountLabel: items.length + ' / ' + limit + ' items',
           onAdd: () => this.addFamilyCatItem(cat),
         };
       }),
@@ -5721,7 +5744,7 @@ class Component extends DCLogic {
     const withFamilyOverrides = (base, cat) => {
       const seen = new Set(base.map(o => o.key));
       const out = base.slice();
-      (this.state.cfgFamilies || []).forEach(f => {
+      (this.state && this.state.cfgFamilies || []).forEach(f => {
         const ov = f.catOverrides && f.catOverrides[cat];
         if (Array.isArray(ov)) ov.forEach(o => { if (!seen.has(o.key)) { seen.add(o.key); out.push(o); } });
       });
@@ -7506,6 +7529,7 @@ class Component extends DCLogic {
   calViewNext() { this.setState(s => { let m = s.calViewM + 1, y = s.calViewY; if (m > 11) { m = 0; y++; } return { calViewM: m, calViewY: y }; }); }
   calViewToday() { const d = new Date(); this.setState({ calViewY: d.getFullYear(), calViewM: d.getMonth() }); }
   selectFromCalendar(id) { this.setState({ calendarOpen: false }); this.selectLocation(id); }
+  viewUnclaimedTrip(id) { this.setState({ settingsOpen: false }); this.selectLocation(id); }
   calendarRenderVals(mapped) {
     const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -9623,6 +9647,7 @@ class Component extends DCLogic {
             id: l.id, place, dates,
             ownerOptions: users,
             onAssign: (e) => this.assignTripOwner(l.id, e.target.value),
+            onView: () => this.viewUnclaimedTrip(l.id),
           };
         });
       })(),

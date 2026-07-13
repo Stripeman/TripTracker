@@ -242,6 +242,7 @@ module.exports = async function (context, req) {
         landingVariant: ["signin", "a", "b", "c"].includes(settings.landingVariant) ? settings.landingVariant : "signin",
         showPricingSection: !!settings.showPricingSection,
         auditLevel: ["essential", "detailed", "verbose"].includes(settings.auditLevel) ? settings.auditLevel : "essential",
+        familyCatLimit: Number.isFinite(settings.familyCatLimit) && settings.familyCatLimit > 0 ? Math.min(200, Math.floor(settings.familyCatLimit)) : 40,
         showTestimonials: !!settings.showTestimonials,
         testimonials: Array.isArray(settings.testimonials) ? settings.testimonials : [],
         pendingFamilies: meIsSiteAdmin ? families.filter((f) => !f.approved) : undefined,
@@ -431,6 +432,19 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Site-wide cap on how many items a family's custom Visit Type / Trip Type /
+    // Status list can hold (setFamilyCategories reads this instead of a hardcoded
+    // number). Site admin only. 1–200, default 40.
+    if (action === "setFamilyCatLimit") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const raw = Number(body.value);
+      const v = Math.min(200, Math.max(1, Math.floor(Number.isFinite(raw) && raw > 0 ? raw : 40)));
+      settings = { ...settings, familyCatLimit: v };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, familyCatLimit: v });
+      return;
+    }
+
     // Per-family override of the site-wide image-uploads setting. value: true | false | null
     // (null clears the override so the family goes back to inheriting the site default).
     if (action === "setFamilyImageUploads") {
@@ -451,9 +465,10 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
       const cat = ["visit", "trip", "status"].includes(body.cat) ? body.cat : null;
       if (!cat) { json(400, { error: "Invalid category." }); return; }
+      const catLimit = Number.isFinite(settings.familyCatLimit) && settings.familyCatLimit > 0 ? Math.min(200, Math.floor(settings.familyCatLimit)) : 40;
       let list = null;
       if (Array.isArray(body.list)) {
-        list = body.list.slice(0, 40).map((o) => {
+        list = body.list.slice(0, catLimit).map((o) => {
           const item = {
             key: String((o && o.key) || "").slice(0, 60) || ("item" + Math.random().toString(36).slice(2, 8)),
             label: String((o && o.label) || "").slice(0, 60),
