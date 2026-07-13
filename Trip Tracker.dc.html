@@ -928,18 +928,9 @@
             <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; background:{{ emailKillSwitchBg }}; border:1px solid {{ emailKillSwitchBorder }}; border-radius:10px; padding:11px 12px;">
               <div>
                 <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Disable all email notifications</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Site-wide kill switch for abuse/incident response — suppresses every courtesy email (invites, shares, category changes, attachments, ownership, new trips) regardless of any family's own notification settings. Toasts and the Activity Log still work.</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Turning this OFF sets every family's Email toggle to off and locks it (no family can turn it back on). Turning this back ON only unlocks the toggles — it doesn't force any family's setting back on; each family keeps whatever they last had and can choose for themselves. Toasts and the Activity Log still work either way.</div>
               </div>
               <button onClick="{{ toggleEmailKillSwitch }}" style="{{ emailKillSwitchToggleStyle }}">{{ emailKillSwitchToggleLabel }}</button>
-            </div>
-
-            <div style="margin-bottom:16px; padding:11px 12px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
-              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0; margin-bottom:2px;">Reset every family's email notifications</div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-bottom:10px;">A one-time bulk override — unlike the kill switch above, this actually rewrites each existing family's own Email toggles (all 7 event types) to the same value. Families can still fine-tune afterward in their own Notifications tab. Toast and Bell are untouched.</div>
-              <div style="display:flex; gap:8px;">
-                <button onClick="{{ resetAllEmailOn }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; padding:7px 10px; border-radius:8px; cursor:pointer; border:1px solid rgba(52,211,153,0.3); color:#a7f3d0; background:rgba(52,211,153,0.08);">Turn ON for everyone</button>
-                <button onClick="{{ resetAllEmailOff }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.06em; padding:7px 10px; border-radius:8px; cursor:pointer; border:1px solid rgba(239,68,68,0.3); color:#e9a3a3; background:rgba(239,68,68,0.07);">Turn OFF for everyone</button>
-              </div>
             </div>
 
             <div style="margin-bottom:16px;">
@@ -3507,7 +3498,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.28.5-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.28.6-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4658,11 +4649,6 @@ class Component extends DCLogic {
     const j = await this.familiesAction('setDefaultNotifPrefs', { key, channel, value });
     if (j) this.toast((value ? 'Enabled' : 'Disabled') + ' ' + channel + ' for new families\u2019 default.');
   }
-  async resetAllFamilyEmailPrefs(value) {
-    if (!window.confirm('This rewrites the Email toggle (all 7 event types) for EVERY existing family to ' + (value ? 'ON' : 'OFF') + '. Families can still adjust their own after. Continue?')) return;
-    const j = await this.familiesAction('resetAllFamilyEmailPrefs', { value });
-    if (j) this.toast('Email notifications turned ' + (value ? 'ON' : 'OFF') + ' for every family.');
-  }
   async toggleImageUploadsSite() {
     const j = await this.familiesAction('setImageUploadsEnabled', { value: !this.state.cfgImageUploadsEnabledSite });
     if (j) { this.setState({ cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false }); this.toast(j.imageUploadsEnabled !== false ? 'Site-wide image uploads are ON' : 'Site-wide image uploads are OFF'); }
@@ -5227,8 +5213,6 @@ class Component extends DCLogic {
       emailKillSwitchToggleLabel: s.cfgEmailKillSwitch ? 'Disabled' : 'Enabled',
       emailKillSwitchToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:7px 14px; border-radius:8px; cursor:pointer; border:1px solid ' + (s.cfgEmailKillSwitch ? 'rgba(239,68,68,0.4); color:#fecaca; background:rgba(239,68,68,0.14);' : 'rgba(52,211,153,0.3); color:#a7f3d0; background:rgba(52,211,153,0.08);'),
       toggleEmailKillSwitch: () => this.toggleEmailKillSwitch(),
-      resetAllEmailOn: () => this.resetAllFamilyEmailPrefs(true),
-      resetAllEmailOff: () => this.resetAllFamilyEmailPrefs(false),
       defaultNotifRows: (() => {
         const prefs = s.cfgDefaultNotifPrefs || {};
         const NOTIF_DEFS = [

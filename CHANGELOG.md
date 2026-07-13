@@ -4,6 +4,13 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.28.6-beta — Kill switch replaces the separate bulk email reset
+
+### Changed
+- **Removed the separate "Reset every family's email notifications" ON/OFF buttons** (introduced in 1.28.3-beta) — they overlapped confusingly with the kill switch and didn't lock anything, so a family could immediately undo a site-wide "OFF" reset. The kill switch alone now does what that control was meant to: turning it **OFF** sets every family's Email toggle off *and* locks it (can't be clicked); turning it back **ON** only unlocks the toggles again, without forcing any family's setting back on — each family keeps whatever they last had.
+
+---
+
 ## 1.28.5-beta — Real email for Comments/Trip edits/Trip deletes; kill-switch lock on family toggles; activity feed cap; family-scoped bulk editor
 
 ### Added
