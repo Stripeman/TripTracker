@@ -4,6 +4,16 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.25.1-beta — Code cleanup
+
+### Fixed
+- Confirmed the "activeTouches already declared" console error reported earlier was a stale hot-reload artifact from a mid-edit session, not a persisted bug — a fresh page load renders cleanly with no console errors (verified via full code review pass: no duplicate method names, no duplicate API action handlers, all routes correct).
+
+### Changed
+- De-duplicated the family-scope option builder used by the Metrics and People family-scope pickers into a single shared helper (`baseFamilyScopeOptions`) — no user-visible change.
+
+---
+
 ## 1.25.0-beta — Attachments & storage view; itinerary shared-editing; trip-deletion floors
 
 ### Added

@@ -1986,47 +1986,6 @@
               </button>
             </sc-if>
           </div>
-        </sc-if>
-        <div style="display:flex; gap:7px; margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08); flex-wrap:wrap;">
-            <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
-              <button onClick="{{ editSelected }}" title="Edit trip" style="{{ actionIconStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"></path></svg></button>
-            </sc-if>
-            <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
-              <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="{{ actionIconStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
-            </sc-if>
-            <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="{{ actionIconStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
-            </sc-if>
-            <sc-if value="{{ selected.hasGallery }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ selected.openGallery }}" title="Gallery" style="{{ actionIconStyle }}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10.5" r="1.5"></circle><path d="M21 15l-5-5L5 19"></path></svg>
-                <sc-if value="{{ selected.galleryCount }}" hint-placeholder-val="{{ false }}"><span style="{{ actionBadgeStyle }}">{{ selected.galleryCount }}</span></sc-if>
-              </button>
-            </sc-if>
-            <sc-if value="{{ selected.hasItinerary }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ selected.openItinerary }}" title="Itinerary" style="{{ actionIconStyle }}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18M8 2v4M16 2v4"></path></svg>
-                <sc-if value="{{ selected.itineraryFilledCount }}" hint-placeholder-val="{{ false }}"><span style="{{ actionBadgeStyle }}">{{ selected.itineraryFilledCount }}</span></sc-if>
-              </button>
-            </sc-if>
-            <sc-if value="{{ selected.showComments }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ selected.openComments }}" title="Comments" style="{{ actionIconStyle }}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                <sc-if value="{{ selected.commentCount }}" hint-placeholder-val="{{ false }}"><span style="{{ actionBadgeStyle }}">{{ selected.commentCount }}</span></sc-if>
-              </button>
-            </sc-if>
-            <sc-if value="{{ selected.showAttachments }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ selected.openAttachments }}" title="Attachments" style="{{ actionIconStyle }}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95L10.13 17.1a1.5 1.5 0 0 1-2.12-2.12l7.34-7.34"></path></svg>
-                <sc-if value="{{ selected.attachmentCount }}" hint-placeholder-val="{{ false }}"><span style="{{ actionBadgeStyle }}">{{ selected.attachmentCount }}</span></sc-if>
-              </button>
-            </sc-if>
-            <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ actionIconStyle }}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
-              </button>
-            </sc-if>
-          </div>
         <sc-if value="{{ selectedReadOnly }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:16px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5; text-align:center;">Shared with you · view only</div>
         </sc-if>
@@ -3130,7 +3089,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.25.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.25.1-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4310,6 +4269,15 @@ class Component extends DCLogic {
     if (floor === 'admin') return role === 'admin';
     return role === 'admin' || role === 'editor';
   }
+  // Shared "mine" + "allMine" option pair used by both the Metrics and People
+  // family-scope pickers — each caller still appends its own site-admin branch.
+  baseFamilyScopeOptions() {
+    const homeId = this.myHomeFamilyId();
+    const homeFamObj = (this.state.cfgFamilies || []).find(f => f.id === homeId);
+    const opts = [{ value: 'mine', label: (homeFamObj && homeFamObj.name) || 'My family' }];
+    if (this.myAccessibleFamilyIds().size > 1) opts.push({ value: 'allMine', label: 'All families I have access to' });
+    return opts;
+  }
   canDeleteTrip(sl) {
     if (!sl) return false;
     if (this.state.cfgDataSource !== 'cloud') return true;
@@ -5255,20 +5223,7 @@ class Component extends DCLogic {
     const activeTouches = new Map(); // pointerId -> {x,y}, for pinch-to-zoom
     let pinchStartDist = null, pinchStartZoom = 1;
     const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-    const activeTouches = new Map(); // pointerId -> {x,y}, for pinch-to-zoom
-    let pinchStartDist = null, pinchStartZoom = 1;
-    const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
     c.addEventListener('pointerdown', e => {
-      if (e.pointerType === 'touch') {
-        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY });
-        if (activeTouches.size === 2) {
-          this.dragging = false; // two fingers = pinch, not drag
-          const pts = [...activeTouches.values()];
-          pinchStartDist = dist(pts[0], pts[1]);
-          pinchStartZoom = this._zoom || 1;
-          return;
-        }
-      }
       if (e.pointerType === 'touch') {
         activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY });
         if (activeTouches.size === 2) {
@@ -5296,16 +5251,6 @@ class Component extends DCLogic {
           return;
         }
       }
-      if (e.pointerType === 'touch' && activeTouches.has(e.pointerId)) {
-        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY });
-        if (activeTouches.size === 2 && pinchStartDist) {
-          const pts = [...activeTouches.values()];
-          const factor = dist(pts[0], pts[1]) / pinchStartDist;
-          this._zoom = Math.max(1, Math.min(6, pinchStartZoom * factor));
-          if (this.proj && this._baseScale) this.proj.scale(this._baseScale * this._zoom);
-          return;
-        }
-      }
       if (!this.dragging) return;
       const dx = e.clientX - this._last[0], dy = e.clientY - this._last[1];
       this._last = [e.clientX, e.clientY];
@@ -5323,13 +5268,11 @@ class Component extends DCLogic {
     }, { passive: false });
     const up = e => {
       if (e.pointerType === 'touch') { activeTouches.delete(e.pointerId); pinchStartDist = null; }
-      if (e.pointerType === 'touch') { activeTouches.delete(e.pointerId); pinchStartDist = null; }
       if (!this.dragging) return;
       this.dragging = false; c.style.cursor = 'grab';
       if (moved < 5) this.handleClick(e);
     };
     c.addEventListener('pointerup', up);
-    c.addEventListener('pointercancel', e => { if (e.pointerType === 'touch') { activeTouches.delete(e.pointerId); pinchStartDist = null; } this.dragging = false; c.style.cursor = 'grab'; });
     c.addEventListener('pointercancel', e => { if (e.pointerType === 'touch') { activeTouches.delete(e.pointerId); pinchStartDist = null; } this.dragging = false; c.style.cursor = 'grab'; });
   }
 
@@ -5518,7 +5461,6 @@ class Component extends DCLogic {
     const path = d3.geoPath(proj, ctx);
 
     // atmosphere
-    const spaceStyle = this.state.cfgTheme === 'space';
     const spaceStyle = this.state.cfgTheme === 'space';
     if (spaceStyle) {
       if (!this._stars || this._starsW !== w || this._starsH !== h) {
@@ -8965,9 +8907,7 @@ class Component extends DCLogic {
         galleryCount: (sl.gallery || []).length,
         openGallery: () => this.openLightbox(sl.gallery, 0),
         galleryThumbs: (sl.gallery || []).map((src, i) => ({ src, onClick: () => this.openLightbox(sl.gallery, i) })),
-        galleryThumbs: (sl.gallery || []).map((src, i) => ({ src, onClick: () => this.openLightbox(sl.gallery, i) })),
         hasItinerary: !!(sl.itinerary && Object.keys(sl.itinerary).some(k => sl.itinerary[k])),
-        itineraryFilledCount: sl.itinerary ? Object.keys(sl.itinerary).filter(k => sl.itinerary[k]).length : 0,
         itineraryFilledCount: sl.itinerary ? Object.keys(sl.itinerary).filter(k => sl.itinerary[k]).length : 0,
         itineraryDayCount: this._itineraryDayList(sl.date, sl.dateEnd).length,
         itineraryDayPlural: this._itineraryDayList(sl.date, sl.dateEnd).length === 1 ? '' : 's',
@@ -9200,11 +9140,7 @@ class Component extends DCLogic {
       metricsFamilyScope: this.state.metricsFamilyScope || 'mine',
       setMetricsFamilyScope: (e) => this.setMetricsFamilyScope(e),
       metricsFamilyScopeOptions: (() => {
-        const homeId = this.myHomeFamilyId();
-        const homeFamObj = (this.state.cfgFamilies || []).find(f => f.id === homeId);
-        const opts = [{ value: 'mine', label: (homeFamObj && homeFamObj.name) || 'My family' }];
-        const accessibleCount = this.myAccessibleFamilyIds().size;
-        if (accessibleCount > 1) opts.push({ value: 'allMine', label: 'All families I have access to' });
+        const opts = this.baseFamilyScopeOptions();
         if (this.state.mySiteAdmin) opts.push({ value: 'all', label: 'Every family (site admin)' });
         return opts;
       })(),
@@ -9278,7 +9214,6 @@ class Component extends DCLogic {
         : 'flex:1; font-family:\'Space Grotesk\',sans-serif; font-size:12px; padding:8px; border-radius:8px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03); color:#8ea0b8;',
       setDarkMode: () => this.setLightMode(false),
       setLightModeOn: () => this.setLightMode(true),
-      showCloudDrift: this.state.cfgTheme === 'space',
       showCloudDrift: this.state.cfgTheme === 'space',
       cloudDriftValue: Number.isFinite(this.state.cfgCloudDrift) ? this.state.cfgCloudDrift : 1,
       cloudDriftLabel: (Number.isFinite(this.state.cfgCloudDrift) ? this.state.cfgCloudDrift : 1).toFixed(1) + 'x',
@@ -9415,11 +9350,7 @@ class Component extends DCLogic {
         if (this.state.mySiteAdmin) {
           return [{ value: 'all', label: 'All families' }, ...(this.state.cfgFamilies || []).map(f => ({ value: f.id, label: f.name }))];
         }
-        const homeId = this.myHomeFamilyId();
-        const homeFamObj = (this.state.cfgFamilies || []).find(f => f.id === homeId);
-        const opts = [{ value: 'mine', label: (homeFamObj && homeFamObj.name) || 'My family' }];
-        if (this.myAccessibleFamilyIds().size > 1) opts.push({ value: 'allMine', label: 'All families I have access to' });
-        return opts;
+        return this.baseFamilyScopeOptions();
       })(),
       cfgFormStyle: cfgPill(this.state.cfgDetailsFormDefault),
       cfgFormLabel: this.state.cfgDetailsFormDefault ? 'ON' : 'OFF',
@@ -9757,7 +9688,6 @@ class Component extends DCLogic {
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
       appUpdated: 'July 12, 2026',
-
 
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
