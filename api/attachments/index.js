@@ -1,5 +1,6 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
 const { checkRateLimit } = require("../_shared/rateLimit");
+const { notifPrefOn, sendEmail, familyAdminEmails } = require("../_shared/notify");
 
 // ATTACHMENTS API — real files (tickets, confirmations) attached to a trip.
 //
@@ -83,16 +84,70 @@ function canView(trip, me) {
   return false;
 }
 
-function canEdit(trip, me) {
+function floorOk(role, floor) {
+  if (!role) return false;
+  if (floor === "admin") return role === "admin";
+  return role === "admin" || role === "editor";
+}
+
+function canEdit(trip, me, perm) {
   if (me.siteAdmin) return true;
   if (trip.soloPrivate) return isMine(trip, me);
   if (!trip.familyId) return isMine(trip, me);
   const myRole = me.familyRoles.get(trip.familyId);
-  if (myRole === "editor" || myRole === "admin") return true;
+  if (floorOk(myRole, (perm && perm.attachFloor) || "editor")) return true;
   const shareRole = me.sharesIn.get(trip.familyId);
   if (shareRole && trip.hiddenFromShares) return false;
   if (shareRole === "editor" || shareRole === "admin-no-delete") return true;
   return false;
+}
+
+const DEFAULT_TRIP_PERM = { editFloor: "editor", attachFloor: "editor", commentFloor: "editor", attachVisibleShared: true, memberDeleteAny: false, sharedCanDelete: false, itineraryEditableShared: false };
+const ACTIVITY_BLOB = process.env.ACTIVITY_BLOB || "activity.json";
+const ACTIVITY_MAX = 300;
+
+async function logActivity(container, { type, familyId, visibleTo, actor, message }) {
+  try {
+    const blob = container.getBlockBlobClient(ACTIVITY_BLOB);
+    let list = [];
+    if (await blob.exists()) {
+      try { list = JSON.parse(await streamToString((await blob.download()).readableStreamBody)); } catch (e) { list = []; }
+    }
+    if (!Array.isArray(list)) list = [];
+    list.push({ id: "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), type, familyId: familyId || null, visibleTo: visibleTo || [], actor, message, createdAt: new Date().toISOString() });
+    if (list.length > ACTIVITY_MAX) list = list.slice(list.length - ACTIVITY_MAX);
+    const text = JSON.stringify(list, null, 2);
+    await blob.upload(text, Buffer.byteLength(text), { blobHTTPHeaders: { blobContentType: "application/json" } });
+  } catch (e) { /* best-effort */ }
+}
+
+async function loadPermByFamily(container) {
+  const map = new Map();
+  const approved = new Map();
+  try {
+    const familiesBlob = container.getBlockBlobClient(process.env.FAMILIES_BLOB || "families.json");
+    if (await familiesBlob.exists()) {
+      const list = JSON.parse(await streamToString((await familiesBlob.download()).readableStreamBody));
+      (Array.isArray(list) ? list : []).forEach((f) => { map.set(f.id, { ...DEFAULT_TRIP_PERM, ...(f.permTrip || {}) }); approved.set(f.id, !!f.approved); });
+    }
+  } catch (e) { /* fail open */ }
+  const permFor = (familyId) => (familyId && map.get(familyId)) || DEFAULT_TRIP_PERM;
+  permFor.isApproved = (familyId) => !familyId || !approved.has(familyId) || approved.get(familyId);
+  return permFor;
+}
+
+async function loadFamiliesAndMembers(container) {
+  let families = [];
+  let members = [];
+  try {
+    const familiesBlob = container.getBlockBlobClient(process.env.FAMILIES_BLOB || "families.json");
+    if (await familiesBlob.exists()) families = JSON.parse(await streamToString((await familiesBlob.download()).readableStreamBody));
+  } catch (e) { /* fail open */ }
+  try {
+    const membersBlob = container.getBlockBlobClient(MEMBERS_BLOB);
+    if (await membersBlob.exists()) members = JSON.parse(await streamToString((await membersBlob.download()).readableStreamBody));
+  } catch (e) { /* fail open */ }
+  return { families: Array.isArray(families) ? families : [], members: Array.isArray(members) ? members : [] };
 }
 
 async function streamToString(readable) {
@@ -172,6 +227,17 @@ module.exports = async function (context, req) {
     const container = await getContainer();
     await enrichMe(container, me);
     const dataBlob = container.getBlockBlobClient(BLOB);
+    const permFor = await loadPermByFamily(container);
+    let auditDetailed = false;
+    let emailKillSwitch = false;
+    try {
+      const settingsBlob = container.getBlockBlobClient("family-settings.json");
+      if (await settingsBlob.exists()) {
+        const fs = JSON.parse(await streamToString((await settingsBlob.download()).readableStreamBody));
+        auditDetailed = fs.auditLevel === "detailed" || fs.auditLevel === "verbose";
+        emailKillSwitch = !!fs.emailKillSwitch;
+      }
+    } catch (e) { /* fail open (no audit) */ }
 
     // ---- download (GET) ----
     if (req.method === "GET") {
@@ -185,6 +251,9 @@ module.exports = async function (context, req) {
       const trip = locations.find((t) => String(t.id) === String(tripId));
       if (!trip) { json(404, { error: "Trip not found." }); return; }
       if (!canView(trip, me)) { json(403, { error: "No access to this trip." }); return; }
+      if (trip.familyId && !me.siteAdmin && !isMine(trip, me) && !me.familyRoles.has(trip.familyId) && !permFor(trip.familyId).attachVisibleShared) {
+        json(403, { error: "This family has kept attachments private." }); return;
+      }
       const att = (trip.attachments || []).find((a) => a.id === attId);
       if (!att) { json(404, { error: "Attachment not found." }); return; }
 
@@ -224,11 +293,19 @@ module.exports = async function (context, req) {
       const att = (trip.attachments || []).find((a) => a.id === id);
       if (!att) { json(404, { error: "Attachment not found." }); return; }
       const uploadedByMe = sameEmail(att.uploadedByEmail, me.email);
-      if (!uploadedByMe && !canEdit(trip, me)) { json(403, { error: "No permission to remove this attachment." }); return; }
+      if (!uploadedByMe && !canEdit(trip, me, permFor(trip.familyId))) { json(403, { error: "No permission to remove this attachment." }); return; }
 
       try { await container.getBlockBlobClient(att.blobName).deleteIfExists(); } catch (e) { /* best-effort */ }
       const updated = stored.locations.map((t) => t.id === trip.id ? { ...t, attachments: (t.attachments || []).filter((a) => a.id !== id) } : t);
       await writeDataset(dataBlob, updated, stored.settings);
+      if (auditDetailed && trip.familyId) {
+        const { families } = await loadFamiliesAndMembers(container);
+        const fam = families.find((f) => f.id === trip.familyId);
+        if (notifPrefOn(fam, "attachmentUploads", "bell")) {
+          const place = [trip.city, trip.country].filter(Boolean).join(", ") || "a trip";
+          await logActivity(container, { type: "deleteAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: me.email + " removed attachment \"" + att.name + "\" from " + place });
+        }
+      }
       json(200, { ok: true });
       return;
     }
@@ -249,7 +326,8 @@ module.exports = async function (context, req) {
       const stored = await readDataset(dataBlob);
       const trip = stored.locations.find((t) => String(t.id) === String(tripId));
       if (!trip) { json(404, { error: "Trip not found." }); return; }
-      if (!canEdit(trip, me)) { json(403, { error: "No permission to add attachments to this trip." }); return; }
+      if (!canEdit(trip, me, permFor(trip.familyId))) { json(403, { error: "No permission to add attachments to this trip." }); return; }
+      if (trip.familyId && !me.siteAdmin && !permFor.isApproved(trip.familyId)) { json(403, { error: "This family is pending site-admin approval — attachments can't be added yet." }); return; }
 
       let buf;
       try { buf = Buffer.from(dataBase64, "base64"); } catch (e) { json(400, { error: "Invalid file data." }); return; }
@@ -267,6 +345,18 @@ module.exports = async function (context, req) {
       };
       const updated = stored.locations.map((t) => t.id === trip.id ? { ...t, attachments: [...(t.attachments || []), record] } : t);
       await writeDataset(dataBlob, updated, stored.settings);
+      if (trip.familyId) {
+        const { families, members } = await loadFamiliesAndMembers(container);
+        const fam = families.find((f) => f.id === trip.familyId);
+        const place = [trip.city, trip.country].filter(Boolean).join(", ") || "a trip";
+        if (auditDetailed && notifPrefOn(fam, "attachmentUploads", "bell")) {
+          await logActivity(container, { type: "uploadAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: me.email + " added attachment \"" + cleanName + "\" to " + place });
+        }
+        if (fam && !emailKillSwitch && notifPrefOn(fam, "attachmentUploads", "email")) {
+          const to = familyAdminEmails(members, trip.familyId, me.email);
+          sendEmail(to, "New attachment \u2014 " + fam.name, me.email + " added \"" + cleanName + "\" to " + place + ".").catch(() => {});
+        }
+      }
       json(200, { ok: true, attachment: record });
       return;
     }

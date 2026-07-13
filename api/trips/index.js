@@ -1,5 +1,6 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
 const { checkRateLimit } = require("../_shared/rateLimit");
+const { notifPrefOn, sendEmail, familyAdminEmails } = require("../_shared/notify");
 
 // Reads/writes the Trip Tracker dataset to Blob Storage, with PER-USER access control.
 //
@@ -21,6 +22,25 @@ const { checkRateLimit } = require("../_shared/rateLimit");
 const CONTAINER = process.env.TRIPS_CONTAINER || "data";
 const BLOB = process.env.TRIPS_BLOB || "trip-tracker.json";
 const MEMBERS_BLOB = process.env.MEMBERSHIPS_BLOB || "memberships.json";
+const ACTIVITY_BLOB = process.env.ACTIVITY_BLOB || "activity.json";
+const ACTIVITY_MAX = 300;
+
+// Best-effort audit log write — mirrors api/families' logActivity so trip-level
+// events (create/edit/delete/comment) land in the same per-family Activity Log.
+async function logActivity(container, { type, familyId, visibleTo, actor, message }) {
+  try {
+    const blob = container.getBlockBlobClient(ACTIVITY_BLOB);
+    let list = [];
+    if (await blob.exists()) {
+      try { list = JSON.parse(await streamToString((await blob.download()).readableStreamBody)); } catch (e) { list = []; }
+    }
+    if (!Array.isArray(list)) list = [];
+    list.push({ id: "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), type, familyId: familyId || null, visibleTo: visibleTo || [], actor, message, createdAt: new Date().toISOString() });
+    if (list.length > ACTIVITY_MAX) list = list.slice(list.length - ACTIVITY_MAX);
+    const text = JSON.stringify(list, null, 2);
+    await blob.upload(text, Buffer.byteLength(text), { blobHTTPHeaders: { blobContentType: "application/json" } });
+  } catch (e) { /* best-effort — never blocks the calling action */ }
+}
 const SHARES_BLOB = process.env.FAMILY_SHARES_BLOB || "family-shares.json";
 
 function principal(req) {
@@ -89,12 +109,12 @@ function canView(trip, me) {
 
 // Normal saves may create/modify/delete trips in a family where I'm editor/admin, or
 // trips I personally own (legacy path). Read-only family shares never grant edit.
-function canEdit(trip, me) {
+function canEdit(trip, me, perm) {
   if (me.siteAdmin) return true;
   if (trip.soloPrivate) return isMine(trip, me); // truly-private trips: owner only, even for family editors
   if (!trip.familyId) return isMine(trip, me); // legacy path unchanged
   const myRole = me.familyRoles.get(trip.familyId);
-  if (myRole === "editor" || myRole === "admin") return true;
+  if (floorOk(myRole, (perm && perm.editFloor) || "editor")) return true;
   const shareRole = me.sharesIn.get(trip.familyId);
   if (shareRole && trip.hiddenFromShares) return false; // per-trip override also blocks edit via a share
   if (shareRole === "editor" || shareRole === "admin-no-delete") return true;
@@ -103,14 +123,30 @@ function canEdit(trip, me) {
 
 // Delete is stricter than edit: only a family admin (not a shared "admin-no-delete"
 // role, and not a plain editor) or the trip's own owner may delete it.
-function canDelete(trip, me) {
+function canDelete(trip, me, perm) {
   if (me.siteAdmin) return true;
   if (trip.soloPrivate) return isMine(trip, me);
   if (!trip.familyId) return isMine(trip, me);
   const myRole = me.familyRoles.get(trip.familyId);
   if (myRole === "admin") return true;
-  if (isMine(trip, me) && (myRole === "editor")) return true;
+  if (isMine(trip, me) && myRole === "editor") return true;
+  if (perm && perm.memberDeleteAny && (myRole === "editor" || myRole === "reader")) return true;
+  const shareRole = me.sharesIn.get(trip.familyId);
+  if (perm && perm.sharedCanDelete && shareRole === "editor" && !trip.hiddenFromShares) return true;
   return false;
+}
+
+function floorOk(role, floor) {
+  if (!role) return false;
+  if (floor === "admin") return role === "admin";
+  return role === "admin" || role === "editor";
+}
+
+const DEFAULT_TRIP_PERM = { editFloor: "editor", attachFloor: "editor", commentFloor: "editor", attachVisibleShared: true, memberDeleteAny: false, sharedCanDelete: false, itineraryEditableShared: false };
+
+function sameExceptKeys(a, b, keys) {
+  const strip = (o) => { const c = { ...(o || {}) }; keys.forEach((k) => delete c[k]); return c; };
+  return JSON.stringify(strip(a)) === JSON.stringify(strip(b));
 }
 
 async function getContainer() {
@@ -214,8 +250,13 @@ module.exports = async function (context, req) {
     // (true/false) overrides the site-wide default; unset inherits the site default.
     // Best-effort / fail-open — if either blob is unreadable, uploads stay allowed.
     let imagesAllowedByFamily = new Map();
+    let permByFamily = new Map();
+    let approvedByFamily = new Map();
+    let familyById = new Map();
     let siteImagesOn = true;
     let sitePublicSharingOn = true;
+    let auditLevel = "essential";
+    let emailKillSwitch = false;
     try {
       const settingsBlob = container.getBlockBlobClient("family-settings.json");
       if (await settingsBlob.exists()) {
@@ -223,6 +264,8 @@ module.exports = async function (context, req) {
         const fs = JSON.parse(await streamToString(dl.readableStreamBody));
         siteImagesOn = fs.imageUploadsEnabled !== false;
         sitePublicSharingOn = fs.publicSharingEnabled !== false;
+        auditLevel = ["essential", "detailed", "verbose"].includes(fs.auditLevel) ? fs.auditLevel : "essential";
+        emailKillSwitch = !!fs.emailKillSwitch;
       }
       const familiesBlob = container.getBlockBlobClient(process.env.FAMILIES_BLOB || "families.json");
       if (await familiesBlob.exists()) {
@@ -230,9 +273,14 @@ module.exports = async function (context, req) {
         const list = JSON.parse(await streamToString(dl.readableStreamBody));
         (Array.isArray(list) ? list : []).forEach((f) => {
           imagesAllowedByFamily.set(f.id, f.imagesEnabled === undefined || f.imagesEnabled === null ? siteImagesOn : !!f.imagesEnabled);
+          permByFamily.set(f.id, { ...DEFAULT_TRIP_PERM, ...(f.permTrip || {}) });
+          approvedByFamily.set(f.id, !!f.approved);
+          familyById.set(f.id, f);
         });
       }
     } catch (e) { /* fail open */ }
+    const permFor = (familyId) => (familyId && permByFamily.get(familyId)) || DEFAULT_TRIP_PERM;
+    const auditDetailed = auditLevel === "detailed" || auditLevel === "verbose";
     const imagesAllowed = (familyId) => familyId && imagesAllowedByFamily.has(familyId) ? imagesAllowedByFamily.get(familyId) : siteImagesOn;
     const stripImagesIfBlocked = (t) => {
       if (imagesAllowed(t.familyId)) return t;
@@ -244,7 +292,13 @@ module.exports = async function (context, req) {
     if (req.method === "GET") {
       const { locations, settings } = await readDataset(blob);
       const viewTrip = (t) => (t.visibility === "all" && !sitePublicSharingOn) ? { ...t, visibility: "private" } : t;
-      const visible = locations.filter((t) => canView(viewTrip(t), me));
+      const stripAttachmentsIfHidden = (t) => {
+        if (!t.familyId || !Array.isArray(t.attachments) || !t.attachments.length) return t;
+        if (me.siteAdmin || isMine(t, me) || me.familyRoles.has(t.familyId)) return t; // owning-family always sees them
+        if (permFor(t.familyId).attachVisibleShared) return t;
+        return { ...t, attachments: [] };
+      };
+      const visible = locations.filter((t) => canView(viewTrip(t), me)).map(stripAttachmentsIfHidden);
       json(200, {
         app: "vacation-location",
         version: 1,
@@ -343,14 +397,70 @@ module.exports = async function (context, req) {
     };
 
     for (const s of stored.locations) {
+      const perm = permFor(s.familyId);
       const incoming = incomingById.get(s.id);
-      const editable = s.familyId ? canEdit(s, me) : isMine(s, me);
-      const deletable = s.familyId ? canDelete(s, me) : isMine(s, me);
+      const editable = s.familyId ? canEdit(s, me, perm) : isMine(s, me);
+      const deletable = s.familyId ? canDelete(s, me, perm) : isMine(s, me);
+      const place = () => [s.city, s.country].filter(Boolean).join(", ") || "a trip";
+      const notifyEmail = (key, subject, text) => {
+        if (!s.familyId || emailKillSwitch) return;
+        const fam = familyById.get(s.familyId);
+        if (!fam || !notifPrefOn(fam, key, "email")) return;
+        (async () => {
+          try {
+            const membersBlob2 = container.getBlockBlobClient(MEMBERS_BLOB);
+            const memberList = (await membersBlob2.exists()) ? JSON.parse(await streamToString((await membersBlob2.download()).readableStreamBody)) : [];
+            const to = familyAdminEmails(memberList, s.familyId, me.email);
+            sendEmail(to, subject, text).catch(() => {});
+          } catch (e) { /* best-effort */ }
+        })();
+      };
       if (s.familyId || s.owner || s.ownerEmail) {
         if (editable) {
-          if (incoming) result.push(normalize(incoming, s.owner || me.id, s.ownerEmail || me.email));
-          else if (!deletable) result.push(s); // editor without delete rights can't drop it by omission
+          if (incoming) {
+            if (s.familyId && !sameExceptKeys(incoming, s, [])) {
+              if (auditDetailed && notifPrefOn(familyById.get(s.familyId), "tripEdits", "bell")) {
+                await logActivity(container, { type: "editTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " edited " + place() });
+              }
+              const fam = familyById.get(s.familyId);
+              notifyEmail("tripEdits", "Trip updated \u2014 " + (fam ? fam.name : ""), me.email + " edited " + place() + (fam ? " in " + fam.name : "") + ".");
+            }
+            result.push(normalize(incoming, s.owner || me.id, s.ownerEmail || me.email));
+          } else if (!deletable) result.push(s); // editor without delete rights can't drop it by omission
+          else {
+            if (auditDetailed && s.familyId && notifPrefOn(familyById.get(s.familyId), "tripDeletes", "bell")) {
+              await logActivity(container, { type: "deleteTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " deleted " + place() });
+            }
+            const fam = familyById.get(s.familyId);
+            notifyEmail("tripDeletes", "Trip deleted \u2014 " + (fam ? fam.name : ""), me.email + " deleted " + place() + (fam ? " from " + fam.name : "") + ".");
+          }
           // else: omitted by someone with delete rights → deleted
+        } else if (incoming && s.familyId && canView(s, me)) {
+          // Narrow carve-outs for people without full edit rights on this trip:
+          // commenting (gated by the owning family's comment floor for their own
+          // members; always allowed for shared/other viewers) and itinerary edits
+          // (only for shared-family viewers, only if this family opted them in).
+          const iAmFamilyMember = me.familyRoles.has(s.familyId);
+          const commentOk = !iAmFamilyMember || floorOk(me.familyRoles.get(s.familyId), perm.commentFloor);
+          const shareRole = me.sharesIn.get(s.familyId);
+          const itineraryOk = !iAmFamilyMember && perm.itineraryEditableShared && !!shareRole && !s.hiddenFromShares;
+          if (commentOk && sameExceptKeys(incoming, s, ["comments"])) {
+            if (Array.isArray(incoming.comments) && incoming.comments.length > (s.comments || []).length) {
+              if (auditDetailed && notifPrefOn(familyById.get(s.familyId), "comments", "bell")) {
+                await logActivity(container, { type: "comment", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " commented on " + place() });
+              }
+              const fam = familyById.get(s.familyId);
+              notifyEmail("comments", "New comment \u2014 " + (fam ? fam.name : ""), me.email + " commented on " + place() + (fam ? " in " + fam.name : "") + ".");
+            }
+            result.push({ ...s, comments: incoming.comments });
+          } else if (itineraryOk && sameExceptKeys(incoming, s, ["itinerary"])) {
+            if (auditDetailed) {
+              await logActivity(container, { type: "editItinerary", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " edited the itinerary for " + place() });
+            }
+            result.push({ ...s, itinerary: incoming.itinerary });
+          } else {
+            result.push(s); // no edit rights — untouchable
+          }
         } else {
           result.push(s);                                  // no edit rights — untouchable
         }
@@ -369,6 +479,27 @@ module.exports = async function (context, req) {
     for (const t of payload.locations) {
       if (storedById.has(t.id)) continue;
       const withFamily = t.familyId ? t : (myEditableFamilyId ? { ...t, familyId: myEditableFamilyId[0] } : t);
+      // A family pending site-admin approval can't add new trips yet (site admin bypasses).
+      if (withFamily.familyId && !me.siteAdmin && approvedByFamily.has(withFamily.familyId) && !approvedByFamily.get(withFamily.familyId)) {
+        json(403, { error: "This family is pending site-admin approval — trips can't be added yet." });
+        return;
+      }
+      if (auditDetailed && withFamily.familyId && notifPrefOn(familyById.get(withFamily.familyId), "tripAdds", "bell")) {
+        const place = [t.city, t.country].filter(Boolean).join(", ") || "a trip";
+        await logActivity(container, { type: "createTrip", familyId: withFamily.familyId, visibleTo: [withFamily.familyId], actor: me.email, message: me.email + " added " + place });
+      }
+      if (withFamily.familyId) {
+        const fam = familyById.get(withFamily.familyId);
+        if (fam && !emailKillSwitch && notifPrefOn(fam, "tripAdds", "email")) {
+          const place = [t.city, t.country].filter(Boolean).join(", ") || "a trip";
+          try {
+            const membersBlob2 = container.getBlockBlobClient(MEMBERS_BLOB);
+            const memberList = (await membersBlob2.exists()) ? JSON.parse(await streamToString((await membersBlob2.download()).readableStreamBody)) : [];
+            const to = familyAdminEmails(memberList, withFamily.familyId, me.email);
+            sendEmail(to, "New trip added \u2014 " + fam.name, me.email + " added " + place + " to " + fam.name + ".").catch(() => {});
+          } catch (e) { /* best-effort */ }
+        }
+      }
       result.push(normalize(withFamily, t.owner || me.id, t.ownerEmail || me.email));
     }
 

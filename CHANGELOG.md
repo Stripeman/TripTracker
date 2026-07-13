@@ -4,6 +4,147 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.28.6-beta — Kill switch replaces the separate bulk email reset
+
+### Changed
+- **Removed the separate "Reset every family's email notifications" ON/OFF buttons** (introduced in 1.28.3-beta) — they overlapped confusingly with the kill switch and didn't lock anything, so a family could immediately undo a site-wide "OFF" reset. The kill switch alone now does what that control was meant to: turning it **OFF** sets every family's Email toggle off *and* locks it (can't be clicked); turning it back **ON** only unlocks the toggles again, without forcing any family's setting back on — each family keeps whatever they last had.
+
+---
+
+## 1.28.5-beta — Real email for Comments/Trip edits/Trip deletes; kill-switch lock on family toggles; activity feed cap; family-scoped bulk editor
+
+### Added
+- **Family-scoped Trips tab** (My Families → [family] → Trips, that family's admin or a site admin): the same bulk-edit tool as Settings → Trips tab, but locked to just this one family's own trips — no family picker needed since the scope is implicit, and a family admin can never reach another family's trips through it. Fulfills the follow-up noted in 1.28.4.
+- **Email now fires for Comments, Trip edits, and Trip deletes**, matching the other four event types (Category changes, Attachment uploads, Ownership transfers, New trips). All 7 Notifications toggles now do something real — previously these three only had working Toast/Bell, and the Email toggle was a no-op. Like the others, email doesn't require Audit log detail to be "Detailed" — only the Bell (Activity Log) entry does; email fires independent of that setting, subject to the per-family pref and the site-wide kill switch.
+- **The site-wide email kill switch now visibly locks every family's Email toggle**: while it's on, every family's Email chip in My Families → Notifications shows off and clicking it explains why instead of toggling. Turning the kill switch back off doesn't change anything underneath — each family's actual stored preference (on or off, whatever it was) reappears exactly as it was, now editable again.
+- **Activity bell dropdown capped at 200 rows** (most recent first) with a "View all (N more)" link when the feed is longer, opening a popup that lists every entry grouped into Today / Yesterday / This week / Earlier sections — no cap there.
+
+### Fixed
+- **Attachments & Storage showed twice on the Family Management Overview tab** — a leftover duplicate block from an earlier edit. Removed; the People section and everything else in Overview is unaffected.
+
+### Tested
+- 9-scenario matrix confirming the new email hookups: fires correctly per pref/kill-switch, independent of Bell's `auditDetailed` requirement, and never fires for legacy/unassigned trips.
+- 5-scenario matrix confirming the family-scoped Trips tab: a family admin only ever sees their own family's trips through it (never another family's, even by trying), a site admin can use it for any family, and it's cleanly independent from the system-wide Trips tab's own family filter.
+
+---
+
+## 1.28.4-beta — Trips-tab bulk editor is now site-admin-only, sees every trip
+
+### Fixed
+- **Settings → Trips tab bulk editor only ever showed trips matching whatever the left search panel happened to be filtered to**, and was reachable by any user with an "editor" role, not just site admins — so a site admin whose left panel was scoped to their own family saw only their own family's trips in what was meant to be a system-wide tool. The tab (and its bulk-edit target set) is now strictly site-admin-only, pulls from every trip in the system by default, and gets its own independent family filter dropdown ("All families" or a specific one) instead of reusing the main list's filter.
+
+### Noted
+- A separate, family-scoped version of this same bulk-edit tool (a family admin bulk-editing just their own family's trips, from within My Families) is a reasonable follow-up — not built yet, flagged for a future pass.
+
+---
+
+## 1.28.3-beta — Bulk reset of every family's email notifications
+
+### Added
+- **Reset every family's email notifications** (⚙ → Preferences → Site Administration): "Turn ON for everyone" / "Turn OFF for everyone" rewrites the Email toggle across all 7 event types for every existing family in one shot (confirmation prompt first). Unlike the kill switch, this is a one-time reset, not a standing override — families can still fine-tune their own Email toggles afterward in My Families → Notifications. Toast and Bell are untouched. New `resetAllFamilyEmailPrefs` action, site admin only, logged once to the activity feed.
+
+### Tested
+- 9-scenario matrix: auth gate, correct per-family/per-key email rewrite while leaving toast/bell untouched, families with no prior prefs at all get every key set correctly, and toggling back on works for all families.
+
+---
+
+## 1.28.2-beta — Site-wide notification defaults + email kill switch
+
+### Added
+- **Default notification prefs for new families** (⚙ → Preferences → Site Administration → "Default notifications for new families"): site admin sets the Toast/Bell/Email defaults applied once, at creation time, to every brand-new family (self-serve, auto-created from an access request, or created via the debug/admin flow). Existing families are never retroactively changed — those stay edited per-family in My Families → Notifications. New action `setDefaultNotifPrefs` (site admin only).
+- **Site-wide email kill switch** (⚙ → Preferences → Site Administration → "Disable all email notifications"): one toggle suppresses *every* courtesy email in the app — invites, family shares, category changes, attachment uploads, ownership transfers, new trips — regardless of any family's own notification settings, for abuse/incident response. Toasts and the Activity Log (bell) are unaffected since they don't touch the outside world. New action `setEmailKillSwitch` (site admin only); the explicit "send invite email" action is blocked outright (403) while the switch is on, since that's a directed send rather than a background courtesy notification.
+
+### Tested
+- 11-scenario matrix covering both new site-admin actions: auth gates, default-pref application to new-vs-existing families, and the kill switch overriding both per-family and default email preferences — all passing.
+
+---
+
+## 1.28.1-beta — Notifications tab; hover-popover clipping fix
+
+### Added
+- **Notifications tab** (per family, admin‑only, in **My Families → [family] → Notifications tab**): independent **Toast** (live in‑app), **Bell** (Activity Log), and **Email** toggles for seven event types — Category list changes, Attachment uploads, Ownership transfers, New trips, Trip edits, Trip deletes, and Comments. Everything defaults to on. New `setFamilyNotifPrefs` action (family admin/owner or site admin only) and a shared `api/_shared/notify.js` helper (`notifPrefOn`, `sendEmail`, `familyAdminEmails`) used across the families/trips/attachments APIs. Courtesy emails go to a family's admins (excluding whoever caused the event); ownership‑transfer emails also go to the new owner. Toast delivery rides the app's existing 30s activity poll — a genuinely new activity item with its toast pref on triggers a live toast for anyone online, skipping the person who caused it.
+
+### Fixed
+- **Hover popovers clipped at the bottom of the browser** instead of flipping above the cursor — affected the traveler‑stats popover on a trip card, the online‑presence tip, and the admin login‑stats bubble. All three now flip above the cursor when they'd overflow the viewport.
+
+### Tested
+- Full scenario matrix (20 cases) for the new Notifications tab: `setFamilyNotifPrefs` auth gates (non‑admin blocked, admin‑of‑other‑family blocked, family admin/site admin allowed), per‑channel independence (toggling one channel never touches the other two), invalid key/channel rejection, per‑event bell/email gating at each of the four wired call sites, and the client‑side toast diffing (skips already‑seen activity, skips your own actions, respects the per‑family toast pref, ignores unmapped event types) — all passing.
+- Re‑verified family‑approval enforcement end‑to‑end after the notification-plumbing changes — no regressions.
+
+---
+
+## 1.28.0-beta — Real family-approval enforcement, category safety checks, permission-gate audit
+
+### Added
+- **Family approval is now actually enforced**, not just a cosmetic flag. A family pending approval can no longer create trips, invite/share/promote members, transfer ownership, or upload attachments — site admins still bypass every check. A "Pending approval" banner appears on the Add Location form and the relevant actions when your active family isn't approved yet.
+- **Real-time approval status** — the app already polls for family updates every 30s and on tab focus; now the moment a pending family flips to approved, everyone in it gets a toast ("'<Family>' has been approved — you can add trips now") instead of a silent state change.
+- **Usage warnings before touching a category in use**: removing a single custom Visit Type / Trip Type / Status item now checks whether any of that family's trips use it — if so, shows the affected trips and a "Reassign to…" picker before deleting. "Revert to site default" has the same check for every custom item at once.
+
+### Fixed
+- **Shared-family editors couldn't upload attachments** — the client-side attachment-upload check only recognized your own family's role, not a role granted via family-to-family sharing, so a shared editor saw no upload button even though the server would have allowed it. Now matches server logic exactly.
+- **Comment gate let readers post on trips owned by other members of their own family** regardless of that family's comment-permission floor — the client check only looked at "is this trip unassigned or mine," missing the family-membership + floor check entirely. Fixed to mirror the server.
+- **Category revert/reassign wasn't scoped to the reverting family** — reassigning a status/type key during a "Revert to site default" could rewrite matching values on *any* family's trips, not just the one being reverted. Now scoped by `familyId`.
+- **Category limit of exactly 0 silently fell back to 40** on both client and server (`Number(0) || 40` treats 0 as falsy) instead of clamping to the minimum of 1.
+- **Add Location modal rendered broken/unbounded** after the pending-approval banner was added — a stray extra closing `</div>` closed the whole modal wrapper early, so the tabs and form spilled out with no width constraint. Removed the duplicate tag.
+- Full permission-gate audit this cycle covered trip view/edit/delete, itinerary edit, attachment upload, comment posting, family delete, category limits/overrides, audit-level control, and trip visibility/sharing tiers — all passing except the four fixes above.
+
+---
+
+## 1.27.0-beta — Per-family Visit Type / Trip Type / Status lists; sharing moved under Permissions
+
+### Added
+- **Per-family category overrides**: each family can now run its own Visit Type, Trip Type, and Status lists instead of the site-wide defaults — gated to that family's owner/admin via a new **Categories** tab in My Families. Toggle "Use custom list" to start from a copy of the site default, edit/add/remove items freely, or "Revert to site default" to go back to inheriting. New trips for that family show its effective list; trips already tagged with a family-only type still resolve their label/color correctly everywhere (cards, filters, metrics, CSV export) via a merged lookup.
+- **Site admin control over the per-family category limit**: ⚙ → Preferences → Site Administration → "Per-family category limit" (1–200, default 40) caps how many items a family's custom list can hold, enforced server-side.
+- **Unclaimed trips (Settings → Trips tab, site admin only) are now clickable** — click a trip's name to select and view it before deciding who to assign it to, instead of just seeing a place/date row.
+- Backend: new `setFamilyCategories` and `setFamilyCatLimit` actions (family admin/owner or site admin only, respectively), logged to the family's Audit tab.
+
+### Changed
+- **"Families that can see ours" / "Families we can see" moved into the Permissions tab** — previously shown under every tab in My Families, now scoped correctly with the rest of the sharing controls.
+
+---
+
+## 1.26.0-beta — Family detail tabs; audit detail; Trips tab rebuilt
+
+### Added
+- **My Families detail panel now has tabs** (visible to family admins): **Overview** (branding, photo uploads, owner, attachments & storage summary, people), **Permissions** (the Trip Permissions block, moved out of Overview), **Audit** (the Activity Log, moved out of Overview), and **Owner** (Transfer Ownership, gated to the family's actual owner — admins who aren't owner don't see it).
+- **Activity Log entries now show who did it and what changed**: the actor's display name (falls back to email if they have no traveler profile) with a small ✉ link to email them, plus the trip-permission log message now lists the specific settings that changed (e.g. "who can edit trips → Admin only") instead of a generic "updated trip permissions."
+- **Rebuilt the Settings → Trips tab**, which had gone empty (its logic and data existed but no markup rendered it): unclaimed-trips list with per-trip owner assignment plus "claim all as me," and a bulk-edit tool (owner/notes/visit type/trip type/travelers/sharing) scoped to whatever the left-panel filters currently match.
+
+### Changed
+- De-duplicated the family-scope option builder used by the Metrics and People family-scope pickers into a single shared helper (`baseFamilyScopeOptions`) — no user-visible change.
+
+### Fixed
+- Confirmed the "activeTouches already declared" console error reported earlier was a stale hot-reload artifact from a mid-edit session, not a persisted bug — a fresh page load renders cleanly with no console errors (verified via full code review pass: no duplicate method names, no duplicate API action handlers, all routes correct).
+
+---
+
+## 1.25.1-beta — Code cleanup
+
+### Fixed
+- Confirmed the "activeTouches already declared" console error reported earlier was a stale hot-reload artifact from a mid-edit session, not a persisted bug — a fresh page load renders cleanly with no console errors (verified via full code review pass: no duplicate method names, no duplicate API action handlers, all routes correct).
+
+### Changed
+- De-duplicated the family-scope option builder used by the Metrics and People family-scope pickers into a single shared helper (`baseFamilyScopeOptions`) — no user-visible change.
+
+---
+
+## 1.25.0-beta — Attachments & storage view; itinerary shared-editing; trip-deletion floors
+
+### Added
+- Family admin panel: **Attachments & Storage** section — file count, total size (25MB/file cap noted), and a per-file list (name, trip, size) for that family's trips.
+- Family admin panel: **Activity Log** section — chronological log of that family's own admin events (people/roles, ownership transfers, trip-permission changes, sharing), scoped to just this family (separate from the app-wide activity bell). Ownership transfers and trip-permission changes are now recorded to it (previously unlogged).
+- **Audit log detail** setting (⚙ → Preferences → Site Administration, site-admin only): Essential (default, unchanged behavior) / Detailed (adds trip create/edit/delete, itinerary edits, comments) / Verbose (adds sign-ins). Applies to the per-family Activity Log across `api/trips`, `api/attachments`, and `api/presence`.
+- **Itinerary editing**: family editors (per the edit floor) can now edit itinerary day-by-day directly from the Itinerary modal, with Edit/Save/Cancel. New per-family toggle **"Shared families can edit itinerary"** (off by default) — itinerary always follows the trip's own sharing tier and is never public regardless of this setting; the modal shows a note to that effect for shared viewers.
+- Trip Permissions gains two delete-related toggles: **"Any family member can delete this family's trips"** (off by default — normally only admins can delete any trip; editors can only delete trips they created) and **"Shared families can delete this family's trips"** (off by default, never on unless explicitly enabled).
+
+### Fixed / hardened
+- The Edit/Attachment/Comment role-floor settings added last release were client-side only — `api/trips` and `api/attachments` now enforce `editFloor`/`attachFloor`/`commentFloor`/`memberDeleteAny`/`sharedCanDelete` server-side too, so the floors are real security boundaries, not just UI hints.
+- Comments and itinerary edits from people without full trip-edit rights (e.g. a family's own reader posting a comment, or a shared family editing itinerary once opted in) now persist correctly — previously the server's whole-trip edit gate silently dropped these changes for anyone without edit rights on the trip.
+- Attachments hidden from shared families (via "Attachments visible to shared families" = Off) are now also stripped server-side from the trips feed and blocked on direct download — not just hidden in the UI.
+- The trip-delete button in the edit form now matches the server's real rule (family admins can delete any trip in their family; editors only their own) instead of a coarser check that could show the button when the save would actually be rejected.
+
+---
+
 ## 1.24.1 — Edit/Stats/Debug consolidated into the detail card's action row
 
 ### Changed

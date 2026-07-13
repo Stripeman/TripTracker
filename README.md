@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.23.1--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.28.6--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -13,7 +13,11 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
 - **Anyone signed in can create a family** — a "Create a new family" button on the
   People & Family Management → Families detail panel opens a small popup. New families
   need site-admin approval before their trips become usable, unless the site admin has
-  turned on auto-approve.
+  turned on auto-approve. **Approval is enforced, not just cosmetic**: a pending family
+  can't create trips, invite/share/promote members, transfer ownership, or upload
+  attachments until a site admin approves it (site admins bypass this). A banner on the
+  Add Location form and elsewhere flags the pending state, and a toast announces the
+  moment approval lands — the app already polls for family updates, so no reload needed.
 - **First-login onboarding** — a brand-new user with no family yet is taken straight to
   People & Family Management and prompted to create one; if a site admin instead
   approved their access request without picking an existing family, a solo family is
@@ -200,9 +204,9 @@ The ⚙ **Configuration** panel has a tab row across the top — **Settings · P
 - **Family-scope dropdown** (same pattern as Trip Metrics) — site admins can filter to one specific family or see everyone; other users see their own family plus every family they have access to.
 - **"My Families" member list** (Family Management → My Family Management → a family's detail panel) is the same rich per-person card as Site User Management — name, color, email, role, active/inactive, edit, delete — scoped to that one family, instead of a plain email list.
 
-**Trips tab** (editors, Cloud — also Local mode) — **Trip Management**, two sections:
-- **Bulk edit** — change many trips at once. The target set is chosen by the **filters on the left** (no duplicate filter UI here); a live count shows how many of *your* trips match. Tick only the fields to change — **Who‑can‑see**, **Visit type**, **Travelers**, **Trip type**, **Notes**, and (admin) **Owner** — then confirm. It only touches trips you own (admins, all).
-- **Unclaimed trips** (admin) — new trips are owned by their creator automatically; this lists older trips with **no owner** and lets an admin **assign each to a person**, or **claim them all** at once. Assigning is by email, so the trip becomes that user's the next time they load — no re‑import needed.
+**Trips tab** (Cloud, site admin only — Local mode shows the bulk editor for anyone since there's no family/admin concept there) — **Trip Management**, two sections:
+- **Bulk edit** — change many trips at once, across the **entire system**. This tab has its own family filter dropdown ("All families" or a specific one) independent of whatever the left search panel is currently filtered to, so it always shows exactly what it says. Tick only the fields to change — **Who‑can‑see**, **Visit type**, **Travelers**, **Trip type**, **Notes**, and **Owner** — then confirm.
+- **Unclaimed trips** — new trips are owned by their creator automatically; this lists older trips with **no owner** and lets a site admin **click a trip's name to select/view it**, **assign each to a person**, or **claim them all** at once. Assigning is by email, so the trip becomes that user's the next time they load — no re‑import needed.
 
 **Preferences tab** — display options:
 - Toggle whether the **Trip details** section is open by default on the form.
@@ -354,6 +358,38 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 - `photo` is optional — a data‑URL string for the trip's thumbnail (shown per **Preferences → Show photo thumbnail on card**, in the **Banner / Compact / Framed** layout you've picked). Omit it for a text‑only card.
 - `familyId` — which family this trip belongs to (Cloud mode). Omitted/blank trips are treated as unassigned/legacy and visible everywhere until claimed or migrated.
 - `owner` / `ownerEmail` — the account that owns this trip (Cloud mode); `ownerEmail` drives per‑trip permissions and the family scoping rules described above.
+- **Family detail tabs** — the family panel in **My Families** is organized into tabs (admins only see the tab bar; regular members just see Overview): **Overview** (branding, photo uploads, owner, attachments & storage summary, people), **Permissions**, **Categories**, **Audit**, **Notifications**, **Trips** (bulk-edit this family's own trips — see below), and **Owner** (Transfer Ownership — gated to the family's actual owner, not just any admin).
+- **Trips** (per family, admin‑only, in **My Families → [family] → Trips tab**): the same bulk-edit tool as Settings → Trips tab, but locked to just this one family's trips — tick the fields to change (Owner, Notes, Visit type, Trip type, Travelers, Sharing) and confirm. A family admin can never reach another family's trips through it; a site admin can use it for any family.
+- **Trip Permissions** (per family, admin‑only, in **My Families → [family] → Permissions tab**): floors for **who can edit**, **who can manage attachments**, and **who can comment** on that family's own trips — each is **Editor+** (default) or **Admin only**; owners/admins always qualify. Also: **Attachments visible to shared families** (default on — turn off to keep tickets/docs private to just this family), **Shared families can edit itinerary** (default off — viewing itself always follows the trip's normal sharing tier and is never made public), **Any family member can delete this family's trips** (default off — normally only admins can delete any trip, editors only trips they created), and **Shared families can delete this family's trips** (default off). A summary line shows the effective delete rule at a glance. All floors are enforced server‑side, not just hidden in the UI. The **Families that can see ours / Families we can see** sharing controls live in this same Permissions tab.
+- **Categories** (per family, admin‑only, in **My Families → [family] → Categories tab**): give a family its own **Visit Type**, **Trip Type**, or **Status** list instead of the site‑wide defaults. Toggle **"Use custom list"** (starts as a copy of the site default; add/edit/remove items freely) or **"Revert to site default"** to inherit again. Removing a single item, or reverting the whole list, first checks whether any of that family's trips actually use the value being removed — if so, it shows the affected trips and a **"Reassign to…"** picker before anything is deleted, scoped strictly to that family's own trips. New/edited trips for that family show its effective list; a trip tagged with a family‑only category still resolves its label and color correctly everywhere else (cards, filters, metrics, CSV export). Server‑enforced: only that family's admin/owner (or a site admin) can change it. The max items a custom list can hold is a site‑wide setting (see **Per‑family category limit** below).
+- **Attachments & Storage** (**Overview tab**): file count, total size used, and a per‑file list for that family's trips (25MB cap per file).
+- **Activity Log** (**Audit tab**): a scrollable, chronological log of that family's own admin-level events (people added/removed, role changes, ownership transfers, trip-permission changes, family sharing) — each entry shows the actor's name (with a ✉ link to email them) and, for permission changes, exactly what changed. Separate from the app-wide activity bell described below. What gets logged is controlled site-wide by **Audit log detail** (see below).
+- **Notifications** (per family, admin‑only, in **My Families → [family] → Notifications tab**): independent on/off toggles for **Toast** (a live in‑app notification for anyone online), **Bell** (an entry in this family's Activity Log), and **Email** (a courtesy email to the family's admins) — one row per event type: Category list changes, Attachment uploads, Ownership transfers, New trips, Trip edits, Trip deletes, and Comments. All 7 rows' Email toggle actually sends mail; Bell requires **Audit log detail** to be Detailed/Verbose for the trip-related rows (Category/Attachment/Ownership are always eligible), Email does not. Everything defaults to on. Ownership‑transfer emails also go to the incoming owner. Toast delivery piggybacks on the same event actually being logged to Bell, so it only fires for events whichever admin left Bell on for. If a site admin has switched on the site‑wide email kill switch (see below), every family's Email chip here shows off and is locked — turning the kill switch back off unlocks the toggle again without forcing it back on; each family keeps whatever they last had.
+
+### 🔍 Audit log detail (site admin)
+
+- **⚙ → Preferences → Site Administration → Audit log detail** — site admins choose how much gets recorded to the activity log(s), site‑wide: **Essential** (default — people/roles/family/permission changes only, lightest weight), **Detailed** (adds trip create/edit/delete, itinerary edits, and comments), or **Verbose** (adds sign‑ins too). Applies immediately to all families.
+- **⚙ → Preferences → Site Administration → Per‑family category limit** — caps how many items a family's custom Visit Type / Trip Type / Status list can hold (1–200, default 40), enforced server‑side regardless of what the client sends.
+- **⚙ → Preferences → Site Administration → Default notifications for new families** — sets the Toast/Bell/Email defaults applied once, at creation time, to every brand‑new family; doesn't retroactively change existing families (edit those per‑family in My Families → Notifications).
+- **⚙ → Preferences → Site Administration → Disable all email notifications** — a site‑wide kill switch that suppresses every courtesy email in the app (invites, shares, category changes, attachments, ownership, new trips, trip edits/deletes, comments) regardless of any family's own settings, for abuse/incident response. While it's on, every family's Email toggle in My Families → Notifications shows off and is locked; turning the switch back off only unlocks the toggles again — it never forces any family's own setting back on, they keep whatever they last had. Toasts and the Activity Log keep working.
+
+### 🔔 Notifications & activity
+
+- A **bell icon** in the header opens a running **activity feed** of events relevant to you (across all families you belong to — site admins see everything) — invites, approvals, role changes, family shares, ownership transfers, etc. An unread badge appears when there's something new since you last opened it. The dropdown shows the most recent 200; if there's more, a **"View all"** link opens a popup listing every entry, grouped into Today / Yesterday / This week / Earlier.
+- Key events (approvals, invites, shares) also trigger an **email notification** to the people affected.
+
+### 🌐 Public landing page
+
+- Signed‑out visitors land on a public marketing page instead of a bare sign‑in box. Site admins pick the active variant in **⚙ → System → Landing page**: the original sign‑in‑only screen, or one of three fuller marketing layouts (hero + features + testimonials + optional pricing), each with a live rotating globe and example trip cards.
+- **Testimonials** — site admins can add/edit/remove quotes (quote, name, family) shown on the marketing variants, and toggle the whole section on/off, from **⚙ → System**.
+- **Pricing section** visibility on the marketing variants is a separate site‑admin toggle, for showing/hiding pricing without switching variants.
+- **Terms of Service** and **Privacy Policy** pages are linked from the landing footer.
+
+### 📋 Trip detail card — gallery, itinerary, comments, attachments
+
+- Each trip's detail card has a row of icon buttons (with count badges) for **Gallery** (multi‑photo, with a lightbox viewer), **Itinerary** (day‑by‑day notes, editable per the Trip Permissions floor above), **Comments** (visible to everyone who can see the trip; posting is floor‑gated per family), **Attachments** (PDF/image/Word/Excel, 25MB max per file, stored in Blob Storage), and **Permissions** (the same sharing picker as the Add/Edit form).
+- Edit, Traveler Stats, and (when Debug mode is on) a raw‑JSON Debug button sit in the same row. Debug **viewing** follows the normal visibility rules; Debug **editing** is site‑admin only.
+
 - `visibility` — `private` (only the owner), `all` (everyone with access to the family), or `shared` (only `sharedWith`). Defaults to `private` when omitted.
 - `sharedWith` — array of emails, only meaningful when `visibility` is `shared`.
 - `settings`: `version` is a number that auto‑increments on every settings change; `showThumbs` toggles trip photos on cards; `cardLayout` is `banner` / `thumbnail` / `framed`; `autoClaim` auto‑assigns unclaimed trips you create; `updateFreqMin` is `3` / `5` / `10`; `accessEmail` is the admin contact shown in the access list; `defaultYear` is `current` or `all`; `defaultTrip` is `all` or any trip‑type key; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` or any traveler key; `defaultVisit` is `all` or any visit‑type key; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`; `themeLocked` (admin-set) forces `lockedTheme` / `lockedLightMode` on everyone. **Not included:** `theme` and `lightMode` are per‑person and stored only in that browser's local storage, never in shared settings.
