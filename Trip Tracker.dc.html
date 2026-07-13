@@ -1221,6 +1221,7 @@
                   <button onClick="{{ setFamilyDetailTabPermissions }}" style="{{ famTabPermissionsStyle }}">Permissions</button>
                   <button onClick="{{ setFamilyDetailTabCategories }}" style="{{ famTabCategoriesStyle }}">Categories</button>
                   <button onClick="{{ setFamilyDetailTabAudit }}" style="{{ famTabAuditStyle }}">Audit</button>
+                  <button onClick="{{ setFamilyDetailTabNotifications }}" style="{{ famTabNotificationsStyle }}">Notifications</button>
                   <sc-if value="{{ isFamilyOwner }}" hint-placeholder-val="{{ false }}">
                     <button onClick="{{ setFamilyDetailTabOwner }}" style="{{ famTabOwnerStyle }}">Owner</button>
                   </sc-if>
@@ -1375,6 +1376,64 @@
 
               <sc-if value="{{ showFamCategoriesTab }}" hint-placeholder-val="{{ false }}">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-bottom:14px; line-height:1.5;">Give this family its own Visit Type, Trip Type, or Status lists — otherwise they inherit the site-wide defaults.</div>
+
+                <sc-if value="{{ catRemoveWarnOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.28); border-radius:12px; padding:13px 14px; margin-bottom:16px;">
+                    <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e9a3a3; line-height:1.5; margin-bottom:10px;">"{{ catRemoveWarnLabel }}" is used on {{ catRemoveWarnCount }} trip(s). Reassign them first, or remove anyway and those trips will just show the raw value.</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                      <sc-for list="{{ catRemoveWarnTrips }}" as="rt" hint-placeholder-count="2">
+                        <span onClick="{{ rt.onView }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7fd4f5; text-decoration:underline; cursor:pointer; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.2); border-radius:6px; padding:3px 7px;">{{ rt.place }}</span>
+                      </sc-for>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:7px; margin-bottom:12px;">
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8093aa; flex:none;">Reassign to</span>
+                      <select value="{{ catRemoveWarnReassignValue }}" onChange="{{ onCatRemoveReassignChange }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                        <option value="" style="background:#0a1422;">Leave as-is (will show raw key)</option>
+                        <sc-for list="{{ catRemoveWarnOptions }}" as="ro" hint-placeholder-count="2">
+                          <option value="{{ ro.value }}" style="background:#0a1422;">{{ ro.label }}</option>
+                        </sc-for>
+                      </select>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                      <button onClick="{{ applyCatRemoveReassign }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:8px; cursor:pointer;">Reassign &amp; remove</button>
+                      <button onClick="{{ doRemoveFamilyCatItemAnyway }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.24); border-radius:7px; padding:8px; cursor:pointer;">Remove anyway</button>
+                      <button onClick="{{ cancelCatRemoveWarn }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:8px; cursor:pointer;">Cancel</button>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ catRevertWarnOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.28); border-radius:12px; padding:13px 14px; margin-bottom:16px;">
+                    <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e8c97a; line-height:1.5; margin-bottom:10px;">{{ catRevertWarnHeadline }}</div>
+                    <div style="display:flex; flex-direction:column; gap:10px; max-height:260px; overflow-y:auto; margin-bottom:12px;">
+                      <sc-for list="{{ catRevertWarnItems }}" as="ci" hint-placeholder-count="2">
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:9px; padding:9px 10px;">
+                          <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; margin-bottom:6px;">"{{ ci.label }}" — used on {{ ci.count }} trip(s):</div>
+                          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+                            <sc-for list="{{ ci.trips }}" as="ct" hint-placeholder-count="2">
+                              <span onClick="{{ ct.onView }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7fd4f5; text-decoration:underline; cursor:pointer; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.2); border-radius:6px; padding:3px 7px;">{{ ct.place }}</span>
+                            </sc-for>
+                          </div>
+                          <div style="display:flex; align-items:center; gap:7px;">
+                            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#8093aa; flex:none;">Reassign to</span>
+                            <select value="{{ ci.reassignValue }}" onChange="{{ ci.onReassignChange }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.05); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:5px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                              <option value="" style="background:#0a1422;">Leave as-is (will show raw key)</option>
+                              <sc-for list="{{ ci.siteOptions }}" as="so" hint-placeholder-count="2">
+                                <option value="{{ so.value }}" style="background:#0a1422;">{{ so.label }}</option>
+                              </sc-for>
+                            </select>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                      <button onClick="{{ applyCatRevertReassign }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:8px; cursor:pointer;">Reassign &amp; revert</button>
+                      <button onClick="{{ doRevertFamilyCatAnyway }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.24); border-radius:7px; padding:8px; cursor:pointer;">Revert anyway</button>
+                      <button onClick="{{ cancelCatRevertWarn }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:8px; cursor:pointer;">Cancel</button>
+                    </div>
+                  </div>
+                </sc-if>
+
                 <sc-for list="{{ familyCatSections }}" as="cs" hint-placeholder-count="3">
                   <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
@@ -1397,6 +1456,23 @@
                     <sc-if value="{{ cs.notCustom }}" hint-placeholder-val="{{ true }}">
                       <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">Inheriting the site default ({{ cs.siteCount }} items).</div>
                     </sc-if>
+                  </div>
+                </sc-for>
+              </sc-if>
+
+              <sc-if value="{{ showFamNotificationsTab }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-bottom:14px; line-height:1.5;">Choose how this family hears about its own events — a live toast for whoever's online, a persisted entry in the Audit tab, and/or a courtesy email to the family's admins. All three default to on.</div>
+                <sc-for list="{{ familyNotifRows }}" as="nr" hint-placeholder-count="4">
+                  <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
+                    <div style="min-width:180px;">
+                      <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">{{ nr.label }}</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:2px;">{{ nr.desc }}</div>
+                    </div>
+                    <div style="display:flex; gap:6px; flex:none;">
+                      <button onClick="{{ nr.toast.onClick }}" style="{{ nr.toast.style }}">{{ nr.toast.label }}</button>
+                      <button onClick="{{ nr.bell.onClick }}" style="{{ nr.bell.style }}">{{ nr.bell.label }}</button>
+                      <button onClick="{{ nr.email.onClick }}" style="{{ nr.email.style }}">{{ nr.email.label }}</button>
+                    </div>
                   </div>
                 </sc-for>
               </sc-if>
@@ -2999,6 +3075,9 @@
           <button onClick="{{ closeForm }}" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:17px; line-height:1;">×</button>
         </div>
       </div>
+      <sc-if value="{{ formPendingFamilyBanner }}" hint-placeholder-val="{{ false }}">
+        <div style="margin:0 26px 0; padding:9px 12px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:9px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; line-height:1.5;">{{ formPendingFamilyBanner }}</div>
+      </sc-if>
 
       <sc-if value="{{ showFormFamilyPicker }}" hint-placeholder-val="{{ false }}">
         <div style="padding:14px 26px 0;">
@@ -3304,7 +3383,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.27.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.28.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4096,6 +4175,29 @@ class Component extends DCLogic {
         active = (defaultRow && defaultRow.familyId) || (ownedFam && ownedFam.id) || (adminRow || mine[0] || {}).familyId || '';
       }
       const migrated = !!j.travelersMigrated;
+      // Detect any of MY families flipping pending -> approved since the last load,
+      // so a family admin sees the good news the moment it happens (this fires from
+      // the 30s poll / tab-focus refresh — no page reload needed).
+      const prevApproved = new Map((this.state.cfgFamilies || []).map(f => [f.id, f.approved !== false]));
+      const myFamilyIds = new Set(mine.map(m => m.familyId));
+      const newlyApproved = (j.families || []).filter(f => myFamilyIds.has(f.id) && f.approved !== false && prevApproved.has(f.id) && prevApproved.get(f.id) === false);
+      // Toast channel for the Notifications tab: diff the activity feed against what
+      // we had last poll — any brand-new item (by id) whose family has that event's
+      // toast pref on, and that I didn't just cause myself, gets a live toast. This
+      // rides the same 30s poll / tab-focus refresh as everything else in loadFamilies.
+      const TOAST_TYPE_TO_KEY = { setFamilyCategories: 'categoryChanges', uploadAttachment: 'attachmentUploads', transferOwnership: 'ownerTransfers', createTrip: 'tripAdds', editTrip: 'tripEdits', deleteTrip: 'tripDeletes', comment: 'comments' };
+      const prevActivityIds = new Set((this.state.activityFeed || []).map(a => a.id));
+      const myEmailLower = (this.state.cloudUserEmail || '').toLowerCase().trim();
+      const famById2 = new Map((j.families || []).map(f => [f.id, f]));
+      const newToasts = (this.state.activityFeed && this.state.activityFeed.length) ? (j.activity || []).filter(a => {
+        if (prevActivityIds.has(a.id)) return false;
+        if ((a.actor || '').toLowerCase().trim() === myEmailLower) return false;
+        const key = TOAST_TYPE_TO_KEY[a.type];
+        if (!key) return false;
+        const fam = famById2.get(a.familyId);
+        const p = fam && fam.notifPrefs && fam.notifPrefs[key];
+        return !p || p.toast !== false;
+      }) : [];
       this.setState(s => ({
         cfgFamilies: j.families || [],
         cfgMemberships: j.memberships || [],
@@ -4126,6 +4228,8 @@ class Component extends DCLogic {
         // server copy (settings.travelers has been fully retired as a data source).
         cfgTravelers: j.travelers || [],
       }));
+      newlyApproved.forEach(f => this.toast('"' + f.name + '" has been approved — you can add trips now.'));
+      newToasts.slice(0, 3).forEach(a => this.toast(a.message || 'Update in ' + (famById2.get(a.familyId) || {}).name));
       // First-ever login with no family memberships yet.
       if (mine.length === 0 && !this.state.onboardPromptShown) {
         if (j.autoApproveFamilies) {
@@ -4406,8 +4510,12 @@ class Component extends DCLogic {
     const j = await this.familiesAction('setAuditLevel', { value: v });
     if (j) { this.setState({ cfgAuditLevel: j.auditLevel }); this.toast('Audit level: ' + j.auditLevel); }
   }
-  async setFamilyCatLimit(v) {
-    const raw = Number(v);
+  async setFamilyNotifPref(key, channel, value) {
+    const familyId = this.viewFamilyId();
+    const j = await this.familiesAction('setFamilyNotifPrefs', { familyId, key, channel, value });
+    if (j) this.toast((value ? 'Enabled' : 'Disabled') + ' ' + channel + ' for that notification.');
+  }
+  async setFamilyCatLimit(v) {    const raw = Number(v);
     const n = Math.min(200, Math.max(1, Math.floor(Number.isFinite(raw) && raw > 0 ? raw : 40)));
     const j = await this.familiesAction('setFamilyCatLimit', { value: n });
     if (j) { this.setState({ cfgFamilyCatLimit: j.familyCatLimit }); this.toast('Category limit: ' + j.familyCatLimit); }
@@ -4486,10 +4594,74 @@ class Component extends DCLogic {
     const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
     return !!(fam && fam.catOverrides && Array.isArray(fam.catOverrides[cat]) && fam.catOverrides[cat].length);
   }
+  // Which of this family's trips are tagged with a category value that only
+  // exists on the family's OWN custom list (not the site-wide default) — i.e.
+  // trips that would show a raw/orphaned key if we revert to the site default
+  // right now. Returns [{key, label, trips:[{id, place}]}].
+  familyCatUsageBeforeRevert(familyId, cat) {
+    const siteKeys = new Set((this.state[this._catGlobalKey(cat)] || []).map(o => o.key));
+    const custom = this.familyCatEffective(familyId, cat);
+    const orphanKeys = custom.filter(o => !siteKeys.has(o.key));
+    if (!orphanKeys.length) return [];
+    const field = cat === 'status' ? 'status' : (cat === 'visit' ? 'visitTypes' : 'tripTypes');
+    const usage = {};
+    (this.state.locations || []).filter(l => l.familyId === familyId).forEach(l => {
+      const vals = field === 'status' ? [l.status] : (l[field] || []);
+      vals.forEach(k => {
+        if (!k) return;
+        if (!orphanKeys.some(o => o.key === k)) return;
+        if (!usage[k]) usage[k] = [];
+        usage[k].push({ id: l.id, place: [l.city, l.country].filter(Boolean).join(', ') || 'Untitled trip' });
+      });
+    });
+    return orphanKeys.filter(o => usage[o.key] && usage[o.key].length).map(o => ({ key: o.key, label: o.label, trips: usage[o.key] }));
+  }
+  askRevertFamilyCat(cat) {
+    const familyId = this.viewFamilyId();
+    const usage = this.familyCatUsageBeforeRevert(familyId, cat);
+    if (!usage.length) { this.doRevertFamilyCat(cat); return; }
+    const reassign = {};
+    usage.forEach(u => { reassign[u.key] = ''; });
+    this.setState({ catRevertWarn: { cat, familyId, usage, reassign } });
+  }
+  setCatRevertReassign(key, value) {
+    this.setState(s => ({ catRevertWarn: { ...s.catRevertWarn, reassign: { ...s.catRevertWarn.reassign, [key]: value } } }));
+  }
+  cancelCatRevertWarn() { this.setState({ catRevertWarn: null }); }
+  doRevertFamilyCat(cat) {
+    const familyId = this.viewFamilyId();
+    this.familiesAction('setFamilyCategories', { familyId, cat, list: null }).then(j => {
+      if (j) { this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => { if (f.id !== familyId) return f; const co = { ...(f.catOverrides || {}) }; delete co[cat]; return { ...f, catOverrides: co }; }) })); this.toast('Reverted to site default'); }
+    });
+  }
+  applyCatRevertReassign() {
+    const w = this.state.catRevertWarn;
+    if (!w) return;
+    const field = w.cat === 'status' ? 'status' : (w.cat === 'visit' ? 'visitTypes' : 'tripTypes');
+    const list = (this.state.locations || []).map(l => {
+      if (l.familyId !== w.familyId) return l;
+      let changed = false;
+      let n = l;
+      w.usage.forEach(u => {
+        const to = w.reassign[u.key];
+        if (!to) return;
+        if (field === 'status') {
+          if (l.status === u.key) { n = { ...n, status: to }; changed = true; }
+        } else {
+          const arr = n[field] || [];
+          if (arr.includes(u.key)) { n = { ...n, [field]: arr.map(v => v === u.key ? to : v) }; changed = true; }
+        }
+      });
+      return changed ? { ...n, modifiedAt: new Date().toISOString() } : l;
+    });
+    this.persist(list);
+    this.setState({ catRevertWarn: null });
+    this.doRevertFamilyCat(w.cat);
+  }
   toggleFamilyCatCustom(cat) {
     const familyId = this.viewFamilyId();
     if (this.familyHasCustomCat(familyId, cat)) {
-      this.familiesAction('setFamilyCategories', { familyId, cat, list: null }).then(j => { if (j) { this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => { if (f.id !== familyId) return f; const co = { ...(f.catOverrides || {}) }; delete co[cat]; return { ...f, catOverrides: co }; }) })); this.toast('Reverted to site default'); } });
+      this.askRevertFamilyCat(cat);
     } else {
       const base = (this.state[this._catGlobalKey(cat)] || []).map(o => ({ ...o }));
       this.familiesAction('setFamilyCategories', { familyId, cat, list: base }).then(j => { if (j) { this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => f.id === familyId ? { ...f, catOverrides: { ...(f.catOverrides || {}), [cat]: base } } : f) })); this.toast('Custom list started from site default'); } });
@@ -4510,15 +4682,55 @@ class Component extends DCLogic {
     if (cat === 'status') item.short = item.label;
     this.saveFamilyCatList(cat, [...list, item]);
   }
+  // Single-item usage check before removing one item from a family's custom list —
+  // same idea as the revert warning, scoped to just this one key.
+  itemUsageForFamily(familyId, cat, key) {
+    const field = cat === 'status' ? 'status' : (cat === 'visit' ? 'visitTypes' : 'tripTypes');
+    const trips = [];
+    (this.state.locations || []).filter(l => l.familyId === familyId).forEach(l => {
+      const vals = field === 'status' ? [l.status] : (l[field] || []);
+      if (vals.includes(key)) trips.push({ id: l.id, place: [l.city, l.country].filter(Boolean).join(', ') || 'Untitled trip' });
+    });
+    return trips;
+  }
+  askRemoveFamilyCatItem(cat, key) {
+    const familyId = this.viewFamilyId();
+    const trips = this.itemUsageForFamily(familyId, cat, key);
+    if (!trips.length) { this.doRemoveFamilyCatItem(cat, key); return; }
+    const item = this.familyCatEffective(familyId, cat).find(o => o.key === key);
+    this.setState({ catRemoveWarn: { cat, familyId, key, label: (item && item.label) || key, trips, reassign: '' } });
+  }
+  setCatRemoveReassign(value) { this.setState(s => ({ catRemoveWarn: { ...s.catRemoveWarn, reassign: value } })); }
+  cancelCatRemoveWarn() { this.setState({ catRemoveWarn: null }); }
+  doRemoveFamilyCatItem(cat, key) {
+    const familyId = this.viewFamilyId();
+    const list = this.familyCatEffective(familyId, cat).filter(o => o.key !== key);
+    this.saveFamilyCatList(cat, list);
+  }
+  applyCatRemoveReassign() {
+    const w = this.state.catRemoveWarn;
+    if (!w) return;
+    const field = w.cat === 'status' ? 'status' : (w.cat === 'visit' ? 'visitTypes' : 'tripTypes');
+    if (w.reassign) {
+      const list = (this.state.locations || []).map(l => {
+        if (l.familyId !== w.familyId) return l;
+        if (field === 'status') { if (l.status !== w.key) return l; return { ...l, status: w.reassign, modifiedAt: new Date().toISOString() }; }
+        const arr = l[field] || [];
+        if (!arr.includes(w.key)) return l;
+        return { ...l, [field]: arr.map(v => v === w.key ? w.reassign : v), modifiedAt: new Date().toISOString() };
+      });
+      this.persist(list);
+    }
+    this.setState({ catRemoveWarn: null });
+    this.doRemoveFamilyCatItem(w.cat, w.key);
+  }
   updateFamilyCatItem(cat, key, patch) {
     const familyId = this.viewFamilyId();
     const list = this.familyCatEffective(familyId, cat).map(o => o.key === key ? { ...o, ...patch, ...(cat === 'status' && patch.label ? { short: patch.label } : {}) } : o);
     this.saveFamilyCatList(cat, list);
   }
   removeFamilyCatItem(cat, key) {
-    const familyId = this.viewFamilyId();
-    const list = this.familyCatEffective(familyId, cat).filter(o => o.key !== key);
-    this.saveFamilyCatList(cat, list);
+    this.askRemoveFamilyCatItem(cat, key);
   }
   // ---- per-family trip-permission floors (edit / attachments / comments) ----
   tripHideAttachments(sl) {
@@ -4547,6 +4759,19 @@ class Component extends DCLogic {
     if (fam && fam.createdBy === s.cloudUserEmail) return 'admin'; // owner counts as admin+ for floor checks
     const m = (s.cfgMemberships || []).find(mm => mm.familyId === familyId && mm.email === s.cloudUserEmail && mm.active !== false);
     return m ? m.role : null;
+  }
+  // My SHARED-family role on `familyId` (i.e. familyId shared trips with a family I
+  // belong to) — mirrors the server's me.sharesIn.get(familyId). Only meaningful
+  // when I have no direct membership role in familyId itself.
+  myShareRoleForFamily(familyId) {
+    const s = this.state;
+    if (!familyId) return null;
+    const myFamilyIds = new Set((s.cfgMemberships || []).filter(mm => mm.email === s.cloudUserEmail && mm.active !== false).map(mm => mm.familyId));
+    const shares = (s.cfgShares || []).filter(sh => sh.fromFamilyId === familyId && myFamilyIds.has(sh.toFamilyId));
+    if (!shares.length) return null;
+    if (shares.some(sh => sh.role === 'admin-no-delete')) return 'admin-no-delete';
+    if (shares.some(sh => sh.role === 'editor')) return 'editor';
+    return 'reader';
   }
   meetsFloor(role, floor) {
     if (!role) return false;
@@ -4960,16 +5185,18 @@ class Component extends DCLogic {
       setFamilyDetailTabOverview: () => this.setFamilyDetailTab('overview'),
       setFamilyDetailTabPermissions: () => this.setFamilyDetailTab('permissions'),
       setFamilyDetailTabAudit: () => this.setFamilyDetailTab('audit'),
+      setFamilyDetailTabNotifications: () => this.setFamilyDetailTab('notifications'),
       setFamilyDetailTabOwner: () => this.setFamilyDetailTab('owner'),
       famTabOverviewStyle: tabBtnStyle((s.familyDetailTab || 'overview') === 'overview'),
       famTabPermissionsStyle: tabBtnStyle(s.familyDetailTab === 'permissions'),
       famTabCategoriesStyle: tabBtnStyle(s.familyDetailTab === 'categories'),
       famTabAuditStyle: tabBtnStyle(s.familyDetailTab === 'audit'),
+      famTabNotificationsStyle: tabBtnStyle(s.familyDetailTab === 'notifications'),
       famTabOwnerStyle: tabBtnStyle(s.familyDetailTab === 'owner'),
       showFamOverviewTab: !isActiveFamilyAdmin || (s.familyDetailTab || 'overview') === 'overview',
       showFamPermissionsTab: isActiveFamilyAdmin && s.familyDetailTab === 'permissions',
-      showFamCategoriesTab: isActiveFamilyAdmin && s.familyDetailTab === 'categories',
-      showFamAuditTab: isActiveFamilyAdmin && s.familyDetailTab === 'audit',
+      showFamCategoriesTab: isActiveFamilyAdmin && s.familyDetailTab === 'categories',      showFamAuditTab: isActiveFamilyAdmin && s.familyDetailTab === 'audit',
+      showFamNotificationsTab: isActiveFamilyAdmin && s.familyDetailTab === 'notifications',
       showFamOwnerTab: isFamilyOwner && s.familyDetailTab === 'owner',
       setFamilyDetailTabCategories: () => this.setFamilyDetailTab('categories'),
       familyCatSections: ['visit', 'trip', 'status'].map(cat => {
@@ -4993,6 +5220,50 @@ class Component extends DCLogic {
           onAdd: () => this.addFamilyCatItem(cat),
         };
       }),
+      catRevertWarnOpen: !!s.catRevertWarn,
+      catRevertWarnHeadline: s.catRevertWarn ? ('This family has ' + s.catRevertWarn.usage.length + ' custom ' + (s.catRevertWarn.cat === 'status' ? 'status' : s.catRevertWarn.cat === 'visit' ? 'visit type' : 'trip type') + (s.catRevertWarn.usage.length === 1 ? '' : 's') + ' still used on trips that don\'t exist in the site default list. Reassign each to a site default before reverting, or revert anyway and those trips will just show the raw value.') : '',
+      catRevertWarnItems: s.catRevertWarn ? s.catRevertWarn.usage.map(u => ({
+        key: u.key, label: u.label, count: u.trips.length,
+        trips: u.trips.map(t => ({ id: t.id, place: t.place, onView: () => { this.setState({ famDetailFamilyId: null }); this.selectLocation(t.id); } })),
+        reassignValue: s.catRevertWarn.reassign[u.key] || '',
+        onReassignChange: (e) => this.setCatRevertReassign(u.key, e.target.value),
+        siteOptions: (s[this._catGlobalKey(s.catRevertWarn.cat)] || []).map(o => ({ value: o.key, label: o.label })),
+      })) : [],
+      applyCatRevertReassign: () => this.applyCatRevertReassign(),
+      doRevertFamilyCatAnyway: () => { const cat = s.catRevertWarn && s.catRevertWarn.cat; this.setState({ catRevertWarn: null }); if (cat) this.doRevertFamilyCat(cat); },
+      familyNotifRows: (() => {
+        const fam = byId[viewFamilyId];
+        const prefs = (fam && fam.notifPrefs) || {};
+        const NOTIF_DEFS = [
+          { key: 'categoryChanges', label: 'Category list changes', desc: 'Visit Type / Trip Type / Status lists edited or reverted' },
+          { key: 'attachmentUploads', label: 'Attachment uploads', desc: 'A file is added to one of this family\u2019s trips' },
+          { key: 'ownerTransfers', label: 'Ownership transfers', desc: 'This family\u2019s ownership is handed to someone else' },
+          { key: 'tripAdds', label: 'New trips', desc: 'A new trip is added for this family' },
+          { key: 'tripEdits', label: 'Trip edits', desc: 'An existing trip\u2019s details change' },
+          { key: 'tripDeletes', label: 'Trip deletes', desc: 'A trip is removed' },
+          { key: 'comments', label: 'Comments', desc: 'Someone comments on one of this family\u2019s trips' },
+        ];
+        const chipStyle = (on) => 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:9px; letter-spacing:0.04em; padding:4px 9px; border-radius:999px; cursor:pointer; border:1px solid ' + (on ? 'rgba(52,211,153,0.35); color:#a7f3d0; background:rgba(52,211,153,0.1);' : 'rgba(255,255,255,0.12); color:#69798f; background:rgba(255,255,255,0.02);');
+        return NOTIF_DEFS.map(def => {
+          const p = prefs[def.key] || {};
+          const chan = (name) => {
+            const on = p[name] !== false;
+            return { on, label: name === 'toast' ? 'Toast' : name === 'bell' ? 'Bell' : 'Email', style: chipStyle(on), onClick: () => this.setFamilyNotifPref(def.key, name, !on) };
+          };
+          return { key: def.key, label: def.label, desc: def.desc, toast: chan('toast'), bell: chan('bell'), email: chan('email') };
+        });
+      })(),
+      cancelCatRevertWarn: () => this.cancelCatRevertWarn(),
+      catRemoveWarnOpen: !!s.catRemoveWarn,
+      catRemoveWarnLabel: s.catRemoveWarn ? s.catRemoveWarn.label : '',
+      catRemoveWarnCount: s.catRemoveWarn ? s.catRemoveWarn.trips.length : 0,
+      catRemoveWarnTrips: s.catRemoveWarn ? s.catRemoveWarn.trips.map(t => ({ id: t.id, place: t.place, onView: () => { this.setState({ famDetailFamilyId: null }); this.selectLocation(t.id); } })) : [],
+      catRemoveWarnReassignValue: s.catRemoveWarn ? s.catRemoveWarn.reassign : '',
+      catRemoveWarnOptions: s.catRemoveWarn ? this.familyCatEffective(s.catRemoveWarn.familyId, s.catRemoveWarn.cat).filter(o => o.key !== s.catRemoveWarn.key).map(o => ({ value: o.key, label: o.label })) : [],
+      onCatRemoveReassignChange: (e) => this.setCatRemoveReassign(e.target.value),
+      applyCatRemoveReassign: () => this.applyCatRemoveReassign(),
+      doRemoveFamilyCatItemAnyway: () => { const w = s.catRemoveWarn; this.setState({ catRemoveWarn: null }); if (w) this.doRemoveFamilyCatItem(w.cat, w.key); },
+      cancelCatRemoveWarn: () => this.cancelCatRemoveWarn(),
       transferOwnerEmail: s.transferOwnerEmail || '',
       canAskTransferOwnership: !!s.transferOwnerEmail,
       notCanAskTransferOwnership: !s.transferOwnerEmail,
@@ -5239,7 +5510,11 @@ class Component extends DCLogic {
       const body = JSON.stringify({ app: 'vacation-location', version: 1, settings: this.appSettings(), locations: list });
       const res = await fetch('/api/trips', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
       if (res.status === 401) this.setState({ cloudMsg: 'Sign in to save changes to the cloud.' });
-      else if (!res.ok) this.setState({ cloudMsg: 'Cloud save failed (' + res.status + ').' });
+      else if (!res.ok) {
+        const j = await res.json().catch(() => null);
+        this.setState({ cloudMsg: (j && j.error) || ('Cloud save failed (' + res.status + ').') });
+        if (j && j.error) this.toast(j.error);
+      }
       else { this._cloudCount = list.length; this.setState({ cloudMsg: '' }); }
     } catch (e) { this.setState({ cloudMsg: 'Cloud offline — changes saved on this device.' }); }
   }
@@ -9281,9 +9556,12 @@ class Component extends DCLogic {
         noAttachments: (sl.attachments || []).length === 0,
         noGallery: !(Array.isArray(sl.gallery) && sl.gallery.length > 0),
         attachmentsHidden: this.state.cfgDataSource === 'cloud' && !(this.tripUnassigned(sl) || this.tripIsMine(sl)) && !this.tripPermsFor(sl.familyId).attachVisibleShared,
-        canAddAttachments: (this.state.cloudRoles || []).includes('editor') && this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).attachFloor) && (this.tripUnassigned(sl) || this.tripIsMine(sl)),
-        canPostComment: !(this.tripUnassigned(sl) || this.tripIsMine(sl)) || this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).commentFloor),
-        cannotPostComment: (this.tripUnassigned(sl) || this.tripIsMine(sl)) && !this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).commentFloor),
+        canAddAttachments: (this.state.cloudRoles || []).includes('editor') && (sl.soloPrivate ? this.tripIsMine(sl) : (
+          (sl.familyId ? this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).attachFloor) : (this.tripUnassigned(sl) || this.tripIsMine(sl)))
+          || (!sl.hiddenFromShares && ['editor', 'admin-no-delete'].includes(this.myShareRoleForFamily(sl.familyId)))
+        )),
+        canPostComment: !this.roleInFamily(sl.familyId) || this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).commentFloor),
+        cannotPostComment: !!this.roleInFamily(sl.familyId) && !this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).commentFloor),
         openComments: () => this.openCommentsModal(),
         openAttachments: () => this.openAttachmentsModal(),
         triggerAttachmentPick: () => this.triggerAttachmentPick(sl.id),
@@ -10036,7 +10314,7 @@ class Component extends DCLogic {
       authorEmail: ['Terry.Remsik', 'gmail.com'].join('@'),
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
-      appUpdated: 'July 12, 2026',
+      appUpdated: 'July 13, 2026',
 
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
@@ -10139,6 +10417,12 @@ class Component extends DCLogic {
         return fam ? base + ' FOR ' + fam.name.toUpperCase() : base;
       })(),
       formTitle: editingId != null ? 'Edit location' : 'Add location',
+      formPendingFamilyBanner: (() => {
+        if (editingId != null) return '';
+        const fam = (this.state.cfgFamilies || []).find(x => x.id === form.familyId);
+        if (fam && !fam.approved && !this.state.mySiteAdmin) return 'This family is pending site-admin approval — trips can\'t be added until it\'s approved.';
+        return '';
+      })(),
       showFormFamilyPicker: (this.state.cfgFamilies || []).length > 1,
       formFamilyOptions: (this.state.cfgFamilies || []).map(f => ({ id: f.id, name: f.name })),
       saveLabel: this.state.geocoding ? 'Locating…' : (editingId != null ? 'Save changes' : 'Add to globe'),

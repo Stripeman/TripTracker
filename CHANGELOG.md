@@ -4,6 +4,24 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.28.0-beta — Real family-approval enforcement, category safety checks, permission-gate audit
+
+### Added
+- **Notifications tab** (per family, admin‑only, in **My Families → [family] → Notifications tab**): independent on/off toggles for **Toast** (live in‑app), **Bell** (Activity Log), and **Email** for seven event types — Category list changes, Attachment uploads, Ownership transfers, New trips, Trip edits, Trip deletes, and Comments. Everything defaults to on, so existing families see no change until an admin opts something out. Backed by a new `setFamilyNotifPrefs` action (family admin/owner or site admin only) and a shared `api/_shared/notify.js` helper (`notifPrefOn`, `sendEmail`, `familyAdminEmails`) used across the families/trips/attachments APIs. Courtesy emails go to a family's admins (excluding whoever caused the event); ownership‑transfer emails also go to the new owner. Toast delivery rides the app's existing 30s activity poll — a genuinely new activity item with its event's toast pref on triggers a live toast for anyone online, skipping the person who caused it.
+- **Family approval is now actually enforced**, not just a cosmetic flag. A family pending approval can no longer create trips, invite/share/promote members, transfer ownership, or upload attachments — site admins still bypass every check. A "Pending approval" banner appears on the Add Location form and the relevant actions when your active family isn't approved yet.
+- **Real-time approval status** — the app already polls for family updates every 30s and on tab focus; now the moment a pending family flips to approved, everyone in it gets a toast ("'<Family>' has been approved — you can add trips now") instead of a silent state change.
+- **Usage warnings before touching a category in use**: removing a single custom Visit Type / Trip Type / Status item now checks whether any of that family's trips use it — if so, shows the affected trips and a "Reassign to…" picker before deleting. "Revert to site default" has the same check for every custom item at once.
+
+### Fixed
+- **Shared-family editors couldn't upload attachments** — the client-side attachment-upload check only recognized your own family's role, not a role granted via family-to-family sharing, so a shared editor saw no upload button even though the server would have allowed it. Now matches server logic exactly.
+- **Comment gate let readers post on trips owned by other members of their own family** regardless of that family's comment-permission floor — the client check only looked at "is this trip unassigned or mine," missing the family-membership + floor check entirely. Fixed to mirror the server.
+- **Category revert/reassign wasn't scoped to the reverting family** — reassigning a status/type key during a "Revert to site default" could rewrite matching values on *any* family's trips, not just the one being reverted. Now scoped by `familyId`.
+- **Category limit of exactly 0 silently fell back to 40** on both client and server (`Number(0) || 40` treats 0 as falsy) instead of clamping to the minimum of 1.
+- **Add Location modal rendered broken/unbounded** after the pending-approval banner was added — a stray extra closing `</div>` closed the whole modal wrapper early, so the tabs and form spilled out with no width constraint. Removed the duplicate tag.
+- Full permission-gate audit this cycle covered trip view/edit/delete, itinerary edit, attachment upload, comment posting, family delete, category limits/overrides, audit-level control, and trip visibility/sharing tiers — all passing except the four fixes above.
+
+---
+
 ## 1.27.0-beta — Per-family Visit Type / Trip Type / Status lists; sharing moved under Permissions
 
 ### Added

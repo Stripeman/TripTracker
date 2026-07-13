@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.27.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.28.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -13,7 +13,11 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
 - **Anyone signed in can create a family** — a "Create a new family" button on the
   People & Family Management → Families detail panel opens a small popup. New families
   need site-admin approval before their trips become usable, unless the site admin has
-  turned on auto-approve.
+  turned on auto-approve. **Approval is enforced, not just cosmetic**: a pending family
+  can't create trips, invite/share/promote members, transfer ownership, or upload
+  attachments until a site admin approves it (site admins bypass this). A banner on the
+  Add Location form and elsewhere flags the pending state, and a toast announces the
+  moment approval lands — the app already polls for family updates, so no reload needed.
 - **First-login onboarding** — a brand-new user with no family yet is taken straight to
   People & Family Management and prompted to create one; if a site admin instead
   approved their access request without picking an existing family, a solo family is
@@ -356,9 +360,10 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 - `owner` / `ownerEmail` — the account that owns this trip (Cloud mode); `ownerEmail` drives per‑trip permissions and the family scoping rules described above.
 - **Family detail tabs** — the family panel in **My Families** is organized into four tabs (admins only see the tab bar; regular members just see Overview): **Overview** (branding, photo uploads, owner, attachments & storage summary, people), **Permissions**, **Categories**, and **Owner** (Transfer Ownership — gated to the family's actual owner, not just any admin).
 - **Trip Permissions** (per family, admin‑only, in **My Families → [family] → Permissions tab**): floors for **who can edit**, **who can manage attachments**, and **who can comment** on that family's own trips — each is **Editor+** (default) or **Admin only**; owners/admins always qualify. Also: **Attachments visible to shared families** (default on — turn off to keep tickets/docs private to just this family), **Shared families can edit itinerary** (default off — viewing itself always follows the trip's normal sharing tier and is never made public), **Any family member can delete this family's trips** (default off — normally only admins can delete any trip, editors only trips they created), and **Shared families can delete this family's trips** (default off). A summary line shows the effective delete rule at a glance. All floors are enforced server‑side, not just hidden in the UI. The **Families that can see ours / Families we can see** sharing controls live in this same Permissions tab.
-- **Categories** (per family, admin‑only, in **My Families → [family] → Categories tab**): give a family its own **Visit Type**, **Trip Type**, or **Status** list instead of the site‑wide defaults. Toggle **"Use custom list"** (starts as a copy of the site default; add/edit/remove items freely) or **"Revert to site default"** to inherit again. New/edited trips for that family show its effective list; a trip tagged with a family‑only category still resolves its label and color correctly everywhere else (cards, filters, metrics, CSV export). Server‑enforced: only that family's admin/owner (or a site admin) can change it. The max items a custom list can hold is a site‑wide setting (see **Per‑family category limit** below).
+- **Categories** (per family, admin‑only, in **My Families → [family] → Categories tab**): give a family its own **Visit Type**, **Trip Type**, or **Status** list instead of the site‑wide defaults. Toggle **"Use custom list"** (starts as a copy of the site default; add/edit/remove items freely) or **"Revert to site default"** to inherit again. Removing a single item, or reverting the whole list, first checks whether any of that family's trips actually use the value being removed — if so, it shows the affected trips and a **"Reassign to…"** picker before anything is deleted, scoped strictly to that family's own trips. New/edited trips for that family show its effective list; a trip tagged with a family‑only category still resolves its label and color correctly everywhere else (cards, filters, metrics, CSV export). Server‑enforced: only that family's admin/owner (or a site admin) can change it. The max items a custom list can hold is a site‑wide setting (see **Per‑family category limit** below).
 - **Attachments & Storage** (**Overview tab**): file count, total size used, and a per‑file list for that family's trips (25MB cap per file).
 - **Activity Log** (**Audit tab**): a scrollable, chronological log of that family's own admin-level events (people added/removed, role changes, ownership transfers, trip-permission changes, family sharing) — each entry shows the actor's name (with a ✉ link to email them) and, for permission changes, exactly what changed. Separate from the app-wide activity bell described below. What gets logged is controlled site-wide by **Audit log detail** (see below).
+- **Notifications** (per family, admin‑only, in **My Families → [family] → Notifications tab**): independent on/off toggles for **Toast** (a live in‑app notification for anyone online), **Bell** (an entry in this family's Activity Log), and **Email** (a courtesy email to the family's admins) — one row per event type: Category list changes, Attachment uploads, Ownership transfers, New trips, Trip edits, Trip deletes, and Comments. Everything defaults to on. Ownership‑transfer emails also go to the incoming owner. Toast delivery piggybacks on the same event actually being logged, so it only fires for events whichever admin left Bell on for.
 
 ### 🔍 Audit log detail (site admin)
 

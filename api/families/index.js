@@ -1,4 +1,5 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
+const { notifPrefOn, sendEmail, familyAdminEmails } = require("../_shared/notify");
 
 // FAMILIES + MEMBERSHIPS API.
 //
@@ -217,6 +218,15 @@ module.exports = async function (context, req) {
     const myMemberships = members.filter((m) => m.email === me.email && m.active !== false);
     const myFamilyIds = new Set(myMemberships.map((m) => m.familyId));
     const myAdminFamilyIds = new Set(myMemberships.filter((m) => m.role === "admin").map((m) => m.familyId));
+    // A family pending site-admin approval can't invite/share yet (site admin bypasses).
+    // "Pending" only applies once the family actually exists with approved:false — a
+    // family not found at all is a different error, handled by each action itself.
+    const requireApprovedFamily = (familyId) => {
+      if (meIsSiteAdmin) return true;
+      const fam = families.find((f) => f.id === familyId);
+      if (fam && !fam.approved) { json(403, { error: "This family is pending site-admin approval — invites and sharing aren't available yet." }); return false; }
+      return true;
+    };
 
     if (req.method === "GET") {
       const visibleFamilies = meIsSiteAdmin ? families : families.filter((f) => myFamilyIds.has(f.id));
@@ -308,7 +318,13 @@ module.exports = async function (context, req) {
       families = families.map((f) => f.id === familyId ? { ...f, createdBy: toEmail } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       await writeJsonBlob(container, MEMBERS_BLOB, members);
-      logActivity(container, { type: "transferOwnership", familyId, visibleTo: [familyId], actor: me.email, message: "Transferred ownership of " + fam.name + " to " + toEmail });
+      if (notifPrefOn(fam, "ownerTransfers", "bell")) {
+        logActivity(container, { type: "transferOwnership", familyId, visibleTo: [familyId], actor: me.email, message: "Transferred ownership of " + fam.name + " to " + toEmail });
+      }
+      if (notifPrefOn(fam, "ownerTransfers", "email")) {
+        const to = Array.from(new Set([toEmail, ...familyAdminEmails(members, familyId, me.email)]));
+        sendEmail(to, "Ownership transferred \u2014 " + fam.name, me.email + " transferred ownership of " + fam.name + " to " + toEmail + ".").catch(() => {});
+      }
       json(200, { ok: true });
       return;
     }
@@ -445,6 +461,23 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Per-family Notifications tab: on/off for one (event, channel) pair. channel
+    // is "toast" (live in-app toast to other members) | "bell" (persisted to the
+    // Activity Log / bell feed) | "email" (courtesy email). Missing = on, so
+    // pre-existing families keep every notification until someone opts out.
+    if (action === "setFamilyNotifPrefs") {
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
+      const CHANNELS = ["toast", "bell", "email"];
+      const key = NOTIF_KEYS.includes(body.key) ? body.key : null;
+      const channel = CHANNELS.includes(body.channel) ? body.channel : null;
+      if (!key || !channel) { json(400, { error: "Invalid notification key or channel." }); return; }
+      families = families.map((f) => f.id === body.familyId ? { ...f, notifPrefs: { ...(f.notifPrefs || {}), [key]: { ...((f.notifPrefs && f.notifPrefs[key]) || {}), [channel]: !!body.value } } } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      json(200, { ok: true });
+      return;
+    }
+
     // Per-family override of the site-wide image-uploads setting. value: true | false | null
     // (null clears the override so the family goes back to inheriting the site default).
     if (action === "setFamilyImageUploads") {
@@ -484,7 +517,13 @@ module.exports = async function (context, req) {
       families = families.map((f) => f.id === body.familyId ? { ...f, catOverrides } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       const CATLABEL = { visit: "visit types", trip: "trip types", status: "statuses" };
-      logActivity(container, { type: "setFamilyCategories", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: (list && list.length ? "Set a custom " : "Reverted ") + CATLABEL[cat] + " list for " + (fam0 ? fam0.name : "the family") + (list && list.length ? "" : " to the site default") });
+      if (fam0 && notifPrefOn(fam0, "categoryChanges", "bell")) {
+        logActivity(container, { type: "setFamilyCategories", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: (list && list.length ? "Set a custom " : "Reverted ") + CATLABEL[cat] + " list for " + (fam0 ? fam0.name : "the family") + (list && list.length ? "" : " to the site default") });
+      }
+      if (fam0 && notifPrefOn(fam0, "categoryChanges", "email")) {
+        const to = familyAdminEmails(members, body.familyId, me.email);
+        sendEmail(to, "Category list updated \u2014 " + fam0.name, me.email + " " + (list && list.length ? "set a custom " : "reverted the ") + CATLABEL[cat] + (list && list.length ? " list" : " to the site default") + " for " + fam0.name + ".").catch(() => {});
+      }
       json(200, { ok: true });
       return;
     }
@@ -529,6 +568,7 @@ module.exports = async function (context, req) {
     if (action === "invitePerson") {
       const familyId = body.familyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(familyId)) return;
       const email = String(body.email || "").toLowerCase().trim();
       let role = String(body.role || "reader").toLowerCase();
       if (!email || email.indexOf("@") === -1) { json(400, { error: "Valid email required." }); return; }
@@ -645,6 +685,7 @@ module.exports = async function (context, req) {
     if (action === "addNonAccountMember") {
       const familyId = body.familyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(familyId)) return;
       const name = String(body.name || "").trim();
       if (!name) { json(400, { error: "Name required." }); return; }
       const row = { id: genId("member"), familyId, name, noAccount: true, active: true, createdAt: new Date().toISOString(), createdBy: me.email };
@@ -738,6 +779,7 @@ module.exports = async function (context, req) {
     if (action === "createInviteLink") {
       const familyId = body.familyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(familyId)) return;
       let role = String(body.role || "reader").toLowerCase();
       if (VALID_ROLES.indexOf(role) === -1) role = "reader";
       let invites = await readJsonBlob(container, "invite-links.json", []);
@@ -831,6 +873,7 @@ module.exports = async function (context, req) {
     if (action === "sendInviteEmail") {
       const familyId = body.familyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(familyId)) return;
       const email = String(body.email || "").toLowerCase().trim();
       if (!email || email.indexOf("@") === -1) { json(400, { error: "Valid email required." }); return; }
       const key = process.env.RESEND_API_KEY;
@@ -865,6 +908,7 @@ module.exports = async function (context, req) {
     if (action === "inviteFamily") {
       const fromFamilyId = body.fromFamilyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(fromFamilyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(fromFamilyId)) return;
       const toFamilyId = body.toFamilyId;
       let role = String(body.role || "reader").toLowerCase();
       if (SHARE_ROLES.indexOf(role) === -1) role = "reader";

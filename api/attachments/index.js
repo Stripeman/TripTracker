@@ -1,5 +1,6 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
 const { checkRateLimit } = require("../_shared/rateLimit");
+const { notifPrefOn, sendEmail, familyAdminEmails } = require("../_shared/notify");
 
 // ATTACHMENTS API — real files (tickets, confirmations) attached to a trip.
 //
@@ -122,14 +123,31 @@ async function logActivity(container, { type, familyId, visibleTo, actor, messag
 
 async function loadPermByFamily(container) {
   const map = new Map();
+  const approved = new Map();
   try {
     const familiesBlob = container.getBlockBlobClient(process.env.FAMILIES_BLOB || "families.json");
     if (await familiesBlob.exists()) {
       const list = JSON.parse(await streamToString((await familiesBlob.download()).readableStreamBody));
-      (Array.isArray(list) ? list : []).forEach((f) => map.set(f.id, { ...DEFAULT_TRIP_PERM, ...(f.permTrip || {}) }));
+      (Array.isArray(list) ? list : []).forEach((f) => { map.set(f.id, { ...DEFAULT_TRIP_PERM, ...(f.permTrip || {}) }); approved.set(f.id, !!f.approved); });
     }
   } catch (e) { /* fail open */ }
-  return (familyId) => (familyId && map.get(familyId)) || DEFAULT_TRIP_PERM;
+  const permFor = (familyId) => (familyId && map.get(familyId)) || DEFAULT_TRIP_PERM;
+  permFor.isApproved = (familyId) => !familyId || !approved.has(familyId) || approved.get(familyId);
+  return permFor;
+}
+
+async function loadFamiliesAndMembers(container) {
+  let families = [];
+  let members = [];
+  try {
+    const familiesBlob = container.getBlockBlobClient(process.env.FAMILIES_BLOB || "families.json");
+    if (await familiesBlob.exists()) families = JSON.parse(await streamToString((await familiesBlob.download()).readableStreamBody));
+  } catch (e) { /* fail open */ }
+  try {
+    const membersBlob = container.getBlockBlobClient(MEMBERS_BLOB);
+    if (await membersBlob.exists()) members = JSON.parse(await streamToString((await membersBlob.download()).readableStreamBody));
+  } catch (e) { /* fail open */ }
+  return { families: Array.isArray(families) ? families : [], members: Array.isArray(members) ? members : [] };
 }
 
 async function streamToString(readable) {
@@ -279,8 +297,12 @@ module.exports = async function (context, req) {
       const updated = stored.locations.map((t) => t.id === trip.id ? { ...t, attachments: (t.attachments || []).filter((a) => a.id !== id) } : t);
       await writeDataset(dataBlob, updated, stored.settings);
       if (auditDetailed && trip.familyId) {
-        const place = [trip.city, trip.country].filter(Boolean).join(", ") || "a trip";
-        await logActivity(container, { type: "deleteAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: me.email + " removed attachment \"" + att.name + "\" from " + place });
+        const { families } = await loadFamiliesAndMembers(container);
+        const fam = families.find((f) => f.id === trip.familyId);
+        if (notifPrefOn(fam, "attachmentUploads", "bell")) {
+          const place = [trip.city, trip.country].filter(Boolean).join(", ") || "a trip";
+          await logActivity(container, { type: "deleteAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: me.email + " removed attachment \"" + att.name + "\" from " + place });
+        }
       }
       json(200, { ok: true });
       return;
@@ -303,6 +325,7 @@ module.exports = async function (context, req) {
       const trip = stored.locations.find((t) => String(t.id) === String(tripId));
       if (!trip) { json(404, { error: "Trip not found." }); return; }
       if (!canEdit(trip, me, permFor(trip.familyId))) { json(403, { error: "No permission to add attachments to this trip." }); return; }
+      if (trip.familyId && !me.siteAdmin && !permFor.isApproved(trip.familyId)) { json(403, { error: "This family is pending site-admin approval — attachments can't be added yet." }); return; }
 
       let buf;
       try { buf = Buffer.from(dataBase64, "base64"); } catch (e) { json(400, { error: "Invalid file data." }); return; }
@@ -320,9 +343,17 @@ module.exports = async function (context, req) {
       };
       const updated = stored.locations.map((t) => t.id === trip.id ? { ...t, attachments: [...(t.attachments || []), record] } : t);
       await writeDataset(dataBlob, updated, stored.settings);
-      if (auditDetailed && trip.familyId) {
+      if (trip.familyId) {
+        const { families, members } = await loadFamiliesAndMembers(container);
+        const fam = families.find((f) => f.id === trip.familyId);
         const place = [trip.city, trip.country].filter(Boolean).join(", ") || "a trip";
-        await logActivity(container, { type: "uploadAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: me.email + " added attachment \"" + cleanName + "\" to " + place });
+        if (auditDetailed && notifPrefOn(fam, "attachmentUploads", "bell")) {
+          await logActivity(container, { type: "uploadAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: me.email + " added attachment \"" + cleanName + "\" to " + place });
+        }
+        if (fam && notifPrefOn(fam, "attachmentUploads", "email")) {
+          const to = familyAdminEmails(members, trip.familyId, me.email);
+          sendEmail(to, "New attachment \u2014 " + fam.name, me.email + " added \"" + cleanName + "\" to " + place + ".").catch(() => {});
+        }
       }
       json(200, { ok: true, attachment: record });
       return;

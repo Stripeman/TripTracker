@@ -1,5 +1,6 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
 const { checkRateLimit } = require("../_shared/rateLimit");
+const { notifPrefOn, sendEmail, familyAdminEmails } = require("../_shared/notify");
 
 // Reads/writes the Trip Tracker dataset to Blob Storage, with PER-USER access control.
 //
@@ -250,6 +251,8 @@ module.exports = async function (context, req) {
     // Best-effort / fail-open — if either blob is unreadable, uploads stay allowed.
     let imagesAllowedByFamily = new Map();
     let permByFamily = new Map();
+    let approvedByFamily = new Map();
+    let familyById = new Map();
     let siteImagesOn = true;
     let sitePublicSharingOn = true;
     let auditLevel = "essential";
@@ -269,6 +272,8 @@ module.exports = async function (context, req) {
         (Array.isArray(list) ? list : []).forEach((f) => {
           imagesAllowedByFamily.set(f.id, f.imagesEnabled === undefined || f.imagesEnabled === null ? siteImagesOn : !!f.imagesEnabled);
           permByFamily.set(f.id, { ...DEFAULT_TRIP_PERM, ...(f.permTrip || {}) });
+          approvedByFamily.set(f.id, !!f.approved);
+          familyById.set(f.id, f);
         });
       }
     } catch (e) { /* fail open */ }
@@ -398,12 +403,12 @@ module.exports = async function (context, req) {
       if (s.familyId || s.owner || s.ownerEmail) {
         if (editable) {
           if (incoming) {
-            if (auditDetailed && s.familyId && !sameExceptKeys(incoming, s, [])) {
+            if (auditDetailed && s.familyId && !sameExceptKeys(incoming, s, []) && notifPrefOn(familyById.get(s.familyId), "tripEdits", "bell")) {
               await logActivity(container, { type: "editTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " edited " + place() });
             }
             result.push(normalize(incoming, s.owner || me.id, s.ownerEmail || me.email));
           } else if (!deletable) result.push(s); // editor without delete rights can't drop it by omission
-          else if (auditDetailed && s.familyId) {
+          else if (auditDetailed && s.familyId && notifPrefOn(familyById.get(s.familyId), "tripDeletes", "bell")) {
             await logActivity(container, { type: "deleteTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " deleted " + place() });
           }
           // else: omitted by someone with delete rights → deleted
@@ -417,7 +422,7 @@ module.exports = async function (context, req) {
           const shareRole = me.sharesIn.get(s.familyId);
           const itineraryOk = !iAmFamilyMember && perm.itineraryEditableShared && !!shareRole && !s.hiddenFromShares;
           if (commentOk && sameExceptKeys(incoming, s, ["comments"])) {
-            if (auditDetailed && Array.isArray(incoming.comments) && incoming.comments.length > (s.comments || []).length) {
+            if (auditDetailed && Array.isArray(incoming.comments) && incoming.comments.length > (s.comments || []).length && notifPrefOn(familyById.get(s.familyId), "comments", "bell")) {
               await logActivity(container, { type: "comment", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " commented on " + place() });
             }
             result.push({ ...s, comments: incoming.comments });
@@ -447,9 +452,26 @@ module.exports = async function (context, req) {
     for (const t of payload.locations) {
       if (storedById.has(t.id)) continue;
       const withFamily = t.familyId ? t : (myEditableFamilyId ? { ...t, familyId: myEditableFamilyId[0] } : t);
-      if (auditDetailed && withFamily.familyId) {
+      // A family pending site-admin approval can't add new trips yet (site admin bypasses).
+      if (withFamily.familyId && !me.siteAdmin && approvedByFamily.has(withFamily.familyId) && !approvedByFamily.get(withFamily.familyId)) {
+        json(403, { error: "This family is pending site-admin approval — trips can't be added yet." });
+        return;
+      }
+      if (auditDetailed && withFamily.familyId && notifPrefOn(familyById.get(withFamily.familyId), "tripAdds", "bell")) {
         const place = [t.city, t.country].filter(Boolean).join(", ") || "a trip";
         await logActivity(container, { type: "createTrip", familyId: withFamily.familyId, visibleTo: [withFamily.familyId], actor: me.email, message: me.email + " added " + place });
+      }
+      if (withFamily.familyId) {
+        const fam = familyById.get(withFamily.familyId);
+        if (fam && notifPrefOn(fam, "tripAdds", "email")) {
+          const place = [t.city, t.country].filter(Boolean).join(", ") || "a trip";
+          try {
+            const membersBlob2 = container.getBlockBlobClient(MEMBERS_BLOB);
+            const memberList = (await membersBlob2.exists()) ? JSON.parse(await streamToString((await membersBlob2.download()).readableStreamBody)) : [];
+            const to = familyAdminEmails(memberList, withFamily.familyId, me.email);
+            sendEmail(to, "New trip added \u2014 " + fam.name, me.email + " added " + place + " to " + fam.name + ".").catch(() => {});
+          } catch (e) { /* best-effort */ }
+        }
       }
       result.push(normalize(withFamily, t.owner || me.id, t.ownerEmail || me.email));
     }
