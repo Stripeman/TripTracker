@@ -1,4 +1,5 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
+const { notifPrefOn, sendEmail, familyAdminEmails } = require("../_shared/notify");
 
 // FAMILIES + MEMBERSHIPS API.
 //
@@ -45,6 +46,8 @@ const MEMBERS_BLOB = process.env.MEMBERSHIPS_BLOB || "memberships.json";
 const SHARES_BLOB = process.env.FAMILY_SHARES_BLOB || "family-shares.json";
 const ACCESS_REQUESTS_BLOB = process.env.ACCESS_REQUESTS_BLOB || "access-requests.json";
 const TRAVELERS_BLOB = process.env.TRAVELERS_BLOB || "travelers.json";
+const ACTIVITY_BLOB = process.env.ACTIVITY_BLOB || "activity.json";
+const ACTIVITY_MAX = 300; // bounded ring buffer — old entries drop off, no admin UI needed
 const VALID_ROLES = ["reader", "editor", "admin"];
 const SHARE_ROLES = ["reader", "editor", "admin-no-delete"];
 const FAMILY_COLORS = ["#38bdf8", "#fb7185", "#fbbf24", "#4ade80", "#a78bfa", "#fb923c", "#22d3ee", "#e879f9", "#f87171", "#34d399"];
@@ -110,6 +113,30 @@ function genId(prefix) {
   return prefix + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
+// In-app activity feed — a small, bounded, best-effort log of share/invite/approval
+// events. `visibleTo` names which familyIds should see the entry (usually the acting
+// family, plus the other side of an invite/share). Read back and filtered in the GET
+// handler below; never throws — a logging hiccup shouldn't break the action it's
+// attached to.
+async function logActivity(container, { type, familyId, visibleTo, actor, message }) {
+  try {
+    let list = await readJsonBlob(container, ACTIVITY_BLOB, []);
+    if (!Array.isArray(list)) list = [];
+    list.push({
+      id: genId("act"),
+      type,
+      familyId: familyId || null,
+      visibleTo: Array.isArray(visibleTo) ? visibleTo.filter(Boolean) : [familyId].filter(Boolean),
+      actor: actor || "",
+      message: message || "",
+      createdAt: new Date().toISOString(),
+    });
+    if (list.length > ACTIVITY_MAX) list = list.slice(list.length - ACTIVITY_MAX);
+    await writeJsonBlob(container, ACTIVITY_BLOB, list);
+  } catch (e) { /* best-effort — never blocks the calling action */ }
+}
+
+
 // Best-effort courtesy email when a site admin approves a pending access request.
 // Uses the same Resend env vars as /api/request-access; silently no-ops if unset
 // or if the send fails — approval itself already succeeded via the membership write.
@@ -142,6 +169,29 @@ async function notifyApproved(email, familyName, role, isNewFamily) {
   }
 }
 
+// Best-effort courtesy email when one family shares their trips with another
+// (inviteFamily). Notifies every admin of the RECEIVING family. Silently no-ops if
+// Resend isn't configured — the share itself already succeeded via the blob write.
+async function notifyFamilyShare(members, toFamily, fromFamily, role) {
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM;
+  if (!key || !from || !toFamily) return;
+  const admins = members.filter((m) => m.familyId === toFamily.id && m.role === "admin" && m.active !== false && m.email);
+  if (!admins.length) return;
+  const roleLabel = role === "admin-no-delete" ? "Admin (no delete)" : role === "editor" ? "Editor" : "Reader";
+  const site = process.env.SITE_URL || "";
+  let body = (fromFamily ? fromFamily.name : "Another family") + " just shared their trips with " + toFamily.name
+    + ".\n\nYour access level: " + roleLabel + "\n\nSign in to see their trips on your globe.";
+  if (site) body += "\n\n" + site;
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: admins.map((a) => a.email), subject: (fromFamily ? fromFamily.name : "A family") + " shared their trips with you", text: body }),
+    });
+  } catch (e) { /* best-effort only */ }
+}
+
 module.exports = async function (context, req) {
   const json = (status, body) => {
     context.res = { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }, body: JSON.stringify(body) };
@@ -158,7 +208,9 @@ module.exports = async function (context, req) {
     let families = await readJsonBlob(container, FAMILIES_BLOB, []);
     let members = await readJsonBlob(container, MEMBERS_BLOB, []);
     let shares = await readJsonBlob(container, SHARES_BLOB, []);
-    let settings = await readJsonBlob(container, "family-settings.json", { autoApproveFamilies: false });
+    let settings = await readJsonBlob(container, "family-settings.json", { autoApproveFamilies: false, imageUploadsEnabled: true, publicSharingEnabled: true });
+    if (settings.imageUploadsEnabled === undefined) settings.imageUploadsEnabled = true;
+    if (settings.publicSharingEnabled === undefined) settings.publicSharingEnabled = true;
     const travelersBlobExists = await container.getBlockBlobClient(TRAVELERS_BLOB).exists();
     let travelers = travelersBlobExists ? await readJsonBlob(container, TRAVELERS_BLOB, []) : [];
     if (!Array.isArray(travelers)) travelers = [];
@@ -166,12 +218,32 @@ module.exports = async function (context, req) {
     const myMemberships = members.filter((m) => m.email === me.email && m.active !== false);
     const myFamilyIds = new Set(myMemberships.map((m) => m.familyId));
     const myAdminFamilyIds = new Set(myMemberships.filter((m) => m.role === "admin").map((m) => m.familyId));
+    // A family pending site-admin approval can't invite/share yet (site admin bypasses).
+    // "Pending" only applies once the family actually exists with approved:false — a
+    // family not found at all is a different error, handled by each action itself.
+    const requireApprovedFamily = (familyId) => {
+      if (meIsSiteAdmin) return true;
+      const fam = families.find((f) => f.id === familyId);
+      if (fam && !fam.approved) { json(403, { error: "This family is pending site-admin approval — invites and sharing aren't available yet." }); return false; }
+      return true;
+    };
 
     if (req.method === "GET") {
-      const visibleFamilies = meIsSiteAdmin ? families : families.filter((f) => myFamilyIds.has(f.id));
+      // A family that only shares its trips with mine (I'm not a member) still needs
+      // its name/record to reach the client — otherwise every UI that looks up a
+      // family by id (the Metrics scope picker, family-name labels on shared trips,
+      // etc.) silently can't resolve it even after the trips/travelers themselves are
+      // visible. Mirrors the client's myAccessibleFamilyIds exactly.
+      const sharedInFamilyIds = new Set(shares.filter((s) => myFamilyIds.has(s.toFamilyId)).map((s) => s.fromFamilyId));
+      const accessibleFamilyIds = new Set([...myFamilyIds, ...sharedInFamilyIds]);
+      const visibleFamilies = meIsSiteAdmin ? families : families.filter((f) => accessibleFamilyIds.has(f.id));
       const visibleMembers = meIsSiteAdmin ? members : members.filter((m) => myAdminFamilyIds.has(m.familyId) || m.email === me.email);
       const visibleShares = meIsSiteAdmin ? shares : shares.filter((s) => myFamilyIds.has(s.fromFamilyId) || myFamilyIds.has(s.toFamilyId));
-      const visibleTravelers = meIsSiteAdmin ? travelers : travelers.filter((t) => myFamilyIds.has(t.familyId));
+      // Travelers use the same accessible-family set (own families + anyone who
+      // shared with one of mine) — otherwise a shared family's people never reach
+      // the client, so filters/metrics that key off traveler rows (e.g. the Metrics
+      // traveler picker) silently can't show them.
+      const visibleTravelers = meIsSiteAdmin ? travelers : travelers.filter((t) => accessibleFamilyIds.has(t.familyId));
       json(200, {
         families: visibleFamilies,
         memberships: visibleMembers,
@@ -186,8 +258,22 @@ module.exports = async function (context, req) {
         primaryAdminEmails: meIsSiteAdmin ? primaryAdminEmailList() : undefined,
         extraSiteAdmins: meIsSiteAdmin ? extraSiteAdmins : undefined,
         autoApproveFamilies: !!settings.autoApproveFamilies,
+        imageUploadsEnabled: settings.imageUploadsEnabled !== false,
+        publicSharingEnabled: settings.publicSharingEnabled !== false,
+        defaultNotifPrefs: settings.defaultNotifPrefs || {},
+        emailKillSwitch: !!settings.emailKillSwitch,
+        landingVariant: ["signin", "a", "b", "c"].includes(settings.landingVariant) ? settings.landingVariant : "signin",
+        showPricingSection: !!settings.showPricingSection,
+        auditLevel: ["essential", "detailed", "verbose"].includes(settings.auditLevel) ? settings.auditLevel : "essential",
+        familyCatLimit: Number.isFinite(settings.familyCatLimit) && settings.familyCatLimit > 0 ? Math.min(200, Math.floor(settings.familyCatLimit)) : 40,
+        showTestimonials: !!settings.showTestimonials,
+        testimonials: Array.isArray(settings.testimonials) ? settings.testimonials : [],
         pendingFamilies: meIsSiteAdmin ? families.filter((f) => !f.approved) : undefined,
         accessRequests: meIsSiteAdmin ? (await readJsonBlob(container, ACCESS_REQUESTS_BLOB, [])) : undefined,
+        activity: (await readJsonBlob(container, ACTIVITY_BLOB, []))
+          .filter((a) => meIsSiteAdmin || (Array.isArray(a.visibleTo) && a.visibleTo.some((fid) => myFamilyIds.has(fid))))
+          .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+          .slice(0, 30),
       });
       return;
     }
@@ -200,7 +286,7 @@ module.exports = async function (context, req) {
       const name = String((body.name || "")).trim();
       if (!name) { json(400, { error: "Family name required." }); return; }
       const color = FAMILY_COLORS.includes(body.color) ? body.color : FAMILY_COLORS[families.length % FAMILY_COLORS.length];
-      const fam = { id: genId("fam"), name, color, createdBy: me.email, createdAt: new Date().toISOString(), approved: !!settings.autoApproveFamilies, autoApproved: !!settings.autoApproveFamilies };
+      const fam = { id: genId("fam"), name, color, createdBy: me.email, createdAt: new Date().toISOString(), approved: !!settings.autoApproveFamilies, autoApproved: !!settings.autoApproveFamilies, notifPrefs: settings.defaultNotifPrefs || undefined };
       families.push(fam);
       members.push({ email: me.email, familyId: fam.id, role: "admin", active: true, createdAt: fam.createdAt });
       await writeJsonBlob(container, FAMILIES_BLOB, families);
@@ -245,6 +331,13 @@ module.exports = async function (context, req) {
       families = families.map((f) => f.id === familyId ? { ...f, createdBy: toEmail } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       await writeJsonBlob(container, MEMBERS_BLOB, members);
+      if (notifPrefOn(fam, "ownerTransfers", "bell")) {
+        logActivity(container, { type: "transferOwnership", familyId, visibleTo: [familyId], actor: me.email, message: "Transferred ownership of " + fam.name + " to " + toEmail });
+      }
+      if (!settings.emailKillSwitch && notifPrefOn(fam, "ownerTransfers", "email")) {
+        const to = Array.from(new Set([toEmail, ...familyAdminEmails(members, familyId, me.email)]));
+        sendEmail(to, "Ownership transferred \u2014 " + fam.name, me.email + " transferred ownership of " + fam.name + " to " + toEmail + ".").catch(() => {});
+      }
       json(200, { ok: true });
       return;
     }
@@ -286,13 +379,260 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
       settings = { ...settings, autoApproveFamilies: !!body.value };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setAutoApprove", familyId: null, visibleTo: [], actor: me.email, message: "Turned auto-approve for new families " + (settings.autoApproveFamilies ? "ON" : "OFF") });
       json(200, { ok: true, autoApproveFamilies: settings.autoApproveFamilies });
+      return;
+    }
+
+    // Site-wide kill switch for photo/gallery uploads — site admin only. A family admin
+    // can still override this for their OWN family via setFamilyImageUploads below; this
+    // just sets the default every family inherits until it explicitly opts in/out.
+    // Site-wide kill switch for the "Public (everyone)" visibility tier — site admin only.
+    if (action === "setPublicSharingEnabled") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, publicSharingEnabled: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setPublicSharingEnabled", familyId: null, visibleTo: [], actor: me.email, message: "Turned the Public sharing tier " + (settings.publicSharingEnabled ? "ON" : "OFF") + " site-wide" });
+      json(200, { ok: true, publicSharingEnabled: settings.publicSharingEnabled });
+      return;
+    }
+
+    if (action === "setImageUploadsEnabled") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, imageUploadsEnabled: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setImageUploadsEnabled", familyId: null, visibleTo: [], actor: me.email, message: "Turned photo uploads " + (settings.imageUploadsEnabled ? "ON" : "OFF") + " site-wide (default)" });
+      json(200, { ok: true, imageUploadsEnabled: settings.imageUploadsEnabled });
+      return;
+    }
+
+    // Which landing-page variant (a/b/c) the public site shows — site admin picks,
+    // Landing.dc.html reads it back via the anonymous /api/site-settings endpoint.
+    if (action === "setLandingVariant") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const v = ["signin", "a", "b", "c"].includes(body.value) ? body.value : "signin";
+      settings = { ...settings, landingVariant: v };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, landingVariant: v });
+      return;
+    }
+
+    // Whether the public landing page shows a testimonials section — site admin only.
+    if (action === "setShowTestimonials") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, showTestimonials: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, showTestimonials: settings.showTestimonials });
+      return;
+    }
+
+    // Replace the full testimonials list shown on the public landing page — site admin only.
+    // Each: { quote, name, family }. Landing.dc.html reads these back via /api/site-settings.
+    if (action === "setTestimonials") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const list = Array.isArray(body.value) ? body.value.slice(0, 12).map((t) => ({
+        quote: String((t && t.quote) || "").slice(0, 500),
+        name: String((t && t.name) || "").slice(0, 80),
+        family: String((t && t.family) || "").slice(0, 80),
+      })).filter((t) => t.quote) : [];
+      settings = { ...settings, testimonials: list };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, testimonials: list });
+      return;
+    }
+
+    // Whether the public landing page shows its pricing section — site admin only.
+    // Landing.dc.html reads it back via the anonymous /api/site-settings endpoint.
+    if (action === "setShowPricingSection") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, showPricingSection: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, showPricingSection: settings.showPricingSection });
+      return;
+    }
+
+    // How much detail the audit/activity log records, site-wide. "essential" (default)
+    // = people/roles/family/sharing/ownership/permission changes only. "detailed" adds
+    // trip create/edit/delete and comments. "verbose" adds sign-ins too. Read by
+    // api/trips and api/attachments (and api/presence for logins) before logging.
+    if (action === "setAuditLevel") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const v = ["essential", "detailed", "verbose"].includes(body.value) ? body.value : "essential";
+      settings = { ...settings, auditLevel: v };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setAuditLevel", familyId: null, visibleTo: [], actor: me.email, message: "Set the site-wide audit log detail to " + v });
+      json(200, { ok: true, auditLevel: v });
+      return;
+    }
+
+    // Site-wide cap on how many items a family's custom Visit Type / Trip Type /
+    // Status list can hold (setFamilyCategories reads this instead of a hardcoded
+    // number). Site admin only. 1–200, default 40.
+    if (action === "setFamilyCatLimit") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const raw = Number(body.value);
+      const v = Math.min(200, Math.max(1, Math.floor(Number.isFinite(raw) && raw > 0 ? raw : 40)));
+      settings = { ...settings, familyCatLimit: v };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setFamilyCatLimit", familyId: null, visibleTo: [], actor: me.email, message: "Set the per-family category limit to " + v + " items" });
+      json(200, { ok: true, familyCatLimit: v });
+      return;
+    }
+
+    // Per-family Notifications tab: on/off for one (event, channel) pair. channel
+    // is "toast" (live in-app toast to other members) | "bell" (persisted to the
+    // Activity Log / bell feed) | "email" (courtesy email). Missing = on, so
+    // pre-existing families keep every notification until someone opts out.
+    // Site-wide default notification prefs applied to brand-new families at creation
+    // time (site admin only). Same shape as a family's own notifPrefs — per-key
+    // {toast,bell,email}. Doesn't retroactively change existing families.
+    if (action === "setDefaultNotifPrefs") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
+      const CHANNELS = ["toast", "bell", "email"];
+      const key = NOTIF_KEYS.includes(body.key) ? body.key : null;
+      const channel = CHANNELS.includes(body.channel) ? body.channel : null;
+      if (!key || !channel) { json(400, { error: "Invalid notification key or channel." }); return; }
+      const defaultNotifPrefs = { ...(settings.defaultNotifPrefs || {}), [key]: { ...((settings.defaultNotifPrefs && settings.defaultNotifPrefs[key]) || {}), [channel]: !!body.value } };
+      settings = { ...settings, defaultNotifPrefs };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setDefaultNotifPrefs", familyId: null, visibleTo: [], actor: me.email, message: "Set the default " + channel + " notification for " + key + " (new families) to " + (body.value ? "on" : "off") });
+      json(200, { ok: true });
+      return;
+    }
+
+    // Site-wide kill switch: when on, EVERY courtesy email in the app is suppressed
+    // regardless of any per-family notification preference — for abuse/incident
+    // response. Toasts and the Activity Log (bell) are unaffected. Site admin only.
+    // Site-wide kill switch: when turned ON, every family's Email toggle (all 7
+    // notification keys) is force-written to OFF right now — not just visually
+    // locked — and stays locked/unclickable while the switch is on. Turning it back
+    // OFF only removes the lock; it deliberately does NOT restore anyone's previous
+    // value, so families come back to an all-off state and must re-enable Email
+    // for themselves if they want it. Site admin only.
+    if (action === "setEmailKillSwitch") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const turningOn = !!body.value;
+      settings = { ...settings, emailKillSwitch: turningOn };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      if (turningOn) {
+        const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
+        families = families.map((f) => {
+          const notifPrefs = { ...(f.notifPrefs || {}) };
+          NOTIF_KEYS.forEach((k) => { notifPrefs[k] = { ...(notifPrefs[k] || {}), email: false }; });
+          return { ...f, notifPrefs };
+        });
+        await writeJsonBlob(container, FAMILIES_BLOB, families);
+      }
+      logActivity(container, { type: "setEmailKillSwitch", familyId: null, visibleTo: [], actor: me.email, message: turningOn ? "Disabled email notifications site-wide (forced every family's Email toggle off)" : "Re-enabled email notifications site-wide (families' Email toggles stay off until they turn them back on)" });
+      json(200, { ok: true, emailKillSwitch: settings.emailKillSwitch });
+      return;
+    }
+
+    if (action === "setFamilyNotifPrefs") {
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
+      const CHANNELS = ["toast", "bell", "email"];
+      const key = NOTIF_KEYS.includes(body.key) ? body.key : null;
+      const channel = CHANNELS.includes(body.channel) ? body.channel : null;
+      if (!key || !channel) { json(400, { error: "Invalid notification key or channel." }); return; }
+      families = families.map((f) => f.id === body.familyId ? { ...f, notifPrefs: { ...(f.notifPrefs || {}), [key]: { ...((f.notifPrefs && f.notifPrefs[key]) || {}), [channel]: !!body.value } } } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      json(200, { ok: true });
+      return;
+    }
+
+    // Per-family override of the site-wide image-uploads setting. value: true | false | null
+    // (null clears the override so the family goes back to inheriting the site default).
+    if (action === "setFamilyImageUploads") {
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const value = body.value === null ? null : !!body.value;
+      families = families.map((f) => f.id === body.familyId ? { ...f, imagesEnabled: value } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      json(200, { ok: true });
+      return;
+    }
+
+    // Per-family override of the site's Visit Type / Trip Type / Status lists —
+    // family admin/owner only (site admin bypasses like everywhere else). cat is
+    // "visit" | "trip" | "status"; list is null to clear the override (family goes
+    // back to inheriting the site-wide default list) or an array of
+    // {key,label,color[,short]} to set a custom list for just this family.
+    if (action === "setFamilyCategories") {
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const cat = ["visit", "trip", "status"].includes(body.cat) ? body.cat : null;
+      if (!cat) { json(400, { error: "Invalid category." }); return; }
+      const catLimit = Number.isFinite(settings.familyCatLimit) && settings.familyCatLimit > 0 ? Math.min(200, Math.floor(settings.familyCatLimit)) : 40;
+      let list = null;
+      if (Array.isArray(body.list)) {
+        list = body.list.slice(0, catLimit).map((o) => {
+          const item = {
+            key: String((o && o.key) || "").slice(0, 60) || ("item" + Math.random().toString(36).slice(2, 8)),
+            label: String((o && o.label) || "").slice(0, 60),
+            color: /^#[0-9a-f]{3,8}$/i.test((o && o.color) || "") ? o.color : "#5fd3ff",
+          };
+          if (cat === "status" && o && o.short) item.short = String(o.short).slice(0, 20);
+          return item;
+        }).filter((o) => o.label);
+      }
+      const fam0 = families.find((f) => f.id === body.familyId);
+      const catOverrides = { ...(fam0 && fam0.catOverrides) || {} };
+      if (list && list.length) catOverrides[cat] = list; else delete catOverrides[cat];
+      families = families.map((f) => f.id === body.familyId ? { ...f, catOverrides } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      const CATLABEL = { visit: "visit types", trip: "trip types", status: "statuses" };
+      if (fam0 && notifPrefOn(fam0, "categoryChanges", "bell")) {
+        logActivity(container, { type: "setFamilyCategories", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: (list && list.length ? "Set a custom " : "Reverted ") + CATLABEL[cat] + " list for " + (fam0 ? fam0.name : "the family") + (list && list.length ? "" : " to the site default") });
+      }
+      if (fam0 && !settings.emailKillSwitch && notifPrefOn(fam0, "categoryChanges", "email")) {
+        const to = familyAdminEmails(members, body.familyId, me.email);
+        sendEmail(to, "Category list updated \u2014 " + fam0.name, me.email + " " + (list && list.length ? "set a custom " : "reverted the ") + CATLABEL[cat] + (list && list.length ? " list" : " to the site default") + " for " + fam0.name + ".").catch(() => {});
+      }
+      json(200, { ok: true });
+      return;
+    }
+
+    // Per-family trip-permission floors — controls who among THIS family's own
+    // members (owner/admin always qualify) can edit trips, manage/view attachments,
+    // and post comments on trips this family owns. Shared families never get edit/
+    // attachment-management rights regardless of these settings; comment visibility
+    // stays open to everyone who can see the trip — only posting is floor-gated, and
+    // only for this family's own members.
+    if (action === "setFamilyTripPerms") {
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const floor = (v) => (v === "admin" ? "admin" : "editor");
+      const famBefore = families.find((f) => f.id === body.familyId);
+      const before = famBefore && famBefore.permTrip ? famBefore.permTrip : {};
+      const patch = {
+        editFloor: floor(body.editFloor),
+        attachFloor: floor(body.attachFloor),
+        commentFloor: floor(body.commentFloor),
+        attachVisibleShared: body.attachVisibleShared !== false,
+        memberDeleteAny: !!body.memberDeleteAny,
+        sharedCanDelete: !!body.sharedCanDelete,
+        itineraryEditableShared: !!body.itineraryEditableShared,
+      };
+      const LABELS = {
+        editFloor: "who can edit trips", attachFloor: "who can manage attachments",
+        commentFloor: "who can comment", attachVisibleShared: "attachments visible to shared families",
+        memberDeleteAny: "any member can delete trips", sharedCanDelete: "shared families can delete trips",
+        itineraryEditableShared: "shared families can edit itinerary",
+      };
+      const changes = Object.keys(patch).filter((k) => (before[k] === undefined ? (k === "attachVisibleShared" ? true : (k === "editFloor" || k === "attachFloor" || k === "commentFloor" ? "editor" : false)) : before[k]) !== patch[k])
+        .map((k) => LABELS[k] + " → " + (typeof patch[k] === "boolean" ? (patch[k] ? "on" : "off") : patch[k]));
+      families = families.map((f) => f.id === body.familyId ? { ...f, permTrip: patch } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      const fam1 = families.find((f) => f.id === body.familyId);
+      const changeText = changes.length ? changes.join("; ") : "no change";
+      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: "Updated trip permissions for " + (fam1 ? fam1.name : "the family") + ": " + changeText });
+      json(200, { ok: true });
       return;
     }
 
     if (action === "invitePerson") {
       const familyId = body.familyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(familyId)) return;
       const email = String(body.email || "").toLowerCase().trim();
       let role = String(body.role || "reader").toLowerCase();
       if (!email || email.indexOf("@") === -1) { json(400, { error: "Valid email required." }); return; }
@@ -302,6 +642,8 @@ module.exports = async function (context, req) {
       if (idx >= 0) members[idx] = { ...members[idx], role, active };
       else members.push({ email, familyId, role, active, createdAt: new Date().toISOString() });
       await writeJsonBlob(container, MEMBERS_BLOB, members);
+      const fam0 = families.find((f) => f.id === familyId);
+      logActivity(container, { type: "invitePerson", familyId, visibleTo: [familyId], actor: me.email, message: "Added " + email + " to " + (fam0 ? fam0.name : "the family") + " as " + role });
       json(200, { ok: true });
       return;
     }
@@ -321,11 +663,93 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // Self-service account deletion: counts shown in the confirmation UI before
+    // anything is removed. Any family where I'm the sole active admin blocks the
+    // whole operation — I'd have to transfer ownership/promote another admin first,
+    // otherwise that family would be orphaned with no one able to administer it.
+    if (action === "myAccountDeleteImpact") {
+      const myEmail = me.email.toLowerCase();
+      const myMemberships = members.filter((m) => m.email === myEmail && m.active !== false);
+      const blockedFamilies = [];
+      myMemberships.forEach((m) => {
+        if (m.role !== "admin") return;
+        const otherActiveAdmins = members.some((x) => x.familyId === m.familyId && x.email !== myEmail && x.active !== false && x.role === "admin");
+        if (!otherActiveAdmins) {
+          const fam = families.find((f) => f.id === m.familyId);
+          blockedFamilies.push({ id: m.familyId, name: (fam && fam.name) || "a family" });
+        }
+      });
+      const tripsBlobName = process.env.TRIPS_BLOB || "trip-tracker.json";
+      const tripsData = await readJsonBlob(container, tripsBlobName, null);
+      const locations = tripsData ? (Array.isArray(tripsData) ? tripsData : (tripsData.locations || [])) : [];
+      const myTrips = locations.filter((t) => String(t.ownerEmail || "").toLowerCase().trim() === myEmail);
+      const myTravelerKeys = travelers.filter((t) => String(t.email || "").toLowerCase().trim() === myEmail).map((t) => t.key);
+      const tagged = locations.filter((t) => Array.isArray(t.travelers) && t.travelers.some((k) => myTravelerKeys.includes(k)) && String(t.ownerEmail || "").toLowerCase().trim() !== myEmail);
+      const nonAccountsCreated = members.filter((m) => !m.email && String(m.createdBy || "").toLowerCase().trim() === myEmail);
+      json(200, {
+        families: myMemberships.length,
+        familyNames: myMemberships.map((m) => { const f = families.find((x) => x.id === m.familyId); return (f && f.name) || "a family"; }),
+        trips: myTrips.length,
+        images: myTrips.filter((t) => !!t.photo).length,
+        tagged: tagged.length,
+        nonAccountsCreated: nonAccountsCreated.length,
+        blockedFamilies,
+      });
+      return;
+    }
+
+    // Delete my own account — removes my membership from EVERY family, my traveler
+    // record(s), and my tag from other people's trips. mode 'keep' leaves my own
+    // trips in place (ownerless); mode 'withTrips' deletes them (and their photos)
+    // too. Refuses if I'm the sole active admin of any family (see impact check above).
+    if (action === "deleteMyAccount") {
+      const myEmail = me.email.toLowerCase();
+      const myMemberships = members.filter((m) => m.email === myEmail && m.active !== false);
+      const blocked = myMemberships.some((m) => {
+        if (m.role !== "admin") return false;
+        return !members.some((x) => x.familyId === m.familyId && x.email !== myEmail && x.active !== false && x.role === "admin");
+      });
+      if (blocked) { json(409, { error: "You're the sole admin of at least one family — transfer ownership or promote another admin first." }); return; }
+      const mode = body.mode === "withTrips" ? "withTrips" : "keep";
+      const myTravelerKeys = travelers.filter((t) => String(t.email || "").toLowerCase().trim() === myEmail).map((t) => t.key);
+
+      const tripsBlobName = process.env.TRIPS_BLOB || "trip-tracker.json";
+      const tripsData = await readJsonBlob(container, tripsBlobName, null);
+      let tripsRemoved = 0;
+      if (tripsData) {
+        const locations = Array.isArray(tripsData) ? tripsData : (tripsData.locations || []);
+        let out = locations;
+        if (mode === "withTrips") {
+          out = out.filter((t) => {
+            if (String(t.ownerEmail || "").toLowerCase().trim() !== myEmail) return true;
+            tripsRemoved++;
+            return false;
+          });
+        } else {
+          out = out.map((t) => (String(t.ownerEmail || "").toLowerCase().trim() === myEmail ? { ...t, ownerEmail: "", owner: "" } : t));
+        }
+        // remove my tag from everyone else's trips regardless of mode
+        out = out.map((t) => (Array.isArray(t.travelers) && t.travelers.some((k) => myTravelerKeys.includes(k)))
+          ? { ...t, travelers: t.travelers.filter((k) => !myTravelerKeys.includes(k)) }
+          : t);
+        const payload = Array.isArray(tripsData) ? { app: "vacation-location", version: 1, locations: out } : { ...tripsData, locations: out };
+        await writeJsonBlob(container, tripsBlobName, payload);
+      }
+
+      members = members.filter((m) => m.email !== myEmail);
+      await writeJsonBlob(container, MEMBERS_BLOB, members);
+      travelers = travelers.filter((t) => String(t.email || "").toLowerCase().trim() !== myEmail);
+      await writeJsonBlob(container, TRAVELERS_BLOB, travelers);
+      json(200, { ok: true, tripsRemoved });
+      return;
+    }
+
     // A "non-account" member: a name with no email/login (kids, pets, whoever) — still
     // shows up as a family member but can never sign in. Family admin or site admin only.
     if (action === "addNonAccountMember") {
       const familyId = body.familyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(familyId)) return;
       const name = String(body.name || "").trim();
       if (!name) { json(400, { error: "Name required." }); return; }
       const row = { id: genId("member"), familyId, name, noAccount: true, active: true, createdAt: new Date().toISOString(), createdBy: me.email };
@@ -349,6 +773,8 @@ module.exports = async function (context, req) {
         images: famTrips.filter((t) => !!t.photo).length,
         nonAccounts: famMembers.filter((m) => !m.email).length,
         userAccounts: famMembers.filter((m) => !!m.email).length,
+        nonAccountNames: famMembers.filter((m) => !m.email).map((m) => m.name || "Unnamed"),
+        userAccountNames: famMembers.filter((m) => !!m.email).map((m) => m.email),
       });
       return;
     }
@@ -417,6 +843,7 @@ module.exports = async function (context, req) {
     if (action === "createInviteLink") {
       const familyId = body.familyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(familyId)) return;
       let role = String(body.role || "reader").toLowerCase();
       if (VALID_ROLES.indexOf(role) === -1) role = "reader";
       let invites = await readJsonBlob(container, "invite-links.json", []);
@@ -510,8 +937,10 @@ module.exports = async function (context, req) {
     if (action === "sendInviteEmail") {
       const familyId = body.familyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(familyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(familyId)) return;
       const email = String(body.email || "").toLowerCase().trim();
       if (!email || email.indexOf("@") === -1) { json(400, { error: "Valid email required." }); return; }
+      if (settings.emailKillSwitch) { json(403, { error: "Email sending is currently disabled site-wide by a site admin." }); return; }
       const key = process.env.RESEND_API_KEY;
       const from = process.env.RESEND_FROM;
       if (!key || !from) { json(501, { error: "Email sending is not configured on the server." }); return; }
@@ -544,6 +973,7 @@ module.exports = async function (context, req) {
     if (action === "inviteFamily") {
       const fromFamilyId = body.fromFamilyId;
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(fromFamilyId)) { json(403, { error: "Family admin required." }); return; }
+      if (!requireApprovedFamily(fromFamilyId)) return;
       const toFamilyId = body.toFamilyId;
       let role = String(body.role || "reader").toLowerCase();
       if (SHARE_ROLES.indexOf(role) === -1) role = "reader";
@@ -552,6 +982,14 @@ module.exports = async function (context, req) {
       const row = { fromFamilyId, toFamilyId, role, createdAt: new Date().toISOString(), createdBy: me.email };
       if (idx >= 0) shares[idx] = row; else shares.push(row);
       await writeJsonBlob(container, SHARES_BLOB, shares);
+      const famFrom = families.find((f) => f.id === fromFamilyId), famTo = families.find((f) => f.id === toFamilyId);
+      logActivity(container, {
+        type: "inviteFamily", familyId: fromFamilyId, visibleTo: [fromFamilyId, toFamilyId], actor: me.email,
+        message: (famFrom ? famFrom.name : "A family") + " shared their trips with " + (famTo ? famTo.name : "another family") + " (" + role + ")",
+      });
+      // Courtesy email to the invited family's admins, same Resend env vars as the
+      // rest of the app. Access is granted immediately regardless of delivery.
+      if (!settings.emailKillSwitch) notifyFamilyShare(members, famTo, famFrom, role).catch(() => {});
       json(200, { ok: true });
       return;
     }
@@ -581,7 +1019,7 @@ module.exports = async function (context, req) {
         const local = email.split("@")[0] || "New";
         const label = local.charAt(0).toUpperCase() + local.slice(1);
         const color = FAMILY_COLORS[families.length % FAMILY_COLORS.length];
-        newFam = { id: genId("fam"), name: label + "'s Family", color, createdBy: email, createdAt: new Date().toISOString(), approved: true, autoApproved: true, autoNamed: true };
+        newFam = { id: genId("fam"), name: label + "'s Family", color, createdBy: email, createdAt: new Date().toISOString(), approved: true, autoApproved: true, autoNamed: true, notifPrefs: settings.defaultNotifPrefs || undefined };
         families.push(newFam);
         await writeJsonBlob(container, FAMILIES_BLOB, families);
         familyId = newFam.id;
@@ -596,7 +1034,8 @@ module.exports = async function (context, req) {
       requests = requests.filter((r) => r && String(r.email || "").toLowerCase() !== email);
       await writeJsonBlob(container, ACCESS_REQUESTS_BLOB, requests);
       const fam = newFam || families.find((f) => f.id === familyId);
-      notifyApproved(email, fam ? fam.name : "", role, !!newFam); // fire-and-forget, best-effort
+      if (!settings.emailKillSwitch) notifyApproved(email, fam ? fam.name : "", role, !!newFam); // fire-and-forget, best-effort
+      logActivity(container, { type: "approveAccess", familyId: fam ? fam.id : null, visibleTo: [fam ? fam.id : null], actor: me.email, message: email + " was granted access (" + role + ")" + (fam ? " to " + fam.name : "") });
       json(200, { ok: true });
       return;
     }
@@ -792,7 +1231,7 @@ module.exports = async function (context, req) {
         const existing = families.find((f) => f.name === name);
         if (existing) { famId = existing.id; }
         else {
-          const fam = { id: genId("fam"), name, createdBy: me.email, createdAt: new Date().toISOString(), approved: true, autoApproved: false };
+          const fam = { id: genId("fam"), name, createdBy: me.email, createdAt: new Date().toISOString(), approved: true, autoApproved: false, notifPrefs: settings.defaultNotifPrefs || undefined };
           families.push(fam);
           famId = fam.id;
           await writeJsonBlob(container, FAMILIES_BLOB, families);
