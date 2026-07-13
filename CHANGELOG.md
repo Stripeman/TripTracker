@@ -4,6 +4,16 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.28.7-beta — Fixed: kill switch was restoring family email settings instead of leaving them off
+
+### Fixed
+- **Turning the kill switch back off was restoring each family's previous Email preference** instead of leaving it off — e.g. a family with Category-changes email ON before the switch flipped on would come back ON automatically once the site admin re-enabled email, exactly the opposite of the intent. Fixed: turning the switch ON now force-writes every family's Email toggle (all 7 event types) to OFF right then (not just a visual lock), and turning it back OFF only removes the lock — it never rewrites anything, so families land back at all-off and must deliberately re-enable Email themselves.
+
+### Tested
+- 5-step scenario reproducing the exact reported sequence (family turns a toggle on → site admin disables → re-enables) confirms the toggle now stays off instead of springing back on.
+
+---
+
 ## 1.28.6-beta — Kill switch replaces the separate bulk email reset
 
 ### Changed

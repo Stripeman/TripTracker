@@ -487,10 +487,26 @@ module.exports = async function (context, req) {
     // Site-wide kill switch: when on, EVERY courtesy email in the app is suppressed
     // regardless of any per-family notification preference — for abuse/incident
     // response. Toasts and the Activity Log (bell) are unaffected. Site admin only.
+    // Site-wide kill switch: when turned ON, every family's Email toggle (all 7
+    // notification keys) is force-written to OFF right now — not just visually
+    // locked — and stays locked/unclickable while the switch is on. Turning it back
+    // OFF only removes the lock; it deliberately does NOT restore anyone's previous
+    // value, so families come back to an all-off state and must re-enable Email
+    // for themselves if they want it. Site admin only.
     if (action === "setEmailKillSwitch") {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
-      settings = { ...settings, emailKillSwitch: !!body.value };
+      const turningOn = !!body.value;
+      settings = { ...settings, emailKillSwitch: turningOn };
       await writeJsonBlob(container, "family-settings.json", settings);
+      if (turningOn) {
+        const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
+        families = families.map((f) => {
+          const notifPrefs = { ...(f.notifPrefs || {}) };
+          NOTIF_KEYS.forEach((k) => { notifPrefs[k] = { ...(notifPrefs[k] || {}), email: false }; });
+          return { ...f, notifPrefs };
+        });
+        await writeJsonBlob(container, FAMILIES_BLOB, families);
+      }
       json(200, { ok: true, emailKillSwitch: settings.emailKillSwitch });
       return;
     }

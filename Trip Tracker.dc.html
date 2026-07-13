@@ -1533,7 +1533,7 @@
                     <div style="display:flex; gap:6px; flex:none;">
                       <button onClick="{{ nr.toast.onClick }}" style="{{ nr.toast.style }}">{{ nr.toast.label }}</button>
                       <button onClick="{{ nr.bell.onClick }}" style="{{ nr.bell.style }}">{{ nr.bell.label }}</button>
-                      <button onClick="{{ nr.email.onClick }}" style="{{ nr.email.style }}">{{ nr.email.label }}</button>
+                      <button onClick="{{ nr.email.onClick }}" title="{{ nr.email.title }}" style="{{ nr.email.style }}">{{ nr.email.label }}</button>
                     </div>
                   </div>
                 </sc-for>
@@ -3498,7 +3498,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.28.6-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.28.7-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -5407,8 +5407,8 @@ class Component extends DCLogic {
           const p = prefs[def.key] || {};
           const chan = (name) => {
             const emailLocked = name === 'email' && killSwitch;
-            const on = emailLocked ? false : p[name] !== false;
-            return { on, label: name === 'toast' ? 'Toast' : name === 'bell' ? 'Bell' : 'Email', style: chipStyle(on, emailLocked), onClick: emailLocked ? (() => this.toast('Email is disabled site-wide by a site admin — see Site Administration.')) : (() => this.setFamilyNotifPref(def.key, name, !on)) };
+            const on = p[name] !== false;
+            return { on, label: name === 'toast' ? 'Toast' : name === 'bell' ? 'Bell' : 'Email', title: emailLocked ? 'Disabled by System' : '', style: chipStyle(on, emailLocked), onClick: emailLocked ? (() => this.toast('Email is disabled site-wide by a site admin — see Site Administration.')) : (() => this.setFamilyNotifPref(def.key, name, !on)) };
           };
           return { key: def.key, label: def.label, desc: def.desc, toast: chan('toast'), bell: chan('bell'), email: chan('email') };
         });
