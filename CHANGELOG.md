@@ -4,6 +4,50 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.29.5-beta — Fixed: shared family's own record was invisible too (deeper follow-up)
+
+### Fixed
+- **A deeper instance of the 1.29.4 bug**: even after travelers became visible for shared families, the family *record itself* (`GET /api/families` → `families[]`) still only included families you're a direct member of — a family that only shares trips with you never sent its own name/color/etc. to the client at all. Every UI that looks up a family by id (the Metrics scope picker from 1.29.4, family-name labels on shared trips, and more) silently couldn't resolve it even with the travelers fix in place. Now `families[]` uses the same accessible-family set (your memberships + anyone who shared with you) as travelers and shares already did.
+
+### Tested
+- Re-verified the full scenario matrix against the corrected logic: non-admins see their own family plus any that shared with them (and nothing unrelated), site admins still see everything.
+- Reviewed api/trips/index.js's own family-access checks (`me.sharesIn`, `me.familyRoles`) — confirmed they were already correct and unaffected; this bug was isolated to the families-listing endpoint.
+
+---
+
+## 1.29.4-beta — Fixed: shared-family data invisible to Metrics (travelers, family scope)
+
+### Fixed
+- **A shared family's travelers were never sent to the client at all** — the server's traveler visibility only checked direct family membership (`myFamilyIds`), not shared access, so a family that shared trips with you never had its people show up anywhere that reads the travelers list (Metrics' traveler filter chips, name lookups, etc.), even though you could see their trips. Now travelers are visible for your own families *and* any family that has shared trips with one of yours — mirrors the client's existing `myAccessibleFamilyIds` logic exactly.
+- **Metrics' family-scope picker never listed an individual shared family by name** — only "My family" and an opaque "All families I have access to" bundle, so there was no way to isolate metrics to just one shared family, and the default ("My family") silently excluded shared trips unless you remembered to switch to the bundle option. Now every individually-accessible family (yours, plus any that shared with you) appears as its own selectable option, independent of whatever family is selected in the main trip list.
+
+### Tested
+- 8‑scenario matrix: shared-family travelers now visible (previously invisible), unrelated families still correctly excluded, site admin still sees everyone, and Metrics scope now correctly isolates to a specific chosen family in addition to "mine"/"all mine"/"all".
+
+---
+
+## 1.29.3-beta — Site-wide settings now log their own distinct activity; cleaner notification wording
+
+### Fixed
+- **Site-wide Site Admin actions (Audit log detail, Per-family category limit, email kill switch, default notification prefs, auto-approve, image uploads, public sharing) never wrote an Activity Log entry at all** — so the global bell showed whatever the last *unrelated* action happened to be, making it look like the wrong thing was logged. Each of these now logs its own specific, correctly-worded entry (e.g. "Disabled email notifications site-wide" vs. the site-wide toggle actually flipped), visible only to site admins (they're not tied to any one family).
+- **Notification message wording cleaned up**: trip-level messages (edited/deleted/commented/attachment added-or-removed) no longer embed the actor's raw email inline — that was redundant with the name already shown separately, and looked like "terry@example.com edited a trip." Messages are now specific about *what* changed (e.g. "Edited Étretat, France (Jul 2–5)" instead of just "edited a trip"), and the global bell/View‑all popup now resolve the actor's display name the same way the per-family Audit tab already did, with a ✉ link to their email.
+
+### Tested
+- Confirmed all 6 previously-silent site-wide actions now produce distinct, correctly-labeled messages with no raw email embedded.
+
+---
+
+## 1.29.2-beta — Trip-level email notifications now also reach the trip's own owner
+
+### Fixed
+- **Email for Trip edits, Trip deletes, Comments, and Attachment uploads only went to that family's admins** — if the trip's actual owner wasn't a family admin (e.g. a regular editor's own trip), they never heard about changes someone else made to it. Now the trip's `ownerEmail` is always included alongside the family admins (deduped, and skipped if the owner is the one who caused the event).
+- Audited every notification channel for correct recipient scoping: **bell/activity feed** is filtered server‑side by family membership (`visibleTo`), never client‑side, so it can't leak across families; **ownership transfers** already emailed the incoming owner directly; **new trips / category changes** are family‑wide events where "family admins" is the correct audience (no single trip owner to add).
+
+### Tested
+- 5‑scenario matrix: owner editing their own trip (no self-notify), an admin editing someone else's trip (owner notified, actor excluded), a third party acting on a trip (both admin and owner notified), owner-who-is-also-admin (no duplicate email), and legacy trips with no owner (falls back to admins only).
+
+---
+
 ## 1.29.1-beta — Family detail tab bar redesigned as icons; new Sharing tab
 
 ### Changed

@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.29.1--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.29.5--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -81,9 +81,10 @@ In Cloud mode, every trip and traveler belongs to a **Family**, not to an indivi
   family** into collapsible sections (your active family expanded by default) whenever
   more than one family is in view; with a single family it stays a flat list.
 - **Metrics scope** — the Trip Metrics header gets a scope dropdown (My family / All
-  families I have access to / Every family for site admins) that drives the dashboard
-  and every export format (CSV/JSON/PDF). "All families I have access to" includes
-  families shared with you, not just direct memberships. The default is a stable "home
+  families I have access to / each individually-accessible family by name, including
+  ones shared with you / Every family for site admins) that drives the dashboard
+  and every export format (CSV/JSON/PDF). Picking one specific shared family isolates
+  metrics to just that family's trips. The default is a stable "home
   family", independent of whichever family is selected in the left panel.
 - **Transfer family ownership** — from a family's detail panel, the current owner (or a
   site admin) can hand ownership to another active member of that family.
@@ -365,7 +366,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 - **Categories** (per family, admin‑only, in **My Families → [family] → Categories tab**): give a family its own **Visit Type**, **Trip Type**, or **Status** list instead of the site‑wide defaults. Toggle **"Use custom list"** (starts as a copy of the site default; add/edit/remove items freely) or **"Revert to site default"** to inherit again. Removing a single item, or reverting the whole list, first checks whether any of that family's trips actually use the value being removed — if so, it shows the affected trips and a **"Reassign to…"** picker before anything is deleted, scoped strictly to that family's own trips. New/edited trips for that family show its effective list; a trip tagged with a family‑only category still resolves its label and color correctly everywhere else (cards, filters, metrics, CSV export). Server‑enforced: only that family's admin/owner (or a site admin) can change it. The max items a custom list can hold is a site‑wide setting (see **Per‑family category limit** below).
 - **Attachments & Storage** (**Overview tab**): file count, total size used, and a per‑file list for that family's trips (25MB cap per file).
 - **Activity Log** (**Audit tab**): a scrollable, chronological log of that family's own admin-level events (people added/removed, role changes, ownership transfers, trip-permission changes, family sharing) — each entry shows the actor's name (with a ✉ link to email them) and, for permission changes, exactly what changed. Separate from the app-wide activity bell described below. What gets logged is controlled site-wide by **Audit log detail** (see below).
-- **Notifications** (per family, admin‑only, in **My Families → [family] → Notifications tab**): independent on/off toggles for **Toast** (a live in‑app notification for anyone online), **Bell** (an entry in this family's Activity Log), and **Email** (a courtesy email to the family's admins) — one row per event type: Category list changes, Attachment uploads, Ownership transfers, New trips, Trip edits, Trip deletes, and Comments. All 7 rows' Email toggle actually sends mail; Bell requires **Audit log detail** to be Detailed/Verbose for the trip-related rows (Category/Attachment/Ownership are always eligible), Email does not. Everything defaults to on. Ownership‑transfer emails also go to the incoming owner. Toast delivery piggybacks on the same event actually being logged to Bell, so it only fires for events whichever admin left Bell on for. If a site admin has switched on the site‑wide email kill switch (see below), every family's Email chip here shows off (their prior value is overwritten, not hidden) and is locked — turning the kill switch back off only unlocks the toggle, it does not restore the old value; each family must re‑enable Email themselves if they want it.
+- **Notifications** (per family, admin‑only, in **My Families → [family] → Notifications tab**): independent on/off toggles for **Toast** (a live in‑app notification for anyone online), **Bell** (an entry in this family's Activity Log), and **Email** (a courtesy email to the family's admins, plus the trip's own owner for trip‑level events if they aren't already an admin) — one row per event type: Category list changes, Attachment uploads, Ownership transfers, New trips, Trip edits, Trip deletes, and Comments. All 7 rows' Email toggle actually sends mail; Bell requires **Audit log detail** to be Detailed/Verbose for the trip-related rows (Category/Attachment/Ownership are always eligible), Email does not. Everything defaults to on. Ownership‑transfer emails also go to the incoming owner. Toast delivery piggybacks on the same event actually being logged to Bell, so it only fires for events whichever admin left Bell on for. If a site admin has switched on the site‑wide email kill switch (see below), every family's Email chip here shows off (their prior value is overwritten, not hidden) and is locked — turning the kill switch back off only unlocks the toggle, it does not restore the old value; each family must re‑enable Email themselves if they want it.
 
 ### 🔍 Audit log detail (site admin)
 
@@ -376,7 +377,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 
 ### 🔔 Notifications & activity
 
-- A **bell icon** in the header opens a running **activity feed** of events relevant to you (across all families you belong to — site admins see everything) — invites, approvals, role changes, family shares, ownership transfers, etc. An unread badge appears when there's something new since you last opened it. The dropdown shows the most recent 200; if there's more, a **"View all"** link opens a popup listing every entry, grouped into Today / Yesterday / This week / Earlier.
+- A **bell icon** in the header opens a running **activity feed** of events relevant to you (across all families you belong to — site admins see everything, including site-wide setting changes) — invites, approvals, role changes, family shares, ownership transfers, trip edits/comments/attachments (if Audit log detail allows it), etc. Each entry shows what happened plus the actor's name (with a ✉ link to email them). An unread badge appears when there's something new since you last opened it. The dropdown shows the most recent 200; if there's more, a **"View all"** link opens a popup listing every entry, grouped into Today / Yesterday / This week / Earlier.
 - Key events (approvals, invites, shares) also trigger an **email notification** to the people affected.
 
 ### 🌐 Public landing page

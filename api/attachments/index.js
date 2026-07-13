@@ -303,7 +303,7 @@ module.exports = async function (context, req) {
         const fam = families.find((f) => f.id === trip.familyId);
         if (notifPrefOn(fam, "attachmentUploads", "bell")) {
           const place = [trip.city, trip.country].filter(Boolean).join(", ") || "a trip";
-          await logActivity(container, { type: "deleteAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: me.email + " removed attachment \"" + att.name + "\" from " + place });
+          await logActivity(container, { type: "deleteAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: "Removed attachment \"" + att.name + "\" from " + place });
         }
       }
       json(200, { ok: true });
@@ -350,11 +350,14 @@ module.exports = async function (context, req) {
         const fam = families.find((f) => f.id === trip.familyId);
         const place = [trip.city, trip.country].filter(Boolean).join(", ") || "a trip";
         if (auditDetailed && notifPrefOn(fam, "attachmentUploads", "bell")) {
-          await logActivity(container, { type: "uploadAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: me.email + " added attachment \"" + cleanName + "\" to " + place });
+          await logActivity(container, { type: "uploadAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: "Added attachment \"" + cleanName + "\" to " + place });
         }
         if (fam && !emailKillSwitch && notifPrefOn(fam, "attachmentUploads", "email")) {
-          const to = familyAdminEmails(members, trip.familyId, me.email);
-          sendEmail(to, "New attachment \u2014 " + fam.name, me.email + " added \"" + cleanName + "\" to " + place + ".").catch(() => {});
+          const ownerEmail = (trip.ownerEmail || "").toLowerCase().trim();
+          const actorEmail = (me.email || "").toLowerCase().trim();
+          const to = new Set(familyAdminEmails(members, trip.familyId, me.email));
+          if (ownerEmail && ownerEmail !== actorEmail) to.add(ownerEmail);
+          sendEmail([...to], "New attachment \u2014 " + fam.name, me.email + " added \"" + cleanName + "\" to " + place + ".").catch(() => {});
         }
       }
       json(200, { ok: true, attachment: record });

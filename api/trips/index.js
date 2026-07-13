@@ -402,6 +402,8 @@ module.exports = async function (context, req) {
       const editable = s.familyId ? canEdit(s, me, perm) : isMine(s, me);
       const deletable = s.familyId ? canDelete(s, me, perm) : isMine(s, me);
       const place = () => [s.city, s.country].filter(Boolean).join(", ") || "a trip";
+      const dates = () => s.date ? (s.dateEnd && s.dateEnd !== s.date ? (s.date + "\u2013" + s.dateEnd) : s.date) : "";
+      const placeWithDates = () => place() + (dates() ? " (" + dates() + ")" : "");
       const notifyEmail = (key, subject, text) => {
         if (!s.familyId || emailKillSwitch) return;
         const fam = familyById.get(s.familyId);
@@ -410,8 +412,16 @@ module.exports = async function (context, req) {
           try {
             const membersBlob2 = container.getBlockBlobClient(MEMBERS_BLOB);
             const memberList = (await membersBlob2.exists()) ? JSON.parse(await streamToString((await membersBlob2.download()).readableStreamBody)) : [];
-            const to = familyAdminEmails(memberList, s.familyId, me.email);
-            sendEmail(to, subject, text).catch(() => {});
+            // Family admins, PLUS this specific trip's own owner if they aren't already
+            // an admin (e.g. a regular editor's trip edited/commented on by someone
+            // else) — the person whose trip it is should hear about it even if they
+            // don't administer the family. Never double-sends to, or notifies, the
+            // actor themselves.
+            const ownerEmail = (s.ownerEmail || "").toLowerCase().trim();
+            const actorEmail = (me.email || "").toLowerCase().trim();
+            const to = new Set(familyAdminEmails(memberList, s.familyId, me.email));
+            if (ownerEmail && ownerEmail !== actorEmail) to.add(ownerEmail);
+            sendEmail([...to], subject, text).catch(() => {});
           } catch (e) { /* best-effort */ }
         })();
       };
@@ -420,7 +430,7 @@ module.exports = async function (context, req) {
           if (incoming) {
             if (s.familyId && !sameExceptKeys(incoming, s, [])) {
               if (auditDetailed && notifPrefOn(familyById.get(s.familyId), "tripEdits", "bell")) {
-                await logActivity(container, { type: "editTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " edited " + place() });
+                await logActivity(container, { type: "editTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Edited " + placeWithDates() });
               }
               const fam = familyById.get(s.familyId);
               notifyEmail("tripEdits", "Trip updated \u2014 " + (fam ? fam.name : ""), me.email + " edited " + place() + (fam ? " in " + fam.name : "") + ".");
@@ -429,7 +439,7 @@ module.exports = async function (context, req) {
           } else if (!deletable) result.push(s); // editor without delete rights can't drop it by omission
           else {
             if (auditDetailed && s.familyId && notifPrefOn(familyById.get(s.familyId), "tripDeletes", "bell")) {
-              await logActivity(container, { type: "deleteTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " deleted " + place() });
+              await logActivity(container, { type: "deleteTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Deleted " + placeWithDates() });
             }
             const fam = familyById.get(s.familyId);
             notifyEmail("tripDeletes", "Trip deleted \u2014 " + (fam ? fam.name : ""), me.email + " deleted " + place() + (fam ? " from " + fam.name : "") + ".");
@@ -447,7 +457,7 @@ module.exports = async function (context, req) {
           if (commentOk && sameExceptKeys(incoming, s, ["comments"])) {
             if (Array.isArray(incoming.comments) && incoming.comments.length > (s.comments || []).length) {
               if (auditDetailed && notifPrefOn(familyById.get(s.familyId), "comments", "bell")) {
-                await logActivity(container, { type: "comment", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " commented on " + place() });
+                await logActivity(container, { type: "comment", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Commented on " + placeWithDates() });
               }
               const fam = familyById.get(s.familyId);
               notifyEmail("comments", "New comment \u2014 " + (fam ? fam.name : ""), me.email + " commented on " + place() + (fam ? " in " + fam.name : "") + ".");
@@ -455,7 +465,7 @@ module.exports = async function (context, req) {
             result.push({ ...s, comments: incoming.comments });
           } else if (itineraryOk && sameExceptKeys(incoming, s, ["itinerary"])) {
             if (auditDetailed) {
-              await logActivity(container, { type: "editItinerary", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: me.email + " edited the itinerary for " + place() });
+              await logActivity(container, { type: "editItinerary", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Edited the itinerary for " + placeWithDates() });
             }
             result.push({ ...s, itinerary: incoming.itinerary });
           } else {
@@ -486,7 +496,7 @@ module.exports = async function (context, req) {
       }
       if (auditDetailed && withFamily.familyId && notifPrefOn(familyById.get(withFamily.familyId), "tripAdds", "bell")) {
         const place = [t.city, t.country].filter(Boolean).join(", ") || "a trip";
-        await logActivity(container, { type: "createTrip", familyId: withFamily.familyId, visibleTo: [withFamily.familyId], actor: me.email, message: me.email + " added " + place });
+        await logActivity(container, { type: "createTrip", familyId: withFamily.familyId, visibleTo: [withFamily.familyId], actor: me.email, message: "Added " + place });
       }
       if (withFamily.familyId) {
         const fam = familyById.get(withFamily.familyId);

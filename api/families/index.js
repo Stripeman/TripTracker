@@ -229,10 +229,21 @@ module.exports = async function (context, req) {
     };
 
     if (req.method === "GET") {
-      const visibleFamilies = meIsSiteAdmin ? families : families.filter((f) => myFamilyIds.has(f.id));
+      // A family that only shares its trips with mine (I'm not a member) still needs
+      // its name/record to reach the client — otherwise every UI that looks up a
+      // family by id (the Metrics scope picker, family-name labels on shared trips,
+      // etc.) silently can't resolve it even after the trips/travelers themselves are
+      // visible. Mirrors the client's myAccessibleFamilyIds exactly.
+      const sharedInFamilyIds = new Set(shares.filter((s) => myFamilyIds.has(s.toFamilyId)).map((s) => s.fromFamilyId));
+      const accessibleFamilyIds = new Set([...myFamilyIds, ...sharedInFamilyIds]);
+      const visibleFamilies = meIsSiteAdmin ? families : families.filter((f) => accessibleFamilyIds.has(f.id));
       const visibleMembers = meIsSiteAdmin ? members : members.filter((m) => myAdminFamilyIds.has(m.familyId) || m.email === me.email);
       const visibleShares = meIsSiteAdmin ? shares : shares.filter((s) => myFamilyIds.has(s.fromFamilyId) || myFamilyIds.has(s.toFamilyId));
-      const visibleTravelers = meIsSiteAdmin ? travelers : travelers.filter((t) => myFamilyIds.has(t.familyId));
+      // Travelers use the same accessible-family set (own families + anyone who
+      // shared with one of mine) — otherwise a shared family's people never reach
+      // the client, so filters/metrics that key off traveler rows (e.g. the Metrics
+      // traveler picker) silently can't show them.
+      const visibleTravelers = meIsSiteAdmin ? travelers : travelers.filter((t) => accessibleFamilyIds.has(t.familyId));
       json(200, {
         families: visibleFamilies,
         memberships: visibleMembers,
@@ -368,6 +379,7 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
       settings = { ...settings, autoApproveFamilies: !!body.value };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setAutoApprove", familyId: null, visibleTo: [], actor: me.email, message: "Turned auto-approve for new families " + (settings.autoApproveFamilies ? "ON" : "OFF") });
       json(200, { ok: true, autoApproveFamilies: settings.autoApproveFamilies });
       return;
     }
@@ -380,6 +392,7 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
       settings = { ...settings, publicSharingEnabled: !!body.value };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setPublicSharingEnabled", familyId: null, visibleTo: [], actor: me.email, message: "Turned the Public sharing tier " + (settings.publicSharingEnabled ? "ON" : "OFF") + " site-wide" });
       json(200, { ok: true, publicSharingEnabled: settings.publicSharingEnabled });
       return;
     }
@@ -388,6 +401,7 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
       settings = { ...settings, imageUploadsEnabled: !!body.value };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setImageUploadsEnabled", familyId: null, visibleTo: [], actor: me.email, message: "Turned photo uploads " + (settings.imageUploadsEnabled ? "ON" : "OFF") + " site-wide (default)" });
       json(200, { ok: true, imageUploadsEnabled: settings.imageUploadsEnabled });
       return;
     }
@@ -446,6 +460,7 @@ module.exports = async function (context, req) {
       const v = ["essential", "detailed", "verbose"].includes(body.value) ? body.value : "essential";
       settings = { ...settings, auditLevel: v };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setAuditLevel", familyId: null, visibleTo: [], actor: me.email, message: "Set the site-wide audit log detail to " + v });
       json(200, { ok: true, auditLevel: v });
       return;
     }
@@ -459,6 +474,7 @@ module.exports = async function (context, req) {
       const v = Math.min(200, Math.max(1, Math.floor(Number.isFinite(raw) && raw > 0 ? raw : 40)));
       settings = { ...settings, familyCatLimit: v };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setFamilyCatLimit", familyId: null, visibleTo: [], actor: me.email, message: "Set the per-family category limit to " + v + " items" });
       json(200, { ok: true, familyCatLimit: v });
       return;
     }
@@ -480,6 +496,7 @@ module.exports = async function (context, req) {
       const defaultNotifPrefs = { ...(settings.defaultNotifPrefs || {}), [key]: { ...((settings.defaultNotifPrefs && settings.defaultNotifPrefs[key]) || {}), [channel]: !!body.value } };
       settings = { ...settings, defaultNotifPrefs };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setDefaultNotifPrefs", familyId: null, visibleTo: [], actor: me.email, message: "Set the default " + channel + " notification for " + key + " (new families) to " + (body.value ? "on" : "off") });
       json(200, { ok: true });
       return;
     }
@@ -507,6 +524,7 @@ module.exports = async function (context, req) {
         });
         await writeJsonBlob(container, FAMILIES_BLOB, families);
       }
+      logActivity(container, { type: "setEmailKillSwitch", familyId: null, visibleTo: [], actor: me.email, message: turningOn ? "Disabled email notifications site-wide (forced every family's Email toggle off)" : "Re-enabled email notifications site-wide (families' Email toggles stay off until they turn them back on)" });
       json(200, { ok: true, emailKillSwitch: settings.emailKillSwitch });
       return;
     }

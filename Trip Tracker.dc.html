@@ -172,7 +172,16 @@
             <sc-for list="{{ activityItems }}" as="ev" hint-placeholder-count="0">
               <div style="padding:11px 8px; border-bottom:1px solid rgba(255,255,255,0.06);">
                 <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; line-height:1.5;">{{ ev.message }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ ev.when }}</div>
+                <div style="display:flex; align-items:center; gap:6px; margin-top:3px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088;">{{ ev.when }}</span>
+                  <sc-if value="{{ ev.actorName }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088;">·</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7fb8d6;">{{ ev.actorName }}</span>
+                    <sc-if value="{{ ev.actorEmail }}" hint-placeholder-val="{{ false }}">
+                      <a href="{{ ev.mailtoHref }}" title="{{ ev.actorEmail }}" style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5fd3ff; text-decoration:none;">✉</a>
+                    </sc-if>
+                  </sc-if>
+                </div>
               </div>
             </sc-for>
             <sc-if value="{{ activityEmpty }}" hint-placeholder-val="{{ true }}">
@@ -202,7 +211,16 @@
               <sc-for list="{{ sec.rows }}" as="ev" hint-placeholder-count="0">
                 <div style="padding:9px 4px; border-bottom:1px solid rgba(255,255,255,0.06);">
                   <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; line-height:1.5;">{{ ev.message }}</div>
-                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ ev.when }}</div>
+                  <div style="display:flex; align-items:center; gap:6px; margin-top:3px;">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088;">{{ ev.when }}</span>
+                    <sc-if value="{{ ev.actorName }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088;">·</span>
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7fb8d6;">{{ ev.actorName }}</span>
+                      <sc-if value="{{ ev.actorEmail }}" hint-placeholder-val="{{ false }}">
+                        <a href="{{ ev.mailtoHref }}" title="{{ ev.actorEmail }}" style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5fd3ff; text-decoration:none;">✉</a>
+                      </sc-if>
+                    </sc-if>
+                  </div>
                 </div>
               </sc-for>
             </sc-for>
@@ -3500,7 +3518,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.29.1-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.29.5-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4911,11 +4929,22 @@ class Component extends DCLogic {
   }
   // Shared "mine" + "allMine" option pair used by both the Metrics and People
   // family-scope pickers — each caller still appends its own site-admin branch.
+  // Also lists every OTHER individually-accessible family by name (my own family
+  // plus any family that has shared trips with me) so a specific shared family can
+  // be isolated directly, instead of only "mine" vs. an opaque "all mine" bundle.
   baseFamilyScopeOptions() {
     const homeId = this.myHomeFamilyId();
     const homeFamObj = (this.state.cfgFamilies || []).find(f => f.id === homeId);
     const opts = [{ value: 'mine', label: (homeFamObj && homeFamObj.name) || 'My family' }];
-    if (this.myAccessibleFamilyIds().size > 1) opts.push({ value: 'allMine', label: 'All families I have access to' });
+    const accessible = this.myAccessibleFamilyIds();
+    if (accessible.size > 1) {
+      opts.push({ value: 'allMine', label: 'All families I have access to' });
+      const famById = new Map((this.state.cfgFamilies || []).map(f => [f.id, f]));
+      [...accessible].filter(id => id !== homeId).forEach(id => {
+        const fam = famById.get(id);
+        if (fam) opts.push({ value: id, label: fam.name });
+      });
+    }
     return opts;
   }
   canDeleteTrip(sl) {
@@ -7863,7 +7892,8 @@ class Component extends DCLogic {
       if (!l.familyId) return true;
       if (scope === 'all') return true;
       if (scope === 'allMine') return this.myAccessibleFamilyIds().has(l.familyId);
-      return l.familyId === this.myHomeFamilyId();
+      if (scope === 'mine') return l.familyId === this.myHomeFamilyId();
+      return l.familyId === scope; // a specific accessible family id was chosen directly
     });
   }
   computeMetrics() {
@@ -10324,7 +10354,10 @@ class Component extends DCLogic {
       activityItems: (this.state.activityFeed || []).slice().reverse().slice(0, 200).map(a => {
         let when = '';
         try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
-        return { id: a.id, message: a.message || '', when };
+        const actorEmail = String(a.actor || '').toLowerCase().trim();
+        const actorPerson = actorEmail ? (this.state.cfgTravelers || []).find(o => String(o.email || '').toLowerCase().trim() === actorEmail) : null;
+        const actorName = actorPerson ? actorPerson.label : actorEmail;
+        return { id: a.id, message: a.message || '', when, actorName, actorEmail, mailtoHref: actorEmail ? ('mailto:' + actorEmail) : '' };
       }),
       activityShowViewAll: (this.state.activityFeed || []).length > 200,
       activityOverflowCount: Math.max(0, (this.state.activityFeed || []).length - 200),
@@ -10344,7 +10377,7 @@ class Component extends DCLogic {
           let d; try { d = new Date(a.createdAt); } catch (e) { d = null; }
           let when = '';
           try { when = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
-          const row = { id: a.id, message: a.message || '', when };
+          const row = { id: a.id, message: a.message || '', when, actorName: (() => { const ae = String(a.actor || '').toLowerCase().trim(); const p = ae ? (this.state.cfgTravelers || []).find(o => String(o.email || '').toLowerCase().trim() === ae) : null; return p ? p.label : ae; })(), actorEmail: String(a.actor || '').toLowerCase().trim(), mailtoHref: a.actor ? ('mailto:' + a.actor) : '' };
           if (!d || isNaN(d)) { buckets['Earlier'].push(row); return; }
           if (d >= today) buckets['Today'].push(row);
           else if (d >= yesterday) buckets['Yesterday'].push(row);
