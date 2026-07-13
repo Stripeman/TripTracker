@@ -24,7 +24,47 @@ const { BlobServiceClient } = require("@azure/storage-blob");
 const CONTAINER = process.env.TRIPS_CONTAINER || "data";
 const PRESENCE_BLOB = process.env.PRESENCE_BLOB || "presence.json";
 const TRIPS_BLOB = process.env.TRIPS_BLOB || "trip-tracker.json";
+const MEMBERS_BLOB = process.env.MEMBERSHIPS_BLOB || "memberships.json";
+const ACTIVITY_BLOB = process.env.ACTIVITY_BLOB || "activity.json";
+const ACTIVITY_MAX = 300;
 const WINDOW_MS = 90 * 1000; // online if seen within the last 90s
+
+async function logActivity(cont, { type, familyId, visibleTo, actor, message }) {
+  try {
+    const blob = cont.getBlockBlobClient(ACTIVITY_BLOB);
+    let list = [];
+    if (await blob.exists()) {
+      try { list = JSON.parse(await streamToString((await blob.download()).readableStreamBody)); } catch (e) { list = []; }
+    }
+    if (!Array.isArray(list)) list = [];
+    list.push({ id: "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), type, familyId: familyId || null, visibleTo: visibleTo || [], actor, message, createdAt: new Date().toISOString() });
+    if (list.length > ACTIVITY_MAX) list = list.slice(list.length - ACTIVITY_MAX);
+    const text = JSON.stringify(list, null, 2);
+    await blob.upload(text, Buffer.byteLength(text), { blobHTTPHeaders: { blobContentType: "application/json" } });
+  } catch (e) { /* best-effort */ }
+}
+
+async function loadAuditLevel(cont) {
+  try {
+    const blob = cont.getBlockBlobClient("family-settings.json");
+    if (await blob.exists()) {
+      const fs = JSON.parse(await streamToString((await blob.download()).readableStreamBody));
+      if (["essential", "detailed", "verbose"].includes(fs.auditLevel)) return fs.auditLevel;
+    }
+  } catch (e) { /* fail open */ }
+  return "essential";
+}
+
+async function myFamilyIds(cont, email) {
+  try {
+    const blob = cont.getBlockBlobClient(MEMBERS_BLOB);
+    if (await blob.exists()) {
+      const members = JSON.parse(await streamToString((await blob.download()).readableStreamBody));
+      if (Array.isArray(members)) return members.filter((m) => m && String(m.email || "").toLowerCase().trim() === email && m.active !== false).map((m) => m.familyId);
+    }
+  } catch (e) { /* best-effort */ }
+  return [];
+}
 
 function principal(req) {
   const header = req.headers["x-ms-client-principal"];
@@ -154,6 +194,15 @@ module.exports = async function (context, req) {
         recordedLogins = rec.logins;
         doc.users[me.id] = rec;
       });
+      if (isLogin) {
+        loadAuditLevel(cont).then((level) => {
+          if (level !== "verbose") return;
+          myFamilyIds(cont, me.email).then((famIds) => {
+            if (!famIds.length) return;
+            logActivity(cont, { type: "login", familyId: null, visibleTo: famIds, actor: me.email, message: me.email + " signed in" });
+          });
+        });
+      }
       json(200, { ok: true, logins: recordedLogins });
       return;
     }

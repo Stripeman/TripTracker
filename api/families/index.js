@@ -241,6 +241,7 @@ module.exports = async function (context, req) {
         publicSharingEnabled: settings.publicSharingEnabled !== false,
         landingVariant: ["signin", "a", "b", "c"].includes(settings.landingVariant) ? settings.landingVariant : "signin",
         showPricingSection: !!settings.showPricingSection,
+        auditLevel: ["essential", "detailed", "verbose"].includes(settings.auditLevel) ? settings.auditLevel : "essential",
         showTestimonials: !!settings.showTestimonials,
         testimonials: Array.isArray(settings.testimonials) ? settings.testimonials : [],
         pendingFamilies: meIsSiteAdmin ? families.filter((f) => !f.approved) : undefined,
@@ -306,6 +307,7 @@ module.exports = async function (context, req) {
       families = families.map((f) => f.id === familyId ? { ...f, createdBy: toEmail } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       await writeJsonBlob(container, MEMBERS_BLOB, members);
+      logActivity(container, { type: "transferOwnership", familyId, visibleTo: [familyId], actor: me.email, message: me.email + " transferred ownership of " + fam.name + " to " + toEmail });
       json(200, { ok: true });
       return;
     }
@@ -416,6 +418,19 @@ module.exports = async function (context, req) {
       return;
     }
 
+    // How much detail the audit/activity log records, site-wide. "essential" (default)
+    // = people/roles/family/sharing/ownership/permission changes only. "detailed" adds
+    // trip create/edit/delete and comments. "verbose" adds sign-ins too. Read by
+    // api/trips and api/attachments (and api/presence for logins) before logging.
+    if (action === "setAuditLevel") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const v = ["essential", "detailed", "verbose"].includes(body.value) ? body.value : "essential";
+      settings = { ...settings, auditLevel: v };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, auditLevel: v });
+      return;
+    }
+
     // Per-family override of the site-wide image-uploads setting. value: true | false | null
     // (null clears the override so the family goes back to inheriting the site default).
     if (action === "setFamilyImageUploads") {
@@ -423,6 +438,32 @@ module.exports = async function (context, req) {
       const value = body.value === null ? null : !!body.value;
       families = families.map((f) => f.id === body.familyId ? { ...f, imagesEnabled: value } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
+      json(200, { ok: true });
+      return;
+    }
+
+    // Per-family trip-permission floors — controls who among THIS family's own
+    // members (owner/admin always qualify) can edit trips, manage/view attachments,
+    // and post comments on trips this family owns. Shared families never get edit/
+    // attachment-management rights regardless of these settings; comment visibility
+    // stays open to everyone who can see the trip — only posting is floor-gated, and
+    // only for this family's own members.
+    if (action === "setFamilyTripPerms") {
+      if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
+      const floor = (v) => (v === "admin" ? "admin" : "editor");
+      const patch = {
+        editFloor: floor(body.editFloor),
+        attachFloor: floor(body.attachFloor),
+        commentFloor: floor(body.commentFloor),
+        attachVisibleShared: body.attachVisibleShared !== false,
+        memberDeleteAny: !!body.memberDeleteAny,
+        sharedCanDelete: !!body.sharedCanDelete,
+        itineraryEditableShared: !!body.itineraryEditableShared,
+      };
+      families = families.map((f) => f.id === body.familyId ? { ...f, permTrip: patch } : f);
+      await writeJsonBlob(container, FAMILIES_BLOB, families);
+      const fam1 = families.find((f) => f.id === body.familyId);
+      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: me.email + " updated trip permissions for " + (fam1 ? fam1.name : "the family") });
       json(200, { ok: true });
       return;
     }

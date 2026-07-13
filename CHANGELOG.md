@@ -4,6 +4,40 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.25.0-beta — Attachments & storage view; itinerary shared-editing; trip-deletion floors
+
+### Added
+- Family admin panel: **Attachments & Storage** section — file count, total size (25MB/file cap noted), and a per-file list (name, trip, size) for that family's trips.
+- Family admin panel: **Activity Log** section — chronological log of that family's own admin events (people/roles, ownership transfers, trip-permission changes, sharing), scoped to just this family (separate from the app-wide activity bell). Ownership transfers and trip-permission changes are now recorded to it (previously unlogged).
+- **Audit log detail** setting (⚙ → Preferences → Site Administration, site-admin only): Essential (default, unchanged behavior) / Detailed (adds trip create/edit/delete, itinerary edits, comments) / Verbose (adds sign-ins). Applies to the per-family Activity Log across `api/trips`, `api/attachments`, and `api/presence`.
+- **Itinerary editing**: family editors (per the edit floor) can now edit itinerary day-by-day directly from the Itinerary modal, with Edit/Save/Cancel. New per-family toggle **"Shared families can edit itinerary"** (off by default) — itinerary always follows the trip's own sharing tier and is never public regardless of this setting; the modal shows a note to that effect for shared viewers.
+- Trip Permissions gains two delete-related toggles: **"Any family member can delete this family's trips"** (off by default — normally only admins can delete any trip; editors can only delete trips they created) and **"Shared families can delete this family's trips"** (off by default, never on unless explicitly enabled).
+
+### Fixed / hardened
+- The Edit/Attachment/Comment role-floor settings added last release were client-side only — `api/trips` and `api/attachments` now enforce `editFloor`/`attachFloor`/`commentFloor`/`memberDeleteAny`/`sharedCanDelete` server-side too, so the floors are real security boundaries, not just UI hints.
+- Comments and itinerary edits from people without full trip-edit rights (e.g. a family's own reader posting a comment, or a shared family editing itinerary once opted in) now persist correctly — previously the server's whole-trip edit gate silently dropped these changes for anyone without edit rights on the trip.
+- Attachments hidden from shared families (via "Attachments visible to shared families" = Off) are now also stripped server-side from the trips feed and blocked on direct download — not just hidden in the UI.
+- The trip-delete button in the edit form now matches the server's real rule (family admins can delete any trip in their family; editors only their own) instead of a coarser check that could show the button when the save would actually be rejected.
+
+---
+
+## 1.24.1 — Edit/Stats/Debug consolidated into the detail card's action row
+
+### Changed
+- Trip detail card: Edit, Traveler Stats, and Debug buttons moved out of the top-right corner (across all header layouts — banner, thumbnail, framed, no-photo) into the single bottom action row, alongside Gallery/Itinerary/Comments/Attachments/Permissions. Edit is the leftmost button in that row. Only the × (close) button remains up top.
+
+---
+
+## 1.24.0 — Trip card action row cleanup; landing page polish
+
+### Changed
+- Trip card bottom action row is now a single row of circular icon buttons — Gallery, Itinerary, Comments, Attachments, Permissions — each with a count badge where applicable. Replaces the old "Edit" button, top-right lock icon, and the separate combined "Details" shortcut.
+- Itinerary icon now shows a day-count badge, matching Gallery/Comments/Attachments.
+- Landing pages: merged "How it works" into the Features section (one nav link, one target) across all three variants; rewrote feature copy to sell concrete benefits instead of generic labels.
+- Added a testimonials section (toggle + admin-managed quotes) available across all landing variants.
+
+---
+
 ## 1.23.1-beta — Sign-in redirected back to landing page after auth
 
 ### Fixed

@@ -749,6 +749,18 @@
           <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:14px;">SITE ADMINISTRATION</div>
 
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
+              <div>
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Audit log detail</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ auditLevelHint }}</div>
+              </div>
+              <div style="display:flex; gap:5px; flex:none;">
+                <button onClick="{{ setAuditEssential }}" style="{{ auditEssentialStyle }}">Essential</button>
+                <button onClick="{{ setAuditDetailed }}" style="{{ auditDetailedStyle }}">Detailed</button>
+                <button onClick="{{ setAuditVerbose }}" style="{{ auditVerboseStyle }}">Verbose</button>
+              </div>
+            </div>
+
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PRIMARY ADMIN(S)</div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#eaf4fd; margin-bottom:16px;">{{ primaryAdminEmailsText }}</div>
 
@@ -1130,6 +1142,127 @@
                   </sc-if>
                 </sc-if>
               </div>
+
+              <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:10px;">TRIP PERMISSIONS</div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+                    <div>
+                      <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c8d2e0;">Who can edit this family's trips</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Owner/admin always can. Only this family's editors — shared families never get edit rights.</div>
+                    </div>
+                    <div style="display:flex; gap:5px; flex:none;">
+                      <button onClick="{{ setEditFloorEditor }}" style="{{ editFloorEditorStyle }}">Editor+</button>
+                      <button onClick="{{ setEditFloorAdmin }}" style="{{ editFloorAdminStyle }}">Admin only</button>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+                    <div>
+                      <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c8d2e0;">Who can manage attachments</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Uploading/removing tickets & docs on this family's trips.</div>
+                    </div>
+                    <div style="display:flex; gap:5px; flex:none;">
+                      <button onClick="{{ setAttachFloorEditor }}" style="{{ attachFloorEditorStyle }}">Editor+</button>
+                      <button onClick="{{ setAttachFloorAdmin }}" style="{{ attachFloorAdminStyle }}">Admin only</button>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+                    <div>
+                      <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c8d2e0;">Attachments visible to shared families</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Turn off to keep tickets & docs private to this family only.</div>
+                    </div>
+                    <div style="display:flex; gap:5px; flex:none;">
+                      <button onClick="{{ setAttachVisibleOn }}" style="{{ attachVisibleOnStyle }}">On</button>
+                      <button onClick="{{ setAttachVisibleOff }}" style="{{ attachVisibleOffStyle }}">Off</button>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                    <div>
+                      <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c8d2e0;">Who can comment</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Applies to this family's own members only — shared families can still comment.</div>
+                    </div>
+                    <div style="display:flex; gap:5px; flex:none;">
+                      <button onClick="{{ setCommentFloorEditor }}" style="{{ commentFloorEditorStyle }}">Editor+</button>
+                      <button onClick="{{ setCommentFloorAdmin }}" style="{{ commentFloorAdminStyle }}">Admin only</button>
+                    </div>
+                  </div>
+                  <div style="height:1px; background:rgba(255,255,255,0.06); margin:12px 0;"></div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+                    <div>
+                      <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c8d2e0;">Shared families can edit itinerary</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Itinerary always follows the trip's own sharing tier and is never public — this only controls whether shared families may edit it, not just view it.</div>
+                    </div>
+                    <div style="display:flex; gap:5px; flex:none;">
+                      <button onClick="{{ setItineraryEditableOn }}" style="{{ itineraryEditableOnStyle }}">On</button>
+                      <button onClick="{{ setItineraryEditableOff }}" style="{{ itineraryEditableOffStyle }}">Off</button>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
+                    <div>
+                      <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c8d2e0;">Any family member can delete this family's trips</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">By default only admins can delete any trip; editors can only delete trips they created. Off by default.</div>
+                    </div>
+                    <div style="display:flex; gap:5px; flex:none;">
+                      <button onClick="{{ setMemberDeleteOn }}" style="{{ memberDeleteOnStyle }}">On</button>
+                      <button onClick="{{ setMemberDeleteOff }}" style="{{ memberDeleteOffStyle }}">Off</button>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                    <div>
+                      <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#c8d2e0;">Shared families can delete this family's trips</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Off by default — shared families never get delete rights unless explicitly turned on here.</div>
+                    </div>
+                    <div style="display:flex; gap:5px; flex:none;">
+                      <button onClick="{{ setSharedDeleteOn }}" style="{{ sharedDeleteOnStyle }}">On</button>
+                      <button onClick="{{ setSharedDeleteOff }}" style="{{ sharedDeleteOffStyle }}">Off</button>
+                    </div>
+                  </div>
+                  <div style="margin-top:12px; padding:10px 12px; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.18); border-radius:9px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#9fd6f0; line-height:1.6;">{{ deletePermSummary }}</div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">ATTACHMENTS &amp; STORAGE</div>
+                  <div style="display:flex; gap:18px; flex-wrap:wrap; margin-bottom:{{ attachStorageListGap }};">
+                    <div>
+                      <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:18px; color:#e8f3ff;">{{ attachStorageCount }}</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">files</div>
+                    </div>
+                    <div>
+                      <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:18px; color:#e8f3ff;">{{ attachStorageSize }}</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">used, 25MB max per file</div>
+                    </div>
+                  </div>
+                  <sc-if value="{{ attachStorageRows.length }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto;">
+                      <sc-for list="{{ attachStorageRows }}" as="a" hint-placeholder-count="0">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9fb0c6; padding:5px 0; border-top:1px solid rgba(255,255,255,0.05);">
+                          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ a.name }} · {{ a.place }}</span>
+                          <span style="flex:none; color:#6b7d94;">{{ a.sizeLabel }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom:16px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">ACTIVITY LOG — {{ activeFamilyName }}</div>
+                  <sc-if value="{{ familyActivityEmpty }}" hint-placeholder-val="{{ true }}">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#586a82;">No activity recorded yet.</div>
+                  </sc-if>
+                  <div style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;">
+                    <sc-for list="{{ familyActivityItems }}" as="a" hint-placeholder-count="0">
+                      <div style="padding:7px 0; border-top:1px solid rgba(255,255,255,0.05);">
+                        <div style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#c8d2e0; line-height:1.4;">{{ a.message }}</div>
+                        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ a.when }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
 
               <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 15px; margin-bottom:16px;">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:9px;">PEOPLE IN {{ activeFamilyName }}</div>
@@ -1660,15 +1793,6 @@
             <img ref="{{ setSelectedPhotoImg }}" style="width:100%; height:100%; object-fit:cover; display:block;">
             <div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(8,14,24,0) 38%,rgba(8,14,24,0.92) 100%);"></div>
             <div style="position:absolute; top:10px; right:10px; display:flex; align-items:center; gap:6px;">
-              <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
-                <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
-              </sc-if>
-              <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyleBanner }}">🔒</button>
-              </sc-if>
-              <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
-              </sc-if>
               <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(8,14,24,0.55); border:1px solid rgba(255,255,255,0.22); color:#dbe6f2; cursor:pointer; font-size:15px; line-height:1;">×</button>
             </div>
             <div style="position:absolute; left:14px; bottom:9px; right:14px;">
@@ -1713,15 +1837,6 @@
               <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#8093aa; margin-top:2px;">{{ selected.sub }}</div>
             </div>
             <div style="display:flex; flex-direction:row; align-items:center; gap:6px; flex:none;">
-              <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
-              </sc-if>
-              <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
-                <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
-              </sc-if>
-              <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
-              </sc-if>
               <button onClick="{{ deselect }}" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:14px; line-height:1;">×</button>
             </div>
           </div>
@@ -1767,15 +1882,6 @@
               </sc-if>
             </div>
             <div style="display:flex; flex-direction:row; align-items:center; gap:7px; flex:none;">
-              <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
-              </sc-if>
-              <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
-                <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
-              </sc-if>
-              <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
-              </sc-if>
               <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
             </div>
           </div>
@@ -1810,15 +1916,6 @@
             </sc-if>
           </div>
           <div style="display:flex; flex-direction:row; align-items:center; gap:7px; flex:none;">
-            <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ permBtnStyle }}">🔒</button>
-            </sc-if>
-            <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
-              <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:default; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
-            </sc-if>
-            <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
-            </sc-if>
             <button onClick="{{ deselect }}" style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:15px; line-height:1;">×</button>
           </div>
         </div>
@@ -1849,43 +1946,46 @@
         <sc-if value="{{ selected.notes }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08); font-family:'Space Grotesk',sans-serif; font-size:13px; line-height:1.55; color:#c2cfde; white-space:pre-wrap;">{{ selected.notes }}</div>
         </sc-if>
-        <sc-if value="{{ selected.hasGallery }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
-            <button onClick="{{ selected.openGallery }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:10px 12px; cursor:pointer;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10.5" r="1.5"></circle><path d="M21 15l-5-5L5 19"></path></svg>
-              View gallery <span style="color:#7fb4d8;">· {{ selected.galleryCount }}</span>
-            </button>
+        <div style="display:flex; gap:7px; margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08); flex-wrap:wrap;">
+            <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ editSelected }}" title="Edit trip" style="{{ actionIconStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"></path></svg></button>
+            </sc-if>
+            <sc-if value="{{ selected.hasTravelers }}" hint-placeholder-val="{{ false }}">
+              <button onMouseEnter="{{ selected.onStatsHover }}" onMouseLeave="{{ selected.onStatsLeave }}" title="Traveler stats for this trip" style="{{ actionIconStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="20" x2="6" y2="13"></line><line x1="12" y1="20" x2="12" y2="5"></line><line x1="18" y1="20" x2="18" y2="10"></line></svg></button>
+            </sc-if>
+            <sc-if value="{{ showDebugBtn }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ openDebugJson }}" title="Debug: view raw trip JSON" style="{{ actionIconStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
+            </sc-if>
+            <sc-if value="{{ selected.hasGallery }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ selected.openGallery }}" title="Gallery" style="{{ actionIconStyle }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10.5" r="1.5"></circle><path d="M21 15l-5-5L5 19"></path></svg>
+                <sc-if value="{{ selected.galleryCount }}" hint-placeholder-val="{{ false }}"><span style="{{ actionBadgeStyle }}">{{ selected.galleryCount }}</span></sc-if>
+              </button>
+            </sc-if>
+            <sc-if value="{{ selected.hasItinerary }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ selected.openItinerary }}" title="Itinerary" style="{{ actionIconStyle }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18M8 2v4M16 2v4"></path></svg>
+                <sc-if value="{{ selected.itineraryFilledCount }}" hint-placeholder-val="{{ false }}"><span style="{{ actionBadgeStyle }}">{{ selected.itineraryFilledCount }}</span></sc-if>
+              </button>
+            </sc-if>
+            <sc-if value="{{ selected.showComments }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ selected.openComments }}" title="Comments" style="{{ actionIconStyle }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                <sc-if value="{{ selected.commentCount }}" hint-placeholder-val="{{ false }}"><span style="{{ actionBadgeStyle }}">{{ selected.commentCount }}</span></sc-if>
+              </button>
+            </sc-if>
+            <sc-if value="{{ selected.showAttachments }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ selected.openAttachments }}" title="Attachments" style="{{ actionIconStyle }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95L10.13 17.1a1.5 1.5 0 0 1-2.12-2.12l7.34-7.34"></path></svg>
+                <sc-if value="{{ selected.attachmentCount }}" hint-placeholder-val="{{ false }}"><span style="{{ actionBadgeStyle }}">{{ selected.attachmentCount }}</span></sc-if>
+              </button>
+            </sc-if>
+            <sc-if value="{{ canPermSelected }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ togglePerm }}" title="Who can see this trip" style="{{ actionIconStyle }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+              </button>
+            </sc-if>
           </div>
-        </sc-if>
-        <sc-if value="{{ selected.hasItinerary }}" hint-placeholder-val="{{ false }}">
-          <div style="{{ selected.itineraryWrapStyle }}">
-            <button onClick="{{ selected.openItinerary }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:10px 12px; cursor:pointer;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18M8 2v4M16 2v4"></path></svg>
-              View itinerary <span style="color:#7fb4d8;">· {{ selected.itineraryDayCount }} day{{ selected.itineraryDayPlural }}</span>
-            </button>
-          </div>
-        </sc-if>
-        <sc-if value="{{ selected.showComments }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
-            <button onClick="{{ selected.openComments }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:10px 12px; cursor:pointer;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-              Comments <span style="color:#7fb4d8;">· {{ selected.commentCount }}</span>
-            </button>
-          </div>
-        </sc-if>
-        <sc-if value="{{ selected.showAttachments }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:10px;">
-            <button onClick="{{ selected.openAttachments }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#cfe6f5; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:9px; padding:10px 12px; cursor:pointer;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95L10.13 17.1a1.5 1.5 0 0 1-2.12-2.12l7.34-7.34"></path></svg>
-              Attachments <span style="color:#7fb4d8;">· {{ selected.attachmentCount }}</span>
-            </button>
-          </div>
-        </sc-if>
-        <sc-if value="{{ canEditSelected }}" hint-placeholder-val="{{ true }}">
-          <div style="display:flex; gap:9px; margin-top:16px;">
-            <button onClick="{{ editSelected }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:10px; padding:10px; cursor:pointer; box-shadow:0 0 18px rgba(251,191,36,0.35);">Edit</button>
-          </div>
-        </sc-if>
         <sc-if value="{{ selectedReadOnly }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:16px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.5; text-align:center;">Shared with you · view only</div>
         </sc-if>
@@ -1910,7 +2010,9 @@
               <sc-if value="{{ debugJsonViewing }}" hint-placeholder-val="{{ true }}">
                 <button onClick="{{ copyDebugJson }}" title="Copy JSON" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">{{ debugJsonCopyLabel }}</button>
                 <button onClick="{{ openDebugHistory }}" title="Revert to a previous version" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">History</button>
-                <button onClick="{{ startDebugJsonEdit }}" title="Edit raw JSON" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Edit</button>
+                <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ startDebugJsonEdit }}" title="Edit raw JSON" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.28); color:#bcd2e6; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Edit</button>
+                </sc-if>
               </sc-if>
               <sc-if value="{{ debugJsonHistoryOpen }}" hint-placeholder-val="{{ false }}">
                 <button onClick="{{ closeDebugHistory }}" style="height:24px; padding:0 10px; border-radius:7px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#dbe6f2; cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:10px;">Back</button>
@@ -2425,14 +2527,38 @@
             </div>
             <button onClick="{{ closeItineraryModal }}" style="width:30px; height:30px; border-radius:9px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; font-size:17px; line-height:1;">×</button>
           </div>
-          <div style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px;">
-            <sc-for list="{{ itineraryModalDays }}" as="d" hint-placeholder-count="2">
-              <div style="margin-bottom:14px;">
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:#7fb4d8; margin-bottom:5px;">{{ d.label }}</div>
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#cdd9e6; line-height:1.55; white-space:pre-wrap;">{{ d.text }}</div>
+          <sc-if value="{{ itineraryModalShared }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:9px 22px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; border-bottom:1px solid rgba(255,255,255,0.06);">This itinerary follows the trip's own sharing settings — it is never made public.</div>
+          </sc-if>
+          <sc-if value="{{ itineraryModalEditing }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px;">
+              <sc-for list="{{ itineraryModalDraftRows }}" as="d" hint-placeholder-count="2">
+                <div style="margin-bottom:14px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:#7fb4d8; margin-bottom:5px;">{{ d.label }}</div>
+                  <textarea value="{{ d.value }}" onChange="{{ d.onChange }}" placeholder="Plans for this day…" style="width:100%; box-sizing:border-box; min-height:64px; resize:vertical; font-family:'Space Grotesk',sans-serif; font-size:13px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:8px 10px; line-height:1.5;"></textarea>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:8px; padding:14px 22px; border-top:1px solid rgba(255,255,255,0.08); flex:none;">
+              <button onClick="{{ cancelItineraryEdit }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16); border-radius:8px; padding:8px 14px; cursor:pointer;">Cancel</button>
+              <button onClick="{{ saveItineraryModal }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Save itinerary</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ itineraryModalViewing }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px;">
+              <sc-for list="{{ itineraryModalDays }}" as="d" hint-placeholder-count="2">
+                <div style="margin-bottom:14px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.08em; color:#7fb4d8; margin-bottom:5px;">{{ d.label }}</div>
+                  <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#cdd9e6; line-height:1.55; white-space:pre-wrap;">{{ d.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ itineraryModalCanEdit }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:14px 22px; border-top:1px solid rgba(255,255,255,0.08); flex:none;">
+                <button onClick="{{ startItineraryEdit }}" style="width:100%; box-sizing:border-box; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Edit itinerary</button>
               </div>
-            </sc-for>
-          </div>
+            </sc-if>
+          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -2468,10 +2594,15 @@
               <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#586a82;">No comments yet.</div>
             </sc-if>
           </div>
-          <div style="display:flex; gap:8px; padding:14px 22px; border-top:1px solid rgba(255,255,255,0.08); flex:none;">
-            <input value="{{ commentDraft }}" onInput="{{ setCommentDraft }}" placeholder="Add a comment…" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 11px;" />
-            <button onClick="{{ postComment }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Post</button>
-          </div>
+          <sc-if value="{{ selected.canPostComment }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; gap:8px; padding:14px 22px; border-top:1px solid rgba(255,255,255,0.08); flex:none;">
+              <input value="{{ commentDraft }}" onInput="{{ setCommentDraft }}" placeholder="Add a comment…" style="flex:1; min-width:0; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#e6edf6; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 11px;" />
+              <button onClick="{{ postComment }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:8px 14px; cursor:pointer;">Post</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ selected.cannotPostComment }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:12px 22px; border-top:1px solid rgba(255,255,255,0.08); flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#586a82;">This family only allows admins to comment on their trips.</div>
+          </sc-if>
         </div>
       </div>
     </sc-if>
@@ -2958,7 +3089,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.23.1-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.25.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3223,6 +3354,7 @@ class Component extends DCLogic {
       reqDraftFamily: {},
       mySiteAdmin: false,
       autoApproveFamilies: false,
+      cfgAuditLevel: 'essential',
       cfgImageUploadsEnabledSite: true,
       cfgPublicSharingEnabledSite: true,
       cfgShowPricingSection: false,
@@ -3760,6 +3892,7 @@ class Component extends DCLogic {
         cfgExtraSiteAdmins: j.extraSiteAdmins || [],
         cfgFamilyColors: j.familyColors || [],
         autoApproveFamilies: !!j.autoApproveFamilies,
+        cfgAuditLevel: ['essential', 'detailed', 'verbose'].includes(j.auditLevel) ? j.auditLevel : 'essential',
         cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false,
         cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false,
         cfgShowPricingSection: !!j.showPricingSection,
@@ -4052,6 +4185,10 @@ class Component extends DCLogic {
     const j = await this.familiesAction('setAutoApprove', { value: !this.state.autoApproveFamilies });
     if (j) this.toast(j.autoApproveFamilies ? 'Auto-approve is ON' : 'Auto-approve is OFF');
   }
+  async setAuditLevel(v) {
+    const j = await this.familiesAction('setAuditLevel', { value: v });
+    if (j) { this.setState({ cfgAuditLevel: j.auditLevel }); this.toast('Audit level: ' + j.auditLevel); }
+  }
   async toggleImageUploadsSite() {
     const j = await this.familiesAction('setImageUploadsEnabled', { value: !this.state.cfgImageUploadsEnabledSite });
     if (j) { this.setState({ cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false }); this.toast(j.imageUploadsEnabled !== false ? 'Site-wide image uploads are ON' : 'Site-wide image uploads are OFF'); }
@@ -4098,6 +4235,59 @@ class Component extends DCLogic {
     const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
     if (fam && fam.imagesEnabled !== undefined && fam.imagesEnabled !== null) return !!fam.imagesEnabled;
     return this.state.cfgImageUploadsEnabledSite !== false;
+  }
+  // ---- per-family trip-permission floors (edit / attachments / comments) ----
+  tripHideAttachments(sl) {
+    if (!sl) return false;
+    if (this.tripUnassigned(sl) || this.tripIsMine(sl)) return false;
+    return !this.tripPermsFor(sl.familyId).attachVisibleShared;
+  }
+  tripPermsFor(familyId) {
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
+    const p = (fam && fam.permTrip) || {};
+    return {
+      editFloor: p.editFloor === 'admin' ? 'admin' : 'editor',
+      attachFloor: p.attachFloor === 'admin' ? 'admin' : 'editor',
+      commentFloor: p.commentFloor === 'admin' ? 'admin' : 'editor',
+      attachVisibleShared: p.attachVisibleShared !== false,
+      memberDeleteAny: !!p.memberDeleteAny,
+      sharedCanDelete: !!p.sharedCanDelete,
+      itineraryEditableShared: !!p.itineraryEditableShared,
+    };
+  }
+  roleInFamily(familyId) {
+    const s = this.state;
+    if (!familyId) return null;
+    if (s.mySiteAdmin) return 'admin';
+    const fam = (s.cfgFamilies || []).find(f => f.id === familyId);
+    if (fam && fam.createdBy === s.cloudUserEmail) return 'admin'; // owner counts as admin+ for floor checks
+    const m = (s.cfgMemberships || []).find(mm => mm.familyId === familyId && mm.email === s.cloudUserEmail && mm.active !== false);
+    return m ? m.role : null;
+  }
+  meetsFloor(role, floor) {
+    if (!role) return false;
+    if (floor === 'admin') return role === 'admin';
+    return role === 'admin' || role === 'editor';
+  }
+  canDeleteTrip(sl) {
+    if (!sl) return false;
+    if (this.state.cfgDataSource !== 'cloud') return true;
+    if (!(this.state.cloudRoles || []).includes('editor')) return false;
+    const familyId = sl.familyId;
+    if (!familyId) return this.tripUnassigned(sl) || this.tripIsMine(sl); // legacy path
+    const role = this.roleInFamily(familyId);
+    const owned = this.tripUnassigned(sl) || this.tripIsMine(sl);
+    if (role === 'admin') return true;
+    if (owned && role === 'editor') return true;
+    const perm = this.tripPermsFor(familyId);
+    if (perm.memberDeleteAny && !!role) return true;
+    return false;
+  }
+  setFamilyTripPerms(familyId, patch) {
+    const cur = this.tripPermsFor(familyId);
+    const next = { ...cur, ...patch };
+    this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => f.id === familyId ? { ...f, permTrip: next } : f) }));
+    this.familiesAction('setFamilyTripPerms', { familyId, ...next }).then(j => { if (j) this.toast('Updated'); });
   }
   setAssignEmail(e) { this.setState({ assignEmail: e.target.value }); }
   setAssignFamilyId(e) { this.setState({ assignFamilyId: e.target.value }); }
@@ -4282,6 +4472,17 @@ class Component extends DCLogic {
     const activeFamObj = byId[viewFamilyId];
     const famImgSegStyle = (on) => "flex:1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.04em; padding:6px 8px; border-radius:7px; cursor:pointer; transition:all .15s; " + (on ? "color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;" : "color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);");
     const isFamilyOwner = !!s.mySiteAdmin || (activeFamObj && activeFamObj.createdBy === s.cloudUserEmail);
+    const activeTripPerms = this.tripPermsFor(viewFamilyId);
+    const famAttachments = [];
+    (s.locations || []).filter(l => l.familyId === viewFamilyId).forEach(l => {
+      (l.attachments || []).forEach(a => famAttachments.push({ name: a.name, size: a.size || 0, place: [l.city, l.country].filter(Boolean).join(', ') || 'Trip' }));
+    });
+    const fmtBytes = (n) => n > 1024 * 1024 ? (n / (1024 * 1024)).toFixed(1) + 'MB' : Math.max(1, Math.round(n / 1024)) + 'KB';
+    const attachStorageStats = {
+      count: famAttachments.length,
+      sizeLabel: fmtBytes(famAttachments.reduce((sum, a) => sum + a.size, 0)),
+      rows: famAttachments.map(a => ({ name: a.name, place: a.place, sizeLabel: fmtBytes(a.size) })),
+    };
     const ownerMember = activeFamObj && activeMembers.find(m => m.email === activeFamObj.createdBy);
     const transferTargetOptions = activeMembers
       .filter(m => m.email && m.active !== false && m.email !== (activeFamObj && activeFamObj.createdBy))
@@ -4347,6 +4548,15 @@ class Component extends DCLogic {
       autoApproveToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.autoApproveFamilies ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
       toggleAutoApproveFamilies: () => this.toggleAutoApproveFamilies(),
+      auditEssentialStyle: famImgSegStyle(s.cfgAuditLevel === 'essential'),
+      auditDetailedStyle: famImgSegStyle(s.cfgAuditLevel === 'detailed'),
+      auditVerboseStyle: famImgSegStyle(s.cfgAuditLevel === 'verbose'),
+      setAuditEssential: () => this.setAuditLevel('essential'),
+      setAuditDetailed: () => this.setAuditLevel('detailed'),
+      setAuditVerbose: () => this.setAuditLevel('verbose'),
+      auditLevelHint: s.cfgAuditLevel === 'verbose' ? 'Logs people/roles/permissions + trip create/edit/delete/comments + sign-ins.'
+        : s.cfgAuditLevel === 'detailed' ? 'Logs people/roles/permissions + trip create/edit/delete/comments.'
+        : 'Logs people/roles/family/permission changes only (default — lightest weight).',
       imageUploadsSiteToggleLabel: s.cfgImageUploadsEnabledSite !== false ? 'ON' : 'OFF',
       imageUploadsSiteToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.cfgImageUploadsEnabledSite !== false ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
@@ -4503,6 +4713,45 @@ class Component extends DCLogic {
       familyImagesInheritStyle: famImgSegStyle(!activeFamObj || activeFamObj.imagesEnabled === undefined || activeFamObj.imagesEnabled === null),
       familyImagesOnStyle: famImgSegStyle(!!activeFamObj && activeFamObj.imagesEnabled === true),
       familyImagesOffStyle: famImgSegStyle(!!activeFamObj && activeFamObj.imagesEnabled === false),
+      editFloorEditorStyle: famImgSegStyle(activeTripPerms.editFloor === 'editor'),
+      editFloorAdminStyle: famImgSegStyle(activeTripPerms.editFloor === 'admin'),
+      setEditFloorEditor: () => this.setFamilyTripPerms(viewFamilyId, { editFloor: 'editor' }),
+      setEditFloorAdmin: () => this.setFamilyTripPerms(viewFamilyId, { editFloor: 'admin' }),
+      attachFloorEditorStyle: famImgSegStyle(activeTripPerms.attachFloor === 'editor'),
+      attachFloorAdminStyle: famImgSegStyle(activeTripPerms.attachFloor === 'admin'),
+      setAttachFloorEditor: () => this.setFamilyTripPerms(viewFamilyId, { attachFloor: 'editor' }),
+      setAttachFloorAdmin: () => this.setFamilyTripPerms(viewFamilyId, { attachFloor: 'admin' }),
+      attachVisibleOnStyle: famImgSegStyle(activeTripPerms.attachVisibleShared === true),
+      attachVisibleOffStyle: famImgSegStyle(activeTripPerms.attachVisibleShared === false),
+      setAttachVisibleOn: () => this.setFamilyTripPerms(viewFamilyId, { attachVisibleShared: true }),
+      setAttachVisibleOff: () => this.setFamilyTripPerms(viewFamilyId, { attachVisibleShared: false }),
+      commentFloorEditorStyle: famImgSegStyle(activeTripPerms.commentFloor === 'editor'),
+      commentFloorAdminStyle: famImgSegStyle(activeTripPerms.commentFloor === 'admin'),
+      setCommentFloorEditor: () => this.setFamilyTripPerms(viewFamilyId, { commentFloor: 'editor' }),
+      setCommentFloorAdmin: () => this.setFamilyTripPerms(viewFamilyId, { commentFloor: 'admin' }),
+      itineraryEditableOnStyle: famImgSegStyle(!!activeTripPerms.itineraryEditableShared),
+      itineraryEditableOffStyle: famImgSegStyle(!activeTripPerms.itineraryEditableShared),
+      setItineraryEditableOn: () => this.setFamilyTripPerms(viewFamilyId, { itineraryEditableShared: true }),
+      setItineraryEditableOff: () => this.setFamilyTripPerms(viewFamilyId, { itineraryEditableShared: false }),
+      memberDeleteOnStyle: famImgSegStyle(!!activeTripPerms.memberDeleteAny),
+      memberDeleteOffStyle: famImgSegStyle(!activeTripPerms.memberDeleteAny),
+      setMemberDeleteOn: () => this.setFamilyTripPerms(viewFamilyId, { memberDeleteAny: true }),
+      setMemberDeleteOff: () => this.setFamilyTripPerms(viewFamilyId, { memberDeleteAny: false }),
+      sharedDeleteOnStyle: famImgSegStyle(!!activeTripPerms.sharedCanDelete),
+      sharedDeleteOffStyle: famImgSegStyle(!activeTripPerms.sharedCanDelete),
+      setSharedDeleteOn: () => this.setFamilyTripPerms(viewFamilyId, { sharedCanDelete: true }),
+      setSharedDeleteOff: () => this.setFamilyTripPerms(viewFamilyId, { sharedCanDelete: false }),
+      deletePermSummary: 'Who can delete this family\'s trips: Admins — any trip. Editors — trips they created' + (activeTripPerms.memberDeleteAny ? ', and ANY member may delete any trip (member toggle is ON)' : ' (member toggle is off)') + '. Shared families — ' + (activeTripPerms.sharedCanDelete ? 'CAN delete (toggle is ON)' : 'cannot delete (default)') + '.',
+      attachStorageCount: attachStorageStats.count,
+      attachStorageSize: attachStorageStats.sizeLabel,
+      attachStorageListGap: attachStorageStats.rows.length ? '12px' : '0',
+      attachStorageRows: attachStorageStats.rows,
+      familyActivityItems: (s.activityFeed || []).filter(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))).map(a => {
+        let when = '';
+        try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
+        return { id: a.id, message: a.message || '', when };
+      }),
+      familyActivityEmpty: !(s.activityFeed || []).some(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))),
       newNonAccountName: s.newNonAccountName || '',
       setNewNonAccountName: (e) => this.setNewNonAccountName(e),
       addNonAccountMemberClick: () => this.addNonAccountMemberClick(),
@@ -4962,7 +5211,20 @@ class Component extends DCLogic {
     this._pa = true;
     const c = this.canvas;
     let moved = 0;
+    const activeTouches = new Map(); // pointerId -> {x,y}, for pinch-to-zoom
+    let pinchStartDist = null, pinchStartZoom = 1;
+    const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
     c.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'touch') {
+        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (activeTouches.size === 2) {
+          this.dragging = false; // two fingers = pinch, not drag
+          const pts = [...activeTouches.values()];
+          pinchStartDist = dist(pts[0], pts[1]);
+          pinchStartZoom = this._zoom || 1;
+          return;
+        }
+      }
       this.dragging = true; this.tween = null; this._last = [e.clientX, e.clientY]; moved = 0;
       try { c.setPointerCapture(e.pointerId); } catch (er) {}
       c.style.cursor = 'grabbing';
@@ -4970,6 +5232,16 @@ class Component extends DCLogic {
     c.addEventListener('pointermove', e => {
       const rect = c.getBoundingClientRect();
       this._mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      if (e.pointerType === 'touch' && activeTouches.has(e.pointerId)) {
+        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (activeTouches.size === 2 && pinchStartDist) {
+          const pts = [...activeTouches.values()];
+          const factor = dist(pts[0], pts[1]) / pinchStartDist;
+          this._zoom = Math.max(1, Math.min(6, pinchStartZoom * factor));
+          if (this.proj && this._baseScale) this.proj.scale(this._baseScale * this._zoom);
+          return;
+        }
+      }
       if (!this.dragging) return;
       const dx = e.clientX - this._last[0], dy = e.clientY - this._last[1];
       this._last = [e.clientX, e.clientY];
@@ -4986,12 +5258,13 @@ class Component extends DCLogic {
       if (this.proj && this._baseScale) this.proj.scale(this._baseScale * this._zoom);
     }, { passive: false });
     const up = e => {
+      if (e.pointerType === 'touch') { activeTouches.delete(e.pointerId); pinchStartDist = null; }
       if (!this.dragging) return;
       this.dragging = false; c.style.cursor = 'grab';
       if (moved < 5) this.handleClick(e);
     };
     c.addEventListener('pointerup', up);
-    c.addEventListener('pointercancel', () => { this.dragging = false; c.style.cursor = 'grab'; });
+    c.addEventListener('pointercancel', e => { if (e.pointerType === 'touch') { activeTouches.delete(e.pointerId); pinchStartDist = null; } this.dragging = false; c.style.cursor = 'grab'; });
   }
 
   handleClick(e) {
@@ -5179,7 +5452,7 @@ class Component extends DCLogic {
     const path = d3.geoPath(proj, ctx);
 
     // atmosphere
-    const spaceStyle = this.state.cfgGlobeStyle === 'space';
+    const spaceStyle = this.state.cfgTheme === 'space';
     if (spaceStyle) {
       if (!this._stars || this._starsW !== w || this._starsH !== h) {
         this._starsW = w; this._starsH = h;
@@ -6698,6 +6971,10 @@ class Component extends DCLogic {
     const id = this.state.selectedId;
     const text = String(this.state.commentDraft || '').trim();
     if (id == null || !text) return;
+    const sl = this.state.locations.find(l => l.id === id);
+    if (sl && this.state.cfgDataSource === 'cloud' && !(this.tripUnassigned(sl) || this.tripIsMine(sl))) {
+      if (!this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).commentFloor)) { this.toast("This family restricts who can comment on their trips"); return; }
+    }
     const email = (this.state.cloudUserEmail || '').toLowerCase().trim();
     const name = (this.state.cfgTravelers || []).find(t => t.email && t.email.toLowerCase().trim() === email);
     const comment = {
@@ -8022,7 +8299,7 @@ class Component extends DCLogic {
   closeCommentsModal() { this.setState({ commentsModalOpen: false }); }
   openAttachmentsModal() { this.setState({ attachmentsModalOpen: true }); }
   closeAttachmentsModal() { this.setState({ attachmentsModalOpen: false }); }
-
+  // Unified "Details" modal — one shortcut icon that reuses the same 4 panels as
   togglePane() { this.setState(s => ({ paneOpen: !s.paneOpen })); }
 
   // ---- draggable date-range calendar ----
@@ -8286,10 +8563,40 @@ class Component extends DCLogic {
   openItineraryModal = (loc) => {
     const days = this._itineraryDayList(loc.date, loc.dateEnd);
     const it = loc.itinerary || {};
-    const modalDays = days.map((dt, i) => ({ label: this._itineraryDayLabel(dt, i), text: it[dt] || '(no notes for this day)' }));
-    this.setState({ itineraryModalOpen: true, itineraryModalDays: modalDays, itineraryModalPlace: [loc.city, loc.country].filter(Boolean).join(', ') });
+    const modalDays = days.map((dt, i) => ({ date: dt, label: this._itineraryDayLabel(dt, i), text: it[dt] || '(no notes for this day)' }));
+    this.setState({ itineraryModalOpen: true, itineraryModalTripId: loc.id, itineraryModalDays: modalDays, itineraryModalPlace: [loc.city, loc.country].filter(Boolean).join(', '), itineraryModalEditing: false, itineraryModalDraft: { ...it } });
   };
-  closeItineraryModal = () => { this.setState({ itineraryModalOpen: false }); };
+  closeItineraryModal = () => { this.setState({ itineraryModalOpen: false, itineraryModalTripId: null, itineraryModalEditing: false }); };
+  canEditItinerary(sl) {
+    if (!sl) return false;
+    if (this.state.cfgDataSource !== 'cloud') return true;
+    if (!(this.state.cloudRoles || []).includes('editor')) return false;
+    const perm = this.tripPermsFor(sl.familyId);
+    const owned = this.tripUnassigned(sl) || this.tripIsMine(sl);
+    if (owned) return this.meetsFloor(this.roleInFamily(sl.familyId), perm.editFloor);
+    // shared-family viewer: only if this family explicitly opted itinerary edits in
+    return !this.roleInFamily(sl.familyId) && !!perm.itineraryEditableShared;
+  }
+  startItineraryEdit = () => { this.setState({ itineraryModalEditing: true }); };
+  cancelItineraryEdit = () => {
+    const sl = this.state.locations.find(l => l.id === this.state.itineraryModalTripId);
+    this.setState({ itineraryModalEditing: false, itineraryModalDraft: { ...((sl && sl.itinerary) || {}) } });
+  };
+  setItineraryModalDay = (date, text) => {
+    this.setState(s => ({ itineraryModalDraft: { ...s.itineraryModalDraft, [date]: text } }));
+  };
+  saveItineraryModal = () => {
+    const id = this.state.itineraryModalTripId;
+    if (id == null) return;
+    const draft = this.state.itineraryModalDraft || {};
+    const list = this.state.locations.map(l => l.id === id ? { ...l, itinerary: { ...draft } } : l);
+    this.persist(list);
+    const sl = list.find(l => l.id === id);
+    const days = this._itineraryDayList(sl.date, sl.dateEnd);
+    const modalDays = days.map((dt, i) => ({ date: dt, label: this._itineraryDayLabel(dt, i), text: draft[dt] || '(no notes for this day)' }));
+    this.setState({ locations: list, itineraryModalDays: modalDays, itineraryModalEditing: false });
+    this.toast('Itinerary saved');
+  };
   removeGalleryPhoto = (idx) => {
     this.setState(s => ({ form: { ...s.form, gallery: (s.form.gallery || []).filter((_, i) => i !== idx) } }));
   };
@@ -8590,7 +8897,9 @@ class Component extends DCLogic {
         hasGallery: Array.isArray(sl.gallery) && sl.gallery.length > 0,
         galleryCount: (sl.gallery || []).length,
         openGallery: () => this.openLightbox(sl.gallery, 0),
+        galleryThumbs: (sl.gallery || []).map((src, i) => ({ src, onClick: () => this.openLightbox(sl.gallery, i) })),
         hasItinerary: !!(sl.itinerary && Object.keys(sl.itinerary).some(k => sl.itinerary[k])),
+        itineraryFilledCount: sl.itinerary ? Object.keys(sl.itinerary).filter(k => sl.itinerary[k]).length : 0,
         itineraryDayCount: this._itineraryDayList(sl.date, sl.dateEnd).length,
         itineraryDayPlural: this._itineraryDayList(sl.date, sl.dateEnd).length === 1 ? '' : 's',
         itineraryWrapStyle: 'margin-top:14px; ' + ((Array.isArray(sl.gallery) && sl.gallery.length > 0) ? '' : 'padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);'),
@@ -8604,7 +8913,7 @@ class Component extends DCLogic {
           try { when = new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(c.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
           return { id: c.id, authorName: c.authorName || c.authorEmail || 'Someone', initial: (c.authorName || c.authorEmail || '?').trim()[0].toUpperCase(), text: c.text, when, canDelete, onDelete: () => this.deleteComment(sl.id, c.id) };
         }),
-        showAttachments: this.state.cfgDataSource === 'cloud' && this.state.cloudAuth,
+        showAttachments: this.state.cfgDataSource === 'cloud' && this.state.cloudAuth && !this.tripHideAttachments(sl),
         attachmentCount: (sl.attachments || []).length,
         attachments: (sl.attachments || []).map(a => {
           const mine = (a.uploadedByEmail || '').toLowerCase().trim() === (this.state.cloudUserEmail || '').toLowerCase().trim();
@@ -8617,7 +8926,11 @@ class Component extends DCLogic {
         }),
         noComments: (sl.comments || []).length === 0,
         noAttachments: (sl.attachments || []).length === 0,
-        canAddAttachments: (this.state.cloudRoles || []).includes('editor'),
+        noGallery: !(Array.isArray(sl.gallery) && sl.gallery.length > 0),
+        attachmentsHidden: this.state.cfgDataSource === 'cloud' && !(this.tripUnassigned(sl) || this.tripIsMine(sl)) && !this.tripPermsFor(sl.familyId).attachVisibleShared,
+        canAddAttachments: (this.state.cloudRoles || []).includes('editor') && this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).attachFloor) && (this.tripUnassigned(sl) || this.tripIsMine(sl)),
+        canPostComment: !(this.tripUnassigned(sl) || this.tripIsMine(sl)) || this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).commentFloor),
+        cannotPostComment: (this.tripUnassigned(sl) || this.tripIsMine(sl)) && !this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).commentFloor),
         openComments: () => this.openCommentsModal(),
         openAttachments: () => this.openAttachmentsModal(),
         triggerAttachmentPick: () => this.triggerAttachmentPick(sl.id),
@@ -8628,10 +8941,11 @@ class Component extends DCLogic {
     }
     const meId = this.state.cloudUserId || '';
     const selOwnedByMe = !sl || this.tripUnassigned(sl) || this.tripIsMine(sl);
-    const canEditSelected = (this.state.cfgDataSource !== 'cloud') || ((this.state.cloudRoles || []).includes('editor') && selOwnedByMe);
+    const selFamPerms = sl ? this.tripPermsFor(sl.familyId) : this.tripPermsFor(null);
+    const canEditSelected = (this.state.cfgDataSource !== 'cloud') || ((this.state.cloudRoles || []).includes('editor') && selOwnedByMe && this.meetsFloor(this.roleInFamily(sl && sl.familyId), selFamPerms.editFloor));
     const editingLoc = locations.find(l => l.id === this.state.editingId);
     const editOwnedByMe = !editingLoc || this.tripUnassigned(editingLoc) || this.tripIsMine(editingLoc);
-    const showFormDelete = this.state.editingId != null && ((this.state.cfgDataSource !== 'cloud') || ((this.state.cloudRoles || []).includes('editor') && editOwnedByMe));
+    const showFormDelete = this.state.editingId != null && this.canDeleteTrip(editingLoc);
 
     const segBase = "display:flex; align-items:center; gap:9px; font-family:'Space Grotesk',sans-serif; font-weight:500; font-size:13.5px; text-align:left; padding:12px 14px; border-radius:11px; cursor:pointer; transition:all 0.16s; width:100%;";
     const seg = (key) => {
@@ -8754,6 +9068,18 @@ class Component extends DCLogic {
       itineraryModalOpen: this.state.itineraryModalOpen,
       itineraryModalDays: this.state.itineraryModalDays || [],
       itineraryModalPlace: this.state.itineraryModalPlace || '',
+      itineraryModalEditing: !!this.state.itineraryModalEditing,
+      itineraryModalViewing: !this.state.itineraryModalEditing,
+      itineraryModalCanEdit: this.canEditItinerary(this.state.locations.find(l => l.id === this.state.itineraryModalTripId)),
+      itineraryModalShared: !!(this.state.itineraryModalTripId != null && !this.roleInFamily((this.state.locations.find(l => l.id === this.state.itineraryModalTripId) || {}).familyId)),
+      itineraryModalDraftRows: (this.state.itineraryModalDays || []).map(d => ({
+        date: d.date, label: d.label,
+        value: (this.state.itineraryModalDraft || {})[d.date] || '',
+        onChange: (e) => this.setItineraryModalDay(d.date, e.target.value),
+      })),
+      startItineraryEdit: this.startItineraryEdit,
+      cancelItineraryEdit: this.cancelItineraryEdit,
+      saveItineraryModal: this.saveItineraryModal,
       closeItineraryModal: this.closeItineraryModal,
       lightboxOpen: !!this.state.lightbox,
       lightboxSrc: this.state.lightbox ? this.state.lightbox.images[this.state.lightbox.index] : '',
@@ -8883,7 +9209,7 @@ class Component extends DCLogic {
         : 'flex:1; font-family:\'Space Grotesk\',sans-serif; font-size:12px; padding:8px; border-radius:8px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03); color:#8ea0b8;',
       setDarkMode: () => this.setLightMode(false),
       setLightModeOn: () => this.setLightMode(true),
-      showCloudDrift: this.state.cfgGlobeStyle === 'space',
+      showCloudDrift: this.state.cfgTheme === 'space',
       cloudDriftValue: Number.isFinite(this.state.cfgCloudDrift) ? this.state.cfgCloudDrift : 1,
       cloudDriftLabel: (Number.isFinite(this.state.cfgCloudDrift) ? this.state.cfgCloudDrift : 1).toFixed(1) + 'x',
       setCloudDrift: (e) => this.setCloudDrift(e.target.value),
@@ -9087,7 +9413,7 @@ class Component extends DCLogic {
       openDebugDataJson: () => this.openDebugJsonFor('data'),
       closeDebugJson: () => this.setState({ debugJsonOpen: false, debugJsonEditing: false, debugJsonConfirming: false, debugJsonHistoryOpen: false, debugJsonHistoryExpanded: {}, debugJsonDraft: '', debugJsonError: '', debugJsonPending: null, debugJsonDiff: [] }),
       copyDebugJson: () => this.copyDebugJson(),
-      startDebugJsonEdit: () => this.setState(s => ({ debugJsonEditing: true, debugJsonDraft: s.debugJsonOriginal, debugJsonError: '' })),
+      startDebugJsonEdit: () => { if (!this.state.mySiteAdmin) { this.toast('Site admin required to edit'); return; } this.setState(s => ({ debugJsonEditing: true, debugJsonDraft: s.debugJsonOriginal, debugJsonError: '' })); },
       cancelDebugJsonEdit: () => this.setState({ debugJsonEditing: false, debugJsonDraft: '', debugJsonError: '' }),
       reviewDebugJsonEdit: () => this.reviewDebugJsonEdit(),
       backToDebugJsonEdit: () => this.backToDebugJsonEdit(),
@@ -9226,6 +9552,11 @@ class Component extends DCLogic {
       }),
       canEditSelected,
       canPermSelected: this.state.cfgDataSource === 'cloud' && canEditSelected,
+      actionIconStyle: 'position:relative; flex:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fbbf24; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.35);',
+      actionIconStyleGold: 'position:relative; flex:none; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fbbf24; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.35);',
+      actionBadgeStyle: 'position:absolute; top:-6px; right:-6px; min-width:16px; height:16px; padding:0 4px; border-radius:999px; background:#fbbf24; color:#04111e; font-family:\'IBM Plex Mono\',monospace; font-size:9.5px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px rgba(8,14,24,0.9);',
+      actionBadgeStyleNew: 'position:absolute; top:-6px; right:-11px; min-width:24px; height:16px; padding:0 5px; border-radius:999px; background:#fbbf24; color:#04111e; font-family:\'IBM Plex Mono\',monospace; font-size:8.5px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px rgba(8,14,24,0.9);',
+      editBtnStyle: 'flex:none; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; line-height:1; color:#fbbf24; background:rgba(251,191,36,0.14); border:1px solid rgba(251,191,36,0.4);',
       commentDraft: this.state.commentDraft || '',
       setCommentDraft: (e) => this.setCommentDraft(e),
       postComment: () => this.postComment(),
@@ -9356,6 +9687,7 @@ class Component extends DCLogic {
       authorMailto: 'mailto:' + ['Terry.Remsik', 'gmail.com'].join('@'),
       appVersion: 'v' + this.APP_VERSION,
       appUpdated: 'July 12, 2026',
+
       updateAvailable: this.state.updateAvailable,
       showUpdateBar: this.state.updateAvailable && !this.state.updateDismissed,
       latestVersion: this.state.latestVersion,

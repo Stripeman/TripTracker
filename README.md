@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.23.1--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.25.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -354,6 +354,31 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 - `photo` is optional — a data‑URL string for the trip's thumbnail (shown per **Preferences → Show photo thumbnail on card**, in the **Banner / Compact / Framed** layout you've picked). Omit it for a text‑only card.
 - `familyId` — which family this trip belongs to (Cloud mode). Omitted/blank trips are treated as unassigned/legacy and visible everywhere until claimed or migrated.
 - `owner` / `ownerEmail` — the account that owns this trip (Cloud mode); `ownerEmail` drives per‑trip permissions and the family scoping rules described above.
+- **Trip Permissions** (per family, admin‑only, in **My Families → [family] → Trip Permissions**): floors for **who can edit**, **who can manage attachments**, and **who can comment** on that family's own trips — each is **Editor+** (default) or **Admin only**; owners/admins always qualify. Also: **Attachments visible to shared families** (default on — turn off to keep tickets/docs private to just this family), **Shared families can edit itinerary** (default off — viewing itself always follows the trip's normal sharing tier and is never made public), **Any family member can delete this family's trips** (default off — normally only admins can delete any trip, editors only trips they created), and **Shared families can delete this family's trips** (default off). A summary line shows the effective delete rule at a glance. All floors are enforced server‑side, not just hidden in the UI.
+- **Attachments & Storage** (same admin panel): file count, total size used, and a per‑file list for that family's trips (25MB cap per file).
+- **Activity Log** (same admin panel): a scrollable, chronological log of that family's own admin-level events (people added/removed, role changes, ownership transfers, trip-permission changes, family sharing) — separate from the app-wide activity bell described below. What gets logged is controlled site-wide by **Audit log detail** (see below).
+
+### 🔍 Audit log detail (site admin)
+
+- **⚙ → Preferences → Site Administration → Audit log detail** — site admins choose how much gets recorded to the activity log(s), site‑wide: **Essential** (default — people/roles/family/permission changes only, lightest weight), **Detailed** (adds trip create/edit/delete, itinerary edits, and comments), or **Verbose** (adds sign‑ins too). Applies immediately to all families.
+
+### 🔔 Notifications & activity
+
+- A **bell icon** in the header opens a running **activity feed** of events relevant to you (across all families you belong to — site admins see everything) — invites, approvals, role changes, family shares, ownership transfers, etc. An unread badge appears when there's something new since you last opened it.
+- Key events (approvals, invites, shares) also trigger an **email notification** to the people affected.
+
+### 🌐 Public landing page
+
+- Signed‑out visitors land on a public marketing page instead of a bare sign‑in box. Site admins pick the active variant in **⚙ → System → Landing page**: the original sign‑in‑only screen, or one of three fuller marketing layouts (hero + features + testimonials + optional pricing), each with a live rotating globe and example trip cards.
+- **Testimonials** — site admins can add/edit/remove quotes (quote, name, family) shown on the marketing variants, and toggle the whole section on/off, from **⚙ → System**.
+- **Pricing section** visibility on the marketing variants is a separate site‑admin toggle, for showing/hiding pricing without switching variants.
+- **Terms of Service** and **Privacy Policy** pages are linked from the landing footer.
+
+### 📋 Trip detail card — gallery, itinerary, comments, attachments
+
+- Each trip's detail card has a row of icon buttons (with count badges) for **Gallery** (multi‑photo, with a lightbox viewer), **Itinerary** (day‑by‑day notes, editable per the Trip Permissions floor above), **Comments** (visible to everyone who can see the trip; posting is floor‑gated per family), **Attachments** (PDF/image/Word/Excel, 25MB max per file, stored in Blob Storage), and **Permissions** (the same sharing picker as the Add/Edit form).
+- Edit, Traveler Stats, and (when Debug mode is on) a raw‑JSON Debug button sit in the same row. Debug **viewing** follows the normal visibility rules; Debug **editing** is site‑admin only.
+
 - `visibility` — `private` (only the owner), `all` (everyone with access to the family), or `shared` (only `sharedWith`). Defaults to `private` when omitted.
 - `sharedWith` — array of emails, only meaningful when `visibility` is `shared`.
 - `settings`: `version` is a number that auto‑increments on every settings change; `showThumbs` toggles trip photos on cards; `cardLayout` is `banner` / `thumbnail` / `framed`; `autoClaim` auto‑assigns unclaimed trips you create; `updateFreqMin` is `3` / `5` / `10`; `accessEmail` is the admin contact shown in the access list; `defaultYear` is `current` or `all`; `defaultTrip` is `all` or any trip‑type key; `defaultStatus` is `all` / `visited`; `defaultTraveler` is `all` or any traveler key; `defaultVisit` is `all` or any visit‑type key; `sortDir` is `desc` (newest first) / `asc` (oldest first); `dataSource` is `local` or `cloud`; `themeLocked` (admin-set) forces `lockedTheme` / `lockedLightMode` on everyone. **Not included:** `theme` and `lightMode` are per‑person and stored only in that browser's local storage, never in shared settings.
