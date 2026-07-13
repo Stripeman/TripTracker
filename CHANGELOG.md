@@ -4,6 +4,16 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.29.8-beta — Fixed: Metrics was still secretly filtered by the left panel's selected family
+
+### Fixed
+- **`metricsPassesFilter` had its own leftover, separate family-scoping block** — layered on top of the intentional `metricsFamilyScope` system (fixed across 1.29.4–1.29.7), it fell back to whatever family was selected on the main page (`activeFamilyId`) whenever `familyViewMode` wasn't explicitly "all"/"allMine". So even after correctly picking a specific family in the Metrics dropdown, trips were silently re-filtered by the left panel's own selection underneath — explaining why Metrics kept looking scoped to whatever family the globe/list was currently showing. Removed the dead duplicate block entirely; Metrics now only ever scopes by its own dropdown, exactly as documented.
+
+### Tested
+- 3‑scenario check reproducing the exact report: Metrics scope "My family" now shows your trips regardless of which family the left panel has selected, scope set to a specific other family shows only that family's trips regardless of the left panel, and "Every family" always shows everything.
+
+---
+
 ## 1.29.7-beta — Fixed: switching Metrics family scope left stale filters behind (showed 0 trips)
 
 ### Fixed

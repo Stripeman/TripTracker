@@ -3518,7 +3518,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.29.7-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.29.8-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -8058,16 +8058,6 @@ class Component extends DCLogic {
   // Empty = all trips in the system. Mirrors the same dimensions you filter trips by.
   metricsPassesFilter(l) {
     const f = this.state.metricsFilter || {};
-    const s = this.state;
-    if (s.cfgDataSource === 'cloud' && l.familyId) {
-      let mode = s.familyViewMode || 'active';
-      if (mode === 'active') mode = s.activeFamilyId || 'active';
-      if (mode === 'all') { /* site admin: every family */ }
-      else if (mode === 'allMine') {
-        const mine = new Set((s.cfgMemberships || []).filter(m => m.email === s.cloudUserEmail && m.active !== false).map(m => m.familyId));
-        if (!mine.has(l.familyId)) return false;
-      } else if (l.familyId !== mode) return false;
-    }
     if (f.year && f.year !== 'all') { if ((l.date || '').slice(0, 4) !== String(f.year)) return false; }
     if (f.statuses && f.statuses.length && !f.statuses.includes(l.status)) return false;
     if (f.visit && f.visit.length && !(l.visitTypes || []).some(k => f.visit.includes(k))) return false;
@@ -10019,7 +10009,7 @@ class Component extends DCLogic {
         }
         return this.baseFamilyScopeOptions();
       })(),
-      metrics: this.state.metricsOpen ? this.computeMetrics(this.state.metricsScope) : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], countriesByTraveler: [], topCountries: [], topCities: [], byYear: [] },
+      metrics: this.state.metricsOpen ? this.computeMetrics() : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], countriesByTraveler: [], topCountries: [], topCities: [], byYear: [] },
       metricsFiltersOpen: this.state.metricsFiltersOpen,
       toggleMetricsFilters: () => this.toggleMetricsFilters(),
       metricsFilterCount: this.metricsFilterCount(),
