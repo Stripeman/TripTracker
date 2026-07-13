@@ -256,6 +256,7 @@ module.exports = async function (context, req) {
     let siteImagesOn = true;
     let sitePublicSharingOn = true;
     let auditLevel = "essential";
+    let emailKillSwitch = false;
     try {
       const settingsBlob = container.getBlockBlobClient("family-settings.json");
       if (await settingsBlob.exists()) {
@@ -264,6 +265,7 @@ module.exports = async function (context, req) {
         siteImagesOn = fs.imageUploadsEnabled !== false;
         sitePublicSharingOn = fs.publicSharingEnabled !== false;
         auditLevel = ["essential", "detailed", "verbose"].includes(fs.auditLevel) ? fs.auditLevel : "essential";
+        emailKillSwitch = !!fs.emailKillSwitch;
       }
       const familiesBlob = container.getBlockBlobClient(process.env.FAMILIES_BLOB || "families.json");
       if (await familiesBlob.exists()) {
@@ -463,7 +465,7 @@ module.exports = async function (context, req) {
       }
       if (withFamily.familyId) {
         const fam = familyById.get(withFamily.familyId);
-        if (fam && notifPrefOn(fam, "tripAdds", "email")) {
+        if (fam && !emailKillSwitch && notifPrefOn(fam, "tripAdds", "email")) {
           const place = [t.city, t.country].filter(Boolean).join(", ") || "a trip";
           try {
             const membersBlob2 = container.getBlockBlobClient(MEMBERS_BLOB);

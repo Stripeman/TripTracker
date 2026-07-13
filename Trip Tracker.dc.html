@@ -887,6 +887,29 @@
               <input type="number" min="1" max="200" defaultValue="{{ cfgFamilyCatLimit }}" onBlur="{{ onFamilyCatLimitBlur }}" style="flex:none; width:64px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 8px; outline:none; text-align:center;">
             </div>
 
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; background:{{ emailKillSwitchBg }}; border:1px solid {{ emailKillSwitchBorder }}; border-radius:10px; padding:11px 12px;">
+              <div>
+                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Disable all email notifications</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Site-wide kill switch for abuse/incident response — suppresses every courtesy email (invites, shares, category changes, attachments, ownership, new trips) regardless of any family's own notification settings. Toasts and the Activity Log still work.</div>
+              </div>
+              <button onClick="{{ toggleEmailKillSwitch }}" style="{{ emailKillSwitchToggleStyle }}">{{ emailKillSwitchToggleLabel }}</button>
+            </div>
+
+            <div style="margin-bottom:16px;">
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0; margin-bottom:2px;">Default notifications for new families</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-bottom:10px;">Applied once, at creation time, to every brand-new family. Doesn't change existing families — those are edited per-family in My Families → Notifications.</div>
+              <sc-for list="{{ defaultNotifRows }}" as="dnr" hint-placeholder-count="4">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:8px 0; border-top:1px solid rgba(255,255,255,0.06);">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9fb3c8; min-width:150px;">{{ dnr.label }}</div>
+                  <div style="display:flex; gap:6px; flex:none;">
+                    <button onClick="{{ dnr.toast.onClick }}" style="{{ dnr.toast.style }}">{{ dnr.toast.label }}</button>
+                    <button onClick="{{ dnr.bell.onClick }}" style="{{ dnr.bell.style }}">{{ dnr.bell.label }}</button>
+                    <button onClick="{{ dnr.email.onClick }}" style="{{ dnr.email.style }}">{{ dnr.email.label }}</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PRIMARY ADMIN(S)</div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#eaf4fd; margin-bottom:16px;">{{ primaryAdminEmailsText }}</div>
 
@@ -3383,7 +3406,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.28.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.28.2-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3650,6 +3673,8 @@ class Component extends DCLogic {
       autoApproveFamilies: false,
       cfgAuditLevel: 'essential',
       cfgFamilyCatLimit: 40,
+      cfgDefaultNotifPrefs: {},
+      cfgEmailKillSwitch: false,
       cfgImageUploadsEnabledSite: true,
       cfgPublicSharingEnabledSite: true,
       cfgShowPricingSection: false,
@@ -4212,6 +4237,8 @@ class Component extends DCLogic {
         autoApproveFamilies: !!j.autoApproveFamilies,
         cfgAuditLevel: ['essential', 'detailed', 'verbose'].includes(j.auditLevel) ? j.auditLevel : 'essential',
         cfgFamilyCatLimit: Number.isFinite(j.familyCatLimit) && j.familyCatLimit > 0 ? j.familyCatLimit : 40,
+        cfgDefaultNotifPrefs: j.defaultNotifPrefs || {},
+        cfgEmailKillSwitch: !!j.emailKillSwitch,
         cfgImageUploadsEnabledSite: j.imageUploadsEnabled !== false,
         cfgPublicSharingEnabledSite: j.publicSharingEnabled !== false,
         cfgShowPricingSection: !!j.showPricingSection,
@@ -4519,6 +4546,15 @@ class Component extends DCLogic {
     const n = Math.min(200, Math.max(1, Math.floor(Number.isFinite(raw) && raw > 0 ? raw : 40)));
     const j = await this.familiesAction('setFamilyCatLimit', { value: n });
     if (j) { this.setState({ cfgFamilyCatLimit: j.familyCatLimit }); this.toast('Category limit: ' + j.familyCatLimit); }
+  }
+  async toggleEmailKillSwitch() {
+    const next = !this.state.cfgEmailKillSwitch;
+    const j = await this.familiesAction('setEmailKillSwitch', { value: next });
+    if (j) { this.setState({ cfgEmailKillSwitch: !!j.emailKillSwitch }); this.toast(j.emailKillSwitch ? 'All email notifications are now disabled site-wide.' : 'Email notifications re-enabled.'); }
+  }
+  async setDefaultNotifPref(key, channel, value) {
+    const j = await this.familiesAction('setDefaultNotifPrefs', { key, channel, value });
+    if (j) this.toast((value ? 'Enabled' : 'Disabled') + ' ' + channel + ' for new families\u2019 default.');
   }
   async toggleImageUploadsSite() {
     const j = await this.familiesAction('setImageUploadsEnabled', { value: !this.state.cfgImageUploadsEnabledSite });
@@ -5079,6 +5115,32 @@ class Component extends DCLogic {
         : 'Logs people/roles/family/permission changes only (default — lightest weight).',
       cfgFamilyCatLimit: s.cfgFamilyCatLimit || 40,
       onFamilyCatLimitBlur: (e) => this.setFamilyCatLimit(e.target.value),
+      emailKillSwitchBg: s.cfgEmailKillSwitch ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.02)',
+      emailKillSwitchBorder: s.cfgEmailKillSwitch ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.08)',
+      emailKillSwitchToggleLabel: s.cfgEmailKillSwitch ? 'Disabled' : 'Enabled',
+      emailKillSwitchToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; letter-spacing:0.06em; padding:7px 14px; border-radius:8px; cursor:pointer; border:1px solid ' + (s.cfgEmailKillSwitch ? 'rgba(239,68,68,0.4); color:#fecaca; background:rgba(239,68,68,0.14);' : 'rgba(52,211,153,0.3); color:#a7f3d0; background:rgba(52,211,153,0.08);'),
+      toggleEmailKillSwitch: () => this.toggleEmailKillSwitch(),
+      defaultNotifRows: (() => {
+        const prefs = s.cfgDefaultNotifPrefs || {};
+        const NOTIF_DEFS = [
+          { key: 'categoryChanges', label: 'Category list changes' },
+          { key: 'attachmentUploads', label: 'Attachment uploads' },
+          { key: 'ownerTransfers', label: 'Ownership transfers' },
+          { key: 'tripAdds', label: 'New trips' },
+          { key: 'tripEdits', label: 'Trip edits' },
+          { key: 'tripDeletes', label: 'Trip deletes' },
+          { key: 'comments', label: 'Comments' },
+        ];
+        const chipStyle = (on) => 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:9px; letter-spacing:0.04em; padding:4px 9px; border-radius:999px; cursor:pointer; border:1px solid ' + (on ? 'rgba(52,211,153,0.35); color:#a7f3d0; background:rgba(52,211,153,0.1);' : 'rgba(255,255,255,0.12); color:#69798f; background:rgba(255,255,255,0.02);');
+        return NOTIF_DEFS.map(def => {
+          const p = prefs[def.key] || {};
+          const chan = (name) => {
+            const on = p[name] !== false;
+            return { on, label: name === 'toast' ? 'Toast' : name === 'bell' ? 'Bell' : 'Email', style: chipStyle(on), onClick: () => this.setDefaultNotifPref(def.key, name, !on) };
+          };
+          return { key: def.key, label: def.label, toast: chan('toast'), bell: chan('bell'), email: chan('email') };
+        });
+      })(),
       imageUploadsSiteToggleLabel: s.cfgImageUploadsEnabledSite !== false ? 'ON' : 'OFF',
       imageUploadsSiteToggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; border-radius:999px; padding:6px 13px; cursor:pointer; ' +
         (s.cfgImageUploadsEnabledSite !== false ? 'color:#04111e; background:linear-gradient(180deg,#7fe0c4,#38d99c); border:none;' : 'color:#9fb3c8; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.16);'),
@@ -8172,7 +8234,17 @@ class Component extends DCLogic {
   // covers what you're hovering). Direct-DOM positioned — no re-render. Used by the
   // per-Traveler presence dot to show online status + role(s).
   setTipRef(el) { this._tipEl = el; }
-  showTip(e, text) { const t = this._tipEl; if (!t) return; if (text != null) t.textContent = text; t.style.display = 'block'; t.style.left = (e.clientX + 14) + 'px'; t.style.top = (e.clientY + 18) + 'px'; }
+  showTip(e, text) {
+    const t = this._tipEl; if (!t) return;
+    if (text != null) t.textContent = text;
+    t.style.display = 'block';
+    t.style.left = (e.clientX + 14) + 'px';
+    const h = t.offsetHeight || 30;
+    let top = e.clientY + 18;
+    if (top + h > window.innerHeight - 8) top = e.clientY - 18 - h;
+    if (top < 8) top = 8;
+    t.style.top = top + 'px';
+  }
   hideTip() { const t = this._tipEl; if (t) t.style.display = 'none'; }
   // Admin login-stats bubble for an access-list row. Positioned bottom-LEFT of the cursor
   // (its own width to the left) so it never blocks the email field being edited.
@@ -8237,7 +8309,11 @@ class Component extends DCLogic {
     let left = e.clientX - 14 - w;
     if (left < 8) left = 8;
     t.style.left = left + 'px';
-    t.style.top = (e.clientY + 18) + 'px';
+    const h = t.offsetHeight || 60;
+    let top = e.clientY + 18;
+    if (top + h > window.innerHeight - 8) top = e.clientY - 18 - h;
+    if (top < 8) top = 8;
+    t.style.top = top + 'px';
   }
   hideStat() { const t = this._statEl; if (t) t.style.display = 'none'; }
   // Local-only (no server fetch) per-traveler stat bubble for the trip detail card —
@@ -8289,7 +8365,11 @@ class Component extends DCLogic {
     let left = e.clientX - 14 - w;
     if (left < 8) left = 8;
     t.style.left = left + 'px';
-    t.style.top = (e.clientY + 18) + 'px';
+    const h = t.offsetHeight || 60;
+    let top = e.clientY + 18;
+    if (top + h > window.innerHeight - 8) top = e.clientY - 18 - h; // flip above the cursor if it would clip at the bottom
+    if (top < 8) top = 8;
+    t.style.top = top + 'px';
   }
   hideCardStat() { const t = this._cardStatEl; if (t) t.style.display = 'none'; }
   // Admin bulk action: stamp the signed-in admin's ownership on every unowned/legacy trip

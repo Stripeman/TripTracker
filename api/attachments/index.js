@@ -229,11 +229,13 @@ module.exports = async function (context, req) {
     const dataBlob = container.getBlockBlobClient(BLOB);
     const permFor = await loadPermByFamily(container);
     let auditDetailed = false;
+    let emailKillSwitch = false;
     try {
       const settingsBlob = container.getBlockBlobClient("family-settings.json");
       if (await settingsBlob.exists()) {
         const fs = JSON.parse(await streamToString((await settingsBlob.download()).readableStreamBody));
         auditDetailed = fs.auditLevel === "detailed" || fs.auditLevel === "verbose";
+        emailKillSwitch = !!fs.emailKillSwitch;
       }
     } catch (e) { /* fail open (no audit) */ }
 
@@ -350,7 +352,7 @@ module.exports = async function (context, req) {
         if (auditDetailed && notifPrefOn(fam, "attachmentUploads", "bell")) {
           await logActivity(container, { type: "uploadAttachment", familyId: trip.familyId, visibleTo: [trip.familyId], actor: me.email, message: me.email + " added attachment \"" + cleanName + "\" to " + place });
         }
-        if (fam && notifPrefOn(fam, "attachmentUploads", "email")) {
+        if (fam && !emailKillSwitch && notifPrefOn(fam, "attachmentUploads", "email")) {
           const to = familyAdminEmails(members, trip.familyId, me.email);
           sendEmail(to, "New attachment \u2014 " + fam.name, me.email + " added \"" + cleanName + "\" to " + place + ".").catch(() => {});
         }

@@ -4,10 +4,34 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.28.2-beta — Site-wide notification defaults + email kill switch
+
+### Added
+- **Default notification prefs for new families** (⚙ → Preferences → Site Administration → "Default notifications for new families"): site admin sets the Toast/Bell/Email defaults applied once, at creation time, to every brand-new family (self-serve, auto-created from an access request, or created via the debug/admin flow). Existing families are never retroactively changed — those stay edited per-family in My Families → Notifications. New action `setDefaultNotifPrefs` (site admin only).
+- **Site-wide email kill switch** (⚙ → Preferences → Site Administration → "Disable all email notifications"): one toggle suppresses *every* courtesy email in the app — invites, family shares, category changes, attachment uploads, ownership transfers, new trips — regardless of any family's own notification settings, for abuse/incident response. Toasts and the Activity Log (bell) are unaffected since they don't touch the outside world. New action `setEmailKillSwitch` (site admin only); the explicit "send invite email" action is blocked outright (403) while the switch is on, since that's a directed send rather than a background courtesy notification.
+
+### Tested
+- 11-scenario matrix covering both new site-admin actions: auth gates, default-pref application to new-vs-existing families, and the kill switch overriding both per-family and default email preferences — all passing.
+
+---
+
+## 1.28.1-beta — Notifications tab; hover-popover clipping fix
+
+### Added
+- **Notifications tab** (per family, admin‑only, in **My Families → [family] → Notifications tab**): independent **Toast** (live in‑app), **Bell** (Activity Log), and **Email** toggles for seven event types — Category list changes, Attachment uploads, Ownership transfers, New trips, Trip edits, Trip deletes, and Comments. Everything defaults to on. New `setFamilyNotifPrefs` action (family admin/owner or site admin only) and a shared `api/_shared/notify.js` helper (`notifPrefOn`, `sendEmail`, `familyAdminEmails`) used across the families/trips/attachments APIs. Courtesy emails go to a family's admins (excluding whoever caused the event); ownership‑transfer emails also go to the new owner. Toast delivery rides the app's existing 30s activity poll — a genuinely new activity item with its toast pref on triggers a live toast for anyone online, skipping the person who caused it.
+
+### Fixed
+- **Hover popovers clipped at the bottom of the browser** instead of flipping above the cursor — affected the traveler‑stats popover on a trip card, the online‑presence tip, and the admin login‑stats bubble. All three now flip above the cursor when they'd overflow the viewport.
+
+### Tested
+- Full scenario matrix (20 cases) for the new Notifications tab: `setFamilyNotifPrefs` auth gates (non‑admin blocked, admin‑of‑other‑family blocked, family admin/site admin allowed), per‑channel independence (toggling one channel never touches the other two), invalid key/channel rejection, per‑event bell/email gating at each of the four wired call sites, and the client‑side toast diffing (skips already‑seen activity, skips your own actions, respects the per‑family toast pref, ignores unmapped event types) — all passing.
+- Re‑verified family‑approval enforcement end‑to‑end after the notification-plumbing changes — no regressions.
+
+---
+
 ## 1.28.0-beta — Real family-approval enforcement, category safety checks, permission-gate audit
 
 ### Added
-- **Notifications tab** (per family, admin‑only, in **My Families → [family] → Notifications tab**): independent on/off toggles for **Toast** (live in‑app), **Bell** (Activity Log), and **Email** for seven event types — Category list changes, Attachment uploads, Ownership transfers, New trips, Trip edits, Trip deletes, and Comments. Everything defaults to on, so existing families see no change until an admin opts something out. Backed by a new `setFamilyNotifPrefs` action (family admin/owner or site admin only) and a shared `api/_shared/notify.js` helper (`notifPrefOn`, `sendEmail`, `familyAdminEmails`) used across the families/trips/attachments APIs. Courtesy emails go to a family's admins (excluding whoever caused the event); ownership‑transfer emails also go to the new owner. Toast delivery rides the app's existing 30s activity poll — a genuinely new activity item with its event's toast pref on triggers a live toast for anyone online, skipping the person who caused it.
 - **Family approval is now actually enforced**, not just a cosmetic flag. A family pending approval can no longer create trips, invite/share/promote members, transfer ownership, or upload attachments — site admins still bypass every check. A "Pending approval" banner appears on the Add Location form and the relevant actions when your active family isn't approved yet.
 - **Real-time approval status** — the app already polls for family updates every 30s and on tab focus; now the moment a pending family flips to approved, everyone in it gets a toast ("'<Family>' has been approved — you can add trips now") instead of a silent state change.
 - **Usage warnings before touching a category in use**: removing a single custom Visit Type / Trip Type / Status item now checks whether any of that family's trips use it — if so, shows the affected trips and a "Reassign to…" picker before deleting. "Revert to site default" has the same check for every custom item at once.

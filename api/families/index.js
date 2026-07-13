@@ -249,6 +249,8 @@ module.exports = async function (context, req) {
         autoApproveFamilies: !!settings.autoApproveFamilies,
         imageUploadsEnabled: settings.imageUploadsEnabled !== false,
         publicSharingEnabled: settings.publicSharingEnabled !== false,
+        defaultNotifPrefs: settings.defaultNotifPrefs || {},
+        emailKillSwitch: !!settings.emailKillSwitch,
         landingVariant: ["signin", "a", "b", "c"].includes(settings.landingVariant) ? settings.landingVariant : "signin",
         showPricingSection: !!settings.showPricingSection,
         auditLevel: ["essential", "detailed", "verbose"].includes(settings.auditLevel) ? settings.auditLevel : "essential",
@@ -273,7 +275,7 @@ module.exports = async function (context, req) {
       const name = String((body.name || "")).trim();
       if (!name) { json(400, { error: "Family name required." }); return; }
       const color = FAMILY_COLORS.includes(body.color) ? body.color : FAMILY_COLORS[families.length % FAMILY_COLORS.length];
-      const fam = { id: genId("fam"), name, color, createdBy: me.email, createdAt: new Date().toISOString(), approved: !!settings.autoApproveFamilies, autoApproved: !!settings.autoApproveFamilies };
+      const fam = { id: genId("fam"), name, color, createdBy: me.email, createdAt: new Date().toISOString(), approved: !!settings.autoApproveFamilies, autoApproved: !!settings.autoApproveFamilies, notifPrefs: settings.defaultNotifPrefs || undefined };
       families.push(fam);
       members.push({ email: me.email, familyId: fam.id, role: "admin", active: true, createdAt: fam.createdAt });
       await writeJsonBlob(container, FAMILIES_BLOB, families);
@@ -321,7 +323,7 @@ module.exports = async function (context, req) {
       if (notifPrefOn(fam, "ownerTransfers", "bell")) {
         logActivity(container, { type: "transferOwnership", familyId, visibleTo: [familyId], actor: me.email, message: "Transferred ownership of " + fam.name + " to " + toEmail });
       }
-      if (notifPrefOn(fam, "ownerTransfers", "email")) {
+      if (!settings.emailKillSwitch && notifPrefOn(fam, "ownerTransfers", "email")) {
         const to = Array.from(new Set([toEmail, ...familyAdminEmails(members, familyId, me.email)]));
         sendEmail(to, "Ownership transferred \u2014 " + fam.name, me.email + " transferred ownership of " + fam.name + " to " + toEmail + ".").catch(() => {});
       }
@@ -465,6 +467,34 @@ module.exports = async function (context, req) {
     // is "toast" (live in-app toast to other members) | "bell" (persisted to the
     // Activity Log / bell feed) | "email" (courtesy email). Missing = on, so
     // pre-existing families keep every notification until someone opts out.
+    // Site-wide default notification prefs applied to brand-new families at creation
+    // time (site admin only). Same shape as a family's own notifPrefs — per-key
+    // {toast,bell,email}. Doesn't retroactively change existing families.
+    if (action === "setDefaultNotifPrefs") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
+      const CHANNELS = ["toast", "bell", "email"];
+      const key = NOTIF_KEYS.includes(body.key) ? body.key : null;
+      const channel = CHANNELS.includes(body.channel) ? body.channel : null;
+      if (!key || !channel) { json(400, { error: "Invalid notification key or channel." }); return; }
+      const defaultNotifPrefs = { ...(settings.defaultNotifPrefs || {}), [key]: { ...((settings.defaultNotifPrefs && settings.defaultNotifPrefs[key]) || {}), [channel]: !!body.value } };
+      settings = { ...settings, defaultNotifPrefs };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true });
+      return;
+    }
+
+    // Site-wide kill switch: when on, EVERY courtesy email in the app is suppressed
+    // regardless of any per-family notification preference — for abuse/incident
+    // response. Toasts and the Activity Log (bell) are unaffected. Site admin only.
+    if (action === "setEmailKillSwitch") {
+      if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
+      settings = { ...settings, emailKillSwitch: !!body.value };
+      await writeJsonBlob(container, "family-settings.json", settings);
+      json(200, { ok: true, emailKillSwitch: settings.emailKillSwitch });
+      return;
+    }
+
     if (action === "setFamilyNotifPrefs") {
       if (!meIsSiteAdmin && !myAdminFamilyIds.has(body.familyId)) { json(403, { error: "Family admin required." }); return; }
       const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
@@ -520,7 +550,7 @@ module.exports = async function (context, req) {
       if (fam0 && notifPrefOn(fam0, "categoryChanges", "bell")) {
         logActivity(container, { type: "setFamilyCategories", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: (list && list.length ? "Set a custom " : "Reverted ") + CATLABEL[cat] + " list for " + (fam0 ? fam0.name : "the family") + (list && list.length ? "" : " to the site default") });
       }
-      if (fam0 && notifPrefOn(fam0, "categoryChanges", "email")) {
+      if (fam0 && !settings.emailKillSwitch && notifPrefOn(fam0, "categoryChanges", "email")) {
         const to = familyAdminEmails(members, body.familyId, me.email);
         sendEmail(to, "Category list updated \u2014 " + fam0.name, me.email + " " + (list && list.length ? "set a custom " : "reverted the ") + CATLABEL[cat] + (list && list.length ? " list" : " to the site default") + " for " + fam0.name + ".").catch(() => {});
       }
@@ -876,6 +906,7 @@ module.exports = async function (context, req) {
       if (!requireApprovedFamily(familyId)) return;
       const email = String(body.email || "").toLowerCase().trim();
       if (!email || email.indexOf("@") === -1) { json(400, { error: "Valid email required." }); return; }
+      if (settings.emailKillSwitch) { json(403, { error: "Email sending is currently disabled site-wide by a site admin." }); return; }
       const key = process.env.RESEND_API_KEY;
       const from = process.env.RESEND_FROM;
       if (!key || !from) { json(501, { error: "Email sending is not configured on the server." }); return; }
@@ -924,7 +955,7 @@ module.exports = async function (context, req) {
       });
       // Courtesy email to the invited family's admins, same Resend env vars as the
       // rest of the app. Access is granted immediately regardless of delivery.
-      notifyFamilyShare(members, famTo, famFrom, role).catch(() => {});
+      if (!settings.emailKillSwitch) notifyFamilyShare(members, famTo, famFrom, role).catch(() => {});
       json(200, { ok: true });
       return;
     }
@@ -954,7 +985,7 @@ module.exports = async function (context, req) {
         const local = email.split("@")[0] || "New";
         const label = local.charAt(0).toUpperCase() + local.slice(1);
         const color = FAMILY_COLORS[families.length % FAMILY_COLORS.length];
-        newFam = { id: genId("fam"), name: label + "'s Family", color, createdBy: email, createdAt: new Date().toISOString(), approved: true, autoApproved: true, autoNamed: true };
+        newFam = { id: genId("fam"), name: label + "'s Family", color, createdBy: email, createdAt: new Date().toISOString(), approved: true, autoApproved: true, autoNamed: true, notifPrefs: settings.defaultNotifPrefs || undefined };
         families.push(newFam);
         await writeJsonBlob(container, FAMILIES_BLOB, families);
         familyId = newFam.id;
@@ -969,7 +1000,7 @@ module.exports = async function (context, req) {
       requests = requests.filter((r) => r && String(r.email || "").toLowerCase() !== email);
       await writeJsonBlob(container, ACCESS_REQUESTS_BLOB, requests);
       const fam = newFam || families.find((f) => f.id === familyId);
-      notifyApproved(email, fam ? fam.name : "", role, !!newFam); // fire-and-forget, best-effort
+      if (!settings.emailKillSwitch) notifyApproved(email, fam ? fam.name : "", role, !!newFam); // fire-and-forget, best-effort
       logActivity(container, { type: "approveAccess", familyId: fam ? fam.id : null, visibleTo: [fam ? fam.id : null], actor: me.email, message: email + " was granted access (" + role + ")" + (fam ? " to " + fam.name : "") });
       json(200, { ok: true });
       return;
@@ -1166,7 +1197,7 @@ module.exports = async function (context, req) {
         const existing = families.find((f) => f.name === name);
         if (existing) { famId = existing.id; }
         else {
-          const fam = { id: genId("fam"), name, createdBy: me.email, createdAt: new Date().toISOString(), approved: true, autoApproved: false };
+          const fam = { id: genId("fam"), name, createdBy: me.email, createdAt: new Date().toISOString(), approved: true, autoApproved: false, notifPrefs: settings.defaultNotifPrefs || undefined };
           families.push(fam);
           famId = fam.id;
           await writeJsonBlob(container, FAMILIES_BLOB, families);

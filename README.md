@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.28.0--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.28.2--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -369,6 +369,8 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 
 - **⚙ → Preferences → Site Administration → Audit log detail** — site admins choose how much gets recorded to the activity log(s), site‑wide: **Essential** (default — people/roles/family/permission changes only, lightest weight), **Detailed** (adds trip create/edit/delete, itinerary edits, and comments), or **Verbose** (adds sign‑ins too). Applies immediately to all families.
 - **⚙ → Preferences → Site Administration → Per‑family category limit** — caps how many items a family's custom Visit Type / Trip Type / Status list can hold (1–200, default 40), enforced server‑side regardless of what the client sends.
+- **⚙ → Preferences → Site Administration → Default notifications for new families** — sets the Toast/Bell/Email defaults applied once, at creation time, to every brand‑new family; doesn't retroactively change existing families (edit those per‑family in My Families → Notifications).
+- **⚙ → Preferences → Site Administration → Disable all email notifications** — a site‑wide kill switch that suppresses every courtesy email in the app (invites, shares, category changes, attachments, ownership, new trips) regardless of any family's own settings, for abuse/incident response. Toasts and the Activity Log keep working.
 
 ### 🔔 Notifications & activity
 
