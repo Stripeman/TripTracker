@@ -203,7 +203,15 @@
         <div onClick="{{ stop }}" style="width:480px; max-width:calc(100vw - 60px); max-height:80vh; display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(12,19,30,0.98), rgba(7,12,20,0.98)); border:1px solid rgba(56,189,248,0.28); border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,0.6); overflow:hidden;">
           <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid rgba(56,189,248,0.12);">
             <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.14em; color:#e8f3ff;">ALL ACTIVITY</div>
-            <button onClick="{{ closeActivityAll }}" style="width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.06); border:none; color:#9fb3c8; cursor:pointer; font-size:14px;">✕</button>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <select value="{{ activityAllFamilyFilter }}" onChange="{{ setActivityAllFamilyFilter }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; max-width:180px;">
+                <option value="" style="background:#0a1422;">All families</option>
+                <sc-for list="{{ activityAllFamilyOptions }}" as="af" hint-placeholder-count="0">
+                  <option value="{{ af.value }}" style="background:#0a1422;">{{ af.label }}</option>
+                </sc-for>
+              </select>
+              <button onClick="{{ closeActivityAll }}" style="width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.06); border:none; color:#9fb3c8; cursor:pointer; font-size:14px; flex:none;">✕</button>
+            </div>
           </div>
           <div style="flex:1; min-height:0; overflow-y:auto; padding:8px 20px 16px;">
             <sc-for list="{{ activityAllSections }}" as="sec" hint-placeholder-count="0">
@@ -1361,7 +1369,7 @@
                     <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ familyImageUploadsHint }}</div>
                   </div>
                   <div style="display:flex; gap:5px; flex:none;">
-                    <button onClick="{{ setFamilyImagesInherit }}" style="{{ familyImagesInheritStyle }}">Site default</button>
+                    <button onClick="{{ setFamilyImagesInherit }}" style="{{ familyImagesInheritStyle }}">{{ familyImagesInheritLabel }}</button>
                     <button onClick="{{ setFamilyImagesOn }}" style="{{ familyImagesOnStyle }}">On</button>
                     <button onClick="{{ setFamilyImagesOff }}" style="{{ familyImagesOffStyle }}">Off</button>
                   </div>
@@ -3518,7 +3526,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.29.8-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.29.9-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3756,6 +3764,7 @@ class Component extends DCLogic {
       bulk: { fields: { owner: false, notes: false, visit: false, travelers: false, trip: false, vis: false }, owner: '', notes: '', visit: [], travelers: [], trip: [], vis: 'private', shareKeys: [] },
       bulkConfirm: false,
       bulkFilterFamilyId: '',
+      activityAllFamilyFilter: '',
       settingsOpen: false,
       profileOpen: false,
       activityOpen: false,
@@ -4295,8 +4304,13 @@ class Component extends DCLogic {
   async loadFamilies() {
     if (this.state.cfgDataSource !== 'cloud') return;
     try {
-      const r = await fetch('/api/families', { cache: 'no-store' });
+      // If-None-Match: the server 304s when nothing changed, so the 30s poll is
+      // normally an empty response and we skip the whole setState re-render.
+      const headers = this._famEtag ? { 'If-None-Match': this._famEtag } : undefined;
+      const r = await fetch('/api/families', { cache: 'no-store', headers });
+      if (r.status === 304) return;
       if (!r.ok) return;
+      this._famEtag = r.headers.get('ETag') || null;
       const j = await r.json();
       const mine = j.myMemberships || [];
       // default active family = the one I'm admin of (my own family), else my first membership
@@ -5404,7 +5418,7 @@ class Component extends DCLogic {
         return {
           cat, title: TITLES[cat], isCustom, notCustom: !isCustom,
           siteCount: (s[this._catGlobalKey(cat)] || []).length,
-          toggleLabel: isCustom ? 'Revert to site default' : 'Use custom list',
+          toggleLabel: isCustom ? ('Revert to site default (' + (s[this._catGlobalKey(cat)] || []).length + ' items)') : 'Use custom list',
           toggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:9.5px; letter-spacing:0.04em; padding:5px 9px; border-radius:7px; cursor:pointer; border:1px solid ' + (isCustom ? 'rgba(239,68,68,0.3); color:#e9a3a3; background:rgba(239,68,68,0.07);' : 'rgba(56,189,248,0.3); color:#9fd6f0; background:rgba(56,189,248,0.08);'),
           onToggleCustom: () => this.toggleFamilyCatCustom(cat),
           items,
@@ -5506,6 +5520,7 @@ class Component extends DCLogic {
       familyImageUploadsHint: (activeFamObj && activeFamObj.imagesEnabled !== undefined && activeFamObj.imagesEnabled !== null)
         ? (activeFamObj.imagesEnabled ? 'Explicitly ON for this family' : 'Explicitly OFF for this family')
         : ('Following the site default (' + (s.cfgImageUploadsEnabledSite !== false ? 'ON' : 'OFF') + ')'),
+      familyImagesInheritLabel: 'Site default (' + (s.cfgImageUploadsEnabledSite !== false ? 'ON' : 'OFF') + ')',
       setFamilyImagesInherit: () => this.setFamilyImageUploads(viewFamilyId, null),
       setFamilyImagesOn: () => this.setFamilyImageUploads(viewFamilyId, true),
       setFamilyImagesOff: () => this.setFamilyImageUploads(viewFamilyId, false),
@@ -5545,14 +5560,14 @@ class Component extends DCLogic {
       attachStorageSize: attachStorageStats.sizeLabel,
       attachStorageListGap: attachStorageStats.rows.length ? '12px' : '0',
       attachStorageRows: attachStorageStats.rows,
-      familyActivityItems: (s.activityFeed || []).filter(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))).map(a => {
+      familyActivityItems: (() => { const _byEmail = new Map((s.cfgTravelers || []).map(o => [String(o.email || '').toLowerCase().trim(), o])); return (s.activityFeed || []).filter(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))).map(a => {
         let when = '';
         try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
         const actorEmail = String(a.actor || '').toLowerCase().trim();
-        const actorPerson = actorEmail ? (s.cfgTravelers || []).find(o => String(o.email || '').toLowerCase().trim() === actorEmail) : null;
+        const actorPerson = actorEmail ? _byEmail.get(actorEmail) : null;
         const actorName = actorPerson ? actorPerson.label : (actorEmail || '');
         return { id: a.id, message: a.message || '', when, actorName, actorEmail, mailtoHref: actorEmail ? ('mailto:' + actorEmail) : '' };
-      }),
+      }); })(),
       familyActivityEmpty: !(s.activityFeed || []).some(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))),
       newNonAccountName: s.newNonAccountName || '',
       setNewNonAccountName: (e) => this.setNewNonAccountName(e),
@@ -10352,21 +10367,28 @@ class Component extends DCLogic {
         return (this.state.activityFeed || []).some(a => a.createdAt > seen);
       })(),
       activityEmpty: !(this.state.activityFeed || []).length,
-      activityItems: (this.state.activityFeed || []).slice().reverse().slice(0, 200).map(a => {
+      activityItems: (() => { const _byEmail = new Map((this.state.cfgTravelers || []).map(o => [String(o.email || '').toLowerCase().trim(), o])); return (this.state.activityFeed || []).slice().reverse().slice(0, 200).map(a => {
         let when = '';
         try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
         const actorEmail = String(a.actor || '').toLowerCase().trim();
-        const actorPerson = actorEmail ? (this.state.cfgTravelers || []).find(o => String(o.email || '').toLowerCase().trim() === actorEmail) : null;
+        const actorPerson = actorEmail ? _byEmail.get(actorEmail) : null;
         const actorName = actorPerson ? actorPerson.label : actorEmail;
         return { id: a.id, message: a.message || '', when, actorName, actorEmail, mailtoHref: actorEmail ? ('mailto:' + actorEmail) : '' };
-      }),
+      }); })(),
       activityShowViewAll: (this.state.activityFeed || []).length > 200,
       activityOverflowCount: Math.max(0, (this.state.activityFeed || []).length - 200),
       activityAllOpen: this.state.activityAllOpen,
       openActivityAll: () => this.setState({ activityAllOpen: true }),
       closeActivityAll: () => this.setState({ activityAllOpen: false }),
+      activityAllFamilyFilter: this.state.activityAllFamilyFilter || '',
+      setActivityAllFamilyFilter: (e) => this.setState({ activityAllFamilyFilter: e.target.value }),
+      activityAllFamilyOptions: (this.state.cfgFamilies || []).map(f => ({ value: f.id, label: f.name })),
       activityAllSections: (() => {
-        const feed = this.state.activityFeed || [];
+        const _byEmail = new Map((this.state.cfgTravelers || []).map(o => [String(o.email || '').toLowerCase().trim(), o]));
+        const _actorRow = (a) => { const ae = String(a.actor || '').toLowerCase().trim(); const p = ae ? _byEmail.get(ae) : null; return { actorName: p ? p.label : ae, actorEmail: ae, mailtoHref: ae ? ('mailto:' + ae) : '' }; };
+        const fam = this.state.activityAllFamilyFilter || '';
+        const feedAll = this.state.activityFeed || [];
+        const feed = fam ? feedAll.filter(a => a.familyId === fam || (Array.isArray(a.visibleTo) && a.visibleTo.includes(fam))) : feedAll;
         if (!feed.length) return [];
         const now = new Date();
         const startOfDay = (d) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
@@ -10378,7 +10400,7 @@ class Component extends DCLogic {
           let d; try { d = new Date(a.createdAt); } catch (e) { d = null; }
           let when = '';
           try { when = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
-          const row = { id: a.id, message: a.message || '', when, actorName: (() => { const ae = String(a.actor || '').toLowerCase().trim(); const p = ae ? (this.state.cfgTravelers || []).find(o => String(o.email || '').toLowerCase().trim() === ae) : null; return p ? p.label : ae; })(), actorEmail: String(a.actor || '').toLowerCase().trim(), mailtoHref: a.actor ? ('mailto:' + a.actor) : '' };
+          const row = { id: a.id, message: a.message || '', when, ..._actorRow(a) };
           if (!d || isNaN(d)) { buckets['Earlier'].push(row); return; }
           if (d >= today) buckets['Today'].push(row);
           else if (d >= yesterday) buckets['Yesterday'].push(row);

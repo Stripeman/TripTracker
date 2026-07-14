@@ -27,15 +27,21 @@ const ACTIVITY_MAX = 300;
 
 // Best-effort audit log write — mirrors api/families' logActivity so trip-level
 // events (create/edit/delete/comment) land in the same per-family Activity Log.
-async function logActivity(container, { type, familyId, visibleTo, actor, message }) {
+// Accepts one entry or an array — a bulk save that touches many trips buffers its
+// entries and flushes them here in ONE read+write instead of one per event.
+async function logActivity(container, entries) {
   try {
+    const items = Array.isArray(entries) ? entries : [entries];
+    if (!items.length) return;
     const blob = container.getBlockBlobClient(ACTIVITY_BLOB);
     let list = [];
     if (await blob.exists()) {
       try { list = JSON.parse(await streamToString((await blob.download()).readableStreamBody)); } catch (e) { list = []; }
     }
     if (!Array.isArray(list)) list = [];
-    list.push({ id: "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), type, familyId: familyId || null, visibleTo: visibleTo || [], actor, message, createdAt: new Date().toISOString() });
+    items.forEach(({ type, familyId, visibleTo, actor, message }) => {
+      list.push({ id: "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), type, familyId: familyId || null, visibleTo: visibleTo || [], actor, message, createdAt: new Date().toISOString() });
+    });
     if (list.length > ACTIVITY_MAX) list = list.slice(list.length - ACTIVITY_MAX);
     const text = JSON.stringify(list, null, 2);
     await blob.upload(text, Buffer.byteLength(text), { blobHTTPHeaders: { blobContentType: "application/json" } });
@@ -146,7 +152,21 @@ const DEFAULT_TRIP_PERM = { editFloor: "editor", attachFloor: "editor", commentF
 
 function sameExceptKeys(a, b, keys) {
   const strip = (o) => { const c = { ...(o || {}) }; keys.forEach((k) => delete c[k]); return c; };
-  return JSON.stringify(strip(a)) === JSON.stringify(strip(b));
+  const sa = strip(a), sb = strip(b);
+  // Cheap shallow pass first — most trips in a save are untouched, and a differing
+  // key count or primitive value settles it without serializing the whole object.
+  const ka = Object.keys(sa), kb = Object.keys(sb);
+  if (ka.length !== kb.length) return false;
+  let needDeep = false;
+  for (const k of ka) {
+    const va = sa[k], vb = sb[k];
+    if (va === vb) continue;
+    if (typeof va !== typeof vb) return false;
+    if (va && vb && typeof va === "object") { needDeep = true; continue; }
+    return false;
+  }
+  if (!needDeep) return true;
+  return JSON.stringify(sa) === JSON.stringify(sb);
 }
 
 async function getContainer() {
@@ -396,6 +416,22 @@ module.exports = async function (context, req) {
       return stripImagesIfBlocked({ ...t, owner, ownerEmail, visibility, sharedWith, hiddenFromShares: !!t.hiddenFromShares, soloPrivate: !!t.soloPrivate });
     };
 
+    // Members are needed for email recipient lists — load AT MOST once per request
+    // (lazily, only if some notification actually fires) instead of re-fetching the
+    // blob for every changed trip inside the loop.
+    let _memberListPromise = null;
+    const pendingLogs = []; // buffered activity entries — flushed in ONE blob write after the loop
+    const loadMemberList = () => {
+      if (!_memberListPromise) {
+        _memberListPromise = (async () => {
+          try {
+            const mb = container.getBlockBlobClient(MEMBERS_BLOB);
+            return (await mb.exists()) ? JSON.parse(await streamToString((await mb.download()).readableStreamBody)) : [];
+          } catch (e) { return []; }
+        })();
+      }
+      return _memberListPromise;
+    };
     for (const s of stored.locations) {
       const perm = permFor(s.familyId);
       const incoming = incomingById.get(s.id);
@@ -410,8 +446,7 @@ module.exports = async function (context, req) {
         if (!fam || !notifPrefOn(fam, key, "email")) return;
         (async () => {
           try {
-            const membersBlob2 = container.getBlockBlobClient(MEMBERS_BLOB);
-            const memberList = (await membersBlob2.exists()) ? JSON.parse(await streamToString((await membersBlob2.download()).readableStreamBody)) : [];
+            const memberList = await loadMemberList();
             // Family admins, PLUS this specific trip's own owner if they aren't already
             // an admin (e.g. a regular editor's trip edited/commented on by someone
             // else) — the person whose trip it is should hear about it even if they
@@ -430,7 +465,7 @@ module.exports = async function (context, req) {
           if (incoming) {
             if (s.familyId && !sameExceptKeys(incoming, s, [])) {
               if (auditDetailed && notifPrefOn(familyById.get(s.familyId), "tripEdits", "bell")) {
-                await logActivity(container, { type: "editTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Edited " + placeWithDates() });
+                pendingLogs.push({ type: "editTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Edited " + placeWithDates() });
               }
               const fam = familyById.get(s.familyId);
               notifyEmail("tripEdits", "Trip updated \u2014 " + (fam ? fam.name : ""), me.email + " edited " + place() + (fam ? " in " + fam.name : "") + ".");
@@ -439,7 +474,7 @@ module.exports = async function (context, req) {
           } else if (!deletable) result.push(s); // editor without delete rights can't drop it by omission
           else {
             if (auditDetailed && s.familyId && notifPrefOn(familyById.get(s.familyId), "tripDeletes", "bell")) {
-              await logActivity(container, { type: "deleteTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Deleted " + placeWithDates() });
+              pendingLogs.push({ type: "deleteTrip", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Deleted " + placeWithDates() });
             }
             const fam = familyById.get(s.familyId);
             notifyEmail("tripDeletes", "Trip deleted \u2014 " + (fam ? fam.name : ""), me.email + " deleted " + place() + (fam ? " from " + fam.name : "") + ".");
@@ -457,7 +492,7 @@ module.exports = async function (context, req) {
           if (commentOk && sameExceptKeys(incoming, s, ["comments"])) {
             if (Array.isArray(incoming.comments) && incoming.comments.length > (s.comments || []).length) {
               if (auditDetailed && notifPrefOn(familyById.get(s.familyId), "comments", "bell")) {
-                await logActivity(container, { type: "comment", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Commented on " + placeWithDates() });
+                pendingLogs.push({ type: "comment", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Commented on " + placeWithDates() });
               }
               const fam = familyById.get(s.familyId);
               notifyEmail("comments", "New comment \u2014 " + (fam ? fam.name : ""), me.email + " commented on " + place() + (fam ? " in " + fam.name : "") + ".");
@@ -465,7 +500,7 @@ module.exports = async function (context, req) {
             result.push({ ...s, comments: incoming.comments });
           } else if (itineraryOk && sameExceptKeys(incoming, s, ["itinerary"])) {
             if (auditDetailed) {
-              await logActivity(container, { type: "editItinerary", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Edited the itinerary for " + placeWithDates() });
+              pendingLogs.push({ type: "editItinerary", familyId: s.familyId, visibleTo: [s.familyId], actor: me.email, message: "Edited the itinerary for " + placeWithDates() });
             }
             result.push({ ...s, itinerary: incoming.itinerary });
           } else {
@@ -496,15 +531,14 @@ module.exports = async function (context, req) {
       }
       if (auditDetailed && withFamily.familyId && notifPrefOn(familyById.get(withFamily.familyId), "tripAdds", "bell")) {
         const place = [t.city, t.country].filter(Boolean).join(", ") || "a trip";
-        await logActivity(container, { type: "createTrip", familyId: withFamily.familyId, visibleTo: [withFamily.familyId], actor: me.email, message: "Added " + place });
+        pendingLogs.push({ type: "createTrip", familyId: withFamily.familyId, visibleTo: [withFamily.familyId], actor: me.email, message: "Added " + place });
       }
       if (withFamily.familyId) {
         const fam = familyById.get(withFamily.familyId);
         if (fam && !emailKillSwitch && notifPrefOn(fam, "tripAdds", "email")) {
           const place = [t.city, t.country].filter(Boolean).join(", ") || "a trip";
           try {
-            const membersBlob2 = container.getBlockBlobClient(MEMBERS_BLOB);
-            const memberList = (await membersBlob2.exists()) ? JSON.parse(await streamToString((await membersBlob2.download()).readableStreamBody)) : [];
+            const memberList = await loadMemberList();
             const to = familyAdminEmails(memberList, withFamily.familyId, me.email);
             sendEmail(to, "New trip added \u2014 " + fam.name, me.email + " added " + place + " to " + fam.name + ".").catch(() => {});
           } catch (e) { /* best-effort */ }
@@ -515,6 +549,7 @@ module.exports = async function (context, req) {
 
     const settings = payload.settings || stored.settings || null;
     await writeDataset(blob, result, settings);
+    if (pendingLogs.length) logActivity(container, pendingLogs); // fire-and-forget, one write for the whole batch
     json(200, { ok: true, count: result.length });
   } catch (err) {
     context.log.error(err);

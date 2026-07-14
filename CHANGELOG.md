@@ -4,6 +4,20 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.29.9-beta — Efficiency pass (ETag polling, batched audit writes) + activity popup family filter
+
+### Added
+- **"All activity" popup gets a family filter dropdown** — filter every entry to one family or all, alongside the existing Today / Yesterday / This week / Earlier grouping. Actor names with mailto links now appear there and in the bell dropdown, matching the Audit tab.
+- Activity feed sent to the client raised from the most recent 30 entries to 300 (the popup's "view everything" now genuinely has history to show; the bell dropdown still caps at 200 rows).
+
+### Changed (performance — no behavior change)
+- **`GET /api/families` now supports ETag/304** — the app's 30s poll sends `If-None-Match`, and when nothing changed the server replies 304 with no body, skipping the JSON download and the client-side re-render entirely.
+- **Trip saves batch their audit-log writes** — a bulk save touching many trips now buffers its activity entries and flushes them in one blob read+write after the loop, instead of one full read+write per event. Members blob for email recipient lists is loaded at most once per request (lazily) instead of per-trip.
+- **`sameExceptKeys` (trip change detection) short-circuits** on key-count/primitive differences before falling back to full JSON serialization — most trips in a save are untouched, and now cost almost nothing to skip.
+- Actor-name lookups in the activity feeds use a prebuilt email→person map instead of a per-row linear search.
+
+---
+
 ## 1.29.8-beta — Fixed: Metrics was still secretly filtered by the left panel's selected family
 
 ### Fixed

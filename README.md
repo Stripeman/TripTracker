@@ -2,7 +2,7 @@
 
 A dark, futuristic travel tracker built around a geographically accurate, rotating 3D globe. Plot every destination you've **visited**, have **planned**, or are still **dreaming** about — each pinned to the globe with colour‑coded markers, rich trip details, and flexible filtering. In Cloud mode, trips belong to a **Family** — your own household, extended family, or friend group — and families can invite one another to share their trips.
 
-![Version](https://img.shields.io/badge/version-1.29.8--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
+![Version](https://img.shields.io/badge/version-1.29.9--beta-38bdf8) ![Status](https://img.shields.io/badge/status-active-34d399)
 
 ---
 
@@ -378,7 +378,7 @@ Exporting **everything** produces a file named **`trip-tracker.json`** — delib
 
 ### 🔔 Notifications & activity
 
-- A **bell icon** in the header opens a running **activity feed** of events relevant to you (across all families you belong to — site admins see everything, including site-wide setting changes) — invites, approvals, role changes, family shares, ownership transfers, trip edits/comments/attachments (if Audit log detail allows it), etc. Each entry shows what happened plus the actor's name (with a ✉ link to email them). An unread badge appears when there's something new since you last opened it. The dropdown shows the most recent 200; if there's more, a **"View all"** link opens a popup listing every entry, grouped into Today / Yesterday / This week / Earlier.
+- A **bell icon** in the header opens a running **activity feed** of events relevant to you (across all families you belong to — site admins see everything, including site-wide setting changes) — invites, approvals, role changes, family shares, ownership transfers, trip edits/comments/attachments (if Audit log detail allows it), etc. Each entry shows what happened plus the actor's name (with a ✉ link to email them). An unread badge appears when there's something new since you last opened it. The dropdown shows the most recent 200; if there's more, a **"View all"** link opens a popup listing every entry, grouped into Today / Yesterday / This week / Earlier, with its own **family filter dropdown** to narrow the list to one family.
 - Key events (approvals, invites, shares) also trigger an **email notification** to the people affected.
 
 ### 🌐 Public landing page

@@ -244,7 +244,7 @@ module.exports = async function (context, req) {
       // the client, so filters/metrics that key off traveler rows (e.g. the Metrics
       // traveler picker) silently can't show them.
       const visibleTravelers = meIsSiteAdmin ? travelers : travelers.filter((t) => accessibleFamilyIds.has(t.familyId));
-      json(200, {
+      const responseBody = {
         families: visibleFamilies,
         memberships: visibleMembers,
         shares: visibleShares,
@@ -273,8 +273,21 @@ module.exports = async function (context, req) {
         activity: (await readJsonBlob(container, ACTIVITY_BLOB, []))
           .filter((a) => meIsSiteAdmin || (Array.isArray(a.visibleTo) && a.visibleTo.some((fid) => myFamilyIds.has(fid))))
           .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-          .slice(0, 30),
-      });
+          .slice(0, 300),
+      };
+      // Cheap ETag so the client's 30s poll costs ~nothing when nothing changed:
+      // hash the serialized payload; if it matches the client's If-None-Match,
+      // reply 304 with no body (client keeps its current state untouched).
+      const bodyText = JSON.stringify(responseBody);
+      let h = 5381;
+      for (let i = 0; i < bodyText.length; i++) h = ((h * 33) ^ bodyText.charCodeAt(i)) >>> 0;
+      const etag = '"fam-' + h.toString(36) + "-" + bodyText.length + '"';
+      const inm = (req.headers && (req.headers["if-none-match"] || req.headers["If-None-Match"])) || "";
+      if (inm === etag) {
+        context.res = { status: 304, headers: { "ETag": etag, "Cache-Control": "no-cache" } };
+        return;
+      }
+      context.res = { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-cache", "ETag": etag }, body: bodyText };
       return;
     }
 
