@@ -338,7 +338,8 @@
           <div style="flex:1; min-width:0; overflow-y:auto; padding-right:2px;">
 
         <sc-if value="{{ showSystemTab }}" hint-placeholder-val="{{ false }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">FORM &amp; CARDS</div>
+        <button onClick="{{ secToggleFormCards }}" style="{{ cfgSecHeaderStyle }}"><span>FORM &amp; CARDS</span><span>{{ secFormCardsChevron }}</span></button>
+        <sc-if value="{{ secFormCardsOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:14px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Trip details open on form</span>
@@ -371,8 +372,10 @@
             </div>
           </sc-if>
         </div>
+        </sc-if>
         <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">PUBLIC LANDING PAGE <span style="color:#caa34e;">· SITE ADMIN</span></div>
+        <button onClick="{{ secToggleLanding }}" style="{{ cfgSecHeaderStyle }}"><span>PUBLIC LANDING PAGE · SITE ADMIN</span><span>{{ secLandingChevron }}</span></button>
+        <sc-if value="{{ secLandingOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">What unauthenticated visitors see before signing in. Switch it up any time.</div>
           <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
@@ -415,8 +418,10 @@
           </sc-if>
         </div>
         </sc-if>
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">GLOBE</div>
-        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:4px;">
+        </sc-if>
+        <button onClick="{{ secToggleGlobe }}" style="{{ cfgSecHeaderStyle }}"><span>GLOBE</span><span>{{ secGlobeChevron }}</span></button>
+        <sc-if value="{{ secGlobeOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:14px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Spin the globe</span>
             <button onClick="{{ toggleSpin }}" style="{{ cfgSpinStyle }}">{{ cfgSpinLabel }}</button>
@@ -438,7 +443,9 @@
             <button onClick="{{ toggleStateBorders }}" style="{{ cfgStateBordersStyle }}">{{ cfgStateBordersLabel }}</button>
           </div>
         </div>
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">UPDATES</div>
+        </sc-if>
+        <button onClick="{{ secToggleUpdates }}" style="{{ cfgSecHeaderStyle }}"><span>UPDATES</span><span>{{ secUpdatesChevron }}</span></button>
+        <sc-if value="{{ secUpdatesOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px 13px; margin-bottom:4px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Check for updates every</span>
@@ -449,6 +456,7 @@
             </div>
           </div>
         </div>
+        </sc-if>
         </sc-if>
 
         <sc-if value="{{ showTripsTab }}" hint-placeholder-val="{{ false }}">
@@ -666,7 +674,8 @@
         </sc-if>
 
         <sc-if value="{{ showFiltersTab }}" hint-placeholder-val="{{ true }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:11px;">FILTERS</div>
+        <button onClick="{{ secToggleFilters }}" style="{{ cfgSecHeaderStyle }}"><span>FILTERS</span><span>{{ secFiltersChevron }}</span></button>
+        <sc-if value="{{ secFiltersOpen }}" hint-placeholder-val="{{ true }}">
 
         <!-- compact toggles: inline label-left rows in one card -->
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:13px;">
@@ -723,9 +732,11 @@
             </div>
           </div>
         </div>
+        </sc-if>
 
         <!-- APPEARANCE: dark/light toggle, independent of the accent theme below -->
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin:18px 0 11px;">APPEARANCE</div>
+        <button onClick="{{ secToggleAppearance }}" style="{{ cfgSecHeaderStyleTop }}"><span>APPEARANCE</span><span>{{ secAppearanceChevron }}</span></button>
+        <sc-if value="{{ secAppearanceOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px;">
           <div style="display:flex; gap:8px;">
             <button onClick="{{ setDarkMode }}" style="{{ lightModeDarkStyle }}">Dark</button>
@@ -743,9 +754,11 @@
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:5px; line-height:1.4;">When on, everyone sees your current Dark/Light + theme pick and can't change it themselves.</div>
           </sc-if>
         </div>
+        </sc-if>
 
         <!-- THEMES: swatch grid; selected tile gets a ring + glow -->
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin:18px 0 11px;">THEMES</div>
+        <button onClick="{{ secToggleThemes }}" style="{{ cfgSecHeaderStyleTop }}"><span>THEMES</span><span>{{ secThemesChevron }}</span></button>
+        <sc-if value="{{ secThemesOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px;">
           <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px;">
             <sc-for list="{{ themeTiles }}" as="t" hint-placeholder-count="10">
@@ -759,9 +772,11 @@
             </sc-for>
           </div>
         </div>
+        </sc-if>
 
         <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin:18px 0 6px;">CONFIGURATION DATA</div>
+          <button onClick="{{ secToggleConfigData }}" style="{{ cfgSecHeaderStyleTop }}"><span>CONFIGURATION DATA</span><span>{{ secConfigDataChevron }}</span></button>
+          <sc-if value="{{ secConfigDataOpen }}" hint-placeholder-val="{{ true }}">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:14px;">Rename, recolour, add or remove the options used across the form, filters, and globe.</div>
           <sc-for list="{{ dataEditorsSettings }}" as="grp" hint-placeholder-count="3">
             <div style="margin-bottom:13px;">
@@ -784,6 +799,7 @@
               </div>
             </div>
           </sc-for>
+          </sc-if>
         </sc-if>
 
         </sc-if>
@@ -800,7 +816,8 @@
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:12px;">DATA &amp; STORAGE</div>
 
         <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">DEBUG</div>
+          <button onClick="{{ secToggleDebug }}" style="{{ cfgSecHeaderStyle }}"><span>DEBUG</span><span>{{ secDebugChevron }}</span></button>
+          <sc-if value="{{ secDebugOpen }}" hint-placeholder-val="{{ true }}">
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:14px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
               <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">App settings JSON</span>
@@ -811,9 +828,12 @@
               <button onClick="{{ openDebugDataJson }}" title="Debug: view/edit raw all-trips JSON" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
             </div>
           </div>
+          </sc-if>
         </sc-if>
 
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">DATA SOURCE</div>
+        <button onClick="{{ secToggleDataSource }}" style="{{ cfgSecHeaderStyle }}"><span>DATA SOURCE</span><span>{{ secDataSourceChevron }}</span></button>
+        <sc-if value="{{ secDataSourceOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <button onClick="{{ setLocalSource }}" style="{{ dsLocalStyle }}">Local</button>
           <button onClick="{{ setCloudSource }}" style="{{ dsCloudStyle }}">Cloud</button>
@@ -919,9 +939,13 @@
             </div>
           </div>
         </sc-if>
+        </div>
+        </sc-if>
 
-        <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">SYSTEM BACKUP — INCLUDE</div>
+        <button onClick="{{ secToggleBackup }}" style="{{ cfgSecHeaderStyle }}"><span>SYSTEM BACKUP</span><span>{{ secBackupChevron }}</span></button>
+        <sc-if value="{{ secBackupOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">INCLUDE</div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
               <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Data</span>
@@ -956,6 +980,7 @@
             </sc-if>
           </div>
         </div>
+        </sc-if>
         <input ref="{{ setImportInput }}" type="file" accept="application/json,.json" onChange="{{ importJson }}" style="display:none;">
         <sc-if value="{{ storageMsg }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:#fcd34d; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:9px; padding:9px 11px;">{{ storageMsg }}</div>
@@ -3552,7 +3577,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.29.11-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.30.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3912,7 +3937,7 @@ class Component extends DCLogic {
   }
 
   PERM_TIERS = [
-    { key: 'onlyme', icon: '🔒', label: 'Only me', desc: 'Hidden from everyone, even your own family.' },
+    { key: 'onlyme', icon: '🔒', label: 'Only me', desc: 'Hidden from everyone except you and your family\u2019s owner \u2014 not even other family admins.' },
     { key: 'onlyfamily', icon: '👪', label: 'Only my family', desc: "Visible to your family's members only." },
     { key: 'sharedfamilies', icon: '🤝', label: 'All shared families', desc: 'Your family, plus every family you\u2019ve linked with. Default.' },
     { key: 'public', icon: '🌐', label: 'Public', desc: 'Any signed-in user of the app.' },
@@ -4939,6 +4964,17 @@ class Component extends DCLogic {
       sharedCanDelete: !!p.sharedCanDelete,
       itineraryEditableShared: !!p.itineraryEditableShared,
     };
+  }
+  // Generic collapsible-section state for the Configuration panel (Preferences /
+  // System / Settings tabs — same pattern as the Site Admin tab). Missing key =
+  // open, so every section starts expanded.
+  toggleCfgSec(key) { this.setState(s => ({ cfgSec: { ...(s.cfgSec || {}), [key]: (s.cfgSec || {})[key] !== false ? false : true } })); }
+  cfgSecOpen(key) { return !this.state.cfgSec || this.state.cfgSec[key] !== false; }
+  // Do I OWN (createdBy) this family? The family owner pierces the "Only me" ceiling.
+  iOwnFamily(familyId) {
+    if (!familyId) return false;
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
+    return !!(fam && fam.createdBy === this.state.cloudUserEmail);
   }
   roleInFamily(familyId) {
     const s = this.state;
@@ -9846,7 +9882,7 @@ class Component extends DCLogic {
         noAttachments: (sl.attachments || []).length === 0,
         noGallery: !(Array.isArray(sl.gallery) && sl.gallery.length > 0),
         attachmentsHidden: this.state.cfgDataSource === 'cloud' && !(this.tripUnassigned(sl) || this.tripIsMine(sl)) && !this.tripPermsFor(sl.familyId).attachVisibleShared,
-        canAddAttachments: (this.state.cloudRoles || []).includes('editor') && (sl.soloPrivate ? this.tripIsMine(sl) : (
+        canAddAttachments: (this.state.cloudRoles || []).includes('editor') && (sl.soloPrivate ? (this.tripIsMine(sl) || this.iOwnFamily(sl.familyId)) : (
           (sl.familyId ? this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).attachFloor) : (this.tripUnassigned(sl) || this.tripIsMine(sl)))
           || (!sl.hiddenFromShares && ['editor', 'admin-no-delete'].includes(this.myShareRoleForFamily(sl.familyId)))
         )),
@@ -10189,6 +10225,41 @@ class Component extends DCLogic {
       tabSiteAdminStyle: tabBtnStyle(this.state.settingsTab === 'siteadmin'),
       showFiltersTab: this.state.settingsTab === 'filters',
       showSystemTab: this.state.settingsTab === 'system',
+      cfgSecHeaderStyle: "width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;",
+      secFormCardsOpen: this.cfgSecOpen('formCards'),
+      secFormCardsChevron: this.cfgSecOpen('formCards') ? '▾' : '▸',
+      secToggleFormCards: () => this.toggleCfgSec('formCards'),
+      secLandingOpen: this.cfgSecOpen('landing'),
+      secLandingChevron: this.cfgSecOpen('landing') ? '▾' : '▸',
+      secToggleLanding: () => this.toggleCfgSec('landing'),
+      secGlobeOpen: this.cfgSecOpen('globe'),
+      secGlobeChevron: this.cfgSecOpen('globe') ? '▾' : '▸',
+      secToggleGlobe: () => this.toggleCfgSec('globe'),
+      secUpdatesOpen: this.cfgSecOpen('updates'),
+      secUpdatesChevron: this.cfgSecOpen('updates') ? '▾' : '▸',
+      secToggleUpdates: () => this.toggleCfgSec('updates'),
+      secDataSourceOpen: this.cfgSecOpen('dataSource'),
+      secDataSourceChevron: this.cfgSecOpen('dataSource') ? '▾' : '▸',
+      secToggleDataSource: () => this.toggleCfgSec('dataSource'),
+      secBackupOpen: this.cfgSecOpen('backup'),
+      secBackupChevron: this.cfgSecOpen('backup') ? '▾' : '▸',
+      secToggleBackup: () => this.toggleCfgSec('backup'),
+      secDebugOpen: this.cfgSecOpen('debug'),
+      secDebugChevron: this.cfgSecOpen('debug') ? '▾' : '▸',
+      secToggleDebug: () => this.toggleCfgSec('debug'),
+      cfgSecHeaderStyleTop: "width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin:14px 0 10px;",
+      secFiltersOpen: this.cfgSecOpen('filters'),
+      secFiltersChevron: this.cfgSecOpen('filters') ? '▾' : '▸',
+      secToggleFilters: () => this.toggleCfgSec('filters'),
+      secAppearanceOpen: this.cfgSecOpen('appearance'),
+      secAppearanceChevron: this.cfgSecOpen('appearance') ? '▾' : '▸',
+      secToggleAppearance: () => this.toggleCfgSec('appearance'),
+      secThemesOpen: this.cfgSecOpen('themes'),
+      secThemesChevron: this.cfgSecOpen('themes') ? '▾' : '▸',
+      secToggleThemes: () => this.toggleCfgSec('themes'),
+      secConfigDataOpen: this.cfgSecOpen('configData'),
+      secConfigDataChevron: this.cfgSecOpen('configData') ? '▾' : '▸',
+      secToggleConfigData: () => this.toggleCfgSec('configData'),
       canEditCloud: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('editor'),
       canTripsTab: this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin,
       showTripsTab: this.state.settingsTab === 'trips' && (this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin),

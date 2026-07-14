@@ -87,6 +87,12 @@ function sharedDirect(trip, me) {
   return Array.isArray(trip.sharedWith) && trip.sharedWith.map((s) => String(s).toLowerCase()).includes(me.email);
 }
 
+// The family OWNER (createdBy) pierces the "Only me" ceiling — solo-private trips
+// stay hidden from everyone else, including regular family admins.
+function ownsFamilyOf(trip, me) {
+  return !!(trip && trip.familyId && me.ownedFamilies && me.ownedFamilies.has(trip.familyId));
+}
+
 function canView(trip, me) {
   if (!trip) return false;
   if (me.siteAdmin) return true;
@@ -94,9 +100,9 @@ function canView(trip, me) {
   // `sharedWith` is an ADDITIVE grant — specific people named here can always see the
   // trip, regardless of its base visibility tier (even "only me").
   if (sharedDirect(trip, me)) return true;
-  // "Only me" (soloPrivate) is a hard ceiling: nobody but the owner and explicit
-  // invitees above sees it — not even the owner's own family.
-  if (trip.soloPrivate) return false;
+  // "Only me" (soloPrivate) is a hard ceiling: nobody but the owner, explicit
+  // invitees above, and the OWNER of the trip's family sees it.
+  if (trip.soloPrivate) return ownsFamilyOf(trip, me);
   if (!trip.familyId) {
     // legacy trip (pre-family) — old rules
     if (!trip.owner && !trip.ownerEmail) return true;
@@ -117,7 +123,7 @@ function canView(trip, me) {
 // trips I personally own (legacy path). Read-only family shares never grant edit.
 function canEdit(trip, me, perm) {
   if (me.siteAdmin) return true;
-  if (trip.soloPrivate) return isMine(trip, me); // truly-private trips: owner only, even for family editors
+  if (trip.soloPrivate) return isMine(trip, me) || ownsFamilyOf(trip, me); // truly-private trips: owner + family owner only
   if (!trip.familyId) return isMine(trip, me); // legacy path unchanged
   const myRole = me.familyRoles.get(trip.familyId);
   if (floorOk(myRole, (perm && perm.editFloor) || "editor")) return true;
@@ -131,7 +137,7 @@ function canEdit(trip, me, perm) {
 // role, and not a plain editor) or the trip's own owner may delete it.
 function canDelete(trip, me, perm) {
   if (me.siteAdmin) return true;
-  if (trip.soloPrivate) return isMine(trip, me);
+  if (trip.soloPrivate) return isMine(trip, me) || ownsFamilyOf(trip, me);
   if (!trip.familyId) return isMine(trip, me);
   const myRole = me.familyRoles.get(trip.familyId);
   if (myRole === "admin") return true;
@@ -192,6 +198,7 @@ async function enrichMe(container, me) {
   me.siteAdmin = isSiteAdmin(me.email);
   me.familyRoles = new Map();
   me.sharesIn = new Map();
+  me.ownedFamilies = new Set();
   try {
     const membersBlob = container.getBlockBlobClient(MEMBERS_BLOB);
     if (await membersBlob.exists()) {
@@ -201,6 +208,19 @@ async function enrichMe(container, me) {
       if (Array.isArray(members)) {
         members.filter((m) => m && String(m.email || "").toLowerCase().trim() === me.email && m.active !== false)
           .forEach((m) => me.familyRoles.set(m.familyId, m.role));
+      }
+    }
+    // Family OWNERSHIP implies admin rights regardless of the membership row's role —
+    // an owner whose own row says "reader" must still be able to edit every trip in
+    // their family (matches the families API, where the owner can transfer/delete).
+    // ownedFamilies is kept separately: the family OWNER (not regular admins) also
+    // pierces the "Only me" (soloPrivate) ceiling — see canView/canEdit/canDelete.
+    const famBlob = container.getBlockBlobClient(process.env.FAMILIES_BLOB || "families.json");
+    if (await famBlob.exists()) {
+      const fams = JSON.parse(await streamToString((await famBlob.download()).readableStreamBody));
+      if (Array.isArray(fams)) {
+        fams.filter((f) => f && String(f.createdBy || "").toLowerCase().trim() === me.email)
+          .forEach((f) => { me.familyRoles.set(f.id, "admin"); me.ownedFamilies.add(f.id); });
       }
     }
     const sharesBlob = container.getBlockBlobClient(SHARES_BLOB);

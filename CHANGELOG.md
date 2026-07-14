@@ -4,6 +4,20 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.30.0-beta — Config-panel layout overhaul + owner-edit fix + View-all popup fix
+
+### Fixed
+- **Family owner couldn't edit members' trips when their own membership row said "reader"** — ownership (family `createdBy`) now implies admin rights in the trips and attachments APIs, matching the client and the families API (where the owner could already transfer/delete). No membership-row surgery needed.
+- **View-all activity popup: X and family filter were unclickable** — the bell dropdown's full-screen overlay stayed open beneath the popup and swallowed clicks; opening the popup now closes the bell dropdown first.
+
+### Changed — Configuration panel consistency pass
+- **Every Configuration tab now uses the same collapsible-section + bubble layout** (matching Site Admin): Settings tab (Filters / Appearance / Themes / Configuration Data), Preferences tab (Form & Cards / Public Landing Page / Globe / Updates), System tab (Debug / Data Source / System Backup — Data Source got its own bubble; System Backup is now a collapsible bubble). Site Admin's Audit & Limits and Default-notifications content are bubbled too. All sections start expanded.
+- **Bulk-edit confirmation now lists every affected trip** (scrollable, with dates) instead of a 3-name sample — in both the Settings → Trips system-wide editor and the family-scoped Bulk Edit tab.
+- **Family detail tab bar decluttered** — Audit, Notifications, and Settings & Sharing moved under a "More ▾" dropdown, cutting the 8-tab crowding.
+- Removed the "Independent of the main page's family filter" caption under the Metrics scope dropdown (moved to the dropdown's hover title).
+
+---
+
 ## 1.29.11-beta — Completed the remaining UX/efficiency suggestions
 
 ### Added
