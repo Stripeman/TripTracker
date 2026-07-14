@@ -570,7 +570,11 @@
             <sc-if value="{{ bulkConfirm }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top:9px; padding:10px 11px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.24); border-radius:8px;">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:4px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#b99a55; margin-bottom:8px; line-height:1.5;">{{ bulkSampleNames }}</div>
+                <div style="max-height:120px; overflow-y:auto; margin-bottom:8px; border:1px solid rgba(251,191,36,0.16); border-radius:6px; padding:4px 8px;">
+                  <sc-for list="{{ bulkAllTargetRows }}" as="bt" hint-placeholder-count="0">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#c9b075; padding:2px 0;">{{ bt.name }}</div>
+                  </sc-for>
+                </div>
                 <div style="display:flex; gap:7px;">
                   <button onClick="{{ applyBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:7px; cursor:pointer;">Confirm</button>
                   <button onClick="{{ cancelBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:7px; cursor:pointer;">Cancel</button>
@@ -585,6 +589,7 @@
 
           <button onClick="{{ toggleSaSecAudit }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;"><span>AUDIT &amp; LIMITS</span><span>{{ saSecAuditChevron }}</span></button>
           <sc-if value="{{ saSecAuditOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 12px; margin-bottom:16px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
             <div>
               <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Audit log detail</div>
@@ -604,6 +609,7 @@
             </div>
             <input type="number" min="1" max="200" defaultValue="{{ cfgFamilyCatLimit }}" onBlur="{{ onFamilyCatLimitBlur }}" style="flex:none; width:64px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 8px; outline:none; text-align:center;">
           </div>
+          </div>
           </sc-if>
 
           <button onClick="{{ toggleSaSecEmail }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;"><span>EMAIL &amp; NOTIFICATIONS</span><span>{{ saSecEmailChevron }}</span></button>
@@ -616,7 +622,7 @@
             <button onClick="{{ toggleEmailKillSwitch }}" style="{{ emailKillSwitchToggleStyle }}">{{ emailKillSwitchToggleLabel }}</button>
           </div>
 
-          <div style="margin-bottom:16px;">
+          <div style="margin-bottom:16px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 12px;">
             <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0; margin-bottom:2px;">Default notifications for new families</div>
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-bottom:10px;">Applied once, at creation time, to every brand-new family. Doesn't change existing families — those are edited per-family in My Families → Notifications.</div>
             <sc-for list="{{ defaultNotifRows }}" as="dnr" hint-placeholder-count="4">
@@ -1315,10 +1321,17 @@
                   <button onClick="{{ setFamilyDetailTabOverview }}" style="{{ famTabOverviewStyle }}">Overview</button>
                   <button onClick="{{ setFamilyDetailTabPermissions }}" title="Permissions" style="{{ famTabPermissionsStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></button>
                   <button onClick="{{ setFamilyDetailTabCategories }}" title="Categories" style="{{ famTabCategoriesStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 12.7 12.7 20.6a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1-.6-1.4V4a2 2 0 0 1 2-2h6.9a2 2 0 0 1 1.4.6l8 8a2 2 0 0 1 0 2.8Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></button>
-                  <button onClick="{{ setFamilyDetailTabAudit }}" style="{{ famTabAuditStyle }}">Audit</button>
                   <button onClick="{{ setFamilyDetailTabTrips }}" title="Bulk Edit" style="{{ famTabTripsStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1"></rect><path d="M3 15h6v6H3z"></path><path d="M13 4h8"></path><path d="M13 9h8"></path><path d="M13 15h8"></path><path d="M13 20h8"></path></svg></button>
-                  <button onClick="{{ setFamilyDetailTabNotifications }}" title="Notifications" style="{{ famTabNotificationsStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
-                  <button onClick="{{ setFamilyDetailTabSharing }}" title="Family Settings &amp; Sharing" style="{{ famTabSharingStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.5 15.4 6.5"></path><path d="M8.6 13.5 15.4 17.5"></path></svg></button>
+                  <div style="position:relative; flex:1; display:flex;">
+                    <button onClick="{{ toggleFamMore }}" style="{{ famTabMoreStyle }}">{{ famMoreLabel }} ▾</button>
+                    <sc-if value="{{ famMoreOpen }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute; top:100%; right:0; z-index:40; min-width:160px; background:rgba(10,18,30,0.99); border:1px solid rgba(56,189,248,0.3); border-radius:10px; box-shadow:0 14px 34px rgba(0,0,0,0.55); padding:5px; display:flex; flex-direction:column; gap:2px;">
+                        <button onClick="{{ pickFamMoreAudit }}" style="{{ famMoreAuditItemStyle }}">Audit</button>
+                        <button onClick="{{ pickFamMoreNotifications }}" style="{{ famMoreNotifItemStyle }}">Notifications</button>
+                        <button onClick="{{ pickFamMoreSharing }}" style="{{ famMoreSharingItemStyle }}">Settings &amp; Sharing</button>
+                      </div>
+                    </sc-if>
+                  </div>
                   <sc-if value="{{ isFamilyOwner }}" hint-placeholder-val="{{ false }}">
                     <button onClick="{{ setFamilyDetailTabOwner }}" title="Owner" style="{{ famTabOwnerStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></button>
                   </sc-if>
@@ -1646,7 +1659,11 @@
                   <sc-if value="{{ bulkConfirm }}" hint-placeholder-val="{{ false }}">
                     <div style="margin-top:9px; padding:10px 11px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.24); border-radius:8px;">
                       <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:4px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
-                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#b99a55; margin-bottom:8px; line-height:1.5;">{{ bulkSampleNames }}</div>
+                      <div style="max-height:120px; overflow-y:auto; margin-bottom:8px; border:1px solid rgba(251,191,36,0.16); border-radius:6px; padding:4px 8px;">
+                        <sc-for list="{{ bulkAllTargetRows }}" as="bt" hint-placeholder-count="0">
+                          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#c9b075; padding:2px 0;">{{ bt.name }}</div>
+                        </sc-for>
+                      </div>
                       <div style="display:flex; gap:7px;">
                         <button onClick="{{ applyBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:7px; cursor:pointer;">Confirm</button>
                         <button onClick="{{ cancelBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:7px; cursor:pointer;">Cancel</button>
@@ -2661,14 +2678,11 @@
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex:none;">
               <sc-if value="{{ showMetricsFamilyScope }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; flex-direction:column; gap:3px; align-items:flex-end; flex:none;">
-                <select value="{{ metricsFamilyScope }}" onChange="{{ setMetricsFamilyScope }}" title="Which families' trips to include" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.03em; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.24); border-radius:8px; padding:7px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                <select value="{{ metricsFamilyScope }}" onChange="{{ setMetricsFamilyScope }}" title="Which families' trips to include — independent of the main page's family filter" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.03em; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.24); border-radius:8px; padding:7px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
                   <sc-for list="{{ metricsFamilyScopeOptions }}" as="o" hint-placeholder-count="2">
                     <option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option>
                   </sc-for>
                 </select>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; color:#4e6076; white-space:nowrap;">Independent of the main page's family filter</div>
-                </div>
               </sc-if>
               <button onClick="{{ toggleMetricsFilters }}" title="Filter trips" style="{{ metricsFilterBtnStyle }}">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
@@ -5405,6 +5419,16 @@ class Component extends DCLogic {
       setFamilyDetailTabSharing: () => this.setFamilyDetailTab('sharing'),
       setFamilyDetailTabOwner: () => this.setFamilyDetailTab('owner'),
       famTabOverviewStyle: tabBtnStyle((s.familyDetailTab || 'overview') === 'overview'),
+      famMoreOpen: !!s.famMoreOpen,
+      toggleFamMore: () => this.setState(st => ({ famMoreOpen: !st.famMoreOpen })),
+      famMoreLabel: s.familyDetailTab === 'audit' ? 'Audit' : s.familyDetailTab === 'notifications' ? 'Notifications' : s.familyDetailTab === 'sharing' ? 'Sharing' : 'More',
+      famTabMoreStyle: tabBtnStyle(['audit', 'notifications', 'sharing'].includes(s.familyDetailTab)),
+      pickFamMoreAudit: () => this.setState({ familyDetailTab: 'audit', famMoreOpen: false }),
+      pickFamMoreNotifications: () => this.setState({ familyDetailTab: 'notifications', famMoreOpen: false }),
+      pickFamMoreSharing: () => this.setState({ familyDetailTab: 'sharing', famMoreOpen: false }),
+      famMoreAuditItemStyle: "text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; padding:8px 11px; border-radius:7px; cursor:pointer; border:none; background:" + (s.familyDetailTab === 'audit' ? 'rgba(56,189,248,0.14); color:#7fd4f5;' : 'transparent; color:#9fb3c8;'),
+      famMoreNotifItemStyle: "text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; padding:8px 11px; border-radius:7px; cursor:pointer; border:none; background:" + (s.familyDetailTab === 'notifications' ? 'rgba(56,189,248,0.14); color:#7fd4f5;' : 'transparent; color:#9fb3c8;'),
+      famMoreSharingItemStyle: "text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; padding:8px 11px; border-radius:7px; cursor:pointer; border:none; background:" + (s.familyDetailTab === 'sharing' ? 'rgba(56,189,248,0.14); color:#7fd4f5;' : 'transparent; color:#9fb3c8;'),
       famTabPermissionsStyle: tabBtnStyle(s.familyDetailTab === 'permissions'),
       famTabCategoriesStyle: tabBtnStyle(s.familyDetailTab === 'categories'),
       famTabAuditStyle: tabBtnStyle(s.familyDetailTab === 'audit'),
@@ -10227,11 +10251,9 @@ class Component extends DCLogic {
         return fam ? (' in ' + fam.name) : '';
       })(),
       bulkConfirm: this.state.bulkConfirm,
-      bulkSampleNames: (() => {
-        if (!this.state.bulkConfirm) return '';
-        const t = this.bulkTargets();
-        const names = t.slice(0, 3).map(l => [l.city, l.country].filter(Boolean).join(', ') || 'Unnamed trip');
-        return t.length ? ('e.g. ' + names.join(' · ') + (t.length > 3 ? ' · +' + (t.length - 3) + ' more' : '')) : '';
+      bulkAllTargetRows: (() => {
+        if (!this.state.bulkConfirm) return [];
+        return this.bulkTargets().map(l => ({ name: ([l.city, l.country].filter(Boolean).join(', ') || 'Unnamed trip') + (l.date ? ' — ' + l.date : '') }));
       })(),
       bulkCanOwner: (this.state.mySiteAdmin || this.myAdminFamilyIds().size > 0) && this.state.cfgDataSource === 'cloud',
       bulkOwner: this.state.bulk.owner,
@@ -10409,7 +10431,7 @@ class Component extends DCLogic {
       activityViewAllLabel: (() => { const n = (this.state.activityFeed || []).length; const extra = n > 200 ? (n - 200) : 0; return extra ? ('View all (' + extra + ' more)') : 'View all · grouped by day, filter by family'; })(),
       activityOverflowCount: Math.max(0, (this.state.activityFeed || []).length - 200),
       activityAllOpen: this.state.activityAllOpen,
-      openActivityAll: () => this.setState({ activityAllOpen: true }),
+      openActivityAll: () => this.setState({ activityAllOpen: true, activityOpen: false }),
       closeActivityAll: () => this.setState({ activityAllOpen: false }),
       activityAllFamilyFilter: this.state.activityAllFamilyFilter || '',
       setActivityAllFamilyFilter: (e) => this.setState({ activityAllFamilyFilter: e.target.value }),
