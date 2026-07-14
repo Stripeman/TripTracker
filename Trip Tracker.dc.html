@@ -188,11 +188,9 @@
               <div style="padding:30px 8px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#586a82;">No activity yet.</div>
             </sc-if>
           </div>
-          <sc-if value="{{ activityShowViewAll }}" hint-placeholder-val="{{ false }}">
-            <div style="flex:none; padding:10px 20px; border-top:1px solid rgba(255,255,255,0.08);">
-              <button onClick="{{ openActivityAll }}" style="width:100%; box-sizing:border-box; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; color:#7fd4f5; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:8px; cursor:pointer;">View all ({{ activityOverflowCount }} more)</button>
-            </div>
-          </sc-if>
+          <div style="flex:none; padding:10px 20px; border-top:1px solid rgba(255,255,255,0.08);">
+            <button onClick="{{ openActivityAll }}" style="width:100%; box-sizing:border-box; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; color:#7fd4f5; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:8px; cursor:pointer;">{{ activityViewAllLabel }}</button>
+          </div>
         </div>
       </div>
     </sc-if>
@@ -571,7 +569,8 @@
             <button onClick="{{ askBulk }}" disabled="{{ bulkApplyDisabled }}" style="width:100%; box-sizing:border-box; margin-top:12px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:8px; padding:9px; cursor:pointer; opacity:{{ bulkApplyOpacity }};">Apply to {{ bulkCount }} trip(s)</button>
             <sc-if value="{{ bulkConfirm }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top:9px; padding:10px 11px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.24); border-radius:8px;">
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:8px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:4px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#b99a55; margin-bottom:8px; line-height:1.5;">{{ bulkSampleNames }}</div>
                 <div style="display:flex; gap:7px;">
                   <button onClick="{{ applyBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:7px; cursor:pointer;">Confirm</button>
                   <button onClick="{{ cancelBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:7px; cursor:pointer;">Cancel</button>
@@ -584,6 +583,8 @@
         <sc-if value="{{ showSiteAdminTab }}" hint-placeholder-val="{{ false }}">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:14px;">SITE ADMINISTRATION</div>
 
+          <button onClick="{{ toggleSaSecAudit }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;"><span>AUDIT &amp; LIMITS</span><span>{{ saSecAuditChevron }}</span></button>
+          <sc-if value="{{ saSecAuditOpen }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
             <div>
               <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Audit log detail</div>
@@ -603,7 +604,10 @@
             </div>
             <input type="number" min="1" max="200" defaultValue="{{ cfgFamilyCatLimit }}" onBlur="{{ onFamilyCatLimitBlur }}" style="flex:none; width:64px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 8px; outline:none; text-align:center;">
           </div>
+          </sc-if>
 
+          <button onClick="{{ toggleSaSecEmail }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;"><span>EMAIL &amp; NOTIFICATIONS</span><span>{{ saSecEmailChevron }}</span></button>
+          <sc-if value="{{ saSecEmailOpen }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; background:{{ emailKillSwitchBg }}; border:1px solid {{ emailKillSwitchBorder }}; border-radius:10px; padding:11px 12px;">
             <div>
               <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Disable all email notifications</div>
@@ -626,7 +630,10 @@
               </div>
             </sc-for>
           </div>
+          </sc-if>
 
+          <button onClick="{{ toggleSaSecAdmins }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;"><span>ADMINS</span><span>{{ saSecAdminsChevron }}</span></button>
+          <sc-if value="{{ saSecAdminsOpen }}" hint-placeholder-val="{{ true }}">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PRIMARY ADMIN(S)</div>
           <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#eaf4fd; margin-bottom:16px;">{{ primaryAdminEmailsText }}</div>
 
@@ -648,6 +655,7 @@
               <input value="{{ newSiteAdminEmail }}" onChange="{{ setNewSiteAdminEmail }}" placeholder="new-admin@example.com" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
               <button onClick="{{ addSiteAdminClick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Add admin</button>
             </div>
+          </sc-if>
           </sc-if>
         </sc-if>
 
@@ -1637,7 +1645,8 @@
                   <button onClick="{{ askBulk }}" disabled="{{ bulkApplyDisabled }}" style="width:100%; box-sizing:border-box; margin-top:12px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:8px; padding:9px; cursor:pointer; opacity:{{ bulkApplyOpacity }};">Apply to {{ bulkCount }} trip(s)</button>
                   <sc-if value="{{ bulkConfirm }}" hint-placeholder-val="{{ false }}">
                     <div style="margin-top:9px; padding:10px 11px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.24); border-radius:8px;">
-                      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:8px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:4px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#b99a55; margin-bottom:8px; line-height:1.5;">{{ bulkSampleNames }}</div>
                       <div style="display:flex; gap:7px;">
                         <button onClick="{{ applyBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:7px; cursor:pointer;">Confirm</button>
                         <button onClick="{{ cancelBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:7px; cursor:pointer;">Cancel</button>
@@ -2652,11 +2661,14 @@
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex:none;">
               <sc-if value="{{ showMetricsFamilyScope }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:3px; align-items:flex-end; flex:none;">
                 <select value="{{ metricsFamilyScope }}" onChange="{{ setMetricsFamilyScope }}" title="Which families' trips to include" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.03em; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.24); border-radius:8px; padding:7px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
                   <sc-for list="{{ metricsFamilyScopeOptions }}" as="o" hint-placeholder-count="2">
                     <option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option>
                   </sc-for>
                 </select>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:8.5px; color:#4e6076; white-space:nowrap;">Independent of the main page's family filter</div>
+                </div>
               </sc-if>
               <button onClick="{{ toggleMetricsFilters }}" title="Filter trips" style="{{ metricsFilterBtnStyle }}">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
@@ -3526,7 +3538,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.29.10-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.29.11-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -10160,6 +10172,15 @@ class Component extends DCLogic {
       ...this.familiesRenderVals(),
       showStorageTab: this.state.settingsTab === 'storage',
       showSiteAdminTab: this.state.settingsTab === 'siteadmin' && this.state.mySiteAdmin,
+      saSecAuditOpen: this.state.saSecAudit !== false,
+      saSecEmailOpen: this.state.saSecEmail !== false,
+      saSecAdminsOpen: this.state.saSecAdmins !== false,
+      saSecAuditChevron: this.state.saSecAudit !== false ? '▾' : '▸',
+      saSecEmailChevron: this.state.saSecEmail !== false ? '▾' : '▸',
+      saSecAdminsChevron: this.state.saSecAdmins !== false ? '▾' : '▸',
+      toggleSaSecAudit: () => this.setState(s => ({ saSecAudit: s.saSecAudit === false })),
+      toggleSaSecEmail: () => this.setState(s => ({ saSecEmail: s.saSecEmail === false })),
+      toggleSaSecAdmins: () => this.setState(s => ({ saSecAdmins: s.saSecAdmins === false })),
       setTabSiteAdmin: () => this.setSettingsTab('siteadmin'),
       setTabFilters: () => this.setSettingsTab('filters'),
       setTabSystem: () => this.setSettingsTab('system'),
@@ -10194,7 +10215,7 @@ class Component extends DCLogic {
         });
       })(),
       bulkFields: this.state.bulk.fields,
-      bulkCount: this.bulkTargets().length,
+      bulkCount: ((this.state.settingsOpen && this.state.settingsTab === 'trips') || (this.state.familyMgmtOpen && this.state.familyDetailTab === 'trips')) ? this.bulkTargets().length : 0,
       showBulkFamilyFilter: this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin,
       allTripsCount: (this.state.locations || []).length,
       bulkFamilyOptions: (this.state.cfgFamilies || []).map(f => ({ value: f.id, label: f.name })),
@@ -10206,6 +10227,12 @@ class Component extends DCLogic {
         return fam ? (' in ' + fam.name) : '';
       })(),
       bulkConfirm: this.state.bulkConfirm,
+      bulkSampleNames: (() => {
+        if (!this.state.bulkConfirm) return '';
+        const t = this.bulkTargets();
+        const names = t.slice(0, 3).map(l => [l.city, l.country].filter(Boolean).join(', ') || 'Unnamed trip');
+        return t.length ? ('e.g. ' + names.join(' · ') + (t.length > 3 ? ' · +' + (t.length - 3) + ' more' : '')) : '';
+      })(),
       bulkCanOwner: (this.state.mySiteAdmin || this.myAdminFamilyIds().size > 0) && this.state.cfgDataSource === 'cloud',
       bulkOwner: this.state.bulk.owner,
       bulkNotes: this.state.bulk.notes,
@@ -10379,6 +10406,7 @@ class Component extends DCLogic {
         return { id: a.id, message: a.message || '', when, actorName, actorEmail, mailtoHref: actorEmail ? ('mailto:' + actorEmail) : '' };
       }); })(),
       activityShowViewAll: (this.state.activityFeed || []).length > 200,
+      activityViewAllLabel: (() => { const n = (this.state.activityFeed || []).length; const extra = n > 200 ? (n - 200) : 0; return extra ? ('View all (' + extra + ' more)') : 'View all · grouped by day, filter by family'; })(),
       activityOverflowCount: Math.max(0, (this.state.activityFeed || []).length - 200),
       activityAllOpen: this.state.activityAllOpen,
       openActivityAll: () => this.setState({ activityAllOpen: true }),

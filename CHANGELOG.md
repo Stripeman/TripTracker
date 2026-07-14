@@ -4,6 +4,21 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.29.11-beta — Completed the remaining UX/efficiency suggestions
+
+### Added
+- **Metrics scope caption** — a one-line "Independent of the main page's family filter" note under the Metrics scope dropdown, making the mental model explicit.
+- **Bulk-edit confirmation now shows sample trips** — "e.g. Paris, France · Tokyo, Japan · Rome, Italy · +12 more" under the "Apply to N trip(s)?" warning in both bulk editors (Settings → Trips and My Families → Trips), so an over-broad selection is visible before committing.
+- **Site Administration tab reorganized into collapsible sections** — Audit & Limits / Email & Notifications / Admins, each with a chevron header (all open by default).
+
+### Changed (performance)
+- `bulkTargets()` is no longer computed on every render — only while one of the two bulk-edit tabs is actually open.
+
+### Notes
+- The remaining `cfgTravelers.find()` call sites were audited: all 14 are one-shot event handlers (delete/edit/hover/export), not render loops — the three per-render hot paths (bell dropdown, Audit tab, View-all popup) already use prebuilt maps.
+
+---
+
 ## 1.29.10-beta — Fixed: phantom "updated trip permissions" activity entries
 
 ### Fixed
