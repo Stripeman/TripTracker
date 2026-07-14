@@ -3526,7 +3526,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.29.9-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.29.10-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4977,6 +4977,9 @@ class Component extends DCLogic {
   }
   setFamilyTripPerms(familyId, patch) {
     const cur = this.tripPermsFor(familyId);
+    // Clicking the already-selected segment is a no-op — don't call the server
+    // (which would previously log a bogus "updated trip permissions" activity item).
+    if (Object.keys(patch).every(k => cur[k] === patch[k])) return;
     const next = { ...cur, ...patch };
     this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => f.id === familyId ? { ...f, permTrip: next } : f) }));
     this.familiesAction('setFamilyTripPerms', { familyId, ...next }).then(j => { if (j) this.toast('Updated'); });

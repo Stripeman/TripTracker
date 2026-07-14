@@ -4,6 +4,13 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.29.10-beta — Fixed: phantom "updated trip permissions" activity entries
+
+### Fixed
+- **Repeated "updated trip permissions" activity/notification entries you didn't (meaningfully) trigger** — clicking an already-selected segment on the Permissions tab (or the client re-sending an identical perm object) still called the server, which wrote the blob and logged an activity entry with "no change" as the diff. Now both ends skip no-ops: the client doesn't call the server when the clicked value already matches, and the server returns early (no write, no audit entry) when the computed diff is empty. Entries only appear when something actually changed, and always say exactly what.
+
+---
+
 ## 1.29.9-beta — Efficiency pass (ETag polling, batched audit writes) + activity popup family filter
 
 ### Added

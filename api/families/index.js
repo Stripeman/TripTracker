@@ -633,11 +633,14 @@ module.exports = async function (context, req) {
       };
       const changes = Object.keys(patch).filter((k) => (before[k] === undefined ? (k === "attachVisibleShared" ? true : (k === "editFloor" || k === "attachFloor" || k === "commentFloor" ? "editor" : false)) : before[k]) !== patch[k])
         .map((k) => LABELS[k] + " → " + (typeof patch[k] === "boolean" ? (patch[k] ? "on" : "off") : patch[k]));
+      // No-op saves (clicking the already-selected segment, or the client re-sending
+      // the same perm object) skip the blob write AND the audit entry — otherwise
+      // every stray click produced an "Updated trip permissions" activity item.
+      if (!changes.length) { json(200, { ok: true, unchanged: true }); return; }
       families = families.map((f) => f.id === body.familyId ? { ...f, permTrip: patch } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       const fam1 = families.find((f) => f.id === body.familyId);
-      const changeText = changes.length ? changes.join("; ") : "no change";
-      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: "Updated trip permissions for " + (fam1 ? fam1.name : "the family") + ": " + changeText });
+      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: "Updated trip permissions for " + (fam1 ? fam1.name : "the family") + ": " + changes.join("; ") });
       json(200, { ok: true });
       return;
     }
