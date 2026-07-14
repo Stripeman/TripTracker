@@ -509,6 +509,44 @@
               </select>
             </div>
           </sc-if>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:10px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:9px;">NARROW DOWN THE TRIPS</div>
+            <div style="display:flex; gap:8px; margin-bottom:9px;">
+              <input value="{{ bulkFilterQ }}" onInput="{{ onBulkFilterQ }}" placeholder="Search place or notes…" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 9px; outline:none;">
+              <select value="{{ bulkFilterYear }}" onChange="{{ onBulkFilterYear }}" style="flex:none; width:90px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                <option value="" style="background:#0a1422;">Any year</option>
+                <sc-for list="{{ bulkFilterYearOptions }}" as="y" hint-placeholder-count="2">
+                  <option value="{{ y.value }}" style="background:#0a1422;">{{ y.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:7px;">
+              <sc-for list="{{ bulkFilterStatusChips }}" as="c" hint-placeholder-count="2">
+                <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:7px;">
+              <sc-for list="{{ bulkFilterVisitChips }}" as="c" hint-placeholder-count="2">
+                <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <sc-for list="{{ bulkFilterTripChips }}" as="c" hint-placeholder-count="2">
+                <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:10px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">MATCHING TRIPS — {{ bulkCount }} <span style="letter-spacing:0.03em; color:#4e6076;">· click one to preview it</span></div>
+            <div style="display:flex; flex-direction:column; max-height:170px; overflow-y:auto;">
+              <sc-for list="{{ bulkPreviewRows }}" as="bp" hint-placeholder-count="3">
+                <div onClick="{{ bp.onView }}" title="Click to view this trip" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 2px; border-top:1px solid rgba(255,255,255,0.05); cursor:pointer;">
+                  <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#7fd4f5; text-decoration:underline; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ bp.name }}</span>
+                  <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088;">{{ bp.dates }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:14px;">
             <div style="display:flex; flex-direction:column; gap:9px;">
               <sc-if value="{{ bulkCanOwner }}" hint-placeholder-val="{{ false }}">
@@ -1615,6 +1653,44 @@
               <sc-if value="{{ showFamTripsTab }}" hint-placeholder-val="{{ false }}">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-bottom:14px; line-height:1.5;">Bulk-edit this family's own trips only — tick the fields to change, then confirm.</div>
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">{{ bulkCount }} trip(s) in {{ activeFamilyName }}</div>
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:10px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:9px;">NARROW DOWN THE TRIPS</div>
+                  <div style="display:flex; gap:8px; margin-bottom:9px;">
+                    <input value="{{ bulkFilterQ }}" onInput="{{ onBulkFilterQ }}" placeholder="Search place or notes…" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 9px; outline:none;">
+                    <select value="{{ bulkFilterYear }}" onChange="{{ onBulkFilterYear }}" style="flex:none; width:90px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                      <option value="" style="background:#0a1422;">Any year</option>
+                      <sc-for list="{{ bulkFilterYearOptions }}" as="y" hint-placeholder-count="2">
+                        <option value="{{ y.value }}" style="background:#0a1422;">{{ y.label }}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:7px;">
+                    <sc-for list="{{ bulkFilterStatusChips }}" as="c" hint-placeholder-count="2">
+                      <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:7px;">
+                    <sc-for list="{{ bulkFilterVisitChips }}" as="c" hint-placeholder-count="2">
+                      <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                    <sc-for list="{{ bulkFilterTripChips }}" as="c" hint-placeholder-count="2">
+                      <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:10px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">MATCHING TRIPS — {{ bulkCount }} <span style="letter-spacing:0.03em; color:#4e6076;">· click one to preview it</span></div>
+                  <div style="display:flex; flex-direction:column; max-height:170px; overflow-y:auto;">
+                    <sc-for list="{{ bulkPreviewRows }}" as="bp" hint-placeholder-count="3">
+                      <div onClick="{{ bp.onView }}" title="Click to view this trip" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 2px; border-top:1px solid rgba(255,255,255,0.05); cursor:pointer;">
+                        <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#7fd4f5; text-decoration:underline; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ bp.name }}</span>
+                        <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088;">{{ bp.dates }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
                 <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:14px;">
                   <div style="display:flex; flex-direction:column; gap:9px;">
                     <sc-if value="{{ bulkCanOwner }}" hint-placeholder-val="{{ false }}">
@@ -3577,7 +3653,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.30.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.31.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -8264,19 +8340,35 @@ class Component extends DCLogic {
   // Local/non-cloud mode (no families) falls back to the main list's filter over
   // the caller's own trips.
   bulkTargets() {
+    let base;
     if (this.state.cfgDataSource === 'cloud' && this.state.familyMgmtOpen && this.state.familyDetailTab === 'trips') {
       const fam = this.viewFamilyId();
       const canBulkThisFamily = this.state.mySiteAdmin || this.myAdminFamilyIds().has(fam);
       if (!fam || !canBulkThisFamily) return [];
-      return (this.state.locations || []).filter(l => l.familyId === fam);
-    }
-    if (this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin) {
+      base = (this.state.locations || []).filter(l => l.familyId === fam);
+    } else if (this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin) {
       const fam = this.state.bulkFilterFamilyId || '';
-      return (this.state.locations || []).filter(l => !fam || l.familyId === fam);
+      base = (this.state.locations || []).filter(l => !fam || l.familyId === fam);
+    } else {
+      const adminFamIds = this.myAdminFamilyIds();
+      base = (this.state.locations || []).filter(l => this.passesFilter(l) && (this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin || adminFamIds.has(l.familyId) || this.tripIsMine(l)));
     }
-    const adminFamIds = this.myAdminFamilyIds();
-    return (this.state.locations || []).filter(l => this.passesFilter(l) && (this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin || adminFamIds.has(l.familyId) || this.tripIsMine(l)));
+    // Narrowing filters shared by BOTH bulk editors (system-wide + family-scoped) —
+    // empty filter = everything, so the default behavior is unchanged.
+    const bf = this.state.bulkFilters || {};
+    const q = (bf.q || '').toLowerCase().trim();
+    return base.filter(l => {
+      if (q && ([l.city, l.country, l.notes].filter(Boolean).join(' ').toLowerCase().indexOf(q) === -1)) return false;
+      if (bf.year && String(l.date || '').slice(0, 4) !== bf.year) return false;
+      if (bf.status && bf.status.length && !bf.status.includes(l.status)) return false;
+      if (bf.visit && bf.visit.length && !(l.visitTypes || []).some(v => bf.visit.includes(v))) return false;
+      if (bf.trip && bf.trip.length && !(l.tripTypes || []).some(t => bf.trip.includes(t))) return false;
+      return true;
+    });
   }
+  setBulkFilter(k, v) { this.setState(s => ({ bulkFilters: { ...(s.bulkFilters || {}), [k]: v } })); }
+  toggleBulkFilterArr(k, key) { this.setState(s => { const bf = s.bulkFilters || {}; const cur = bf[k] || []; const next = cur.includes(key) ? cur.filter(x => x !== key) : [...cur, key]; return { bulkFilters: { ...bf, [k]: next } }; }); }
+  viewBulkTrip(id) { this.setState({ settingsOpen: false, familyMgmtOpen: false }); this.selectLocation(id); }
   setBulkFilterFamily(v) { this.setState({ bulkFilterFamilyId: v }); }
   toggleBulkField(k) { this.setState(s => ({ bulk: { ...s.bulk, fields: { ...s.bulk.fields, [k]: !s.bulk.fields[k] } } })); }
   setBulkVal(k, v) { this.setState(s => ({ bulk: { ...s.bulk, [k]: v } })); }
@@ -10329,6 +10421,28 @@ class Component extends DCLogic {
       bulkCanOwner: (this.state.mySiteAdmin || this.myAdminFamilyIds().size > 0) && this.state.cfgDataSource === 'cloud',
       bulkOwner: this.state.bulk.owner,
       bulkNotes: this.state.bulk.notes,
+      bulkFilterQ: (this.state.bulkFilters || {}).q || '',
+      onBulkFilterQ: (e) => this.setBulkFilter('q', e.target.value),
+      bulkFilterYear: (this.state.bulkFilters || {}).year || '',
+      onBulkFilterYear: (e) => this.setBulkFilter('year', e.target.value),
+      bulkFilterYearOptions: (() => {
+        const ys = new Set(); (this.state.locations || []).forEach(l => { const y = String(l.date || '').slice(0, 4); if (y.length === 4) ys.add(y); });
+        return [...ys].sort().reverse().map(y => ({ value: y, label: y }));
+      })(),
+      bulkFilterStatusChips: this.mergedCatList('status').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.bulkFilters || {}).status || []).includes(o.key)), onToggle: () => this.toggleBulkFilterArr('status', o.key) })),
+      bulkFilterVisitChips: this.mergedCatList('visit').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.bulkFilters || {}).visit || []).includes(o.key)), onToggle: () => this.toggleBulkFilterArr('visit', o.key) })),
+      bulkFilterTripChips: this.mergedCatList('trip').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.bulkFilters || {}).trip || []).includes(o.key)), onToggle: () => this.toggleBulkFilterArr('trip', o.key) })),
+      bulkPreviewRows: (() => {
+        const inTrips = this.state.settingsOpen && this.state.settingsTab === 'trips';
+        const inFamTrips = this.state.familyMgmtOpen && this.state.familyDetailTab === 'trips';
+        if (!inTrips && !inFamTrips) return [];
+        const fmtD = (d) => { if (!d) return ''; try { return new Date(d + 'T00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return d; } };
+        return this.bulkTargets().map(l => ({
+          name: [l.city, l.country].filter(Boolean).join(', ') || 'Unnamed trip',
+          dates: l.dateEnd && l.dateEnd !== l.date ? (fmtD(l.date) + ' → ' + fmtD(l.dateEnd)) : fmtD(l.date),
+          onView: () => this.viewBulkTrip(l.id),
+        }));
+      })(),
       bulkOwnerOptions: (this.state.cfgTravelers || []).filter(t => t.email).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
       bulkVisitChips: this.mergedCatList('visit').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, (this.state.bulk.visit || []).includes(o.key)), onToggle: () => this.toggleBulkArr('visit', o.key) })),
       bulkTravelerChips: (this.state.cfgTravelers || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, (this.state.bulk.travelers || []).includes(o.key)), onToggle: () => this.toggleBulkArr('travelers', o.key) })),

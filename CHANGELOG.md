@@ -4,6 +4,17 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.31.0-beta — Bulk-edit filters + trip preview; "Only me" pierced by family owner
+
+### Added
+- **Bulk-edit narrowing filters** (both the Settings → Trips system-wide editor and the family-scoped Bulk Edit tab): text search over place/notes, a year dropdown, and status / visit-type / trip-type chips — all empty by default, stacking on top of the existing family scope, so the target set is no longer "everything" unless you want it to be.
+- **Always-visible "Matching trips" preview** in both bulk editors: a scrollable list of every trip currently targeted; each row is a clickable link that opens that trip on the map for a look before committing. The live count and the confirm-time list follow the narrowed set.
+
+### Changed
+- **"Only me" (solo-private) trips are now visible and editable to the trip's family OWNER** (the `createdBy` owner — not regular family admins), matching the new owner-implies-admin rule. Enforced in the trips + attachments APIs and the client attachment gate; the Permissions modal's tier description now reads "Hidden from everyone except you and your family's owner — not even other family admins."
+
+---
+
 ## 1.30.0-beta — Config-panel layout overhaul + owner-edit fix + View-all popup fix
 
 ### Fixed
