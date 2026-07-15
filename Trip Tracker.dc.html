@@ -197,18 +197,18 @@
 
     <!-- "view all activity" popup — every entry, grouped by time period, no 200-row cap -->
     <sc-if value="{{ activityAllOpen }}" hint-placeholder-val="{{ false }}">
-      <div onClick="{{ closeActivityAll }}" style="position:fixed; inset:0; z-index:95; display:flex; align-items:center; justify-content:center; padding:30px; background:rgba(4,8,15,0.6); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);">
-        <div onClick="{{ stop }}" style="width:480px; max-width:calc(100vw - 60px); max-height:80vh; display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(12,19,30,0.98), rgba(7,12,20,0.98)); border:1px solid rgba(56,189,248,0.28); border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,0.6); overflow:hidden;">
+      <div onClick="{{ closeActivityAll }}" style="position:fixed; inset:0; z-index:200; pointer-events:auto; display:flex; align-items:center; justify-content:center; padding:30px; background:rgba(4,8,15,0.6); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);">
+        <div onClick="{{ stop }}" style="pointer-events:auto; width:480px; max-width:calc(100vw - 60px); max-height:80vh; display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(12,19,30,0.98), rgba(7,12,20,0.98)); border:1px solid rgba(56,189,248,0.28); border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,0.6); overflow:hidden;">
           <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid rgba(56,189,248,0.12);">
             <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.14em; color:#e8f3ff;">ALL ACTIVITY</div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <select value="{{ activityAllFamilyFilter }}" onChange="{{ setActivityAllFamilyFilter }}" style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; max-width:180px;">
+              <select value="{{ activityAllFamilyFilter }}" onChange="{{ setActivityAllFamilyFilter }}" style="pointer-events:auto; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; max-width:180px;">
                 <option value="" style="background:#0a1422;">All families</option>
                 <sc-for list="{{ activityAllFamilyOptions }}" as="af" hint-placeholder-count="0">
                   <option value="{{ af.value }}" style="background:#0a1422;">{{ af.label }}</option>
                 </sc-for>
               </select>
-              <button onClick="{{ closeActivityAll }}" style="width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.06); border:none; color:#9fb3c8; cursor:pointer; font-size:14px; flex:none;">✕</button>
+              <button onClick="{{ closeActivityAll }}" style="pointer-events:auto; width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.06); border:none; color:#9fb3c8; cursor:pointer; font-size:14px; flex:none;">✕</button>
             </div>
           </div>
           <div style="flex:1; min-height:0; overflow-y:auto; padding:8px 20px 16px;">
@@ -3653,7 +3653,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.31.0-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.31.1-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -4468,15 +4468,25 @@ class Component extends DCLogic {
       const prevActivityIds = new Set((this.state.activityFeed || []).map(a => a.id));
       const myEmailLower = (this.state.cloudUserEmail || '').toLowerCase().trim();
       const famById2 = new Map((j.families || []).map(f => [f.id, f]));
+      // Never re-toast: ids we've already toasted persist in localStorage (survives
+      // reloads/deploys), and anything older than 15 minutes is history, not news.
+      let toastedIds = [];
+      try { toastedIds = JSON.parse(localStorage.getItem('mftt:toasted-activity') || '[]'); } catch (e) {}
+      const toastedSet = new Set(toastedIds);
       const newToasts = (this.state.activityFeed && this.state.activityFeed.length) ? (j.activity || []).filter(a => {
-        if (prevActivityIds.has(a.id)) return false;
-        if ((a.actor || '').toLowerCase().trim() === myEmailLower) return false;
+        if (prevActivityIds.has(a.id) || toastedSet.has(a.id)) return false;
+        const age = Date.now() - new Date(a.createdAt || 0).getTime();
+        if (!isFinite(age) || age > 15 * 60 * 1000) return false;
+        if (!myEmailLower || (a.actor || '').toLowerCase().trim() === myEmailLower) return false;
         const key = TOAST_TYPE_TO_KEY[a.type];
         if (!key) return false;
         const fam = famById2.get(a.familyId);
         const p = fam && fam.notifPrefs && fam.notifPrefs[key];
         return !p || p.toast !== false;
       }) : [];
+      if (newToasts.length) {
+        try { localStorage.setItem('mftt:toasted-activity', JSON.stringify([...toastedIds, ...newToasts.map(a => a.id)].slice(-500))); } catch (e) {}
+      }
       this.setState(s => ({
         cfgFamilies: j.families || [],
         cfgMemberships: j.memberships || [],

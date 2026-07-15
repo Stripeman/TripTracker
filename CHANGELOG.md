@@ -4,6 +4,14 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.31.1-beta — Repeated-toast hardening + All-Activity popup finally clickable
+
+### Fixed
+- **Same activity notice re-toasting on every update** — three layers now prevent it: toasted activity ids persist in localStorage (survive reloads/deploys), anything older than 15 minutes is never toasted (history, not news), and if your own email isn't loaded yet nothing toasts (previously your own actions could slip past the self-filter). Server-side, `logActivity` also dedupes identical consecutive entries (same type/family/actor/message within 10 minutes), so stray repeats can't flood the feed. Existing duplicate entries in the log are historical and will age out of the 300-entry ring buffer.
+- **All-Activity popup X and family dropdown were unclickable** — the app's whole HUD lives inside a `pointer-events:none` layer (so clicks fall through gaps to the globe), and every overlay must opt back in with `pointer-events:auto`. This popup's backdrop had it but the inner modal and its controls didn't explicitly, and it shared a mid-range z-index. Fixed: `pointer-events:auto` on the backdrop, the modal, the family `<select>`, and the ✕ button, and z-index raised to 200 (above every panel). Opening it also closes the bell dropdown.
+
+---
+
 ## 1.31.0-beta — Bulk-edit filters + trip preview; "Only me" pierced by family owner
 
 ### Added

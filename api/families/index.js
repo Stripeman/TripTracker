@@ -122,6 +122,14 @@ async function logActivity(container, { type, familyId, visibleTo, actor, messag
   try {
     let list = await readJsonBlob(container, ACTIVITY_BLOB, []);
     if (!Array.isArray(list)) list = [];
+    // Dedupe guard: identical consecutive events (same type/family/actor/message)
+    // within 10 minutes collapse into one entry — stray double-clicks or repeated
+    // no-op-ish saves can't flood the feed with copies of the same line.
+    const last = list[list.length - 1];
+    if (last && last.type === type && last.familyId === (familyId || null) && last.actor === (actor || "") && last.message === (message || "")) {
+      const age = Date.now() - new Date(last.createdAt || 0).getTime();
+      if (isFinite(age) && age < 10 * 60 * 1000) return;
+    }
     list.push({
       id: genId("act"),
       type,
