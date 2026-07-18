@@ -122,6 +122,14 @@ async function logActivity(container, { type, familyId, visibleTo, actor, messag
   try {
     let list = await readJsonBlob(container, ACTIVITY_BLOB, []);
     if (!Array.isArray(list)) list = [];
+    // Dedupe guard: identical consecutive events (same type/family/actor/message)
+    // within 10 minutes collapse into one entry — stray double-clicks or repeated
+    // no-op-ish saves can't flood the feed with copies of the same line.
+    const last = list[list.length - 1];
+    if (last && last.type === type && last.familyId === (familyId || null) && last.actor === (actor || "") && last.message === (message || "")) {
+      const age = Date.now() - new Date(last.createdAt || 0).getTime();
+      if (isFinite(age) && age < 10 * 60 * 1000) return;
+    }
     list.push({
       id: genId("act"),
       type,
@@ -244,7 +252,7 @@ module.exports = async function (context, req) {
       // the client, so filters/metrics that key off traveler rows (e.g. the Metrics
       // traveler picker) silently can't show them.
       const visibleTravelers = meIsSiteAdmin ? travelers : travelers.filter((t) => accessibleFamilyIds.has(t.familyId));
-      json(200, {
+      const responseBody = {
         families: visibleFamilies,
         memberships: visibleMembers,
         shares: visibleShares,
@@ -273,8 +281,21 @@ module.exports = async function (context, req) {
         activity: (await readJsonBlob(container, ACTIVITY_BLOB, []))
           .filter((a) => meIsSiteAdmin || (Array.isArray(a.visibleTo) && a.visibleTo.some((fid) => myFamilyIds.has(fid))))
           .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-          .slice(0, 30),
-      });
+          .slice(0, 300),
+      };
+      // Cheap ETag so the client's 30s poll costs ~nothing when nothing changed:
+      // hash the serialized payload; if it matches the client's If-None-Match,
+      // reply 304 with no body (client keeps its current state untouched).
+      const bodyText = JSON.stringify(responseBody);
+      let h = 5381;
+      for (let i = 0; i < bodyText.length; i++) h = ((h * 33) ^ bodyText.charCodeAt(i)) >>> 0;
+      const etag = '"fam-' + h.toString(36) + "-" + bodyText.length + '"';
+      const inm = (req.headers && (req.headers["if-none-match"] || req.headers["If-None-Match"])) || "";
+      if (inm === etag) {
+        context.res = { status: 304, headers: { "ETag": etag, "Cache-Control": "no-cache" } };
+        return;
+      }
+      context.res = { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-cache", "ETag": etag }, body: bodyText };
       return;
     }
 
@@ -620,11 +641,14 @@ module.exports = async function (context, req) {
       };
       const changes = Object.keys(patch).filter((k) => (before[k] === undefined ? (k === "attachVisibleShared" ? true : (k === "editFloor" || k === "attachFloor" || k === "commentFloor" ? "editor" : false)) : before[k]) !== patch[k])
         .map((k) => LABELS[k] + " → " + (typeof patch[k] === "boolean" ? (patch[k] ? "on" : "off") : patch[k]));
+      // No-op saves (clicking the already-selected segment, or the client re-sending
+      // the same perm object) skip the blob write AND the audit entry — otherwise
+      // every stray click produced an "Updated trip permissions" activity item.
+      if (!changes.length) { json(200, { ok: true, unchanged: true }); return; }
       families = families.map((f) => f.id === body.familyId ? { ...f, permTrip: patch } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       const fam1 = families.find((f) => f.id === body.familyId);
-      const changeText = changes.length ? changes.join("; ") : "no change";
-      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: "Updated trip permissions for " + (fam1 ? fam1.name : "the family") + ": " + changeText });
+      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: "Updated trip permissions for " + (fam1 ? fam1.name : "the family") + ": " + changes.join("; ") });
       json(200, { ok: true });
       return;
     }
@@ -963,7 +987,7 @@ module.exports = async function (context, req) {
         }
       } catch (err) {
         context.log.error(err);
-        json(500, { error: String((err && err.message) || err) });
+        json(500, { error: "Internal server error." });
         return;
       }
       json(200, { ok: true });
@@ -1274,6 +1298,6 @@ module.exports = async function (context, req) {
     json(400, { error: "Unknown action." });
   } catch (err) {
     context.log.error(err);
-    json(500, { error: String((err && err.message) || err) });
+    json(500, { error: "Internal server error." });
   }
 };

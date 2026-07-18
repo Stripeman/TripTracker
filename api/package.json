@@ -2,6 +2,12 @@
   "name": "trip-tracker-api",
   "version": "0.9.0",
   "description": "Azure Functions API for Trip Tracker — trips, presence/login analytics, roles & access list (all Blob Storage).",
+  "private": true,
+  "scripts": {
+    "test": "node --test --test-concurrency=1 test/*.test.js",
+    "validate": "node scripts/validate.js",
+    "build": "npm test && npm run validate"
+  },
   "dependencies": {
     "@azure/storage-blob": "^12.17.0"
   }

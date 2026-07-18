@@ -4,6 +4,75 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.31.1-beta — Repeated-toast hardening + All-Activity popup finally clickable
+
+### Fixed
+- **Same activity notice re-toasting on every update** — three layers now prevent it: toasted activity ids persist in localStorage (survive reloads/deploys), anything older than 15 minutes is never toasted (history, not news), and if your own email isn't loaded yet nothing toasts (previously your own actions could slip past the self-filter). Server-side, `logActivity` also dedupes identical consecutive entries (same type/family/actor/message within 10 minutes), so stray repeats can't flood the feed. Existing duplicate entries in the log are historical and will age out of the 300-entry ring buffer.
+- **All-Activity popup X and family dropdown were unclickable** — the app's whole HUD lives inside a `pointer-events:none` layer (so clicks fall through gaps to the globe), and every overlay must opt back in with `pointer-events:auto`. This popup's backdrop had it but the inner modal and its controls didn't explicitly, and it shared a mid-range z-index. Fixed: `pointer-events:auto` on the backdrop, the modal, the family `<select>`, and the ✕ button, and z-index raised to 200 (above every panel). Opening it also closes the bell dropdown.
+
+---
+
+## 1.31.0-beta — Bulk-edit filters + trip preview; "Only me" pierced by family owner
+
+### Added
+- **Bulk-edit narrowing filters** (both the Settings → Trips system-wide editor and the family-scoped Bulk Edit tab): text search over place/notes, a year dropdown, and status / visit-type / trip-type chips — all empty by default, stacking on top of the existing family scope, so the target set is no longer "everything" unless you want it to be.
+- **Always-visible "Matching trips" preview** in both bulk editors: a scrollable list of every trip currently targeted; each row is a clickable link that opens that trip on the map for a look before committing. The live count and the confirm-time list follow the narrowed set.
+
+### Changed
+- **"Only me" (solo-private) trips are now visible and editable to the trip's family OWNER** (the `createdBy` owner — not regular family admins), matching the new owner-implies-admin rule. Enforced in the trips + attachments APIs and the client attachment gate; the Permissions modal's tier description now reads "Hidden from everyone except you and your family's owner — not even other family admins."
+
+---
+
+## 1.30.0-beta — Config-panel layout overhaul + owner-edit fix + View-all popup fix
+
+### Fixed
+- **Family owner couldn't edit members' trips when their own membership row said "reader"** — ownership (family `createdBy`) now implies admin rights in the trips and attachments APIs, matching the client and the families API (where the owner could already transfer/delete). No membership-row surgery needed.
+- **View-all activity popup: X and family filter were unclickable** — the bell dropdown's full-screen overlay stayed open beneath the popup and swallowed clicks; opening the popup now closes the bell dropdown first.
+
+### Changed — Configuration panel consistency pass
+- **Every Configuration tab now uses the same collapsible-section + bubble layout** (matching Site Admin): Settings tab (Filters / Appearance / Themes / Configuration Data), Preferences tab (Form & Cards / Public Landing Page / Globe / Updates), System tab (Debug / Data Source / System Backup — Data Source got its own bubble; System Backup is now a collapsible bubble). Site Admin's Audit & Limits and Default-notifications content are bubbled too. All sections start expanded.
+- **Bulk-edit confirmation now lists every affected trip** (scrollable, with dates) instead of a 3-name sample — in both the Settings → Trips system-wide editor and the family-scoped Bulk Edit tab.
+- **Family detail tab bar decluttered** — Audit, Notifications, and Settings & Sharing moved under a "More ▾" dropdown, cutting the 8-tab crowding.
+- Removed the "Independent of the main page's family filter" caption under the Metrics scope dropdown (moved to the dropdown's hover title).
+
+---
+
+## 1.29.11-beta — Completed the remaining UX/efficiency suggestions
+
+### Added
+- **Metrics scope caption** — a one-line "Independent of the main page's family filter" note under the Metrics scope dropdown, making the mental model explicit.
+- **Bulk-edit confirmation now shows sample trips** — "e.g. Paris, France · Tokyo, Japan · Rome, Italy · +12 more" under the "Apply to N trip(s)?" warning in both bulk editors (Settings → Trips and My Families → Trips), so an over-broad selection is visible before committing.
+- **Site Administration tab reorganized into collapsible sections** — Audit & Limits / Email & Notifications / Admins, each with a chevron header (all open by default).
+
+### Changed (performance)
+- `bulkTargets()` is no longer computed on every render — only while one of the two bulk-edit tabs is actually open.
+
+### Notes
+- The remaining `cfgTravelers.find()` call sites were audited: all 14 are one-shot event handlers (delete/edit/hover/export), not render loops — the three per-render hot paths (bell dropdown, Audit tab, View-all popup) already use prebuilt maps.
+
+---
+
+## 1.29.10-beta — Fixed: phantom "updated trip permissions" activity entries
+
+### Fixed
+- **Repeated "updated trip permissions" activity/notification entries you didn't (meaningfully) trigger** — clicking an already-selected segment on the Permissions tab (or the client re-sending an identical perm object) still called the server, which wrote the blob and logged an activity entry with "no change" as the diff. Now both ends skip no-ops: the client doesn't call the server when the clicked value already matches, and the server returns early (no write, no audit entry) when the computed diff is empty. Entries only appear when something actually changed, and always say exactly what.
+
+---
+
+## 1.29.9-beta — Efficiency pass (ETag polling, batched audit writes) + activity popup family filter
+
+### Added
+- **"All activity" popup gets a family filter dropdown** — filter every entry to one family or all, alongside the existing Today / Yesterday / This week / Earlier grouping. Actor names with mailto links now appear there and in the bell dropdown, matching the Audit tab.
+- Activity feed sent to the client raised from the most recent 30 entries to 300 (the popup's "view everything" now genuinely has history to show; the bell dropdown still caps at 200 rows).
+
+### Changed (performance — no behavior change)
+- **`GET /api/families` now supports ETag/304** — the app's 30s poll sends `If-None-Match`, and when nothing changed the server replies 304 with no body, skipping the JSON download and the client-side re-render entirely.
+- **Trip saves batch their audit-log writes** — a bulk save touching many trips now buffers its activity entries and flushes them in one blob read+write after the loop, instead of one full read+write per event. Members blob for email recipient lists is loaded at most once per request (lazily) instead of per-trip.
+- **`sameExceptKeys` (trip change detection) short-circuits** on key-count/primitive differences before falling back to full JSON serialization — most trips in a save are untouched, and now cost almost nothing to skip.
+- Actor-name lookups in the activity feeds use a prebuilt email→person map instead of a per-row linear search.
+
+---
+
 ## 1.29.8-beta — Fixed: Metrics was still secretly filtered by the left panel's selected family
 
 ### Fixed
