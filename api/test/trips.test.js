@@ -62,6 +62,31 @@ test("family owner can view and edit solo-private trips despite a reader members
   assert.equal(readBlob("trip-tracker.json").locations[0].city, "Changed City");
 });
 
+test("ordinary family administrators cannot view another owner's solo-private trip", async () => {
+  seed({
+    "trip-tracker.json": { locations: [{ ...baseTrip, soloPrivate: true }] },
+    "memberships.json": [{ email: "admin@example.test", familyId: "fam-a", role: "admin", active: true }],
+  });
+  const res = await invoke(trips, request("GET", "admin@example.test"));
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body.locations, []);
+});
+
+test("incoming editor shares allow edits but not deletion by omission", async () => {
+  seed({
+    "families.json": [family, { id: "fam-b", name: "Recipient Family", approved: true }],
+    "memberships.json": [{ email: "shared-editor@example.test", familyId: "fam-b", role: "editor", active: true }],
+    "family-shares.json": [{ fromFamilyId: "fam-a", toFamilyId: "fam-b", role: "editor" }],
+  });
+  await invoke(trips, request("POST", "shared-editor@example.test", {
+    body: { locations: [{ ...baseTrip, city: "Shared edit" }] },
+  }));
+  assert.equal(readBlob("trip-tracker.json").locations[0].city, "Shared edit");
+
+  await invoke(trips, request("POST", "shared-editor@example.test", { body: { locations: [] } }));
+  assert.equal(readBlob("trip-tracker.json").locations.length, 1);
+});
+
 test("reader cannot edit or delete another member's trip", async () => {
   seed({ "memberships.json": [{ email: "reader@example.test", familyId: "fam-a", role: "reader", active: true }] });
   const changed = { ...baseTrip, city: "Unauthorized change" };

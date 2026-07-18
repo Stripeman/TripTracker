@@ -55,3 +55,22 @@ test("trip owner upload stores sanitized metadata and uploader can later delete 
   assert.equal(removed.status, 200);
   assert.deepEqual(readBlob("trip-tracker.json").locations[0].attachments, []);
 });
+
+test("shared-family readers cannot download attachments hidden by family policy", async () => {
+  const attachment = { id: "att-1", name: "ticket.pdf", mimeType: "application/pdf", blobName: "attachments/trip-1/att-1-ticket.pdf" };
+  seed({
+    "trip-tracker.json": { locations: [{ ...trip, attachments: [attachment] }] },
+    "families.json": [
+      { id: "fam-a", createdBy: "owner@example.test", approved: true, permTrip: { attachVisibleShared: false } },
+      { id: "fam-b", createdBy: "recipient@example.test", approved: true },
+    ],
+    "memberships.json": [{ email: "recipient@example.test", familyId: "fam-b", role: "reader", active: true }],
+    "family-shares.json": [{ fromFamilyId: "fam-a", toFamilyId: "fam-b", role: "reader" }],
+    [attachment.blobName]: Buffer.from("synthetic file"),
+  });
+  const res = await invoke(attachments, request("GET", "recipient@example.test", {
+    query: { tripId: "trip-1", id: "att-1" },
+  }));
+  assert.equal(res.status, 403);
+  assert.equal(res.body.error, "This family has kept attachments private.");
+});

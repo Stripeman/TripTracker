@@ -27,6 +27,27 @@ test("normal users see only their memberships and accessible family travelers", 
   assert.equal(res.body.accessRequests, undefined);
 });
 
+test("family polling returns 304 for an unchanged scoped response and filters activity", async () => {
+  resetBlobs({
+    "families.json": [{ id: "mine", name: "Mine" }, { id: "hidden", name: "Hidden" }],
+    "memberships.json": [{ email: "person@example.test", familyId: "mine", role: "reader", active: true }],
+    "activity.json": [
+      { id: "visible", visibleTo: ["mine"], createdAt: "2026-01-02T00:00:00.000Z" },
+      { id: "hidden", visibleTo: ["hidden"], createdAt: "2026-01-03T00:00:00.000Z" },
+    ],
+  });
+  const first = await invoke(families, request("GET", "person@example.test"));
+  assert.equal(first.status, 200);
+  assert.deepEqual(first.body.activity.map((entry) => entry.id), ["visible"]);
+  assert.match(first.headers.ETag, /^"fam-/);
+
+  const unchanged = await invoke(families, request("GET", "person@example.test", {
+    headers: { "if-none-match": first.headers.ETag },
+  }));
+  assert.equal(unchanged.status, 304);
+  assert.equal(unchanged.body, undefined);
+});
+
 test("family mutations enforce normal-user and site-admin authorization", async () => {
   resetBlobs({
     "families.json": [{ id: "mine", name: "Mine", approved: true }],

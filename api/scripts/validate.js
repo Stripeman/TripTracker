@@ -28,7 +28,10 @@ for (const file of jsFiles) {
   if (result.status !== 0) failures.push(`${path.relative(repoRoot, file)}: ${result.stderr.trim()}`);
 }
 
-const jsonFiles = [path.join(repoRoot, "package.json"), path.join(repoRoot, "staticwebapp.config.json"), ...walk(apiRoot).filter((file) => file.endsWith(".json"))];
+const rootJsonFiles = fs.readdirSync(repoRoot, { withFileTypes: true })
+  .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+  .map((entry) => path.join(repoRoot, entry.name));
+const jsonFiles = [...new Set([...rootJsonFiles, ...walk(apiRoot).filter((file) => file.endsWith(".json"))])];
 const parsed = new Map();
 for (const file of jsonFiles) {
   try { parsed.set(file, JSON.parse(fs.readFileSync(file, "utf8"))); checked.push(path.relative(repoRoot, file)); }
@@ -38,6 +41,7 @@ for (const file of jsonFiles) {
 const swa = parsed.get(path.join(repoRoot, "staticwebapp.config.json")) || {};
 const routeRules = Array.isArray(swa.routes) ? swa.routes : [];
 const functions = fs.readdirSync(apiRoot, { withFileTypes: true }).filter((entry) => entry.isDirectory() && fs.existsSync(path.join(apiRoot, entry.name, "function.json")));
+const functionRoutes = new Map();
 for (const entry of functions) {
   const functionFile = path.join(apiRoot, entry.name, "function.json");
   const config = parsed.get(functionFile);
@@ -50,6 +54,8 @@ for (const entry of functions) {
   if (!triggers || triggers.length !== 1) continue;
   const trigger = triggers[0];
   const route = `/api/${trigger.route || entry.name}`;
+  const methods = new Set((trigger.methods || []).map((method) => method.toLowerCase()));
+  functionRoutes.set(route, methods);
   if (trigger.authLevel !== "anonymous") failures.push(`${route}: expected SWA-managed anonymous function binding`);
   if (!Array.isArray(trigger.methods) || !trigger.methods.length) failures.push(`${route}: missing HTTP methods`);
   const protectedRoute = ["access", "families", "trips", "attachments", "presence"].includes(entry.name);
@@ -58,6 +64,17 @@ for (const entry of functions) {
       const covered = routeRules.some((rule) => rule.route === route && (!rule.methods || rule.methods.map((m) => m.toLowerCase()).includes(method.toLowerCase())) && Array.isArray(rule.allowedRoles) && rule.allowedRoles.length);
       if (!covered) failures.push(`${route} ${method.toUpperCase()}: no matching protected Static Web Apps route rule`);
     }
+  }
+}
+
+for (const rule of routeRules.filter((item) => typeof item.route === "string" && item.route.startsWith("/api/"))) {
+  const methods = functionRoutes.get(rule.route);
+  if (!methods) {
+    failures.push(`staticwebapp.config.json: ${rule.route} has no matching Azure Function`);
+    continue;
+  }
+  for (const method of rule.methods || []) {
+    if (!methods.has(String(method).toLowerCase())) failures.push(`staticwebapp.config.json: ${rule.route} ${String(method).toUpperCase()} is not accepted by its Azure Function`);
   }
 }
 
@@ -95,4 +112,4 @@ if (failures.length) {
   console.error(`Validation failed with ${failures.length} issue(s):\n- ${failures.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`Validated ${jsFiles.length} API JavaScript files, ${jsonFiles.length} JSON files, ${functions.length} Azure Functions, SWA route coverage, deployment structure, and frontend references.`);
+console.log(`Validated ${jsFiles.length} API JavaScript files, ${jsonFiles.length} repository/API JSON files, ${functions.length} Azure Functions, bidirectional SWA route coverage, deployment structure, and frontend references.`);
