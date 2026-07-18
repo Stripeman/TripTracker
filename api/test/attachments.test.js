@@ -74,3 +74,26 @@ test("shared-family readers cannot download attachments hidden by family policy"
   assert.equal(res.status, 403);
   assert.equal(res.body.error, "This family has kept attachments private.");
 });
+
+test("family owner can manage solo-private attachments but an ordinary family administrator cannot", async () => {
+  seed({
+    "trip-tracker.json": { locations: [{ ...trip, ownerEmail: "traveler@example.test", soloPrivate: true }] },
+    "memberships.json": [
+      { email: "owner@example.test", familyId: "fam-a", role: "reader", active: true },
+      { email: "admin@example.test", familyId: "fam-a", role: "admin", active: true },
+    ],
+  });
+
+  const denied = await invoke(attachments, request("POST", "admin@example.test", {
+    body: { tripId: "trip-1", filename: "ticket.pdf", mimeType: "application/pdf", dataBase64: "dGVzdA==" },
+  }));
+  assert.equal(denied.status, 403);
+  assert.deepEqual(readBlob("trip-tracker.json").locations[0].attachments, []);
+
+  const uploaded = await invoke(attachments, request("POST", "owner@example.test", {
+    principal: { id: "family-owner-id", roles: ["authenticated", "reader"] },
+    body: { tripId: "trip-1", filename: "ticket.pdf", mimeType: "application/pdf", dataBase64: "dGVzdA==" },
+  }));
+  assert.equal(uploaded.status, 200);
+  assert.equal(readBlob("trip-tracker.json").locations[0].attachments.length, 1);
+});

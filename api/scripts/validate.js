@@ -21,17 +21,23 @@ function walk(dir) {
   });
 }
 
-const jsFiles = walk(apiRoot).filter((file) => file.endsWith(".js"));
+const jsFiles = [
+  ...walk(apiRoot).filter((file) => file.endsWith(".js")),
+  ...fs.readdirSync(repoRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".js"))
+    .map((entry) => path.join(repoRoot, entry.name)),
+];
 for (const file of jsFiles) {
   const result = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
   checked.push(path.relative(repoRoot, file));
   if (result.status !== 0) failures.push(`${path.relative(repoRoot, file)}: ${result.stderr.trim()}`);
 }
 
-const rootJsonFiles = fs.readdirSync(repoRoot, { withFileTypes: true })
-  .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
-  .map((entry) => path.join(repoRoot, entry.name));
-const jsonFiles = [...new Set([...rootJsonFiles, ...walk(apiRoot).filter((file) => file.endsWith(".json"))])];
+const jsonFiles = walk(repoRoot).filter((file) =>
+  file.endsWith(".json") &&
+  !file.includes(`${path.sep}node_modules${path.sep}`) &&
+  !file.includes(`${path.sep}logs${path.sep}`)
+);
 const parsed = new Map();
 for (const file of jsonFiles) {
   try { parsed.set(file, JSON.parse(fs.readFileSync(file, "utf8"))); checked.push(path.relative(repoRoot, file)); }
@@ -39,6 +45,12 @@ for (const file of jsonFiles) {
 }
 
 const swa = parsed.get(path.join(repoRoot, "staticwebapp.config.json")) || {};
+const rootPackage = parsed.get(path.join(repoRoot, "package.json")) || {};
+const apiPackage = parsed.get(path.join(apiRoot, "package.json")) || {};
+if (!rootPackage.scripts || rootPackage.scripts.test !== "npm --prefix api test") failures.push("package.json: test must run the complete API test suite");
+if (!rootPackage.scripts || rootPackage.scripts.build !== "npm --prefix api run build") failures.push("package.json: build must delegate to API build validation");
+if (!apiPackage.scripts || !/node --test/.test(apiPackage.scripts.test || "")) failures.push("api/package.json: test must use the Node test runner");
+if (!apiPackage.scripts || apiPackage.scripts.build !== "npm test && npm run validate") failures.push("api/package.json: build must run tests and validation");
 const routeRules = Array.isArray(swa.routes) ? swa.routes : [];
 const functions = fs.readdirSync(apiRoot, { withFileTypes: true }).filter((entry) => entry.isDirectory() && fs.existsSync(path.join(apiRoot, entry.name, "function.json")));
 const functionRoutes = new Map();
@@ -95,8 +107,13 @@ for (const file of [
 
 for (const relative of ["index.html", "Trip Tracker.dc.html", "Landing.dc.html"]) {
   const source = fs.readFileSync(path.join(repoRoot, relative), "utf8");
-  for (const match of source.matchAll(/(?:src|href)=["']([^"']+)["']/gi)) {
-    const reference = match[1];
+  const references = [
+    ...[...source.matchAll(/(?:src|href)=["']([^"']+)["']/gi)].map((match) => match[1]),
+    ...[...source.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/gi)]
+      .map((match) => match[1])
+      .filter((reference) => /\.(?:avif|gif|ico|jpe?g|png|svg|webp|woff2?)(?:[?#]|$)/i.test(reference)),
+  ];
+  for (const reference of references) {
     if (!reference || reference.startsWith("#") || reference.startsWith("/") || reference.startsWith("{{") || /^[a-z][a-z\d+.-]*:/i.test(reference)) continue;
     const clean = decodeURIComponent(reference.split(/[?#]/, 1)[0]).replace(/^\.\//, "");
     if (clean && !fs.existsSync(path.resolve(repoRoot, clean))) failures.push(`${relative}: broken local reference ${reference}`);
@@ -112,4 +129,4 @@ if (failures.length) {
   console.error(`Validation failed with ${failures.length} issue(s):\n- ${failures.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`Validated ${jsFiles.length} API JavaScript files, ${jsonFiles.length} repository/API JSON files, ${functions.length} Azure Functions, bidirectional SWA route coverage, deployment structure, and frontend references.`);
+console.log(`Validated ${jsFiles.length} JavaScript files, ${jsonFiles.length} repository JSON files, package script wiring, ${functions.length} Azure Functions, bidirectional SWA route coverage, deployment structure, and frontend references.`);
