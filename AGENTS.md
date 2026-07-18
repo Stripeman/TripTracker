@@ -36,6 +36,12 @@ inside the deployed website.
 ## Change Guidelines
 
 - Make focused changes limited to the requested task.
+- Codex execution logs are stored under `logs/codex-runs/`.
+- Run write-enabled Codex tasks only from a dedicated working branch.
+- Use `./run-codex-tests.sh` to create or improve automated tests and build
+  validation.
+- Use `./run-codex-review.sh` to validate current changes and correct only
+  evidence-backed defects.
 - Inspect existing implementations before replacing them.
 - Avoid unrelated refactoring or formatting.
 - Preserve public routes, configuration names, and stored-data formats unless

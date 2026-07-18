@@ -31,6 +31,7 @@ Before editing:
   the change.
 - Do not replace working code with pseudocode, placeholders, or incomplete
   implementations.
+- Do not modify files under `logs/codex-runs/`.
 
 ## TripTracker Requirements
 
