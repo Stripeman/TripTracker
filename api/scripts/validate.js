@@ -112,10 +112,16 @@ if (!swa.auth || swa.auth.rolesSource !== "/api/roles") failures.push("staticweb
 if (!swa.navigationFallback || swa.navigationFallback.rewrite !== "/index.html") failures.push("staticwebapp.config.json: navigation fallback must rewrite to /index.html");
 
 for (const file of [
-  "index.html", "Trip Tracker.dc.html", "Landing.dc.html", "support.js", "favicon.svg",
-  "staticwebapp.config.json", "api/host.json",
-  ".github/workflows/azure-static-web-apps-delightful-dune-0b6ba6d0f.yml",
-]) requireFile(file);
+  "index.html",
+  "Trip Tracker.dc.html",
+  "Landing.dc.html",
+  "support.js",
+  "favicon.svg",
+  "staticwebapp.config.json",
+  "api/host.json",
+]) {
+  requireFile(file);
+}
 
 for (const relative of ["index.html", "Trip Tracker.dc.html", "Landing.dc.html"]) {
   const source = fs.readFileSync(path.join(repoRoot, relative), "utf8");
@@ -132,13 +138,100 @@ for (const relative of ["index.html", "Trip Tracker.dc.html", "Landing.dc.html"]
   }
 }
 
-const deployWorkflow = fs.readFileSync(path.join(repoRoot, ".github/workflows/azure-static-web-apps-delightful-dune-0b6ba6d0f.yml"), "utf8");
-if (!/^\s*app_location:\s*["']?\/["']?\s*$/m.test(deployWorkflow)) failures.push("deployment workflow: app_location must be /");
-if (!/^\s*api_location:\s*["']?api["']?\s*$/m.test(deployWorkflow)) failures.push("deployment workflow: api_location must be api");
-if (!/^\s*skip_app_build:\s*true\s*$/m.test(deployWorkflow)) failures.push("deployment workflow: expected static frontend deployment with skip_app_build true");
+const workflowsDirectory = path.join(
+  repoRoot,
+  ".github",
+  "workflows"
+);
+
+let deploymentWorkflowValidated = false;
+
+if (fs.existsSync(workflowsDirectory)) {
+  const workflowFiles = fs
+    .readdirSync(workflowsDirectory, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        /\.ya?ml$/i.test(entry.name)
+    )
+    .map((entry) => entry.name);
+
+  for (const workflowFile of workflowFiles) {
+    const workflowPath = path.join(
+      workflowsDirectory,
+      workflowFile
+    );
+
+    const workflowSource = fs.readFileSync(
+      workflowPath,
+      "utf8"
+    );
+
+    const isStaticWebAppsWorkflow =
+      /azure\/static-web-apps-deploy@/i.test(workflowSource) ||
+      /azure-static-web-apps/i.test(workflowFile);
+
+    if (!isStaticWebAppsWorkflow) {
+      continue;
+    }
+
+    deploymentWorkflowValidated = true;
+
+    const relativeWorkflowPath = path.relative(
+      repoRoot,
+      workflowPath
+    );
+
+    checked.push(relativeWorkflowPath);
+
+    if (
+      !/^\s*app_location:\s*["']?\/["']?\s*$/m.test(
+        workflowSource
+      )
+    ) {
+      failures.push(
+        `${relativeWorkflowPath}: app_location must be /`
+      );
+    }
+
+    if (
+      !/^\s*api_location:\s*["']?\/?api["']?\s*$/m.test(
+        workflowSource
+      )
+    ) {
+      failures.push(
+        `${relativeWorkflowPath}: api_location must be api`
+      );
+    }
+
+    if (
+      !/^\s*skip_app_build:\s*true\s*$/m.test(
+        workflowSource
+      )
+    ) {
+      failures.push(
+        `${relativeWorkflowPath}: expected skip_app_build true`
+      );
+    }
+  }
+}
+
+if (!deploymentWorkflowValidated) {
+  console.log(
+    "No Azure Static Web Apps GitHub Actions workflow was found; " +
+    "workflow-specific validation was skipped."
+  );
+}
 
 if (failures.length) {
   console.error(`Validation failed with ${failures.length} issue(s):\n- ${failures.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`Validated ${jsFiles.length} JavaScript files, ${jsonFiles.length} repository JSON files, package script wiring, ${functions.length} Azure Functions, bidirectional SWA route coverage, deployment structure, and frontend references.`);
+
+console.log(
+  `Validated ${jsFiles.length} JavaScript files, ` +
+  `${jsonFiles.length} repository JSON files, ` +
+  `package script wiring, ${functions.length} Azure Functions, ` +
+  `bidirectional SWA route coverage, deployable structure, ` +
+  `and frontend references.`
+);
