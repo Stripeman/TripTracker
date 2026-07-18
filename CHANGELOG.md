@@ -4,6 +4,177 @@ All notable changes to **Multi Family Trip Tracker** are recorded here. The newe
 
 ---
 
+## 1.31.1-beta — Repeated-toast hardening + All-Activity popup finally clickable
+
+### Fixed
+- **Same activity notice re-toasting on every update** — three layers now prevent it: toasted activity ids persist in localStorage (survive reloads/deploys), anything older than 15 minutes is never toasted (history, not news), and if your own email isn't loaded yet nothing toasts (previously your own actions could slip past the self-filter). Server-side, `logActivity` also dedupes identical consecutive entries (same type/family/actor/message within 10 minutes), so stray repeats can't flood the feed. Existing duplicate entries in the log are historical and will age out of the 300-entry ring buffer.
+- **All-Activity popup X and family dropdown were unclickable** — the app's whole HUD lives inside a `pointer-events:none` layer (so clicks fall through gaps to the globe), and every overlay must opt back in with `pointer-events:auto`. This popup's backdrop had it but the inner modal and its controls didn't explicitly, and it shared a mid-range z-index. Fixed: `pointer-events:auto` on the backdrop, the modal, the family `<select>`, and the ✕ button, and z-index raised to 200 (above every panel). Opening it also closes the bell dropdown.
+
+---
+
+## 1.31.0-beta — Bulk-edit filters + trip preview; "Only me" pierced by family owner
+
+### Added
+- **Bulk-edit narrowing filters** (both the Settings → Trips system-wide editor and the family-scoped Bulk Edit tab): text search over place/notes, a year dropdown, and status / visit-type / trip-type chips — all empty by default, stacking on top of the existing family scope, so the target set is no longer "everything" unless you want it to be.
+- **Always-visible "Matching trips" preview** in both bulk editors: a scrollable list of every trip currently targeted; each row is a clickable link that opens that trip on the map for a look before committing. The live count and the confirm-time list follow the narrowed set.
+
+### Changed
+- **"Only me" (solo-private) trips are now visible and editable to the trip's family OWNER** (the `createdBy` owner — not regular family admins), matching the new owner-implies-admin rule. Enforced in the trips + attachments APIs and the client attachment gate; the Permissions modal's tier description now reads "Hidden from everyone except you and your family's owner — not even other family admins."
+
+---
+
+## 1.30.0-beta — Config-panel layout overhaul + owner-edit fix + View-all popup fix
+
+### Fixed
+- **Family owner couldn't edit members' trips when their own membership row said "reader"** — ownership (family `createdBy`) now implies admin rights in the trips and attachments APIs, matching the client and the families API (where the owner could already transfer/delete). No membership-row surgery needed.
+- **View-all activity popup: X and family filter were unclickable** — the bell dropdown's full-screen overlay stayed open beneath the popup and swallowed clicks; opening the popup now closes the bell dropdown first.
+
+### Changed — Configuration panel consistency pass
+- **Every Configuration tab now uses the same collapsible-section + bubble layout** (matching Site Admin): Settings tab (Filters / Appearance / Themes / Configuration Data), Preferences tab (Form & Cards / Public Landing Page / Globe / Updates), System tab (Debug / Data Source / System Backup — Data Source got its own bubble; System Backup is now a collapsible bubble). Site Admin's Audit & Limits and Default-notifications content are bubbled too. All sections start expanded.
+- **Bulk-edit confirmation now lists every affected trip** (scrollable, with dates) instead of a 3-name sample — in both the Settings → Trips system-wide editor and the family-scoped Bulk Edit tab.
+- **Family detail tab bar decluttered** — Audit, Notifications, and Settings & Sharing moved under a "More ▾" dropdown, cutting the 8-tab crowding.
+- Removed the "Independent of the main page's family filter" caption under the Metrics scope dropdown (moved to the dropdown's hover title).
+
+---
+
+## 1.29.11-beta — Completed the remaining UX/efficiency suggestions
+
+### Added
+- **Metrics scope caption** — a one-line "Independent of the main page's family filter" note under the Metrics scope dropdown, making the mental model explicit.
+- **Bulk-edit confirmation now shows sample trips** — "e.g. Paris, France · Tokyo, Japan · Rome, Italy · +12 more" under the "Apply to N trip(s)?" warning in both bulk editors (Settings → Trips and My Families → Trips), so an over-broad selection is visible before committing.
+- **Site Administration tab reorganized into collapsible sections** — Audit & Limits / Email & Notifications / Admins, each with a chevron header (all open by default).
+
+### Changed (performance)
+- `bulkTargets()` is no longer computed on every render — only while one of the two bulk-edit tabs is actually open.
+
+### Notes
+- The remaining `cfgTravelers.find()` call sites were audited: all 14 are one-shot event handlers (delete/edit/hover/export), not render loops — the three per-render hot paths (bell dropdown, Audit tab, View-all popup) already use prebuilt maps.
+
+---
+
+## 1.29.10-beta — Fixed: phantom "updated trip permissions" activity entries
+
+### Fixed
+- **Repeated "updated trip permissions" activity/notification entries you didn't (meaningfully) trigger** — clicking an already-selected segment on the Permissions tab (or the client re-sending an identical perm object) still called the server, which wrote the blob and logged an activity entry with "no change" as the diff. Now both ends skip no-ops: the client doesn't call the server when the clicked value already matches, and the server returns early (no write, no audit entry) when the computed diff is empty. Entries only appear when something actually changed, and always say exactly what.
+
+---
+
+## 1.29.9-beta — Efficiency pass (ETag polling, batched audit writes) + activity popup family filter
+
+### Added
+- **"All activity" popup gets a family filter dropdown** — filter every entry to one family or all, alongside the existing Today / Yesterday / This week / Earlier grouping. Actor names with mailto links now appear there and in the bell dropdown, matching the Audit tab.
+- Activity feed sent to the client raised from the most recent 30 entries to 300 (the popup's "view everything" now genuinely has history to show; the bell dropdown still caps at 200 rows).
+
+### Changed (performance — no behavior change)
+- **`GET /api/families` now supports ETag/304** — the app's 30s poll sends `If-None-Match`, and when nothing changed the server replies 304 with no body, skipping the JSON download and the client-side re-render entirely.
+- **Trip saves batch their audit-log writes** — a bulk save touching many trips now buffers its activity entries and flushes them in one blob read+write after the loop, instead of one full read+write per event. Members blob for email recipient lists is loaded at most once per request (lazily) instead of per-trip.
+- **`sameExceptKeys` (trip change detection) short-circuits** on key-count/primitive differences before falling back to full JSON serialization — most trips in a save are untouched, and now cost almost nothing to skip.
+- Actor-name lookups in the activity feeds use a prebuilt email→person map instead of a per-row linear search.
+
+---
+
+## 1.29.8-beta — Fixed: Metrics was still secretly filtered by the left panel's selected family
+
+### Fixed
+- **`metricsPassesFilter` had its own leftover, separate family-scoping block** — layered on top of the intentional `metricsFamilyScope` system (fixed across 1.29.4–1.29.7), it fell back to whatever family was selected on the main page (`activeFamilyId`) whenever `familyViewMode` wasn't explicitly "all"/"allMine". So even after correctly picking a specific family in the Metrics dropdown, trips were silently re-filtered by the left panel's own selection underneath — explaining why Metrics kept looking scoped to whatever family the globe/list was currently showing. Removed the dead duplicate block entirely; Metrics now only ever scopes by its own dropdown, exactly as documented.
+
+### Tested
+- 3‑scenario check reproducing the exact report: Metrics scope "My family" now shows your trips regardless of which family the left panel has selected, scope set to a specific other family shows only that family's trips regardless of the left panel, and "Every family" always shows everything.
+
+---
+
+## 1.29.7-beta — Fixed: switching Metrics family scope left stale filters behind (showed 0 trips)
+
+### Fixed
+- **Switching Metrics' family scope didn't reset the dimension filters (travelers/visit/trip/status/year)** — if you had a traveler chip toggled on while viewing one family (e.g. hers), then switched scope to a different family (e.g. "My family"), that leftover traveler filter stayed active. Since your own trips don't have her family's traveler tagged, every one of your trips got filtered out — showing "no trips" despite having 55. Switching scope now clears all Metrics filters, exactly like the existing "Clear filters" button does.
+- **1.29.6 accidentally dropped the "My family" option for site admins** when adding the every-family list — site admins now get "My family" (their own, by name) back at the top, ahead of "Every family" and the individual per-family list.
+
+### Tested
+- 8‑scenario check confirming: site admins have "My family" back, the individual/bundle options are unaffected, and — reproducing the exact reported sequence — a leftover traveler filter from a different family now gets cleared on scope switch instead of silently zeroing out an otherwise-correct 55-trip result.
+- Deep re-audit of every permission gate after this whole session's changes: 22 trip-level scenarios (view/edit/delete across soloPrivate, family roles, shares, floors, hiddenFromShares), 9 family-scoped bulk-edit scenarios (including multi-family admins switching between families they administer), and 8 family/traveler-visibility + notification-routing scenarios (accessible-family sets, site-admin bypass, kill-switch gates) — all 39 passing, no regressions found from the family-visibility and Metrics fixes earlier in this release.
+
+---
+
+## 1.29.6-beta — Fixed: Metrics scope for site admins didn't list every family individually
+
+### Fixed
+- **Site admins only saw "My family" and "Every family (site admin)" in the Metrics scope picker** — no way to isolate metrics to one specific other family, even though a site admin can see all of them. The picker used `baseFamilyScopeOptions()`, which only lists families reachable through actual membership or a family-to-family share — a family visible to a site admin purely by virtue of being a site admin (no share relationship at all) was never listed. Metrics now mirrors the People/Users tab's existing site-admin behavior: every family in the system appears individually, plus the "Every family" bundle.
+
+### Tested
+- 6‑scenario matrix: site admin sees the bundle option, their own family, a family actually shared with them, and (the reported bug) a family with no share relationship at all — all listed individually with correct names; non‑admin behavior confirmed unchanged.
+
+---
+
+## 1.29.5-beta — Fixed: shared family's own record was invisible too (deeper follow-up)
+
+### Fixed
+- **A deeper instance of the 1.29.4 bug**: even after travelers became visible for shared families, the family *record itself* (`GET /api/families` → `families[]`) still only included families you're a direct member of — a family that only shares trips with you never sent its own name/color/etc. to the client at all. Every UI that looks up a family by id (the Metrics scope picker from 1.29.4, family-name labels on shared trips, and more) silently couldn't resolve it even with the travelers fix in place. Now `families[]` uses the same accessible-family set (your memberships + anyone who shared with you) as travelers and shares already did.
+
+### Tested
+- Re-verified the full scenario matrix against the corrected logic: non-admins see their own family plus any that shared with them (and nothing unrelated), site admins still see everything.
+- Reviewed api/trips/index.js's own family-access checks (`me.sharesIn`, `me.familyRoles`) — confirmed they were already correct and unaffected; this bug was isolated to the families-listing endpoint.
+
+---
+
+## 1.29.4-beta — Fixed: shared-family data invisible to Metrics (travelers, family scope)
+
+### Fixed
+- **A shared family's travelers were never sent to the client at all** — the server's traveler visibility only checked direct family membership (`myFamilyIds`), not shared access, so a family that shared trips with you never had its people show up anywhere that reads the travelers list (Metrics' traveler filter chips, name lookups, etc.), even though you could see their trips. Now travelers are visible for your own families *and* any family that has shared trips with one of yours — mirrors the client's existing `myAccessibleFamilyIds` logic exactly.
+- **Metrics' family-scope picker never listed an individual shared family by name** — only "My family" and an opaque "All families I have access to" bundle, so there was no way to isolate metrics to just one shared family, and the default ("My family") silently excluded shared trips unless you remembered to switch to the bundle option. Now every individually-accessible family (yours, plus any that shared with you) appears as its own selectable option, independent of whatever family is selected in the main trip list.
+
+### Tested
+- 8‑scenario matrix: shared-family travelers now visible (previously invisible), unrelated families still correctly excluded, site admin still sees everyone, and Metrics scope now correctly isolates to a specific chosen family in addition to "mine"/"all mine"/"all".
+
+---
+
+## 1.29.3-beta — Site-wide settings now log their own distinct activity; cleaner notification wording
+
+### Fixed
+- **Site-wide Site Admin actions (Audit log detail, Per-family category limit, email kill switch, default notification prefs, auto-approve, image uploads, public sharing) never wrote an Activity Log entry at all** — so the global bell showed whatever the last *unrelated* action happened to be, making it look like the wrong thing was logged. Each of these now logs its own specific, correctly-worded entry (e.g. "Disabled email notifications site-wide" vs. the site-wide toggle actually flipped), visible only to site admins (they're not tied to any one family).
+- **Notification message wording cleaned up**: trip-level messages (edited/deleted/commented/attachment added-or-removed) no longer embed the actor's raw email inline — that was redundant with the name already shown separately, and looked like "terry@example.com edited a trip." Messages are now specific about *what* changed (e.g. "Edited Étretat, France (Jul 2–5)" instead of just "edited a trip"), and the global bell/View‑all popup now resolve the actor's display name the same way the per-family Audit tab already did, with a ✉ link to their email.
+
+### Tested
+- Confirmed all 6 previously-silent site-wide actions now produce distinct, correctly-labeled messages with no raw email embedded.
+
+---
+
+## 1.29.2-beta — Trip-level email notifications now also reach the trip's own owner
+
+### Fixed
+- **Email for Trip edits, Trip deletes, Comments, and Attachment uploads only went to that family's admins** — if the trip's actual owner wasn't a family admin (e.g. a regular editor's own trip), they never heard about changes someone else made to it. Now the trip's `ownerEmail` is always included alongside the family admins (deduped, and skipped if the owner is the one who caused the event).
+- Audited every notification channel for correct recipient scoping: **bell/activity feed** is filtered server‑side by family membership (`visibleTo`), never client‑side, so it can't leak across families; **ownership transfers** already emailed the incoming owner directly; **new trips / category changes** are family‑wide events where "family admins" is the correct audience (no single trip owner to add).
+
+### Tested
+- 5‑scenario matrix: owner editing their own trip (no self-notify), an admin editing someone else's trip (owner notified, actor excluded), a third party acting on a trip (both admin and owner notified), owner-who-is-also-admin (no duplicate email), and legacy trips with no owner (falls back to admins only).
+
+---
+
+## 1.29.1-beta — Family detail tab bar redesigned as icons; new Sharing tab
+
+### Changed
+- **Family detail tab bar (My Families → [family]) now uses icons for most tabs** instead of text labels, with a hover tooltip: Permissions (lock), Categories (tag), Trips → renamed **Bulk Edit** (checklist), Notifications (bell), Owner (gear). Overview and Audit stay as text.
+- **New "Family Settings & Sharing" tab** (share/network icon): the "Families that can see ours" and "Families we can see" sections moved here out of Permissions, which now covers only the edit/attachment/comment/delete floors.
+
+---
+
+## 1.29.0-beta — Reorganized the ⚙ Configuration panel
+
+### Changed
+- **New "Site Admin" tab** in the ⚙ Configuration panel, visible to site admins only. The whole Site Administration section (Audit log detail, Per‑family category limit, Disable all email notifications, Default notifications for new families, Primary/Additional site admins) moved out of the System tab into this dedicated tab.
+- **System tab reordered**: Clear data now sits above the backup sections instead of after them, so System Backup (Export/Restore selected) and My Backup (export/restore just your own data) are the last things in the tab, as intended.
+
+---
+
+## 1.28.7-beta — Fixed: kill switch was restoring family email settings instead of leaving them off
+
+### Fixed
+- **Turning the kill switch back off was restoring each family's previous Email preference** instead of leaving it off — e.g. a family with Category-changes email ON before the switch flipped on would come back ON automatically once the site admin re-enabled email, exactly the opposite of the intent. Fixed: turning the switch ON now force-writes every family's Email toggle (all 7 event types) to OFF right then (not just a visual lock), and turning it back OFF only removes the lock — it never rewrites anything, so families land back at all-off and must deliberately re-enable Email themselves.
+
+### Tested
+- 5-step scenario reproducing the exact reported sequence (family turns a toggle on → site admin disables → re-enables) confirms the toggle now stays off instead of springing back on.
+
+---
+
 ## 1.28.6-beta — Kill switch replaces the separate bulk email reset
 
 ### Changed

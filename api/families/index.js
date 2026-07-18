@@ -122,6 +122,14 @@ async function logActivity(container, { type, familyId, visibleTo, actor, messag
   try {
     let list = await readJsonBlob(container, ACTIVITY_BLOB, []);
     if (!Array.isArray(list)) list = [];
+    // Dedupe guard: identical consecutive events (same type/family/actor/message)
+    // within 10 minutes collapse into one entry — stray double-clicks or repeated
+    // no-op-ish saves can't flood the feed with copies of the same line.
+    const last = list[list.length - 1];
+    if (last && last.type === type && last.familyId === (familyId || null) && last.actor === (actor || "") && last.message === (message || "")) {
+      const age = Date.now() - new Date(last.createdAt || 0).getTime();
+      if (isFinite(age) && age < 10 * 60 * 1000) return;
+    }
     list.push({
       id: genId("act"),
       type,
@@ -229,11 +237,22 @@ module.exports = async function (context, req) {
     };
 
     if (req.method === "GET") {
-      const visibleFamilies = meIsSiteAdmin ? families : families.filter((f) => myFamilyIds.has(f.id));
+      // A family that only shares its trips with mine (I'm not a member) still needs
+      // its name/record to reach the client — otherwise every UI that looks up a
+      // family by id (the Metrics scope picker, family-name labels on shared trips,
+      // etc.) silently can't resolve it even after the trips/travelers themselves are
+      // visible. Mirrors the client's myAccessibleFamilyIds exactly.
+      const sharedInFamilyIds = new Set(shares.filter((s) => myFamilyIds.has(s.toFamilyId)).map((s) => s.fromFamilyId));
+      const accessibleFamilyIds = new Set([...myFamilyIds, ...sharedInFamilyIds]);
+      const visibleFamilies = meIsSiteAdmin ? families : families.filter((f) => accessibleFamilyIds.has(f.id));
       const visibleMembers = meIsSiteAdmin ? members : members.filter((m) => myAdminFamilyIds.has(m.familyId) || m.email === me.email);
       const visibleShares = meIsSiteAdmin ? shares : shares.filter((s) => myFamilyIds.has(s.fromFamilyId) || myFamilyIds.has(s.toFamilyId));
-      const visibleTravelers = meIsSiteAdmin ? travelers : travelers.filter((t) => myFamilyIds.has(t.familyId));
-      json(200, {
+      // Travelers use the same accessible-family set (own families + anyone who
+      // shared with one of mine) — otherwise a shared family's people never reach
+      // the client, so filters/metrics that key off traveler rows (e.g. the Metrics
+      // traveler picker) silently can't show them.
+      const visibleTravelers = meIsSiteAdmin ? travelers : travelers.filter((t) => accessibleFamilyIds.has(t.familyId));
+      const responseBody = {
         families: visibleFamilies,
         memberships: visibleMembers,
         shares: visibleShares,
@@ -262,8 +281,21 @@ module.exports = async function (context, req) {
         activity: (await readJsonBlob(container, ACTIVITY_BLOB, []))
           .filter((a) => meIsSiteAdmin || (Array.isArray(a.visibleTo) && a.visibleTo.some((fid) => myFamilyIds.has(fid))))
           .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-          .slice(0, 30),
-      });
+          .slice(0, 300),
+      };
+      // Cheap ETag so the client's 30s poll costs ~nothing when nothing changed:
+      // hash the serialized payload; if it matches the client's If-None-Match,
+      // reply 304 with no body (client keeps its current state untouched).
+      const bodyText = JSON.stringify(responseBody);
+      let h = 5381;
+      for (let i = 0; i < bodyText.length; i++) h = ((h * 33) ^ bodyText.charCodeAt(i)) >>> 0;
+      const etag = '"fam-' + h.toString(36) + "-" + bodyText.length + '"';
+      const inm = (req.headers && (req.headers["if-none-match"] || req.headers["If-None-Match"])) || "";
+      if (inm === etag) {
+        context.res = { status: 304, headers: { "ETag": etag, "Cache-Control": "no-cache" } };
+        return;
+      }
+      context.res = { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "no-cache", "ETag": etag }, body: bodyText };
       return;
     }
 
@@ -368,6 +400,7 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
       settings = { ...settings, autoApproveFamilies: !!body.value };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setAutoApprove", familyId: null, visibleTo: [], actor: me.email, message: "Turned auto-approve for new families " + (settings.autoApproveFamilies ? "ON" : "OFF") });
       json(200, { ok: true, autoApproveFamilies: settings.autoApproveFamilies });
       return;
     }
@@ -380,6 +413,7 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
       settings = { ...settings, publicSharingEnabled: !!body.value };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setPublicSharingEnabled", familyId: null, visibleTo: [], actor: me.email, message: "Turned the Public sharing tier " + (settings.publicSharingEnabled ? "ON" : "OFF") + " site-wide" });
       json(200, { ok: true, publicSharingEnabled: settings.publicSharingEnabled });
       return;
     }
@@ -388,6 +422,7 @@ module.exports = async function (context, req) {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
       settings = { ...settings, imageUploadsEnabled: !!body.value };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setImageUploadsEnabled", familyId: null, visibleTo: [], actor: me.email, message: "Turned photo uploads " + (settings.imageUploadsEnabled ? "ON" : "OFF") + " site-wide (default)" });
       json(200, { ok: true, imageUploadsEnabled: settings.imageUploadsEnabled });
       return;
     }
@@ -446,6 +481,7 @@ module.exports = async function (context, req) {
       const v = ["essential", "detailed", "verbose"].includes(body.value) ? body.value : "essential";
       settings = { ...settings, auditLevel: v };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setAuditLevel", familyId: null, visibleTo: [], actor: me.email, message: "Set the site-wide audit log detail to " + v });
       json(200, { ok: true, auditLevel: v });
       return;
     }
@@ -459,6 +495,7 @@ module.exports = async function (context, req) {
       const v = Math.min(200, Math.max(1, Math.floor(Number.isFinite(raw) && raw > 0 ? raw : 40)));
       settings = { ...settings, familyCatLimit: v };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setFamilyCatLimit", familyId: null, visibleTo: [], actor: me.email, message: "Set the per-family category limit to " + v + " items" });
       json(200, { ok: true, familyCatLimit: v });
       return;
     }
@@ -480,6 +517,7 @@ module.exports = async function (context, req) {
       const defaultNotifPrefs = { ...(settings.defaultNotifPrefs || {}), [key]: { ...((settings.defaultNotifPrefs && settings.defaultNotifPrefs[key]) || {}), [channel]: !!body.value } };
       settings = { ...settings, defaultNotifPrefs };
       await writeJsonBlob(container, "family-settings.json", settings);
+      logActivity(container, { type: "setDefaultNotifPrefs", familyId: null, visibleTo: [], actor: me.email, message: "Set the default " + channel + " notification for " + key + " (new families) to " + (body.value ? "on" : "off") });
       json(200, { ok: true });
       return;
     }
@@ -487,10 +525,27 @@ module.exports = async function (context, req) {
     // Site-wide kill switch: when on, EVERY courtesy email in the app is suppressed
     // regardless of any per-family notification preference — for abuse/incident
     // response. Toasts and the Activity Log (bell) are unaffected. Site admin only.
+    // Site-wide kill switch: when turned ON, every family's Email toggle (all 7
+    // notification keys) is force-written to OFF right now — not just visually
+    // locked — and stays locked/unclickable while the switch is on. Turning it back
+    // OFF only removes the lock; it deliberately does NOT restore anyone's previous
+    // value, so families come back to an all-off state and must re-enable Email
+    // for themselves if they want it. Site admin only.
     if (action === "setEmailKillSwitch") {
       if (!meIsSiteAdmin) { json(403, { error: "Site admin required." }); return; }
-      settings = { ...settings, emailKillSwitch: !!body.value };
+      const turningOn = !!body.value;
+      settings = { ...settings, emailKillSwitch: turningOn };
       await writeJsonBlob(container, "family-settings.json", settings);
+      if (turningOn) {
+        const NOTIF_KEYS = ["categoryChanges", "attachmentUploads", "ownerTransfers", "tripAdds", "tripEdits", "tripDeletes", "comments"];
+        families = families.map((f) => {
+          const notifPrefs = { ...(f.notifPrefs || {}) };
+          NOTIF_KEYS.forEach((k) => { notifPrefs[k] = { ...(notifPrefs[k] || {}), email: false }; });
+          return { ...f, notifPrefs };
+        });
+        await writeJsonBlob(container, FAMILIES_BLOB, families);
+      }
+      logActivity(container, { type: "setEmailKillSwitch", familyId: null, visibleTo: [], actor: me.email, message: turningOn ? "Disabled email notifications site-wide (forced every family's Email toggle off)" : "Re-enabled email notifications site-wide (families' Email toggles stay off until they turn them back on)" });
       json(200, { ok: true, emailKillSwitch: settings.emailKillSwitch });
       return;
     }
@@ -586,11 +641,14 @@ module.exports = async function (context, req) {
       };
       const changes = Object.keys(patch).filter((k) => (before[k] === undefined ? (k === "attachVisibleShared" ? true : (k === "editFloor" || k === "attachFloor" || k === "commentFloor" ? "editor" : false)) : before[k]) !== patch[k])
         .map((k) => LABELS[k] + " → " + (typeof patch[k] === "boolean" ? (patch[k] ? "on" : "off") : patch[k]));
+      // No-op saves (clicking the already-selected segment, or the client re-sending
+      // the same perm object) skip the blob write AND the audit entry — otherwise
+      // every stray click produced an "Updated trip permissions" activity item.
+      if (!changes.length) { json(200, { ok: true, unchanged: true }); return; }
       families = families.map((f) => f.id === body.familyId ? { ...f, permTrip: patch } : f);
       await writeJsonBlob(container, FAMILIES_BLOB, families);
       const fam1 = families.find((f) => f.id === body.familyId);
-      const changeText = changes.length ? changes.join("; ") : "no change";
-      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: "Updated trip permissions for " + (fam1 ? fam1.name : "the family") + ": " + changeText });
+      logActivity(container, { type: "setFamilyTripPerms", familyId: body.familyId, visibleTo: [body.familyId], actor: me.email, message: "Updated trip permissions for " + (fam1 ? fam1.name : "the family") + ": " + changes.join("; ") });
       json(200, { ok: true });
       return;
     }

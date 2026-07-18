@@ -172,29 +172,44 @@
             <sc-for list="{{ activityItems }}" as="ev" hint-placeholder-count="0">
               <div style="padding:11px 8px; border-bottom:1px solid rgba(255,255,255,0.06);">
                 <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; line-height:1.5;">{{ ev.message }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ ev.when }}</div>
+                <div style="display:flex; align-items:center; gap:6px; margin-top:3px;">
+                  <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088;">{{ ev.when }}</span>
+                  <sc-if value="{{ ev.actorName }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088;">·</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7fb8d6;">{{ ev.actorName }}</span>
+                    <sc-if value="{{ ev.actorEmail }}" hint-placeholder-val="{{ false }}">
+                      <a href="{{ ev.mailtoHref }}" title="{{ ev.actorEmail }}" style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5fd3ff; text-decoration:none;">✉</a>
+                    </sc-if>
+                  </sc-if>
+                </div>
               </div>
             </sc-for>
             <sc-if value="{{ activityEmpty }}" hint-placeholder-val="{{ true }}">
               <div style="padding:30px 8px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#586a82;">No activity yet.</div>
             </sc-if>
           </div>
-          <sc-if value="{{ activityShowViewAll }}" hint-placeholder-val="{{ false }}">
-            <div style="flex:none; padding:10px 20px; border-top:1px solid rgba(255,255,255,0.08);">
-              <button onClick="{{ openActivityAll }}" style="width:100%; box-sizing:border-box; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; color:#7fd4f5; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:8px; cursor:pointer;">View all ({{ activityOverflowCount }} more)</button>
-            </div>
-          </sc-if>
+          <div style="flex:none; padding:10px 20px; border-top:1px solid rgba(255,255,255,0.08);">
+            <button onClick="{{ openActivityAll }}" style="width:100%; box-sizing:border-box; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.04em; color:#7fd4f5; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:8px; cursor:pointer;">{{ activityViewAllLabel }}</button>
+          </div>
         </div>
       </div>
     </sc-if>
 
     <!-- "view all activity" popup — every entry, grouped by time period, no 200-row cap -->
     <sc-if value="{{ activityAllOpen }}" hint-placeholder-val="{{ false }}">
-      <div onClick="{{ closeActivityAll }}" style="position:fixed; inset:0; z-index:95; display:flex; align-items:center; justify-content:center; padding:30px; background:rgba(4,8,15,0.6); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);">
-        <div onClick="{{ stop }}" style="width:480px; max-width:calc(100vw - 60px); max-height:80vh; display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(12,19,30,0.98), rgba(7,12,20,0.98)); border:1px solid rgba(56,189,248,0.28); border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,0.6); overflow:hidden;">
+      <div onClick="{{ closeActivityAll }}" style="position:fixed; inset:0; z-index:200; pointer-events:auto; display:flex; align-items:center; justify-content:center; padding:30px; background:rgba(4,8,15,0.6); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);">
+        <div onClick="{{ stop }}" style="pointer-events:auto; width:480px; max-width:calc(100vw - 60px); max-height:80vh; display:flex; flex-direction:column; background:linear-gradient(180deg, rgba(12,19,30,0.98), rgba(7,12,20,0.98)); border:1px solid rgba(56,189,248,0.28); border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,0.6); overflow:hidden;">
           <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid rgba(56,189,248,0.12);">
             <div style="font-family:'Orbitron',sans-serif; font-weight:700; font-size:13px; letter-spacing:0.14em; color:#e8f3ff;">ALL ACTIVITY</div>
-            <button onClick="{{ closeActivityAll }}" style="width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.06); border:none; color:#9fb3c8; cursor:pointer; font-size:14px;">✕</button>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <select value="{{ activityAllFamilyFilter }}" onChange="{{ setActivityAllFamilyFilter }}" style="pointer-events:auto; font-family:'IBM Plex Mono',monospace; font-size:10px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:6px 8px; outline:none; cursor:pointer; max-width:180px;">
+                <option value="" style="background:#0a1422;">All families</option>
+                <sc-for list="{{ activityAllFamilyOptions }}" as="af" hint-placeholder-count="0">
+                  <option value="{{ af.value }}" style="background:#0a1422;">{{ af.label }}</option>
+                </sc-for>
+              </select>
+              <button onClick="{{ closeActivityAll }}" style="pointer-events:auto; width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,0.06); border:none; color:#9fb3c8; cursor:pointer; font-size:14px; flex:none;">✕</button>
+            </div>
           </div>
           <div style="flex:1; min-height:0; overflow-y:auto; padding:8px 20px 16px;">
             <sc-for list="{{ activityAllSections }}" as="sec" hint-placeholder-count="0">
@@ -202,7 +217,16 @@
               <sc-for list="{{ sec.rows }}" as="ev" hint-placeholder-count="0">
                 <div style="padding:9px 4px; border-bottom:1px solid rgba(255,255,255,0.06);">
                   <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#cfe0f0; line-height:1.5;">{{ ev.message }}</div>
-                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088; margin-top:3px;">{{ ev.when }}</div>
+                  <div style="display:flex; align-items:center; gap:6px; margin-top:3px;">
+                    <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088;">{{ ev.when }}</span>
+                    <sc-if value="{{ ev.actorName }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5d7088;">·</span>
+                      <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#7fb8d6;">{{ ev.actorName }}</span>
+                      <sc-if value="{{ ev.actorEmail }}" hint-placeholder-val="{{ false }}">
+                        <a href="{{ ev.mailtoHref }}" title="{{ ev.actorEmail }}" style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#5fd3ff; text-decoration:none;">✉</a>
+                      </sc-if>
+                    </sc-if>
+                  </div>
                 </div>
               </sc-for>
             </sc-for>
@@ -307,11 +331,15 @@
               <button onClick="{{ setTabTrips }}" style="{{ tabTripsStyle }}">Trips</button>
             </sc-if>
             <button onClick="{{ setTabStorage }}" style="{{ tabStorageStyle }}">System</button>
+            <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ setTabSiteAdmin }}" style="{{ tabSiteAdminStyle }}">Site Admin</button>
+            </sc-if>
           </div>
           <div style="flex:1; min-width:0; overflow-y:auto; padding-right:2px;">
 
         <sc-if value="{{ showSystemTab }}" hint-placeholder-val="{{ false }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">FORM &amp; CARDS</div>
+        <button onClick="{{ secToggleFormCards }}" style="{{ cfgSecHeaderStyle }}"><span>FORM &amp; CARDS</span><span>{{ secFormCardsChevron }}</span></button>
+        <sc-if value="{{ secFormCardsOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:14px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Trip details open on form</span>
@@ -344,8 +372,10 @@
             </div>
           </sc-if>
         </div>
+        </sc-if>
         <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">PUBLIC LANDING PAGE <span style="color:#caa34e;">· SITE ADMIN</span></div>
+        <button onClick="{{ secToggleLanding }}" style="{{ cfgSecHeaderStyle }}"><span>PUBLIC LANDING PAGE · SITE ADMIN</span><span>{{ secLandingChevron }}</span></button>
+        <sc-if value="{{ secLandingOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#6b7d94; line-height:1.5; margin-bottom:10px;">What unauthenticated visitors see before signing in. Switch it up any time.</div>
           <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:14px;">
@@ -388,8 +418,10 @@
           </sc-if>
         </div>
         </sc-if>
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">GLOBE</div>
-        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:4px;">
+        </sc-if>
+        <button onClick="{{ secToggleGlobe }}" style="{{ cfgSecHeaderStyle }}"><span>GLOBE</span><span>{{ secGlobeChevron }}</span></button>
+        <sc-if value="{{ secGlobeOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:14px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Spin the globe</span>
             <button onClick="{{ toggleSpin }}" style="{{ cfgSpinStyle }}">{{ cfgSpinLabel }}</button>
@@ -411,7 +443,9 @@
             <button onClick="{{ toggleStateBorders }}" style="{{ cfgStateBordersStyle }}">{{ cfgStateBordersLabel }}</button>
           </div>
         </div>
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">UPDATES</div>
+        </sc-if>
+        <button onClick="{{ secToggleUpdates }}" style="{{ cfgSecHeaderStyle }}"><span>UPDATES</span><span>{{ secUpdatesChevron }}</span></button>
+        <sc-if value="{{ secUpdatesOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px 13px; margin-bottom:4px;">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
             <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Check for updates every</span>
@@ -422,6 +456,7 @@
             </div>
           </div>
         </div>
+        </sc-if>
         </sc-if>
 
         <sc-if value="{{ showTripsTab }}" hint-placeholder-val="{{ false }}">
@@ -474,6 +509,44 @@
               </select>
             </div>
           </sc-if>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:10px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:9px;">NARROW DOWN THE TRIPS</div>
+            <div style="display:flex; gap:8px; margin-bottom:9px;">
+              <input value="{{ bulkFilterQ }}" onInput="{{ onBulkFilterQ }}" placeholder="Search place or notes…" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 9px; outline:none;">
+              <select value="{{ bulkFilterYear }}" onChange="{{ onBulkFilterYear }}" style="flex:none; width:90px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                <option value="" style="background:#0a1422;">Any year</option>
+                <sc-for list="{{ bulkFilterYearOptions }}" as="y" hint-placeholder-count="2">
+                  <option value="{{ y.value }}" style="background:#0a1422;">{{ y.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:7px;">
+              <sc-for list="{{ bulkFilterStatusChips }}" as="c" hint-placeholder-count="2">
+                <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:7px;">
+              <sc-for list="{{ bulkFilterVisitChips }}" as="c" hint-placeholder-count="2">
+                <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <sc-for list="{{ bulkFilterTripChips }}" as="c" hint-placeholder-count="2">
+                <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:10px;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">MATCHING TRIPS — {{ bulkCount }} <span style="letter-spacing:0.03em; color:#4e6076;">· click one to preview it</span></div>
+            <div style="display:flex; flex-direction:column; max-height:170px; overflow-y:auto;">
+              <sc-for list="{{ bulkPreviewRows }}" as="bp" hint-placeholder-count="3">
+                <div onClick="{{ bp.onView }}" title="Click to view this trip" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 2px; border-top:1px solid rgba(255,255,255,0.05); cursor:pointer;">
+                  <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#7fd4f5; text-decoration:underline; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ bp.name }}</span>
+                  <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088;">{{ bp.dates }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:14px;">
             <div style="display:flex; flex-direction:column; gap:9px;">
               <sc-if value="{{ bulkCanOwner }}" hint-placeholder-val="{{ false }}">
@@ -542,7 +615,12 @@
             <button onClick="{{ askBulk }}" disabled="{{ bulkApplyDisabled }}" style="width:100%; box-sizing:border-box; margin-top:12px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:8px; padding:9px; cursor:pointer; opacity:{{ bulkApplyOpacity }};">Apply to {{ bulkCount }} trip(s)</button>
             <sc-if value="{{ bulkConfirm }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top:9px; padding:10px 11px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.24); border-radius:8px;">
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:8px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:4px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
+                <div style="max-height:120px; overflow-y:auto; margin-bottom:8px; border:1px solid rgba(251,191,36,0.16); border-radius:6px; padding:4px 8px;">
+                  <sc-for list="{{ bulkAllTargetRows }}" as="bt" hint-placeholder-count="0">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#c9b075; padding:2px 0;">{{ bt.name }}</div>
+                  </sc-for>
+                </div>
                 <div style="display:flex; gap:7px;">
                   <button onClick="{{ applyBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:7px; cursor:pointer;">Confirm</button>
                   <button onClick="{{ cancelBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:7px; cursor:pointer;">Cancel</button>
@@ -552,8 +630,90 @@
           </div>
         </sc-if>
 
+        <sc-if value="{{ showSiteAdminTab }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:14px;">SITE ADMINISTRATION</div>
+
+          <button onClick="{{ toggleSaSecAudit }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;"><span>AUDIT &amp; LIMITS</span><span>{{ saSecAuditChevron }}</span></button>
+          <sc-if value="{{ saSecAuditOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 12px; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Audit log detail</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ auditLevelHint }}</div>
+            </div>
+            <div style="display:flex; gap:5px; flex:none;">
+              <button onClick="{{ setAuditEssential }}" style="{{ auditEssentialStyle }}">Essential</button>
+              <button onClick="{{ setAuditDetailed }}" style="{{ auditDetailedStyle }}">Detailed</button>
+              <button onClick="{{ setAuditVerbose }}" style="{{ auditVerboseStyle }}">Verbose</button>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Per-family category limit</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Max items a family's custom Visit Type / Trip Type / Status list can hold.</div>
+            </div>
+            <input type="number" min="1" max="200" defaultValue="{{ cfgFamilyCatLimit }}" onBlur="{{ onFamilyCatLimitBlur }}" style="flex:none; width:64px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 8px; outline:none; text-align:center;">
+          </div>
+          </div>
+          </sc-if>
+
+          <button onClick="{{ toggleSaSecEmail }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;"><span>EMAIL &amp; NOTIFICATIONS</span><span>{{ saSecEmailChevron }}</span></button>
+          <sc-if value="{{ saSecEmailOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; background:{{ emailKillSwitchBg }}; border:1px solid {{ emailKillSwitchBorder }}; border-radius:10px; padding:11px 12px;">
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Disable all email notifications</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Turning this OFF sets every family's Email toggle to off and locks it (no family can turn it back on). Turning this back ON only unlocks the toggles — it doesn't force any family's setting back on; each family keeps whatever they last had and can choose for themselves. Toasts and the Activity Log still work either way.</div>
+            </div>
+            <button onClick="{{ toggleEmailKillSwitch }}" style="{{ emailKillSwitchToggleStyle }}">{{ emailKillSwitchToggleLabel }}</button>
+          </div>
+
+          <div style="margin-bottom:16px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:11px 12px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0; margin-bottom:2px;">Default notifications for new families</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-bottom:10px;">Applied once, at creation time, to every brand-new family. Doesn't change existing families — those are edited per-family in My Families → Notifications.</div>
+            <sc-for list="{{ defaultNotifRows }}" as="dnr" hint-placeholder-count="4">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:8px 0; border-top:1px solid rgba(255,255,255,0.06);">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9fb3c8; min-width:150px;">{{ dnr.label }}</div>
+                <div style="display:flex; gap:6px; flex:none;">
+                  <button onClick="{{ dnr.toast.onClick }}" style="{{ dnr.toast.style }}">{{ dnr.toast.label }}</button>
+                  <button onClick="{{ dnr.bell.onClick }}" style="{{ dnr.bell.style }}">{{ dnr.bell.label }}</button>
+                  <button onClick="{{ dnr.email.onClick }}" style="{{ dnr.email.style }}">{{ dnr.email.label }}</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <button onClick="{{ toggleSaSecAdmins }}" style="width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;"><span>ADMINS</span><span>{{ saSecAdminsChevron }}</span></button>
+          <sc-if value="{{ saSecAdminsOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PRIMARY ADMIN(S)</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#eaf4fd; margin-bottom:16px;">{{ primaryAdminEmailsText }}</div>
+
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ADDITIONAL SITE ADMINS</div>
+          <sc-if value="{{ hasExtraSiteAdmins }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+              <sc-for list="{{ extraSiteAdminRows }}" as="sa" hint-placeholder-count="1">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px;">
+                  <span>{{ sa.email }}</span>
+                  <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ sa.onRemove }}" title="Remove site admin" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; gap:8px;">
+              <input value="{{ newSiteAdminEmail }}" onChange="{{ setNewSiteAdminEmail }}" placeholder="new-admin@example.com" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
+              <button onClick="{{ addSiteAdminClick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Add admin</button>
+            </div>
+          </sc-if>
+          </sc-if>
+        </sc-if>
+
         <sc-if value="{{ showFiltersTab }}" hint-placeholder-val="{{ true }}">
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:11px;">FILTERS</div>
+        <button onClick="{{ secToggleFilters }}" style="{{ cfgSecHeaderStyle }}"><span>FILTERS</span><span>{{ secFiltersChevron }}</span></button>
+        <sc-if value="{{ secFiltersOpen }}" hint-placeholder-val="{{ true }}">
 
         <!-- compact toggles: inline label-left rows in one card -->
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:13px;">
@@ -610,9 +770,11 @@
             </div>
           </div>
         </div>
+        </sc-if>
 
         <!-- APPEARANCE: dark/light toggle, independent of the accent theme below -->
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin:18px 0 11px;">APPEARANCE</div>
+        <button onClick="{{ secToggleAppearance }}" style="{{ cfgSecHeaderStyleTop }}"><span>APPEARANCE</span><span>{{ secAppearanceChevron }}</span></button>
+        <sc-if value="{{ secAppearanceOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px;">
           <div style="display:flex; gap:8px;">
             <button onClick="{{ setDarkMode }}" style="{{ lightModeDarkStyle }}">Dark</button>
@@ -630,9 +792,11 @@
             <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:5px; line-height:1.4;">When on, everyone sees your current Dark/Light + theme pick and can't change it themselves.</div>
           </sc-if>
         </div>
+        </sc-if>
 
         <!-- THEMES: swatch grid; selected tile gets a ring + glow -->
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin:18px 0 11px;">THEMES</div>
+        <button onClick="{{ secToggleThemes }}" style="{{ cfgSecHeaderStyleTop }}"><span>THEMES</span><span>{{ secThemesChevron }}</span></button>
+        <sc-if value="{{ secThemesOpen }}" hint-placeholder-val="{{ true }}">
         <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px;">
           <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px;">
             <sc-for list="{{ themeTiles }}" as="t" hint-placeholder-count="10">
@@ -646,9 +810,11 @@
             </sc-for>
           </div>
         </div>
+        </sc-if>
 
         <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin:18px 0 6px;">CONFIGURATION DATA</div>
+          <button onClick="{{ secToggleConfigData }}" style="{{ cfgSecHeaderStyleTop }}"><span>CONFIGURATION DATA</span><span>{{ secConfigDataChevron }}</span></button>
+          <sc-if value="{{ secConfigDataOpen }}" hint-placeholder-val="{{ true }}">
           <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:#586a82; line-height:1.55; margin-bottom:14px;">Rename, recolour, add or remove the options used across the form, filters, and globe.</div>
           <sc-for list="{{ dataEditorsSettings }}" as="grp" hint-placeholder-count="3">
             <div style="margin-bottom:13px;">
@@ -671,6 +837,7 @@
               </div>
             </div>
           </sc-for>
+          </sc-if>
         </sc-if>
 
         </sc-if>
@@ -687,7 +854,8 @@
         <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#5d7088; margin-bottom:12px;">DATA &amp; STORAGE</div>
 
         <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">DEBUG</div>
+          <button onClick="{{ secToggleDebug }}" style="{{ cfgSecHeaderStyle }}"><span>DEBUG</span><span>{{ secDebugChevron }}</span></button>
+          <sc-if value="{{ secDebugOpen }}" hint-placeholder-val="{{ true }}">
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px; margin-bottom:14px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
               <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">App settings JSON</span>
@@ -698,9 +866,12 @@
               <button onClick="{{ openDebugDataJson }}" title="Debug: view/edit raw all-trips JSON" style="flex:none; width:24px; height:24px; border-radius:7px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:#7fd6f5; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="5.5" ry="6.5"></ellipse><line x1="9.5" y1="8" x2="8" y2="5"></line><line x1="14.5" y1="8" x2="16" y2="5"></line><path d="M6.5 10 L2.5 8"></path><path d="M6.5 14 L2.5 14"></path><path d="M6.5 18 L2.5 20"></path><path d="M17.5 10 L21.5 8"></path><path d="M17.5 14 L21.5 14"></path><path d="M17.5 18 L21.5 20"></path></svg></button>
             </div>
           </div>
+          </sc-if>
         </sc-if>
 
-        <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#586a82; margin-bottom:6px;">DATA SOURCE</div>
+        <button onClick="{{ secToggleDataSource }}" style="{{ cfgSecHeaderStyle }}"><span>DATA SOURCE</span><span>{{ secDataSourceChevron }}</span></button>
+        <sc-if value="{{ secDataSourceOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
         <div style="display:flex; gap:6px; margin-bottom:6px;">
           <button onClick="{{ setLocalSource }}" style="{{ dsLocalStyle }}">Local</button>
           <button onClick="{{ setCloudSource }}" style="{{ dsCloudStyle }}">Cloud</button>
@@ -790,8 +961,29 @@
             </sc-if>
           </div>
         </sc-if>
-        <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
-          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">SYSTEM BACKUP — INCLUDE</div>
+        <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
+          <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ notConfirmClear }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ askClear }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear data…</button>
+            </sc-if>
+          </sc-if>
+        </div>
+        <sc-if value="{{ confirmClear }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:10px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px;">
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#f3c0c0; line-height:1.5; margin-bottom:11px;">Delete <b>all</b> destinations? A dated backup file downloads automatically first.</div>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ cancelClear }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
+              <button onClick="{{ confirmClearDb }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:9px; padding:9px; cursor:pointer;">Delete all</button>
+            </div>
+          </div>
+        </sc-if>
+        </div>
+        </sc-if>
+
+        <button onClick="{{ secToggleBackup }}" style="{{ cfgSecHeaderStyle }}"><span>SYSTEM BACKUP</span><span>{{ secBackupChevron }}</span></button>
+        <sc-if value="{{ secBackupOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:13px; margin-bottom:14px;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">INCLUDE</div>
           <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:2px 13px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 0;">
               <span style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#c2cfde;">Data</span>
@@ -826,6 +1018,7 @@
             </sc-if>
           </div>
         </div>
+        </sc-if>
         <input ref="{{ setImportInput }}" type="file" accept="application/json,.json" onChange="{{ importJson }}" style="display:none;">
         <sc-if value="{{ storageMsg }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:12px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:#fcd34d; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.28); border-radius:9px; padding:9px 11px;">{{ storageMsg }}</div>
@@ -878,96 +1071,6 @@
                   <button onClick="{{ cancelMyBackup }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
                   <button onClick="{{ myBackupMergeApply }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#04111e; background:rgba(95,211,255,0.92); border:none; border-radius:9px; padding:9px; cursor:pointer;">Apply merge</button>
                 </div>
-              </div>
-            </sc-if>
-          </div>
-        </sc-if>
-
-
-        <div style="margin-top:14px; padding-top:13px; border-top:1px solid rgba(255,255,255,0.08);">
-          <sc-if value="{{ canAdmin }}" hint-placeholder-val="{{ true }}">
-            <sc-if value="{{ notConfirmClear }}" hint-placeholder-val="{{ true }}">
-              <button onClick="{{ askClear }}" style="font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#e9a3a3; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.28); border-radius:8px; padding:6px 11px; cursor:pointer;">Clear data…</button>
-            </sc-if>
-          </sc-if>
-        </div>
-        <sc-if value="{{ confirmClear }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:10px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px;">
-            <div style="font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#f3c0c0; line-height:1.5; margin-bottom:11px;">Delete <b>all</b> destinations? A dated backup file downloads automatically first.</div>
-            <div style="display:flex; gap:8px;">
-              <button onClick="{{ cancelClear }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#9fb0c6; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:9px; padding:9px; cursor:pointer;">Cancel</button>
-              <button onClick="{{ confirmClearDb }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; font-weight:600; color:#fff; background:#dc2626; border:1px solid #ef4444; border-radius:9px; padding:9px; cursor:pointer;">Delete all</button>
-            </div>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ mySiteAdmin }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.22em; color:#caa34e; margin-bottom:14px;">SITE ADMINISTRATION</div>
-
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
-              <div>
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Audit log detail</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ auditLevelHint }}</div>
-              </div>
-              <div style="display:flex; gap:5px; flex:none;">
-                <button onClick="{{ setAuditEssential }}" style="{{ auditEssentialStyle }}">Essential</button>
-                <button onClick="{{ setAuditDetailed }}" style="{{ auditDetailedStyle }}">Detailed</button>
-                <button onClick="{{ setAuditVerbose }}" style="{{ auditVerboseStyle }}">Verbose</button>
-              </div>
-            </div>
-
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px;">
-              <div>
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Per-family category limit</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Max items a family's custom Visit Type / Trip Type / Status list can hold.</div>
-              </div>
-              <input type="number" min="1" max="200" defaultValue="{{ cfgFamilyCatLimit }}" onBlur="{{ onFamilyCatLimitBlur }}" style="flex:none; width:64px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 8px; outline:none; text-align:center;">
-            </div>
-
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px; background:{{ emailKillSwitchBg }}; border:1px solid {{ emailKillSwitchBorder }}; border-radius:10px; padding:11px 12px;">
-              <div>
-                <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0;">Disable all email notifications</div>
-                <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">Turning this OFF sets every family's Email toggle to off and locks it (no family can turn it back on). Turning this back ON only unlocks the toggles — it doesn't force any family's setting back on; each family keeps whatever they last had and can choose for themselves. Toasts and the Activity Log still work either way.</div>
-              </div>
-              <button onClick="{{ toggleEmailKillSwitch }}" style="{{ emailKillSwitchToggleStyle }}">{{ emailKillSwitchToggleLabel }}</button>
-            </div>
-
-            <div style="margin-bottom:16px;">
-              <div style="font-family:'Space Grotesk',sans-serif; font-size:13px; color:#c8d2e0; margin-bottom:2px;">Default notifications for new families</div>
-              <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-bottom:10px;">Applied once, at creation time, to every brand-new family. Doesn't change existing families — those are edited per-family in My Families → Notifications.</div>
-              <sc-for list="{{ defaultNotifRows }}" as="dnr" hint-placeholder-count="4">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:8px 0; border-top:1px solid rgba(255,255,255,0.06);">
-                  <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#9fb3c8; min-width:150px;">{{ dnr.label }}</div>
-                  <div style="display:flex; gap:6px; flex:none;">
-                    <button onClick="{{ dnr.toast.onClick }}" style="{{ dnr.toast.style }}">{{ dnr.toast.label }}</button>
-                    <button onClick="{{ dnr.bell.onClick }}" style="{{ dnr.bell.style }}">{{ dnr.bell.label }}</button>
-                    <button onClick="{{ dnr.email.onClick }}" style="{{ dnr.email.style }}">{{ dnr.email.label }}</button>
-                  </div>
-                </div>
-              </sc-for>
-            </div>
-
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">PRIMARY ADMIN(S)</div>
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#eaf4fd; margin-bottom:16px;">{{ primaryAdminEmailsText }}</div>
-
-            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin-bottom:8px;">ADDITIONAL SITE ADMINS</div>
-            <sc-if value="{{ hasExtraSiteAdmins }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
-                <sc-for list="{{ extraSiteAdminRows }}" as="sa" hint-placeholder-count="1">
-                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#bcd2e6; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px;">
-                    <span>{{ sa.email }}</span>
-                    <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
-                      <button onClick="{{ sa.onRemove }}" title="Remove site admin" style="flex:none; color:#e9a3a3; background:none; border:none; cursor:pointer; font-size:13px;">✕</button>
-                    </sc-if>
-                  </div>
-                </sc-for>
-              </div>
-            </sc-if>
-            <sc-if value="{{ showSiteAdminManage }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex; gap:8px;">
-                <input value="{{ newSiteAdminEmail }}" onChange="{{ setNewSiteAdminEmail }}" placeholder="new-admin@example.com" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12.5px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(125,200,245,0.42); border-radius:8px; padding:7px 9px; outline:none;"/>
-                <button onClick="{{ addSiteAdminClick }}" style="flex:none; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.12); border:1px solid #5fd3ff; border-radius:8px; padding:7px 12px; cursor:pointer;">Add admin</button>
               </div>
             </sc-if>
           </div>
@@ -1279,13 +1382,21 @@
               <sc-if value="{{ isActiveFamilyAdmin }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex; gap:2px; flex:none; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:14px;">
                   <button onClick="{{ setFamilyDetailTabOverview }}" style="{{ famTabOverviewStyle }}">Overview</button>
-                  <button onClick="{{ setFamilyDetailTabPermissions }}" style="{{ famTabPermissionsStyle }}">Permissions</button>
-                  <button onClick="{{ setFamilyDetailTabCategories }}" style="{{ famTabCategoriesStyle }}">Categories</button>
-                  <button onClick="{{ setFamilyDetailTabAudit }}" style="{{ famTabAuditStyle }}">Audit</button>
-                  <button onClick="{{ setFamilyDetailTabTrips }}" style="{{ famTabTripsStyle }}">Trips</button>
-                  <button onClick="{{ setFamilyDetailTabNotifications }}" style="{{ famTabNotificationsStyle }}">Notifications</button>
+                  <button onClick="{{ setFamilyDetailTabPermissions }}" title="Permissions" style="{{ famTabPermissionsStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></button>
+                  <button onClick="{{ setFamilyDetailTabCategories }}" title="Categories" style="{{ famTabCategoriesStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 12.7 12.7 20.6a2 2 0 0 1-2.8 0l-8-8a2 2 0 0 1-.6-1.4V4a2 2 0 0 1 2-2h6.9a2 2 0 0 1 1.4.6l8 8a2 2 0 0 1 0 2.8Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg></button>
+                  <button onClick="{{ setFamilyDetailTabTrips }}" title="Bulk Edit" style="{{ famTabTripsStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1"></rect><path d="M3 15h6v6H3z"></path><path d="M13 4h8"></path><path d="M13 9h8"></path><path d="M13 15h8"></path><path d="M13 20h8"></path></svg></button>
+                  <div style="position:relative; flex:1; display:flex;">
+                    <button onClick="{{ toggleFamMore }}" style="{{ famTabMoreStyle }}">{{ famMoreLabel }} ▾</button>
+                    <sc-if value="{{ famMoreOpen }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute; top:100%; right:0; z-index:40; min-width:160px; background:rgba(10,18,30,0.99); border:1px solid rgba(56,189,248,0.3); border-radius:10px; box-shadow:0 14px 34px rgba(0,0,0,0.55); padding:5px; display:flex; flex-direction:column; gap:2px;">
+                        <button onClick="{{ pickFamMoreAudit }}" style="{{ famMoreAuditItemStyle }}">Audit</button>
+                        <button onClick="{{ pickFamMoreNotifications }}" style="{{ famMoreNotifItemStyle }}">Notifications</button>
+                        <button onClick="{{ pickFamMoreSharing }}" style="{{ famMoreSharingItemStyle }}">Settings &amp; Sharing</button>
+                      </div>
+                    </sc-if>
+                  </div>
                   <sc-if value="{{ isFamilyOwner }}" hint-placeholder-val="{{ false }}">
-                    <button onClick="{{ setFamilyDetailTabOwner }}" style="{{ famTabOwnerStyle }}">Owner</button>
+                    <button onClick="{{ setFamilyDetailTabOwner }}" title="Owner" style="{{ famTabOwnerStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></button>
                   </sc-if>
                 </div>
               </sc-if>
@@ -1342,7 +1453,7 @@
                     <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088; margin-top:2px;">{{ familyImageUploadsHint }}</div>
                   </div>
                   <div style="display:flex; gap:5px; flex:none;">
-                    <button onClick="{{ setFamilyImagesInherit }}" style="{{ familyImagesInheritStyle }}">Site default</button>
+                    <button onClick="{{ setFamilyImagesInherit }}" style="{{ familyImagesInheritStyle }}">{{ familyImagesInheritLabel }}</button>
                     <button onClick="{{ setFamilyImagesOn }}" style="{{ familyImagesOnStyle }}">On</button>
                     <button onClick="{{ setFamilyImagesOff }}" style="{{ familyImagesOffStyle }}">Off</button>
                   </div>
@@ -1533,7 +1644,7 @@
                     <div style="display:flex; gap:6px; flex:none;">
                       <button onClick="{{ nr.toast.onClick }}" style="{{ nr.toast.style }}">{{ nr.toast.label }}</button>
                       <button onClick="{{ nr.bell.onClick }}" style="{{ nr.bell.style }}">{{ nr.bell.label }}</button>
-                      <button onClick="{{ nr.email.onClick }}" style="{{ nr.email.style }}">{{ nr.email.label }}</button>
+                      <button onClick="{{ nr.email.onClick }}" title="{{ nr.email.title }}" style="{{ nr.email.style }}">{{ nr.email.label }}</button>
                     </div>
                   </div>
                 </sc-for>
@@ -1542,6 +1653,44 @@
               <sc-if value="{{ showFamTripsTab }}" hint-placeholder-val="{{ false }}">
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-bottom:14px; line-height:1.5;">Bulk-edit this family's own trips only — tick the fields to change, then confirm.</div>
                 <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">{{ bulkCount }} trip(s) in {{ activeFamilyName }}</div>
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:10px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:9px;">NARROW DOWN THE TRIPS</div>
+                  <div style="display:flex; gap:8px; margin-bottom:9px;">
+                    <input value="{{ bulkFilterQ }}" onInput="{{ onBulkFilterQ }}" placeholder="Search place or notes…" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:12px; color:#eaf4fd; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:7px; padding:6px 9px; outline:none;">
+                    <select value="{{ bulkFilterYear }}" onChange="{{ onBulkFilterYear }}" style="flex:none; width:90px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:7px; padding:6px 7px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                      <option value="" style="background:#0a1422;">Any year</option>
+                      <sc-for list="{{ bulkFilterYearOptions }}" as="y" hint-placeholder-count="2">
+                        <option value="{{ y.value }}" style="background:#0a1422;">{{ y.label }}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                  <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:7px;">
+                    <sc-for list="{{ bulkFilterStatusChips }}" as="c" hint-placeholder-count="2">
+                      <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:7px;">
+                    <sc-for list="{{ bulkFilterVisitChips }}" as="c" hint-placeholder-count="2">
+                      <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                    <sc-for list="{{ bulkFilterTripChips }}" as="c" hint-placeholder-count="2">
+                      <span onClick="{{ c.onToggle }}" style="{{ c.style }}">{{ c.label }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:10px;">
+                  <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; color:#6b7d94; margin-bottom:8px;">MATCHING TRIPS — {{ bulkCount }} <span style="letter-spacing:0.03em; color:#4e6076;">· click one to preview it</span></div>
+                  <div style="display:flex; flex-direction:column; max-height:170px; overflow-y:auto;">
+                    <sc-for list="{{ bulkPreviewRows }}" as="bp" hint-placeholder-count="3">
+                      <div onClick="{{ bp.onView }}" title="Click to view this trip" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 2px; border-top:1px solid rgba(255,255,255,0.05); cursor:pointer;">
+                        <span style="font-family:'Space Grotesk',sans-serif; font-size:12px; color:#7fd4f5; text-decoration:underline; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ bp.name }}</span>
+                        <span style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:9px; color:#5d7088;">{{ bp.dates }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
                 <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:12px 13px; margin-bottom:14px;">
                   <div style="display:flex; flex-direction:column; gap:9px;">
                     <sc-if value="{{ bulkCanOwner }}" hint-placeholder-val="{{ false }}">
@@ -1610,7 +1759,12 @@
                   <button onClick="{{ askBulk }}" disabled="{{ bulkApplyDisabled }}" style="width:100%; box-sizing:border-box; margin-top:12px; font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600; color:#5fd3ff; background:rgba(95,211,255,0.1); border:1px solid rgba(95,211,255,0.4); border-radius:8px; padding:9px; cursor:pointer; opacity:{{ bulkApplyOpacity }};">Apply to {{ bulkCount }} trip(s)</button>
                   <sc-if value="{{ bulkConfirm }}" hint-placeholder-val="{{ false }}">
                     <div style="margin-top:9px; padding:10px 11px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.24); border-radius:8px;">
-                      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:8px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
+                      <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#e8c97a; margin-bottom:4px; line-height:1.5;">Apply these changes to {{ bulkCount }} trip(s)? This can't be undone.</div>
+                      <div style="max-height:120px; overflow-y:auto; margin-bottom:8px; border:1px solid rgba(251,191,36,0.16); border-radius:6px; padding:4px 8px;">
+                        <sc-for list="{{ bulkAllTargetRows }}" as="bt" hint-placeholder-count="0">
+                          <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#c9b075; padding:2px 0;">{{ bt.name }}</div>
+                        </sc-for>
+                      </div>
                       <div style="display:flex; gap:7px;">
                         <button onClick="{{ applyBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:600; color:#04111e; background:linear-gradient(180deg,#fcd34d,#fbbf24); border:none; border-radius:7px; padding:7px; cursor:pointer;">Confirm</button>
                         <button onClick="{{ cancelBulk }}" style="flex:1; font-family:'Space Grotesk',sans-serif; font-size:11.5px; color:#9fb3c8; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.14); border-radius:7px; padding:7px; cursor:pointer;">Cancel</button>
@@ -1824,7 +1978,8 @@
               </div>
               </sc-if>
 
-              <sc-if value="{{ showFamPermissionsTab }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ showFamSharingTab }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#7c8ea6; margin-bottom:6px; line-height:1.5;">Share this family's trips with another family, or see who's shared with you.</div>
               <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.14em; color:#6b7d94; margin:18px 0 8px;">FAMILIES THAT CAN SEE OURS</div>
               <div style="display:flex; gap:8px; margin-bottom:10px;">
                 <select value="{{ shareTargetFamilyId }}" onChange="{{ setShareTargetFamilyId }}" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#dbe6f2; background:rgba(255,255,255,0.04); border:1px solid rgba(56,189,248,0.28); border-radius:8px; padding:8px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
@@ -2624,7 +2779,7 @@
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex:none;">
               <sc-if value="{{ showMetricsFamilyScope }}" hint-placeholder-val="{{ false }}">
-                <select value="{{ metricsFamilyScope }}" onChange="{{ setMetricsFamilyScope }}" title="Which families' trips to include" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.03em; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.24); border-radius:8px; padding:7px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
+                <select value="{{ metricsFamilyScope }}" onChange="{{ setMetricsFamilyScope }}" title="Which families' trips to include — independent of the main page's family filter" style="flex:none; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.03em; color:#9fd6f0; background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.24); border-radius:8px; padding:7px 8px; outline:none; cursor:pointer; -webkit-appearance:none; appearance:none;">
                   <sc-for list="{{ metricsFamilyScopeOptions }}" as="o" hint-placeholder-count="2">
                     <option value="{{ o.value }}" style="background:#0a1422;">{{ o.label }}</option>
                   </sc-for>
@@ -3498,7 +3653,7 @@ class Component extends DCLogic {
     this.HIST_KEY = 'vacation-location:jsonhistory:v1'; // per-trip debug-JSON version history
     this.CFG = 'vacation-location:config';         // localStorage key: all config/preferences
     this.LOCAL_THEME = 'vacation-location:local-theme'; // localStorage key: THIS browser/person's theme+light/dark — never synced to cloud, so each person keeps their own look
-    this.APP_VERSION = '1.28.6-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
+    this.APP_VERSION = '1.31.1-beta';                  // shown in ⓘ / help; compared against cloud to flag updates
     // --- THEMES: 10 named looks. The whole app uses one cyan accent + dark bg in
     // inline literal hex, so the tractable way to retint EVERYTHING at once (tiles,
     // cards, the <canvas> globe, modals) is a single CSS `filter` applied to the
@@ -3736,6 +3891,7 @@ class Component extends DCLogic {
       bulk: { fields: { owner: false, notes: false, visit: false, travelers: false, trip: false, vis: false }, owner: '', notes: '', visit: [], travelers: [], trip: [], vis: 'private', shareKeys: [] },
       bulkConfirm: false,
       bulkFilterFamilyId: '',
+      activityAllFamilyFilter: '',
       settingsOpen: false,
       profileOpen: false,
       activityOpen: false,
@@ -3857,7 +4013,7 @@ class Component extends DCLogic {
   }
 
   PERM_TIERS = [
-    { key: 'onlyme', icon: '🔒', label: 'Only me', desc: 'Hidden from everyone, even your own family.' },
+    { key: 'onlyme', icon: '🔒', label: 'Only me', desc: 'Hidden from everyone except you and your family\u2019s owner \u2014 not even other family admins.' },
     { key: 'onlyfamily', icon: '👪', label: 'Only my family', desc: "Visible to your family's members only." },
     { key: 'sharedfamilies', icon: '🤝', label: 'All shared families', desc: 'Your family, plus every family you\u2019ve linked with. Default.' },
     { key: 'public', icon: '🌐', label: 'Public', desc: 'Any signed-in user of the app.' },
@@ -4275,8 +4431,13 @@ class Component extends DCLogic {
   async loadFamilies() {
     if (this.state.cfgDataSource !== 'cloud') return;
     try {
-      const r = await fetch('/api/families', { cache: 'no-store' });
+      // If-None-Match: the server 304s when nothing changed, so the 30s poll is
+      // normally an empty response and we skip the whole setState re-render.
+      const headers = this._famEtag ? { 'If-None-Match': this._famEtag } : undefined;
+      const r = await fetch('/api/families', { cache: 'no-store', headers });
+      if (r.status === 304) return;
       if (!r.ok) return;
+      this._famEtag = r.headers.get('ETag') || null;
       const j = await r.json();
       const mine = j.myMemberships || [];
       // default active family = the one I'm admin of (my own family), else my first membership
@@ -4307,15 +4468,25 @@ class Component extends DCLogic {
       const prevActivityIds = new Set((this.state.activityFeed || []).map(a => a.id));
       const myEmailLower = (this.state.cloudUserEmail || '').toLowerCase().trim();
       const famById2 = new Map((j.families || []).map(f => [f.id, f]));
+      // Never re-toast: ids we've already toasted persist in localStorage (survives
+      // reloads/deploys), and anything older than 15 minutes is history, not news.
+      let toastedIds = [];
+      try { toastedIds = JSON.parse(localStorage.getItem('mftt:toasted-activity') || '[]'); } catch (e) {}
+      const toastedSet = new Set(toastedIds);
       const newToasts = (this.state.activityFeed && this.state.activityFeed.length) ? (j.activity || []).filter(a => {
-        if (prevActivityIds.has(a.id)) return false;
-        if ((a.actor || '').toLowerCase().trim() === myEmailLower) return false;
+        if (prevActivityIds.has(a.id) || toastedSet.has(a.id)) return false;
+        const age = Date.now() - new Date(a.createdAt || 0).getTime();
+        if (!isFinite(age) || age > 15 * 60 * 1000) return false;
+        if (!myEmailLower || (a.actor || '').toLowerCase().trim() === myEmailLower) return false;
         const key = TOAST_TYPE_TO_KEY[a.type];
         if (!key) return false;
         const fam = famById2.get(a.familyId);
         const p = fam && fam.notifPrefs && fam.notifPrefs[key];
         return !p || p.toast !== false;
       }) : [];
+      if (newToasts.length) {
+        try { localStorage.setItem('mftt:toasted-activity', JSON.stringify([...toastedIds, ...newToasts.map(a => a.id)].slice(-500))); } catch (e) {}
+      }
       this.setState(s => ({
         cfgFamilies: j.families || [],
         cfgMemberships: j.memberships || [],
@@ -4880,6 +5051,17 @@ class Component extends DCLogic {
       itineraryEditableShared: !!p.itineraryEditableShared,
     };
   }
+  // Generic collapsible-section state for the Configuration panel (Preferences /
+  // System / Settings tabs — same pattern as the Site Admin tab). Missing key =
+  // open, so every section starts expanded.
+  toggleCfgSec(key) { this.setState(s => ({ cfgSec: { ...(s.cfgSec || {}), [key]: (s.cfgSec || {})[key] !== false ? false : true } })); }
+  cfgSecOpen(key) { return !this.state.cfgSec || this.state.cfgSec[key] !== false; }
+  // Do I OWN (createdBy) this family? The family owner pierces the "Only me" ceiling.
+  iOwnFamily(familyId) {
+    if (!familyId) return false;
+    const fam = (this.state.cfgFamilies || []).find(f => f.id === familyId);
+    return !!(fam && fam.createdBy === this.state.cloudUserEmail);
+  }
   roleInFamily(familyId) {
     const s = this.state;
     if (!familyId) return null;
@@ -4909,11 +5091,22 @@ class Component extends DCLogic {
   }
   // Shared "mine" + "allMine" option pair used by both the Metrics and People
   // family-scope pickers — each caller still appends its own site-admin branch.
+  // Also lists every OTHER individually-accessible family by name (my own family
+  // plus any family that has shared trips with me) so a specific shared family can
+  // be isolated directly, instead of only "mine" vs. an opaque "all mine" bundle.
   baseFamilyScopeOptions() {
     const homeId = this.myHomeFamilyId();
     const homeFamObj = (this.state.cfgFamilies || []).find(f => f.id === homeId);
     const opts = [{ value: 'mine', label: (homeFamObj && homeFamObj.name) || 'My family' }];
-    if (this.myAccessibleFamilyIds().size > 1) opts.push({ value: 'allMine', label: 'All families I have access to' });
+    const accessible = this.myAccessibleFamilyIds();
+    if (accessible.size > 1) {
+      opts.push({ value: 'allMine', label: 'All families I have access to' });
+      const famById = new Map((this.state.cfgFamilies || []).map(f => [f.id, f]));
+      [...accessible].filter(id => id !== homeId).forEach(id => {
+        const fam = famById.get(id);
+        if (fam) opts.push({ value: id, label: fam.name });
+      });
+    }
     return opts;
   }
   canDeleteTrip(sl) {
@@ -4932,6 +5125,9 @@ class Component extends DCLogic {
   }
   setFamilyTripPerms(familyId, patch) {
     const cur = this.tripPermsFor(familyId);
+    // Clicking the already-selected segment is a no-op — don't call the server
+    // (which would previously log a bogus "updated trip permissions" activity item).
+    if (Object.keys(patch).every(k => cur[k] === patch[k])) return;
     const next = { ...cur, ...patch };
     this.setState(s => ({ cfgFamilies: (s.cfgFamilies || []).map(f => f.id === familyId ? { ...f, permTrip: next } : f) }));
     this.familiesAction('setFamilyTripPerms', { familyId, ...next }).then(j => { if (j) this.toast('Updated'); });
@@ -5342,18 +5538,31 @@ class Component extends DCLogic {
       setFamilyDetailTabAudit: () => this.setFamilyDetailTab('audit'),
       setFamilyDetailTabTrips: () => this.setFamilyDetailTab('trips'),
       setFamilyDetailTabNotifications: () => this.setFamilyDetailTab('notifications'),
+      setFamilyDetailTabSharing: () => this.setFamilyDetailTab('sharing'),
       setFamilyDetailTabOwner: () => this.setFamilyDetailTab('owner'),
       famTabOverviewStyle: tabBtnStyle((s.familyDetailTab || 'overview') === 'overview'),
+      famMoreOpen: !!s.famMoreOpen,
+      toggleFamMore: () => this.setState(st => ({ famMoreOpen: !st.famMoreOpen })),
+      famMoreLabel: s.familyDetailTab === 'audit' ? 'Audit' : s.familyDetailTab === 'notifications' ? 'Notifications' : s.familyDetailTab === 'sharing' ? 'Sharing' : 'More',
+      famTabMoreStyle: tabBtnStyle(['audit', 'notifications', 'sharing'].includes(s.familyDetailTab)),
+      pickFamMoreAudit: () => this.setState({ familyDetailTab: 'audit', famMoreOpen: false }),
+      pickFamMoreNotifications: () => this.setState({ familyDetailTab: 'notifications', famMoreOpen: false }),
+      pickFamMoreSharing: () => this.setState({ familyDetailTab: 'sharing', famMoreOpen: false }),
+      famMoreAuditItemStyle: "text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; padding:8px 11px; border-radius:7px; cursor:pointer; border:none; background:" + (s.familyDetailTab === 'audit' ? 'rgba(56,189,248,0.14); color:#7fd4f5;' : 'transparent; color:#9fb3c8;'),
+      famMoreNotifItemStyle: "text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; padding:8px 11px; border-radius:7px; cursor:pointer; border:none; background:" + (s.familyDetailTab === 'notifications' ? 'rgba(56,189,248,0.14); color:#7fd4f5;' : 'transparent; color:#9fb3c8;'),
+      famMoreSharingItemStyle: "text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.05em; padding:8px 11px; border-radius:7px; cursor:pointer; border:none; background:" + (s.familyDetailTab === 'sharing' ? 'rgba(56,189,248,0.14); color:#7fd4f5;' : 'transparent; color:#9fb3c8;'),
       famTabPermissionsStyle: tabBtnStyle(s.familyDetailTab === 'permissions'),
       famTabCategoriesStyle: tabBtnStyle(s.familyDetailTab === 'categories'),
       famTabAuditStyle: tabBtnStyle(s.familyDetailTab === 'audit'),
       famTabTripsStyle: tabBtnStyle(s.familyDetailTab === 'trips'),
       famTabNotificationsStyle: tabBtnStyle(s.familyDetailTab === 'notifications'),
+      famTabSharingStyle: tabBtnStyle(s.familyDetailTab === 'sharing'),
       famTabOwnerStyle: tabBtnStyle(s.familyDetailTab === 'owner'),
-      showFamOverviewTab: !isActiveFamilyAdmin || (s.familyDetailTab || 'overview') === 'overview',
+      showFamOverviewTab: !isActiveFamilyAdmin || (s.familyDetailTab || 'overview') === 'overview' || (s.familyDetailTab === 'owner' && !isFamilyOwner),
       showFamPermissionsTab: isActiveFamilyAdmin && s.familyDetailTab === 'permissions',
       showFamCategoriesTab: isActiveFamilyAdmin && s.familyDetailTab === 'categories',      showFamAuditTab: isActiveFamilyAdmin && s.familyDetailTab === 'audit',
       showFamNotificationsTab: isActiveFamilyAdmin && s.familyDetailTab === 'notifications',
+      showFamSharingTab: isActiveFamilyAdmin && s.familyDetailTab === 'sharing',
       showFamTripsTab: isActiveFamilyAdmin && s.familyDetailTab === 'trips',
       showFamOwnerTab: isFamilyOwner && s.familyDetailTab === 'owner',
       setFamilyDetailTabCategories: () => this.setFamilyDetailTab('categories'),
@@ -5370,7 +5579,7 @@ class Component extends DCLogic {
         return {
           cat, title: TITLES[cat], isCustom, notCustom: !isCustom,
           siteCount: (s[this._catGlobalKey(cat)] || []).length,
-          toggleLabel: isCustom ? 'Revert to site default' : 'Use custom list',
+          toggleLabel: isCustom ? ('Revert to site default (' + (s[this._catGlobalKey(cat)] || []).length + ' items)') : 'Use custom list',
           toggleStyle: 'flex:none; font-family:\'IBM Plex Mono\',monospace; font-size:9.5px; letter-spacing:0.04em; padding:5px 9px; border-radius:7px; cursor:pointer; border:1px solid ' + (isCustom ? 'rgba(239,68,68,0.3); color:#e9a3a3; background:rgba(239,68,68,0.07);' : 'rgba(56,189,248,0.3); color:#9fd6f0; background:rgba(56,189,248,0.08);'),
           onToggleCustom: () => this.toggleFamilyCatCustom(cat),
           items,
@@ -5407,8 +5616,8 @@ class Component extends DCLogic {
           const p = prefs[def.key] || {};
           const chan = (name) => {
             const emailLocked = name === 'email' && killSwitch;
-            const on = emailLocked ? false : p[name] !== false;
-            return { on, label: name === 'toast' ? 'Toast' : name === 'bell' ? 'Bell' : 'Email', style: chipStyle(on, emailLocked), onClick: emailLocked ? (() => this.toast('Email is disabled site-wide by a site admin — see Site Administration.')) : (() => this.setFamilyNotifPref(def.key, name, !on)) };
+            const on = p[name] !== false;
+            return { on, label: name === 'toast' ? 'Toast' : name === 'bell' ? 'Bell' : 'Email', title: emailLocked ? 'Disabled by System' : '', style: chipStyle(on, emailLocked), onClick: emailLocked ? (() => this.toast('Email is disabled site-wide by a site admin — see Site Administration.')) : (() => this.setFamilyNotifPref(def.key, name, !on)) };
           };
           return { key: def.key, label: def.label, desc: def.desc, toast: chan('toast'), bell: chan('bell'), email: chan('email') };
         });
@@ -5472,6 +5681,7 @@ class Component extends DCLogic {
       familyImageUploadsHint: (activeFamObj && activeFamObj.imagesEnabled !== undefined && activeFamObj.imagesEnabled !== null)
         ? (activeFamObj.imagesEnabled ? 'Explicitly ON for this family' : 'Explicitly OFF for this family')
         : ('Following the site default (' + (s.cfgImageUploadsEnabledSite !== false ? 'ON' : 'OFF') + ')'),
+      familyImagesInheritLabel: 'Site default (' + (s.cfgImageUploadsEnabledSite !== false ? 'ON' : 'OFF') + ')',
       setFamilyImagesInherit: () => this.setFamilyImageUploads(viewFamilyId, null),
       setFamilyImagesOn: () => this.setFamilyImageUploads(viewFamilyId, true),
       setFamilyImagesOff: () => this.setFamilyImageUploads(viewFamilyId, false),
@@ -5511,14 +5721,14 @@ class Component extends DCLogic {
       attachStorageSize: attachStorageStats.sizeLabel,
       attachStorageListGap: attachStorageStats.rows.length ? '12px' : '0',
       attachStorageRows: attachStorageStats.rows,
-      familyActivityItems: (s.activityFeed || []).filter(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))).map(a => {
+      familyActivityItems: (() => { const _byEmail = new Map((s.cfgTravelers || []).map(o => [String(o.email || '').toLowerCase().trim(), o])); return (s.activityFeed || []).filter(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))).map(a => {
         let when = '';
         try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
         const actorEmail = String(a.actor || '').toLowerCase().trim();
-        const actorPerson = actorEmail ? (s.cfgTravelers || []).find(o => String(o.email || '').toLowerCase().trim() === actorEmail) : null;
+        const actorPerson = actorEmail ? _byEmail.get(actorEmail) : null;
         const actorName = actorPerson ? actorPerson.label : (actorEmail || '');
         return { id: a.id, message: a.message || '', when, actorName, actorEmail, mailtoHref: actorEmail ? ('mailto:' + actorEmail) : '' };
-      }),
+      }); })(),
       familyActivityEmpty: !(s.activityFeed || []).some(a => a.familyId === viewFamilyId || (Array.isArray(a.visibleTo) && a.visibleTo.includes(viewFamilyId))),
       newNonAccountName: s.newNonAccountName || '',
       setNewNonAccountName: (e) => this.setNewNonAccountName(e),
@@ -7858,7 +8068,8 @@ class Component extends DCLogic {
       if (!l.familyId) return true;
       if (scope === 'all') return true;
       if (scope === 'allMine') return this.myAccessibleFamilyIds().has(l.familyId);
-      return l.familyId === this.myHomeFamilyId();
+      if (scope === 'mine') return l.familyId === this.myHomeFamilyId();
+      return l.familyId === scope; // a specific accessible family id was chosen directly
     });
   }
   computeMetrics() {
@@ -8014,21 +8225,15 @@ class Component extends DCLogic {
   closeMetrics() { this.setState({ metricsOpen: false, metricsExportOpen: false }); }
   toggleMetricsExport() { this.setState(s => ({ metricsExportOpen: !s.metricsExportOpen })); }
   toggleMetricsFilters() { this.setState(s => ({ metricsFiltersOpen: !s.metricsFiltersOpen })); }
-  setMetricsFamilyScope(e) { this.setState({ metricsFamilyScope: e.target.value }); }
+  // Switching which family's trips Metrics shows also clears the dimension filters
+  // (travelers/visit/trip/status/year) — they're easy to leave set from browsing a
+  // DIFFERENT family (e.g. a traveler chip that only exists on that family's trips),
+  // which would otherwise silently zero out every trip in the newly-selected scope.
+  setMetricsFamilyScope(e) { this.setState({ metricsFamilyScope: e.target.value, metricsFilter: { year: 'all', statuses: [], visit: [], trip: [], travelers: [] } }); }
   // Metrics dashboard has its OWN filter set (independent of the left search filters).
   // Empty = all trips in the system. Mirrors the same dimensions you filter trips by.
   metricsPassesFilter(l) {
     const f = this.state.metricsFilter || {};
-    const s = this.state;
-    if (s.cfgDataSource === 'cloud' && l.familyId) {
-      let mode = s.familyViewMode || 'active';
-      if (mode === 'active') mode = s.activeFamilyId || 'active';
-      if (mode === 'all') { /* site admin: every family */ }
-      else if (mode === 'allMine') {
-        const mine = new Set((s.cfgMemberships || []).filter(m => m.email === s.cloudUserEmail && m.active !== false).map(m => m.familyId));
-        if (!mine.has(l.familyId)) return false;
-      } else if (l.familyId !== mode) return false;
-    }
     if (f.year && f.year !== 'all') { if ((l.date || '').slice(0, 4) !== String(f.year)) return false; }
     if (f.statuses && f.statuses.length && !f.statuses.includes(l.status)) return false;
     if (f.visit && f.visit.length && !(l.visitTypes || []).some(k => f.visit.includes(k))) return false;
@@ -8145,19 +8350,35 @@ class Component extends DCLogic {
   // Local/non-cloud mode (no families) falls back to the main list's filter over
   // the caller's own trips.
   bulkTargets() {
+    let base;
     if (this.state.cfgDataSource === 'cloud' && this.state.familyMgmtOpen && this.state.familyDetailTab === 'trips') {
       const fam = this.viewFamilyId();
       const canBulkThisFamily = this.state.mySiteAdmin || this.myAdminFamilyIds().has(fam);
       if (!fam || !canBulkThisFamily) return [];
-      return (this.state.locations || []).filter(l => l.familyId === fam);
-    }
-    if (this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin) {
+      base = (this.state.locations || []).filter(l => l.familyId === fam);
+    } else if (this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin) {
       const fam = this.state.bulkFilterFamilyId || '';
-      return (this.state.locations || []).filter(l => !fam || l.familyId === fam);
+      base = (this.state.locations || []).filter(l => !fam || l.familyId === fam);
+    } else {
+      const adminFamIds = this.myAdminFamilyIds();
+      base = (this.state.locations || []).filter(l => this.passesFilter(l) && (this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin || adminFamIds.has(l.familyId) || this.tripIsMine(l)));
     }
-    const adminFamIds = this.myAdminFamilyIds();
-    return (this.state.locations || []).filter(l => this.passesFilter(l) && (this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin || adminFamIds.has(l.familyId) || this.tripIsMine(l)));
+    // Narrowing filters shared by BOTH bulk editors (system-wide + family-scoped) —
+    // empty filter = everything, so the default behavior is unchanged.
+    const bf = this.state.bulkFilters || {};
+    const q = (bf.q || '').toLowerCase().trim();
+    return base.filter(l => {
+      if (q && ([l.city, l.country, l.notes].filter(Boolean).join(' ').toLowerCase().indexOf(q) === -1)) return false;
+      if (bf.year && String(l.date || '').slice(0, 4) !== bf.year) return false;
+      if (bf.status && bf.status.length && !bf.status.includes(l.status)) return false;
+      if (bf.visit && bf.visit.length && !(l.visitTypes || []).some(v => bf.visit.includes(v))) return false;
+      if (bf.trip && bf.trip.length && !(l.tripTypes || []).some(t => bf.trip.includes(t))) return false;
+      return true;
+    });
   }
+  setBulkFilter(k, v) { this.setState(s => ({ bulkFilters: { ...(s.bulkFilters || {}), [k]: v } })); }
+  toggleBulkFilterArr(k, key) { this.setState(s => { const bf = s.bulkFilters || {}; const cur = bf[k] || []; const next = cur.includes(key) ? cur.filter(x => x !== key) : [...cur, key]; return { bulkFilters: { ...bf, [k]: next } }; }); }
+  viewBulkTrip(id) { this.setState({ settingsOpen: false, familyMgmtOpen: false }); this.selectLocation(id); }
   setBulkFilterFamily(v) { this.setState({ bulkFilterFamilyId: v }); }
   toggleBulkField(k) { this.setState(s => ({ bulk: { ...s.bulk, fields: { ...s.bulk.fields, [k]: !s.bulk.fields[k] } } })); }
   setBulkVal(k, v) { this.setState(s => ({ bulk: { ...s.bulk, [k]: v } })); }
@@ -9763,7 +9984,7 @@ class Component extends DCLogic {
         noAttachments: (sl.attachments || []).length === 0,
         noGallery: !(Array.isArray(sl.gallery) && sl.gallery.length > 0),
         attachmentsHidden: this.state.cfgDataSource === 'cloud' && !(this.tripUnassigned(sl) || this.tripIsMine(sl)) && !this.tripPermsFor(sl.familyId).attachVisibleShared,
-        canAddAttachments: (this.state.cloudRoles || []).includes('editor') && (sl.soloPrivate ? this.tripIsMine(sl) : (
+        canAddAttachments: (this.state.cloudRoles || []).includes('editor') && (sl.soloPrivate ? (this.tripIsMine(sl) || this.iOwnFamily(sl.familyId)) : (
           (sl.familyId ? this.meetsFloor(this.roleInFamily(sl.familyId), this.tripPermsFor(sl.familyId).attachFloor) : (this.tripUnassigned(sl) || this.tripIsMine(sl)))
           || (!sl.hiddenFromShares && ['editor', 'admin-no-delete'].includes(this.myShareRoleForFamily(sl.familyId)))
         )),
@@ -9969,11 +10190,18 @@ class Component extends DCLogic {
       metricsFamilyScope: this.state.metricsFamilyScope || 'mine',
       setMetricsFamilyScope: (e) => this.setMetricsFamilyScope(e),
       metricsFamilyScopeOptions: (() => {
-        const opts = this.baseFamilyScopeOptions();
-        if (this.state.mySiteAdmin) opts.push({ value: 'all', label: 'Every family (site admin)' });
-        return opts;
+        if (this.state.mySiteAdmin) {
+          const homeId = this.myHomeFamilyId();
+          const homeFam = (this.state.cfgFamilies || []).find(f => f.id === homeId);
+          return [
+            { value: 'mine', label: (homeFam && homeFam.name) || 'My family' },
+            { value: 'all', label: 'Every family (site admin)' },
+            ...(this.state.cfgFamilies || []).filter(f => f.id !== homeId).map(f => ({ value: f.id, label: f.name })),
+          ];
+        }
+        return this.baseFamilyScopeOptions();
       })(),
-      metrics: this.state.metricsOpen ? this.computeMetrics(this.state.metricsScope) : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], countriesByTraveler: [], topCountries: [], topCities: [], byYear: [] },
+      metrics: this.state.metricsOpen ? this.computeMetrics() : { isEmpty: true, tiles: [], byStatus: [], byVisit: [], byTrip: [], byTraveler: [], daysByTraveler: [], countriesByTraveler: [], topCountries: [], topCities: [], byYear: [] },
       metricsFiltersOpen: this.state.metricsFiltersOpen,
       toggleMetricsFilters: () => this.toggleMetricsFilters(),
       metricsFilterCount: this.metricsFilterCount(),
@@ -10096,14 +10324,61 @@ class Component extends DCLogic {
       tabSystemStyle: tabBtnStyle(this.state.settingsTab === 'system'),
       tabTripsStyle: tabBtnStyle(this.state.settingsTab === 'trips'),
       tabStorageStyle: tabBtnStyle(this.state.settingsTab === 'storage'),
+      tabSiteAdminStyle: tabBtnStyle(this.state.settingsTab === 'siteadmin'),
       showFiltersTab: this.state.settingsTab === 'filters',
       showSystemTab: this.state.settingsTab === 'system',
+      cfgSecHeaderStyle: "width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin-bottom:10px;",
+      secFormCardsOpen: this.cfgSecOpen('formCards'),
+      secFormCardsChevron: this.cfgSecOpen('formCards') ? '▾' : '▸',
+      secToggleFormCards: () => this.toggleCfgSec('formCards'),
+      secLandingOpen: this.cfgSecOpen('landing'),
+      secLandingChevron: this.cfgSecOpen('landing') ? '▾' : '▸',
+      secToggleLanding: () => this.toggleCfgSec('landing'),
+      secGlobeOpen: this.cfgSecOpen('globe'),
+      secGlobeChevron: this.cfgSecOpen('globe') ? '▾' : '▸',
+      secToggleGlobe: () => this.toggleCfgSec('globe'),
+      secUpdatesOpen: this.cfgSecOpen('updates'),
+      secUpdatesChevron: this.cfgSecOpen('updates') ? '▾' : '▸',
+      secToggleUpdates: () => this.toggleCfgSec('updates'),
+      secDataSourceOpen: this.cfgSecOpen('dataSource'),
+      secDataSourceChevron: this.cfgSecOpen('dataSource') ? '▾' : '▸',
+      secToggleDataSource: () => this.toggleCfgSec('dataSource'),
+      secBackupOpen: this.cfgSecOpen('backup'),
+      secBackupChevron: this.cfgSecOpen('backup') ? '▾' : '▸',
+      secToggleBackup: () => this.toggleCfgSec('backup'),
+      secDebugOpen: this.cfgSecOpen('debug'),
+      secDebugChevron: this.cfgSecOpen('debug') ? '▾' : '▸',
+      secToggleDebug: () => this.toggleCfgSec('debug'),
+      cfgSecHeaderStyleTop: "width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.14em; color:#8fa4bd; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.09); border-radius:9px; padding:9px 12px; cursor:pointer; margin:14px 0 10px;",
+      secFiltersOpen: this.cfgSecOpen('filters'),
+      secFiltersChevron: this.cfgSecOpen('filters') ? '▾' : '▸',
+      secToggleFilters: () => this.toggleCfgSec('filters'),
+      secAppearanceOpen: this.cfgSecOpen('appearance'),
+      secAppearanceChevron: this.cfgSecOpen('appearance') ? '▾' : '▸',
+      secToggleAppearance: () => this.toggleCfgSec('appearance'),
+      secThemesOpen: this.cfgSecOpen('themes'),
+      secThemesChevron: this.cfgSecOpen('themes') ? '▾' : '▸',
+      secToggleThemes: () => this.toggleCfgSec('themes'),
+      secConfigDataOpen: this.cfgSecOpen('configData'),
+      secConfigDataChevron: this.cfgSecOpen('configData') ? '▾' : '▸',
+      secToggleConfigData: () => this.toggleCfgSec('configData'),
       canEditCloud: this.state.cfgDataSource === 'cloud' && (this.state.cloudRoles || []).includes('editor'),
       canTripsTab: this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin,
       showTripsTab: this.state.settingsTab === 'trips' && (this.state.cfgDataSource !== 'cloud' || this.state.mySiteAdmin),
       setTabTrips: () => this.setSettingsTab('trips'),
       ...this.familiesRenderVals(),
       showStorageTab: this.state.settingsTab === 'storage',
+      showSiteAdminTab: this.state.settingsTab === 'siteadmin' && this.state.mySiteAdmin,
+      saSecAuditOpen: this.state.saSecAudit !== false,
+      saSecEmailOpen: this.state.saSecEmail !== false,
+      saSecAdminsOpen: this.state.saSecAdmins !== false,
+      saSecAuditChevron: this.state.saSecAudit !== false ? '▾' : '▸',
+      saSecEmailChevron: this.state.saSecEmail !== false ? '▾' : '▸',
+      saSecAdminsChevron: this.state.saSecAdmins !== false ? '▾' : '▸',
+      toggleSaSecAudit: () => this.setState(s => ({ saSecAudit: s.saSecAudit === false })),
+      toggleSaSecEmail: () => this.setState(s => ({ saSecEmail: s.saSecEmail === false })),
+      toggleSaSecAdmins: () => this.setState(s => ({ saSecAdmins: s.saSecAdmins === false })),
+      setTabSiteAdmin: () => this.setSettingsTab('siteadmin'),
       setTabFilters: () => this.setSettingsTab('filters'),
       setTabSystem: () => this.setSettingsTab('system'),
       setTabStorage: () => this.setSettingsTab('storage'),
@@ -10137,7 +10412,7 @@ class Component extends DCLogic {
         });
       })(),
       bulkFields: this.state.bulk.fields,
-      bulkCount: this.bulkTargets().length,
+      bulkCount: ((this.state.settingsOpen && this.state.settingsTab === 'trips') || (this.state.familyMgmtOpen && this.state.familyDetailTab === 'trips')) ? this.bulkTargets().length : 0,
       showBulkFamilyFilter: this.state.cfgDataSource === 'cloud' && this.state.mySiteAdmin,
       allTripsCount: (this.state.locations || []).length,
       bulkFamilyOptions: (this.state.cfgFamilies || []).map(f => ({ value: f.id, label: f.name })),
@@ -10149,9 +10424,35 @@ class Component extends DCLogic {
         return fam ? (' in ' + fam.name) : '';
       })(),
       bulkConfirm: this.state.bulkConfirm,
+      bulkAllTargetRows: (() => {
+        if (!this.state.bulkConfirm) return [];
+        return this.bulkTargets().map(l => ({ name: ([l.city, l.country].filter(Boolean).join(', ') || 'Unnamed trip') + (l.date ? ' — ' + l.date : '') }));
+      })(),
       bulkCanOwner: (this.state.mySiteAdmin || this.myAdminFamilyIds().size > 0) && this.state.cfgDataSource === 'cloud',
       bulkOwner: this.state.bulk.owner,
       bulkNotes: this.state.bulk.notes,
+      bulkFilterQ: (this.state.bulkFilters || {}).q || '',
+      onBulkFilterQ: (e) => this.setBulkFilter('q', e.target.value),
+      bulkFilterYear: (this.state.bulkFilters || {}).year || '',
+      onBulkFilterYear: (e) => this.setBulkFilter('year', e.target.value),
+      bulkFilterYearOptions: (() => {
+        const ys = new Set(); (this.state.locations || []).forEach(l => { const y = String(l.date || '').slice(0, 4); if (y.length === 4) ys.add(y); });
+        return [...ys].sort().reverse().map(y => ({ value: y, label: y }));
+      })(),
+      bulkFilterStatusChips: this.mergedCatList('status').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.bulkFilters || {}).status || []).includes(o.key)), onToggle: () => this.toggleBulkFilterArr('status', o.key) })),
+      bulkFilterVisitChips: this.mergedCatList('visit').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.bulkFilters || {}).visit || []).includes(o.key)), onToggle: () => this.toggleBulkFilterArr('visit', o.key) })),
+      bulkFilterTripChips: this.mergedCatList('trip').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, ((this.state.bulkFilters || {}).trip || []).includes(o.key)), onToggle: () => this.toggleBulkFilterArr('trip', o.key) })),
+      bulkPreviewRows: (() => {
+        const inTrips = this.state.settingsOpen && this.state.settingsTab === 'trips';
+        const inFamTrips = this.state.familyMgmtOpen && this.state.familyDetailTab === 'trips';
+        if (!inTrips && !inFamTrips) return [];
+        const fmtD = (d) => { if (!d) return ''; try { return new Date(d + 'T00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return d; } };
+        return this.bulkTargets().map(l => ({
+          name: [l.city, l.country].filter(Boolean).join(', ') || 'Unnamed trip',
+          dates: l.dateEnd && l.dateEnd !== l.date ? (fmtD(l.date) + ' → ' + fmtD(l.dateEnd)) : fmtD(l.date),
+          onView: () => this.viewBulkTrip(l.id),
+        }));
+      })(),
       bulkOwnerOptions: (this.state.cfgTravelers || []).filter(t => t.email).map(t => ({ value: String(t.email).toLowerCase().trim(), label: t.label })),
       bulkVisitChips: this.mergedCatList('visit').map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, (this.state.bulk.visit || []).includes(o.key)), onToggle: () => this.toggleBulkArr('visit', o.key) })),
       bulkTravelerChips: (this.state.cfgTravelers || []).map(o => ({ key: o.key, label: o.label, style: filterChip(o.color, (this.state.bulk.travelers || []).includes(o.key)), onToggle: () => this.toggleBulkArr('travelers', o.key) })),
@@ -10313,18 +10614,29 @@ class Component extends DCLogic {
         return (this.state.activityFeed || []).some(a => a.createdAt > seen);
       })(),
       activityEmpty: !(this.state.activityFeed || []).length,
-      activityItems: (this.state.activityFeed || []).slice().reverse().slice(0, 200).map(a => {
+      activityItems: (() => { const _byEmail = new Map((this.state.cfgTravelers || []).map(o => [String(o.email || '').toLowerCase().trim(), o])); return (this.state.activityFeed || []).slice().reverse().slice(0, 200).map(a => {
         let when = '';
         try { when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + new Date(a.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
-        return { id: a.id, message: a.message || '', when };
-      }),
+        const actorEmail = String(a.actor || '').toLowerCase().trim();
+        const actorPerson = actorEmail ? _byEmail.get(actorEmail) : null;
+        const actorName = actorPerson ? actorPerson.label : actorEmail;
+        return { id: a.id, message: a.message || '', when, actorName, actorEmail, mailtoHref: actorEmail ? ('mailto:' + actorEmail) : '' };
+      }); })(),
       activityShowViewAll: (this.state.activityFeed || []).length > 200,
+      activityViewAllLabel: (() => { const n = (this.state.activityFeed || []).length; const extra = n > 200 ? (n - 200) : 0; return extra ? ('View all (' + extra + ' more)') : 'View all · grouped by day, filter by family'; })(),
       activityOverflowCount: Math.max(0, (this.state.activityFeed || []).length - 200),
       activityAllOpen: this.state.activityAllOpen,
-      openActivityAll: () => this.setState({ activityAllOpen: true }),
+      openActivityAll: () => this.setState({ activityAllOpen: true, activityOpen: false }),
       closeActivityAll: () => this.setState({ activityAllOpen: false }),
+      activityAllFamilyFilter: this.state.activityAllFamilyFilter || '',
+      setActivityAllFamilyFilter: (e) => this.setState({ activityAllFamilyFilter: e.target.value }),
+      activityAllFamilyOptions: (this.state.cfgFamilies || []).map(f => ({ value: f.id, label: f.name })),
       activityAllSections: (() => {
-        const feed = this.state.activityFeed || [];
+        const _byEmail = new Map((this.state.cfgTravelers || []).map(o => [String(o.email || '').toLowerCase().trim(), o]));
+        const _actorRow = (a) => { const ae = String(a.actor || '').toLowerCase().trim(); const p = ae ? _byEmail.get(ae) : null; return { actorName: p ? p.label : ae, actorEmail: ae, mailtoHref: ae ? ('mailto:' + ae) : '' }; };
+        const fam = this.state.activityAllFamilyFilter || '';
+        const feedAll = this.state.activityFeed || [];
+        const feed = fam ? feedAll.filter(a => a.familyId === fam || (Array.isArray(a.visibleTo) && a.visibleTo.includes(fam))) : feedAll;
         if (!feed.length) return [];
         const now = new Date();
         const startOfDay = (d) => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
@@ -10336,7 +10648,7 @@ class Component extends DCLogic {
           let d; try { d = new Date(a.createdAt); } catch (e) { d = null; }
           let when = '';
           try { when = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); } catch (e) {}
-          const row = { id: a.id, message: a.message || '', when };
+          const row = { id: a.id, message: a.message || '', when, ..._actorRow(a) };
           if (!d || isNaN(d)) { buckets['Earlier'].push(row); return; }
           if (d >= today) buckets['Today'].push(row);
           else if (d >= yesterday) buckets['Yesterday'].push(row);
