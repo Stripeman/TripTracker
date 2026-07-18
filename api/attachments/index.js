@@ -56,6 +56,11 @@ function isMine(trip, me) {
   return !!(trip && ((trip.owner && trip.owner === me.id) || sameEmail(trip.ownerEmail, me.email)));
 }
 
+// The family OWNER (createdBy) pierces the "Only me" ceiling (matches api/trips).
+function ownsFamilyOf(trip, me) {
+  return !!(trip && trip.familyId && me.ownedFamilies && me.ownedFamilies.has(trip.familyId));
+}
+
 function sharedDirect(trip, me) {
   return Array.isArray(trip.sharedWith) && trip.sharedWith.map((s) => String(s).toLowerCase()).includes(me.email);
 }
@@ -71,7 +76,7 @@ function canView(trip, me) {
   if (me.siteAdmin) return true;
   if (isMine(trip, me)) return true;
   if (sharedDirect(trip, me)) return true;
-  if (trip.soloPrivate) return false;
+  if (trip.soloPrivate) return ownsFamilyOf(trip, me); // family OWNER pierces "Only me" (matches api/trips)
   if (!trip.familyId) {
     if (!trip.owner && !trip.ownerEmail) return true;
     if (trip.visibility === "all") return true;
@@ -92,7 +97,7 @@ function floorOk(role, floor) {
 
 function canEdit(trip, me, perm) {
   if (me.siteAdmin) return true;
-  if (trip.soloPrivate) return isMine(trip, me);
+  if (trip.soloPrivate) return isMine(trip, me) || ownsFamilyOf(trip, me);
   if (!trip.familyId) return isMine(trip, me);
   const myRole = me.familyRoles.get(trip.familyId);
   if (floorOk(myRole, (perm && perm.attachFloor) || "editor")) return true;
@@ -174,6 +179,7 @@ async function enrichMe(container, me) {
   me.siteAdmin = isSiteAdmin(me.email);
   me.familyRoles = new Map();
   me.sharesIn = new Map();
+  me.ownedFamilies = new Set();
   try {
     const membersBlob = container.getBlockBlobClient(MEMBERS_BLOB);
     if (await membersBlob.exists()) {
@@ -181,6 +187,15 @@ async function enrichMe(container, me) {
       if (Array.isArray(members)) {
         members.filter((m) => m && String(m.email || "").toLowerCase().trim() === me.email && m.active !== false)
           .forEach((m) => me.familyRoles.set(m.familyId, m.role));
+      }
+    }
+    // Family ownership implies admin rights (matches api/trips).
+    const famBlob = container.getBlockBlobClient(process.env.FAMILIES_BLOB || "families.json");
+    if (await famBlob.exists()) {
+      const fams = JSON.parse(await streamToString((await famBlob.download()).readableStreamBody));
+      if (Array.isArray(fams)) {
+        fams.filter((f) => f && String(f.createdBy || "").toLowerCase().trim() === me.email)
+          .forEach((f) => { me.familyRoles.set(f.id, "admin"); me.ownedFamilies.add(f.id); });
       }
     }
     const sharesBlob = container.getBlockBlobClient(SHARES_BLOB);
