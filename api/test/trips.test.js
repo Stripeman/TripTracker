@@ -139,6 +139,21 @@ test("new trips are assigned to an editable family and normalized before persist
   assert.deepEqual(stored.locations[0], { ...input, familyId: "fam-a", owner: "editor-id", ownerEmail: "editor@example.test", visibility: "private", sharedWith: ["friend@example.test"], hiddenFromShares: true, soloPrivate: false });
 });
 
+test("new trips cannot be inserted into an unknown or unauthorized family", async () => {
+  seed({
+    "trip-tracker.json": { locations: [] },
+    "families.json": [family, { id: "fam-b", name: "Other Family", approved: true }],
+    "memberships.json": [{ email: "editor@example.test", familyId: "fam-a", role: "editor", active: true }],
+  });
+  const unauthorized = { id: "new-trip", familyId: "fam-b", city: "New" };
+  assert.equal((await invoke(trips, request("POST", "editor@example.test", { body: { locations: [unauthorized] } }))).status, 403);
+  assert.deepEqual(readBlob("trip-tracker.json").locations, []);
+
+  const unknown = { ...unauthorized, familyId: "missing-family" };
+  assert.equal((await invoke(trips, request("POST", "editor@example.test", { body: { locations: [unknown] } }))).status, 403);
+  assert.deepEqual(readBlob("trip-tracker.json").locations, []);
+});
+
 test("missing, malformed, empty, and legacy array storage documents read safely", async (t) => {
   for (const [name, stored, expected] of [
     ["missing", undefined, []], ["malformed", "{bad", []], ["empty object", {}, []], ["legacy array", [{ id: "legacy" }], ["legacy"]],
@@ -152,12 +167,35 @@ test("missing, malformed, empty, and legacy array storage documents read safely"
   }
 });
 
-test("replace mode requires the admin role and preserves supplied dates and settings", async () => {
+test("elevated modes require a configured site administrator", async () => {
   seed();
   const payload = { locations: [{ id: "replacement", date: "2026-09-03", dateEnd: "2026-09-01" }], settings: { unit: "km" } };
-  assert.equal((await invoke(trips, request("POST", "editor@example.test", { query: { mode: "replace" }, body: payload }))).status, 403);
-  const ok = await invoke(trips, request("POST", "admin@example.test", { principal: { roles: ["authenticated", "admin"] }, query: { mode: "replace" }, body: payload }));
-  assert.equal(ok.status, 200);
-  assert.deepEqual(readBlob("trip-tracker.json").locations, payload.locations);
-  assert.deepEqual(readBlob("trip-tracker.json").settings, payload.settings);
+  const familyAdmin = { principal: { roles: ["authenticated", "admin", "editor", "reader"] } };
+  assert.equal((await invoke(trips, request("POST", "family-admin@example.test", { ...familyAdmin, query: { mode: "replace" }, body: payload }))).status, 403);
+  assert.equal((await invoke(trips, request("POST", "family-admin@example.test", { ...familyAdmin, query: { mode: "assign" }, body: { id: "trip-1", ownerEmail: "new@example.test" } }))).status, 403);
+  assert.equal((await invoke(trips, request("POST", "family-admin@example.test", { ...familyAdmin, query: { mode: "deleteUser" }, body: { email: "owner@example.test", deleteTrips: true } }))).status, 403);
+});
+
+test("site administrator elevated-mode payloads match frontend contracts", async () => {
+  const previous = process.env.SITE_ADMIN_EMAIL;
+  process.env.SITE_ADMIN_EMAIL = "site-admin@example.test";
+  seed();
+  const admin = { principal: { roles: ["authenticated", "admin", "editor", "reader"] } };
+  try {
+    const assigned = await invoke(trips, request("POST", "site-admin@example.test", { ...admin, query: { mode: "assign" }, body: { id: "trip-1", ownerEmail: "new@example.test" } }));
+    assert.equal(assigned.status, 200);
+    assert.equal(readBlob("trip-tracker.json").locations[0].ownerEmail, "new@example.test");
+
+    const deleted = await invoke(trips, request("POST", "site-admin@example.test", { ...admin, query: { mode: "deleteUser" }, body: { email: "new@example.test", key: "traveler-1", deleteTrips: false } }));
+    assert.equal(deleted.status, 200);
+    assert.equal(readBlob("trip-tracker.json").locations[0].ownerEmail, "");
+
+    const payload = { locations: [{ id: "replacement", date: "2026-09-03", dateEnd: "2026-09-01" }], settings: { unit: "km" } };
+    const replaced = await invoke(trips, request("POST", "site-admin@example.test", { ...admin, query: { mode: "replace" }, body: payload }));
+    assert.equal(replaced.status, 200);
+    assert.deepEqual(readBlob("trip-tracker.json").locations, payload.locations);
+    assert.deepEqual(readBlob("trip-tracker.json").settings, payload.settings);
+  } finally {
+    if (previous === undefined) delete process.env.SITE_ADMIN_EMAIL; else process.env.SITE_ADMIN_EMAIL = previous;
+  }
 });

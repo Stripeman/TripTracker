@@ -354,7 +354,7 @@ module.exports = async function (context, req) {
     // ---- writes ----
     let payload = req.body;
     if (typeof payload === "string") { try { payload = JSON.parse(payload); } catch (e) { json(400, { error: "Invalid JSON" }); return; } }
-    if (!payload || !Array.isArray(payload.locations)) { json(400, { error: "Expected { locations: [...] }" }); return; }
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) { json(400, { error: "Expected a JSON object." }); return; }
 
     const mode = (req.query && req.query.mode) || "";
 
@@ -364,7 +364,7 @@ module.exports = async function (context, req) {
     //   { ownerEmail, ids: [...] }  → assign those trip ids
     //   { ownerEmail }              → assign ALL currently-unassigned (no ownerEmail) trips
     if (mode === "assign") {
-      if (!me.roles.includes("admin")) { json(403, { error: "Admin role required to assign owners." }); return; }
+      if (!me.siteAdmin) { json(403, { error: "Site administrator access is required to assign owners." }); return; }
       const em = String(payload.ownerEmail || "").toLowerCase().trim();
       const ids = Array.isArray(payload.ids) ? payload.ids : (payload.id != null ? [payload.id] : null);
       const stored = await readDataset(blob);
@@ -385,7 +385,7 @@ module.exports = async function (context, req) {
     //   deleteTrips:false → keep those trips but unassign them (owner cleared)
     //   always            → strip this person's traveler key from every trip (disassociate)
     if (mode === "deleteUser") {
-      if (!me.roles.includes("admin")) { json(403, { error: "Admin role required to delete a user." }); return; }
+      if (!me.siteAdmin) { json(403, { error: "Site administrator access is required to delete a user." }); return; }
       const em = String(payload.email || "").toLowerCase().trim();
       const key = payload.key || "";
       const deleteTrips = !!payload.deleteTrips;
@@ -405,11 +405,14 @@ module.exports = async function (context, req) {
 
     // Admin-only full replace — used by Import and Clear data.
     if (mode === "replace") {
-      if (!me.roles.includes("admin")) { json(403, { error: "Admin role required to replace all data." }); return; }
+      if (!me.siteAdmin) { json(403, { error: "Site administrator access is required to replace all data." }); return; }
+      if (!Array.isArray(payload.locations)) { json(400, { error: "Expected { locations: [...] }" }); return; }
       await writeDataset(blob, payload.locations, payload.settings || null);
       json(200, { ok: true, mode: "replace", count: payload.locations.length });
       return;
     }
+
+    if (!Array.isArray(payload.locations)) { json(400, { error: "Expected { locations: [...] }" }); return; }
 
     // Normal save: reconcile the caller's working set against stored data so a user
     // can only ever add/change/delete trips they OWN. Everything else is preserved.
@@ -544,6 +547,13 @@ module.exports = async function (context, req) {
     for (const t of payload.locations) {
       if (storedById.has(t.id)) continue;
       const withFamily = t.familyId ? t : (myEditableFamilyId ? { ...t, familyId: myEditableFamilyId[0] } : t);
+      if (withFamily.familyId && !me.siteAdmin) {
+        const role = me.familyRoles.get(withFamily.familyId);
+        if (!familyById.has(withFamily.familyId) || !floorOk(role, permFor(withFamily.familyId).editFloor)) {
+          json(403, { error: "No permission to add trips to this family." });
+          return;
+        }
+      }
       // A family pending site-admin approval can't add new trips yet (site admin bypasses).
       if (withFamily.familyId && !me.siteAdmin && approvedByFamily.has(withFamily.familyId) && !approvedByFamily.get(withFamily.familyId)) {
         json(403, { error: "This family is pending site-admin approval — trips can't be added yet." });
