@@ -19,3 +19,12 @@ test("entry page requests only the public site-settings endpoint", () => {
   const apiCalls = [...html.matchAll(/fetch\(['"]([^'"]+)/g)].map((match) => match[1]);
   assert.deepEqual(apiCalls, ["/api/site-settings"]);
 });
+
+test("frontend enforces current trip required-field and date-range behavior before API persistence", () => {
+  const html = read("Trip Tracker.dc.html");
+  assert.match(html, /if \(!hasCity\) \{[\s\S]*?formError: 'City is required\.'/);
+  assert.match(html, /if \(this\.isUS\(f\.country\)[\s\S]*?formError: 'State is required for U\.S\. cities\.'/);
+  assert.match(html, /if \(!f\.date\) \{[\s\S]*?formError: 'A trip date is required\.'/);
+  assert.match(html, /if \(f\.date && f\.dateEnd && f\.dateEnd < f\.date\) f\.dateEnd = '';/);
+  assert.match(html, /_itineraryDayList\(date, dateEnd\)[\s\S]*?if \(!dateEnd \|\| dateEnd <= date\) return out;/);
+});

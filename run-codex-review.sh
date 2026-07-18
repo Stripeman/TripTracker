@@ -5,6 +5,14 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT"
 
+# Allow Git commands launched by Codex and its PowerShell subprocesses to
+# inspect this repository without permanently changing additional Git settings.
+PROJECT_ROOT_WINDOWS="$(pwd -W | sed 's#\\#/#g')"
+
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0="safe.directory"
+export GIT_CONFIG_VALUE_0="$PROJECT_ROOT_WINDOWS"
+
 CURRENT_BRANCH="$(git branch --show-current)"
 
 if [[ -z "$CURRENT_BRANCH" ]]; then

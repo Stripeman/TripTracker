@@ -7,6 +7,12 @@ const repoRoot = path.resolve(apiRoot, "..");
 const failures = [];
 const checked = [];
 
+function requireFile(relative) {
+  const file = path.join(repoRoot, relative);
+  if (!fs.existsSync(file) || !fs.statSync(file).isFile()) failures.push(`${relative}: required file is missing`);
+  else checked.push(relative);
+}
+
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = path.join(dir, entry.name);
@@ -61,10 +67,32 @@ for (const endpoint of ["trips", "families", "attachments", "presence", "request
 }
 const index = fs.readFileSync(path.join(repoRoot, "index.html"), "utf8");
 if (!index.includes("/api/site-settings")) failures.push("index.html: public site-settings caller missing");
-if (swa.auth && swa.auth.rolesSource !== "/api/roles") failures.push("staticwebapp.config.json: auth.rolesSource must be /api/roles");
+if (!swa.auth || swa.auth.rolesSource !== "/api/roles") failures.push("staticwebapp.config.json: auth.rolesSource must be /api/roles");
+if (!swa.navigationFallback || swa.navigationFallback.rewrite !== "/index.html") failures.push("staticwebapp.config.json: navigation fallback must rewrite to /index.html");
+
+for (const file of [
+  "index.html", "Trip Tracker.dc.html", "Landing.dc.html", "support.js", "favicon.svg",
+  "staticwebapp.config.json", "api/host.json",
+  ".github/workflows/azure-static-web-apps-delightful-dune-0b6ba6d0f.yml",
+]) requireFile(file);
+
+for (const relative of ["index.html", "Trip Tracker.dc.html", "Landing.dc.html"]) {
+  const source = fs.readFileSync(path.join(repoRoot, relative), "utf8");
+  for (const match of source.matchAll(/(?:src|href)=["']([^"']+)["']/gi)) {
+    const reference = match[1];
+    if (!reference || reference.startsWith("#") || reference.startsWith("/") || reference.startsWith("{{") || /^[a-z][a-z\d+.-]*:/i.test(reference)) continue;
+    const clean = decodeURIComponent(reference.split(/[?#]/, 1)[0]).replace(/^\.\//, "");
+    if (clean && !fs.existsSync(path.resolve(repoRoot, clean))) failures.push(`${relative}: broken local reference ${reference}`);
+  }
+}
+
+const deployWorkflow = fs.readFileSync(path.join(repoRoot, ".github/workflows/azure-static-web-apps-delightful-dune-0b6ba6d0f.yml"), "utf8");
+if (!/^\s*app_location:\s*["']?\/["']?\s*$/m.test(deployWorkflow)) failures.push("deployment workflow: app_location must be /");
+if (!/^\s*api_location:\s*["']?api["']?\s*$/m.test(deployWorkflow)) failures.push("deployment workflow: api_location must be api");
+if (!/^\s*skip_app_build:\s*true\s*$/m.test(deployWorkflow)) failures.push("deployment workflow: expected static frontend deployment with skip_app_build true");
 
 if (failures.length) {
   console.error(`Validation failed with ${failures.length} issue(s):\n- ${failures.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`Validated ${jsFiles.length} API JavaScript files, ${jsonFiles.length} JSON files, ${functions.length} Azure Functions, SWA route coverage, and frontend API references.`);
+console.log(`Validated ${jsFiles.length} API JavaScript files, ${jsonFiles.length} JSON files, ${functions.length} Azure Functions, SWA route coverage, deployment structure, and frontend references.`);

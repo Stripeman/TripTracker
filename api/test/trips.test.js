@@ -33,6 +33,22 @@ test("GET isolates private family trips while preserving legacy public trips", a
   assert.equal(res.body.visible, 2);
 });
 
+test("GET honors direct recipients, incoming family shares, and per-trip share hiding", async () => {
+  seed({
+    "trip-tracker.json": { locations: [
+      { ...baseTrip, id: "direct", soloPrivate: true, sharedWith: ["recipient@example.test"] },
+      { ...baseTrip, id: "shared" },
+      { ...baseTrip, id: "hidden", hiddenFromShares: true },
+    ] },
+    "families.json": [family, { id: "fam-b", name: "Recipient Family", approved: true }],
+    "memberships.json": [{ email: "recipient@example.test", familyId: "fam-b", role: "reader", active: true }],
+    "family-shares.json": [{ fromFamilyId: "fam-a", toFamilyId: "fam-b", role: "reader" }],
+  });
+  const res = await invoke(trips, request("GET", "recipient@example.test"));
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body.locations.map((trip) => trip.id), ["direct", "shared"]);
+});
+
 test("family owner can view and edit solo-private trips despite a reader membership", async () => {
   seed({
     "trip-tracker.json": { locations: [{ ...baseTrip, soloPrivate: true }] },
@@ -68,6 +84,20 @@ test("admin membership can delete a family trip by omission", async () => {
   const res = await invoke(trips, request("POST", "admin@example.test", { body: { locations: [] } }));
   assert.equal(res.status, 200);
   assert.deepEqual(readBlob("trip-tracker.json").locations, []);
+});
+
+test("site administrator can retrieve all trips without family membership", async () => {
+  const previous = process.env.SITE_ADMIN_EMAIL;
+  process.env.SITE_ADMIN_EMAIL = "site-admin@example.test";
+  seed({ "trip-tracker.json": { locations: [{ ...baseTrip, soloPrivate: true }] } });
+  try {
+    const res = await invoke(trips, request("GET", "site-admin@example.test", { principal: { roles: ["authenticated", "admin"] } }));
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.locations.map((trip) => trip.id), ["trip-1"]);
+    assert.equal(res.body.me.siteAdmin, true);
+  } finally {
+    if (previous === undefined) delete process.env.SITE_ADMIN_EMAIL; else process.env.SITE_ADMIN_EMAIL = previous;
+  }
 });
 
 test("new trips are assigned to an editable family and normalized before persistence", async () => {
