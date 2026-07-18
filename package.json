@@ -1,0 +1,9 @@
+{
+  "name": "trip-tracker",
+  "version": "0.9.0",
+  "private": true,
+  "scripts": {
+    "test": "npm --prefix api test",
+    "build": "npm --prefix api run build"
+  }
+}

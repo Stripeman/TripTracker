@@ -89,6 +89,6 @@ module.exports = async function (context, req) {
     json(200, { ok: true, count: clean.length });
   } catch (err) {
     context.log.error(err);
-    json(500, { error: String((err && err.message) || err) });
+    json(500, { error: "Internal server error." });
   }
 };
