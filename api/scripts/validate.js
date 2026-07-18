@@ -67,6 +67,9 @@ for (const entry of functions) {
   const trigger = triggers[0];
   const route = `/api/${trigger.route || entry.name}`;
   const methods = new Set((trigger.methods || []).map((method) => method.toLowerCase()));
+  if (trigger.direction !== "in" || trigger.name !== "req") failures.push(`${route}: HTTP trigger must be the inbound req binding`);
+  if (outputs.length === 1 && (outputs[0].name !== "res")) failures.push(`${route}: HTTP output must use the res binding`);
+  if (functionRoutes.has(route)) failures.push(`${route}: duplicate Azure Function route`);
   functionRoutes.set(route, methods);
   if (trigger.authLevel !== "anonymous") failures.push(`${route}: expected SWA-managed anonymous function binding`);
   if (!Array.isArray(trigger.methods) || !trigger.methods.length) failures.push(`${route}: missing HTTP methods`);
@@ -87,6 +90,15 @@ for (const rule of routeRules.filter((item) => typeof item.route === "string" &&
   }
   for (const method of rule.methods || []) {
     if (!methods.has(String(method).toLowerCase())) failures.push(`staticwebapp.config.json: ${rule.route} ${String(method).toUpperCase()} is not accepted by its Azure Function`);
+  }
+}
+
+const configuredRouteMethods = new Set();
+for (const rule of routeRules.filter((item) => typeof item.route === "string" && item.route.startsWith("/api/"))) {
+  for (const method of rule.methods || ["*"]) {
+    const key = `${rule.route} ${String(method).toUpperCase()}`;
+    if (configuredRouteMethods.has(key)) failures.push(`staticwebapp.config.json: duplicate route rule for ${key}`);
+    configuredRouteMethods.add(key);
   }
 }
 
