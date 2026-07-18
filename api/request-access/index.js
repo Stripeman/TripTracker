@@ -132,6 +132,6 @@ module.exports = async function (context, req) {
   } catch (err) {
     context.log.error(err);
     if (persisted) { json(200, { ok: true, persisted: true, emailFailed: true }); return; }
-    json(500, { error: String((err && err.message) || err) });
+    json(500, { error: "Internal server error." });
   }
 };
