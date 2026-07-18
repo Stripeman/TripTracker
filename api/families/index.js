@@ -987,7 +987,7 @@ module.exports = async function (context, req) {
         }
       } catch (err) {
         context.log.error(err);
-        json(500, { error: String((err && err.message) || err) });
+        json(500, { error: "Internal server error." });
         return;
       }
       json(200, { ok: true });
@@ -1298,6 +1298,6 @@ module.exports = async function (context, req) {
     json(400, { error: "Unknown action." });
   } catch (err) {
     context.log.error(err);
-    json(500, { error: String((err && err.message) || err) });
+    json(500, { error: "Internal server error." });
   }
 };
