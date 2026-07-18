@@ -10,8 +10,12 @@ tags: [operations, deployment, azure, github-actions]
 
 ## Local development
 
-There is no root `package.json`, build script, or automated test suite in the inspected repository. The frontend is static; do not invent `npm test` or build commands.
+The frontend is static, but the repository now provides Node-based API test, validation, and composite build commands:
 
+- From the repository root, run `npm test` to delegate to the API test suite, or `npm run build` to run that suite followed by API validation.
+- From `api/`, run `npm test` for the serial Node test suite, `npm run validate` for structural checks, or `npm run build` for both in sequence. The scripts are defined in [`package.json`](../../package.json) and [`api/package.json`](../../api/package.json).
+- The tests use in-memory Blob mocks and cover trip visibility/mutation permissions, family response and mutation authorization, role resolution, legacy storage compatibility, and frontend request contracts. They do not validate a browser session, Static Web Apps authentication, or a live Azure storage account.
+- `api/scripts/validate.js` checks JavaScript syntax and JSON, expected Azure Functions HTTP bindings, protected Static Web Apps route coverage for selected endpoints, frontend references to API endpoints, and the configured `/api/roles` source. It is a consistency check, not a replacement for authorization or deployment testing.
 - Use an HTTP static server for frontend-only work. The README recommends Live Server because the app fetches assets and API resources; `file://` is not a supported validation path.
 - For local managed API/auth emulation, the existing deployment guide suggests installing the Static Web Apps CLI, installing dependencies in `api/`, then running `swa start . --api-location api`. This is useful guidance but requires local Azure settings and is not a substitute for deployed identity-provider validation.
 - The API dependency manifest is [`api/package.json`](../../api/package.json); it currently lists `@azure/storage-blob`.

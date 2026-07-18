@@ -54,4 +54,3 @@ Recent Git history shows active work on bulk editing, family access, activity po
 ## Backlog
 
 - **Live Azure resource/SKU and DNS state** — source anchor: `DEPLOY-azure.md`, `staticwebapp.config.json`; not documented as fact because the repository cannot verify provisioned resources or DNS.
-- **Automated tests** — source anchor: repository root and `api/package.json`; no test suite or root build scripts were found, so this wiki records manual and static checks rather than inventing coverage.
